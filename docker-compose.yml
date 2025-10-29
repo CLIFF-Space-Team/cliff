@@ -1,0 +1,293 @@
+# 🌌 CLIFF - Docker Compose Development Configuration
+# This file sets up all required services for local development
+
+services:
+  # =============================================================================
+  # DATABASE SERVICES
+  # =============================================================================
+  
+  # MongoDB Database
+  mongodb:
+    image: mongo:latest
+    container_name: cliff-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: cliff_user
+      MONGO_INITDB_ROOT_PASSWORD: cliff_pass_2025
+      MONGO_INITDB_DATABASE: cliff_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - cliff-network
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache and Session Store
+  redis:
+    image: redis:7-alpine
+    container_name: cliff-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass cliff_redis_2025
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./database/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - cliff-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "cliff_redis_2025", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Elasticsearch for Search and Logging
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: cliff-elasticsearch
+    restart: unless-stopped
+    environment:
+      - node.name=cliff-es-node
+      - cluster.name=cliff-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - xpack.security.enabled=false
+      - xpack.monitoring.collection.enabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - cliff-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # APPLICATION SERVICES
+  # =============================================================================
+
+  # CLIFF Backend API (FastAPI)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: cliff-backend
+    restart: unless-stopped
+    environment:
+      - MONGODB_URL=mongodb://cliff_user:cliff_pass_2025@mongodb:27017/cliff_db?authSource=admin
+      - REDIS_URL=redis://:cliff_redis_2025@redis:6379/0
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ENVIRONMENT=development
+      - DEBUG=true
+    ports:
+      - "8000:8000"
+      - "8001:8001"  # WebSocket port
+    volumes:
+      - ./backend:/app
+      - ./shared:/app/shared
+    networks:
+      - cliff-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # CLIFF Frontend (Next.js 14)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: cliff-frontend
+    restart: unless-stopped
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8001
+      - NEXT_PUBLIC_APP_NAME=CLIFF
+      - NODE_ENV=development
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - ./shared:/app/shared
+      - /app/node_modules
+    networks:
+      - cliff-network
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # =============================================================================
+  # MONITORING SERVICES
+  # =============================================================================
+
+  # Grafana for Monitoring Dashboard
+  grafana:
+    image: grafana/grafana:latest
+    container_name: cliff-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=cliff_grafana_2025
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - cliff-network
+    depends_on:
+      - prometheus
+
+  # Prometheus for Metrics Collection
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: cliff-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - cliff-network
+
+  # =============================================================================
+  # UTILITY SERVICES
+  # =============================================================================
+
+  # NGINX Reverse Proxy (for production-like setup)
+  nginx:
+    image: nginx:alpine
+    container_name: cliff-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/sites-enabled:/etc/nginx/sites-enabled
+      - ./nginx/ssl:/etc/nginx/ssl
+    networks:
+      - cliff-network
+    depends_on:
+      - frontend
+      - backend
+    profiles:
+      - production
+
+  # Adminer for Database Management
+  adminer:
+    image: adminer:latest
+    container_name: cliff-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    networks:
+      - cliff-network
+    depends_on:
+      - postgres
+    profiles:
+      - development
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+networks:
+  cliff-network:
+    driver: bridge
+    name: cliff-network
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+volumes:
+  # Database Volumes
+  mongodb_data:
+    name: cliff-mongodb-data
+  redis_data:
+    name: cliff-redis-data
+  elasticsearch_data:
+    name: cliff-elasticsearch-data
+    
+  # Monitoring Volumes
+  grafana_data:
+    name: cliff-grafana-data
+  prometheus_data:
+    name: cliff-prometheus-data
+
+# =============================================================================
+# DEVELOPMENT USAGE
+# =============================================================================
+# Start all services:
+#   docker-compose up -d
+#
+# Start only databases:
+#   docker-compose up -d postgres timescaledb redis elasticsearch
+#
+# View logs:
+#   docker-compose logs -f backend
+#   docker-compose logs -f frontend
+#
+# Stop all services:
+#   docker-compose down
+#
+# Reset all data (WARNING: This deletes all data):
+#   docker-compose down -v
+#
+# Access services:
+#   Frontend: http://localhost:3000
+#   Backend API: http://localhost:8000
+#   MongoDB: localhost:27017
+#   Redis: localhost:6379
+#   Elasticsearch: http://localhost:9200
+#   Grafana: http://localhost:3001 (admin/cliff_grafana_2025)
+#   Prometheus: http://localhost:9090
+#   Adminer: http://localhost:8080
+#
+# =============================================================================
+# PRODUCTION USAGE
+# =============================================================================
+# Use production compose file:
+#   docker-compose -f docker-compose.prod.yml up -d
+#
+# Enable NGINX reverse proxy:
+#   docker-compose --profile production up -d
+#
+# Scale backend services:
+#   docker-compose up -d --scale backend=3

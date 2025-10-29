@@ -1,0 +1,66 @@
+{
+  "name": "cliff-nasa-app",
+  "version": "1.1.0",
+  "description": "CLIFF - Cosmic Level Intelligent Forecast Framework for NASA Space Apps Challenge 2025",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend",
+    "mobile",
+    "desktop"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:mobile": "cd mobile && npm run start",
+    "dev:desktop": "cd desktop && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:frontend": "cd frontend && npm run start",
+    "start:backend": "cd backend && npm run start",
+    "test": "concurrently \"npm run test:backend\" \"npm run test:frontend\"",
+    "test:frontend": "cd frontend && npm run test",
+    "test:backend": "cd backend && npm run test",
+    "install:all": "npm install && npm run install:frontend && npm run install:backend && npm run install:mobile && npm run install:desktop",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && npm install",
+    "install:mobile": "cd mobile && npm install",
+    "install:desktop": "cd desktop && npm install",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build",
+    "deploy:production": "npm run build && docker-compose -f docker-compose.prod.yml up -d"
+  },
+  "keywords": [
+    "nasa",
+    "space",
+    "ai",
+    "asteroid",
+    "earth",
+    "threat",
+    "monitoring",
+    "nextjs",
+    "fastapi",
+    "threejs",
+    "websocket",
+    "space-apps-challenge"
+  ],
+  "author": "CLIFF Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "react-error-boundary": "^6.0.0"
+  }
+}
