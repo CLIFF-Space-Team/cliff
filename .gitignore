@@ -193,3 +193,8 @@ test-results/
 playwright-report/
 .playwright/
 
+# ==================== DOCUMENTATION ====================
+# Ignore all .md files except README.md
+*.md
+!README.md
+
