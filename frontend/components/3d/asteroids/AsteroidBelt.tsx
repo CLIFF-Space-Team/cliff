@@ -39,14 +39,20 @@ const AsteroidBelt: React.FC = () => {
 
   useFrame((state, delta) => {
     if (instancedMeshRef.current) {
-      instancedMeshRef.current.rotation.y += delta * 0.01;
+      // Asteroid kuşağı çok yavaş döner (gerçekte yıllar sürer)
+      instancedMeshRef.current.rotation.y += delta * 0.003;
     }
   });
 
   return (
     <instancedMesh ref={instancedMeshRef} args={[undefined, undefined, ASTEROID_COUNT]}>
       <sphereGeometry args={[0.1, 8, 8]} />
-      <meshStandardMaterial color="#8B4513" roughness={0.7} metalness={0.3} />
+      <meshStandardMaterial 
+        color="#8B7355" 
+        roughness={0.98} 
+        metalness={0.02}
+        envMapIntensity={0.2}
+      />
       {asteroidTransforms.map((matrix, i) => (
         <primitive key={i} object={new THREE.Matrix4().copy(matrix)} />
       ))}

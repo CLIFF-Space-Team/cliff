@@ -104,14 +104,14 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
           )
         }
         
-        // Gerçekçi yavaş rotasyon hızı
-        const baseRotSpeed = 0.001
+        // Gerçek asteroidler saatlerce hatta günlerce dönerler - çok yavaş rotasyon
+        const baseRotSpeed = 0.0001 // 10x daha yavaş
         let rotSpeedMultiplier = 1.0
         
         if (nasaAsteroid.orbital_data?.relative_velocity?.kilometers_per_second) {
           const velocityKms = parseFloat(nasaAsteroid.orbital_data.relative_velocity.kilometers_per_second)
           if (!isNaN(velocityKms)) {
-            rotSpeedMultiplier = Math.max(0.5, Math.min(3.0, velocityKms / 20)) // 20 km/s = normal hız
+            rotSpeedMultiplier = Math.max(0.3, Math.min(1.5, velocityKms / 25)) // Daha dengeli hız
           }
         }
         
@@ -158,9 +158,9 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
             Math.random() * Math.PI * 2
           ),
           rotationSpeed: new THREE.Vector3(
-            (Math.random() - 0.5) * 0.002,
-            (Math.random() - 0.5) * 0.002,
-            (Math.random() - 0.5) * 0.001
+            (Math.random() - 0.5) * 0.0002, // 10x daha yavaş
+            (Math.random() - 0.5) * 0.0002,
+            (Math.random() - 0.5) * 0.0001
           ),
           scale: THREE.MathUtils.randFloat(0.3, 1.2),
           orbitSpeed: THREE.MathUtils.randFloat(0.001, 0.005),
@@ -176,7 +176,8 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
   }, [count, distributionRadius, nasaAsteroidsData, useRealData])
 
   const geometry = useMemo(() => {
-    const baseGeometry = new THREE.IcosahedronGeometry(1, quality === 'low' ? 1 : quality === 'medium' ? 2 : 3)
+    // Daha detaylı geometri
+    const baseGeometry = new THREE.IcosahedronGeometry(1, quality === 'low' ? 1 : quality === 'medium' ? 2 : 4)
     
     const positionAttribute = baseGeometry.getAttribute('position')
     const vertex = new THREE.Vector3()
@@ -184,7 +185,12 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
     for (let i = 0; i < positionAttribute.count; i++) {
       vertex.fromBufferAttribute(positionAttribute, i)
       
-      const noise = Math.sin(vertex.x * 5) * Math.cos(vertex.y * 4) * Math.sin(vertex.z * 6) * 0.1
+      // Çok katmanlı noise ile gerçekçi asteroid yüzeyi
+      const n1 = Math.sin(vertex.x * 5) * Math.cos(vertex.y * 4) * Math.sin(vertex.z * 6)
+      const n2 = Math.sin(vertex.x * 15) * Math.cos(vertex.y * 12) * Math.sin(vertex.z * 18)
+      const n3 = Math.sin(vertex.x * 35) * Math.cos(vertex.y * 28) * Math.sin(vertex.z * 40)
+      
+      const noise = (n1 * 0.5 + n2 * 0.3 + n3 * 0.2) * 0.2
       vertex.normalize()
       vertex.multiplyScalar(1.0 + noise)
       
@@ -198,17 +204,23 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
   const material = useMemo(() => {
     return new THREE.MeshStandardMaterial({
       color: '#8B7355',
-      roughness: 0.9,
-      metalness: 0.1,
+      roughness: 0.98, // Çok pürüzlü taş yüzeyi
+      metalness: 0.02, // Neredeyse hiç metalik içerik
+      flatShading: false, // Smooth shading
+      envMapIntensity: 0.2
     })
   }, [])
 
   // Tehlike seviyesine göre renk materyali
   const hazardousMaterial = useMemo(() => {
     return new THREE.MeshStandardMaterial({
-      color: '#D2691E',
-      roughness: 0.85,
-      metalness: 0.15,
+      color: '#A0522D', // Daha güçlü kahverengi ton
+      roughness: 0.97,
+      metalness: 0.03,
+      flatShading: false,
+      envMapIntensity: 0.25,
+      emissive: '#2a1510', // Hafif iç ışıma
+      emissiveIntensity: 0.1
     })
   }, [])
 
@@ -231,12 +243,13 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
     if (!meshRef.current || !enableAnimation) return
     
     asteroidData.forEach((asteroid, i) => {
-      // Çok daha yavaş, gözle takip edilebilir dönüş hızları
-      asteroid.rotation.x += asteroid.rotationSpeed.x * delta * 5
-      asteroid.rotation.y += asteroid.rotationSpeed.y * delta * 5
-      asteroid.rotation.z += asteroid.rotationSpeed.z * delta * 5
+      // Gerçekçi yavaş asteroid rotasyonu (gerçek asteroidler saatlerce döner)
+      asteroid.rotation.x += asteroid.rotationSpeed.x * delta * 0.5
+      asteroid.rotation.y += asteroid.rotationSpeed.y * delta * 0.5
+      asteroid.rotation.z += asteroid.rotationSpeed.z * delta * 0.5
       
-      asteroid.orbitAngle += asteroid.orbitSpeed * delta * 5
+      // Yörünge hareketi de daha yavaş
+      asteroid.orbitAngle += asteroid.orbitSpeed * delta * 0.3
       asteroid.position.x = Math.cos(asteroid.orbitAngle) * asteroid.orbitRadius
       asteroid.position.z = Math.sin(asteroid.orbitAngle) * asteroid.orbitRadius
       

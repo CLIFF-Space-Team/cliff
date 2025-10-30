@@ -37,7 +37,7 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     const baseRadius = Math.min(Math.max(data.info.radius_km * 0.1, 0.8), 2.5) // Minimum 0.8, maksimum 2.5
     
     // Modern irregular stone shape using IcosahedronGeometry
-    const baseGeometry = new THREE.IcosahedronGeometry(baseRadius, isMobile ? 2 : 3)
+    const baseGeometry = new THREE.IcosahedronGeometry(baseRadius, isMobile ? 2 : 4) // Daha detaylı
     
     // Apply advanced noise for realistic asteroid surface
     const positionAttribute = baseGeometry.getAttribute('position')
@@ -96,9 +96,9 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     const baseColor = data.is_hazardous ? '#8B4513' : '#696969' // Brown for hazardous, dark gray for normal
     const material = new THREE.MeshStandardMaterial({
       color: baseColor,
-      roughness: 0.95, // Very rough stone surface
-      metalness: 0.05, // Very low metallic content
-      bumpScale: 0.5,
+      roughness: 0.98, // Extremely rough stone surface
+      metalness: 0.02, // Almost no metallic content
+      bumpScale: 0.8, // Daha belirgin yüzey detayı
     })
     
     // Create realistic stone texture using advanced canvas techniques
@@ -248,11 +248,11 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     })
   }, [data.is_hazardous, data.orbital_data, hovered, showTooltip, isMobile])
 
-  // Gerçekçi yavaş asteroid rotasyonu (asteroidler gerçekte çok yavaş döner)
+  // Gerçek asteroidler saatlerce hatta günlerce dönerler - çok yavaş rotasyon
   const rotationSpeed = useMemo(() => ({
-    x: (Math.random() - 0.5) * (isMobile ? 0.01 : 0.02),
-    y: (Math.random() - 0.5) * (isMobile ? 0.01 : 0.02),
-    z: (Math.random() - 0.5) * (isMobile ? 0.005 : 0.01)
+    x: (Math.random() - 0.5) * (isMobile ? 0.002 : 0.004), // 5x daha yavaş
+    y: (Math.random() - 0.5) * (isMobile ? 0.002 : 0.004),
+    z: (Math.random() - 0.5) * (isMobile ? 0.001 : 0.002)
   }), [isMobile])
 
   useFrame((state, delta) => {

@@ -74,26 +74,32 @@ export const ProceduralAsteroidSystem = React.memo(({
   const asteroidGeometry = useMemo(() => {
     if (!THREE) return null
     
-    const segments = {
-      low: 8,
-      medium: 12,
-      high: 16,
-      ultra: 24
-    }[quality] || 16
+    const detail = {
+      low: 1,
+      medium: 2,
+      high: 3,
+      ultra: 4
+    }[quality] || 3
     
-    // Create irregular asteroid geometry
-    const geometry = new THREE.IcosahedronGeometry(1, Math.floor(segments / 8))
+    // Daha detaylı icosahedron geometrisi
+    const geometry = new THREE.IcosahedronGeometry(1, detail)
     
-    // Add noise to make it look more asteroid-like
+    // Çok katmanlı noise ile gerçekçi asteroid yüzeyi
     const positions = geometry.getAttribute('position')
     const vertex = new THREE.Vector3()
     
     for (let i = 0; i < positions.count; i++) {
       vertex.fromBufferAttribute(positions, i)
       
-      // Add random noise to create irregular shape
-      const noise = 0.1 + Math.random() * 0.3
-      vertex.multiplyScalar(noise + 0.7)
+      // Çoklu frekans noise - gerçekçi yüzey detayı
+      const n1 = Math.sin(vertex.x * 4) * Math.cos(vertex.y * 3) * Math.sin(vertex.z * 5)
+      const n2 = Math.sin(vertex.x * 12) * Math.cos(vertex.y * 10) * Math.sin(vertex.z * 14)
+      const n3 = Math.sin(vertex.x * 28) * Math.cos(vertex.y * 24) * Math.sin(vertex.z * 32)
+      
+      const combinedNoise = (n1 * 0.5 + n2 * 0.3 + n3 * 0.2) * 0.25
+      
+      vertex.normalize()
+      vertex.multiplyScalar(1.0 + combinedNoise)
       
       positions.setXYZ(i, vertex.x, vertex.y, vertex.z)
     }
@@ -109,8 +115,10 @@ export const ProceduralAsteroidSystem = React.memo(({
     if (!THREE) return null
     const mat = new THREE.MeshStandardMaterial({
       color: '#8B7355',
-      metalness: 0.08,
-      roughness: 0.96
+      metalness: 0.02, // Daha doğal taş görünümü
+      roughness: 0.98, // Çok pürüzlü
+      flatShading: false,
+      envMapIntensity: 0.2
     })
     return mat
   }, [THREE])
@@ -165,8 +173,8 @@ export const ProceduralAsteroidSystem = React.memo(({
         ],
         scale: [scale, scale * (0.8 + Math.random() * 0.4), scale],
         color,
-        // Gerçekçi yavaş dönüş hızları (gerçek asteroidler çok yavaş döner)
-        speed: 0.005 + Math.random() * 0.01,
+        // Gerçek asteroidler saatlerce hatta günlerce dönerler
+        speed: 0.001 + Math.random() * 0.003, // Çok daha yavaş
         orbitRadius,
         orbitAngle,
         threatLevel,
@@ -224,17 +232,17 @@ export const ProceduralAsteroidSystem = React.memo(({
 
     asteroidInstances.forEach((instance, i) => {
       if (enableOrbitalMechanics) {
-        instance.orbitAngle += delta * instance.speed * 0.02
+        instance.orbitAngle += delta * instance.speed * 0.15 // Daha yavaş yörünge
         const x = instance.orbitRadius * Math.cos(instance.orbitAngle)
         const y = instance.position[1]
         const z = instance.orbitRadius * Math.sin(instance.orbitAngle)
         instance.position = [x, y, z]
       }
 
-      // Çok daha yavaş, gözle takip edilebilir dönüş hızları
-      instance.rotation[0] += delta * instance.speed * 0.05
-      instance.rotation[1] += delta * instance.speed * 0.03
-      instance.rotation[2] += delta * instance.speed * 0.02
+      // Gerçekçi asteroid rotasyonu - sakin ve yavaş
+      instance.rotation[0] += delta * instance.speed * 0.3
+      instance.rotation[1] += delta * instance.speed * 0.2
+      instance.rotation[2] += delta * instance.speed * 0.1
 
       position.set(...instance.position)
       scaleV.set(...instance.scale)

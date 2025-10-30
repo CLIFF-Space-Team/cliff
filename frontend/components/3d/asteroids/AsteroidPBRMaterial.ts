@@ -65,11 +65,14 @@ export function createAsteroidPBRMaterial(opts: AsteroidMaterialOptions = {}) {
 
   const material = new THREE.MeshStandardMaterial({
     color: hazardous ? new THREE.Color('#7b4a35') : new THREE.Color('#8c8c92'),
-    metalness: 0.08,
-    roughness: 0.96,
+    metalness: 0.02, // Daha az metalik - gerçek taş
+    roughness: 0.98, // Çok pürüzlü yüzey
     map,
     normalMap,
-    normalScale: new THREE.Vector2(0.6, 0.6)
+    normalScale: new THREE.Vector2(1.2, 1.2), // Daha belirgin yüzey detayı
+    bumpMap: map,
+    bumpScale: 0.5,
+    envMapIntensity: 0.3 // Hafif çevre yansıması
   })
   return material
 }
