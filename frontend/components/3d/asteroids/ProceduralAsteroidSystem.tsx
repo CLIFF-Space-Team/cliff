@@ -299,10 +299,10 @@ export const ProceduralAsteroidSystem = React.memo(({
         instance.position = [x, y, z]
       }
 
-      // Gerçekçi çok yavaş dönüş hızları (asteroidler saatlerce döner)
-      instance.rotation[0] += delta * instance.speed * 0.5
-      instance.rotation[1] += delta * instance.speed * 0.3
-      instance.rotation[2] += delta * instance.speed * 0.2
+      // Asteroidler artık dönmüyor - sabit kalıyorlar
+      // instance.rotation[0] += delta * instance.speed * 0.5
+      // instance.rotation[1] += delta * instance.speed * 0.3
+      // instance.rotation[2] += delta * instance.speed * 0.2
 
       position.set(...instance.position)
       scaleV.set(...instance.scale)
