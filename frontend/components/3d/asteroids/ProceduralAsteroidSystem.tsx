@@ -70,50 +70,118 @@ export const ProceduralAsteroidSystem = React.memo(({
     refreshInterval: 300000 // 5 minutes
   })
   
-  // Asteroid Geometry (optimized by quality)
+  // Enhanced Asteroid Geometry with professional modeling
   const asteroidGeometry = useMemo(() => {
     if (!THREE) return null
     
     const segments = {
-      low: 8,
-      medium: 12,
-      high: 16,
-      ultra: 24
-    }[quality] || 16
+      low: 12,
+      medium: 16,
+      high: 20,
+      ultra: 28
+    }[quality] || 20
     
-    // Create irregular asteroid geometry
-    const geometry = new THREE.IcosahedronGeometry(1, Math.floor(segments / 8))
+    // Create high-detail irregular asteroid geometry
+    const geometry = new THREE.IcosahedronGeometry(1, Math.floor(segments / 6))
     
-    // Add noise to make it look more asteroid-like
+    // Professional asteroid surface deformation
     const positions = geometry.getAttribute('position')
     const vertex = new THREE.Vector3()
     
     for (let i = 0; i < positions.count; i++) {
       vertex.fromBufferAttribute(positions, i)
       
-      // Add random noise to create irregular shape
-      const noise = 0.1 + Math.random() * 0.3
-      vertex.multiplyScalar(noise + 0.7)
+      // Multi-layer realistic asteroid surface noise
+      const noise1 = Math.sin(vertex.x * 8) * Math.cos(vertex.y * 6) * Math.sin(vertex.z * 10)
+      const noise2 = Math.sin(vertex.x * 16) * Math.cos(vertex.y * 12) * Math.sin(vertex.z * 20)
+      const noise3 = Math.sin(vertex.x * 32) * Math.cos(vertex.y * 24) * Math.sin(vertex.z * 40)
+      const noise4 = Math.sin(vertex.x * 64) * Math.cos(vertex.y * 48) * Math.sin(vertex.z * 80)
+      
+      // Crater and impact patterns
+      const craterNoise = Math.sin(vertex.x * 4) * Math.cos(vertex.y * 3) * Math.sin(vertex.z * 5)
+      const impactNoise = Math.sin(vertex.x * 12) * Math.cos(vertex.y * 9) * Math.sin(vertex.z * 15)
+      
+      // Combine noise layers for realistic asteroid surface
+      const combinedNoise = (
+        noise1 * 0.4 + 
+        noise2 * 0.3 + 
+        noise3 * 0.2 + 
+        noise4 * 0.1 +
+        craterNoise * 0.3 +
+        impactNoise * 0.2
+      ) * 0.5
+      
+      // Apply surface irregularities
+      vertex.normalize()
+      vertex.multiplyScalar(1.0 + combinedNoise)
       
       positions.setXYZ(i, vertex.x, vertex.y, vertex.z)
     }
     
     positions.needsUpdate = true
     geometry.computeVertexNormals()
+    geometry.normalizeNormals()
     
     return geometry
   }, [THREE, quality])
   
-  // Asteroid Material (PBR)
+  // Enhanced Asteroid Material with realistic PBR
   const asteroidMaterial = useMemo(() => {
     if (!THREE) return null
+    
+    // Create realistic asteroid texture
+    const canvas = document.createElement('canvas')
+    const size = quality === 'ultra' ? 1024 : quality === 'high' ? 512 : 256
+    canvas.width = size
+    canvas.height = size
+    const ctx = canvas.getContext('2d')!
+    
+    // Generate realistic asteroid surface pattern
+    const imageData = ctx.createImageData(size, size)
+    const pixelData = imageData.data
+    
+    for (let i = 0; i < pixelData.length; i += 4) {
+      const x = (i / 4) % size
+      const y = Math.floor((i / 4) / size)
+      
+      // Multi-layer asteroid surface noise
+      const noise1 = Math.sin(x * 0.05) * Math.cos(y * 0.04)
+      const noise2 = Math.sin(x * 0.1) * Math.cos(y * 0.08) * 0.6
+      const noise3 = Math.sin(x * 0.2) * Math.cos(y * 0.15) * 0.4
+      const noise4 = Math.sin(x * 0.4) * Math.cos(y * 0.3) * 0.2
+      
+      // Mineral veins and cracks
+      const veinPattern = Math.sin(x * 0.02 + y * 0.03) * Math.cos(x * 0.025 + y * 0.02)
+      const crackPattern = Math.sin(x * 0.08 + y * 0.06) * Math.cos(x * 0.09 + y * 0.07)
+      
+      const combinedNoise = (noise1 + noise2 + noise3 + noise4) + (veinPattern * 0.3) + (crackPattern * 0.2)
+      const intensity = Math.max(40, Math.min(200, 110 + combinedNoise * 45))
+      
+      // Realistic asteroid color variations
+      pixelData[i] = intensity * 0.7       // Red
+      pixelData[i + 1] = intensity * 0.6   // Green  
+      pixelData[i + 2] = intensity * 0.5   // Blue
+      pixelData[i + 3] = 255               // Alpha
+    }
+    
+    ctx.putImageData(imageData, 0, 0)
+    
+    const texture = new THREE.CanvasTexture(canvas)
+    texture.wrapS = THREE.RepeatWrapping
+    texture.wrapT = THREE.RepeatWrapping
+    texture.repeat.set(1, 1)
+    texture.anisotropy = 16
+    
     const mat = new THREE.MeshStandardMaterial({
       color: '#8B7355',
-      metalness: 0.08,
-      roughness: 0.96
+      map: texture,
+      metalness: 0.05,
+      roughness: 0.95,
+      bumpScale: 0.5
     })
+    
     return mat
-  }, [THREE])
+  }, [THREE, quality])
   
   // Generate procedural asteroid instances
   useEffect(() => {
@@ -165,8 +233,8 @@ export const ProceduralAsteroidSystem = React.memo(({
         ],
         scale: [scale, scale * (0.8 + Math.random() * 0.4), scale],
         color,
-        // Gerçekçi yavaş dönüş hızları (gerçek asteroidler çok yavaş döner)
-        speed: 0.005 + Math.random() * 0.01,
+        // Gerçekçi çok yavaş dönüş hızları (gerçek asteroidler saatlerce döner)
+        speed: 0.0002 + Math.random() * 0.0005,
         orbitRadius,
         orbitAngle,
         threatLevel,
@@ -231,10 +299,10 @@ export const ProceduralAsteroidSystem = React.memo(({
         instance.position = [x, y, z]
       }
 
-      // Çok daha yavaş, gözle takip edilebilir dönüş hızları
-      instance.rotation[0] += delta * instance.speed * 0.05
-      instance.rotation[1] += delta * instance.speed * 0.03
-      instance.rotation[2] += delta * instance.speed * 0.02
+      // Gerçekçi çok yavaş dönüş hızları (asteroidler saatlerce döner)
+      instance.rotation[0] += delta * instance.speed * 0.5
+      instance.rotation[1] += delta * instance.speed * 0.3
+      instance.rotation[2] += delta * instance.speed * 0.2
 
       position.set(...instance.position)
       scaleV.set(...instance.scale)

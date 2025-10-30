@@ -31,31 +31,44 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // 🚀 FIXED: Much larger, visible asteroid geometry with modern stone shape
+  // 🚀 ENHANCED: Ultra-realistic asteroid geometry with professional stone modeling
   const { geometry, surfaceGeometry, baseRadius } = useMemo(() => {
-    // 🔧 FIX: Çok daha büyük boyut aralığı - her zaman görünür
-    const baseRadius = Math.min(Math.max(data.info.radius_km * 0.1, 0.8), 2.5) // Minimum 0.8, maksimum 2.5
+    // Gerçekçi boyut aralığı - NASA verilerine dayalı
+    const baseRadius = Math.min(Math.max(data.info.radius_km * 0.15, 1.0), 3.0) // Daha büyük ve görünür
     
-    // Modern irregular stone shape using IcosahedronGeometry
-    const baseGeometry = new THREE.IcosahedronGeometry(baseRadius, isMobile ? 2 : 3)
+    // Yüksek detaylı irregular asteroid geometrisi
+    const baseGeometry = new THREE.IcosahedronGeometry(baseRadius, isMobile ? 3 : 4)
     
-    // Apply advanced noise for realistic asteroid surface
+    // Profesyonel asteroid yüzey deformasyonu
     const positionAttribute = baseGeometry.getAttribute('position')
     const vertex = new THREE.Vector3()
     
     for (let i = 0; i < positionAttribute.count; i++) {
       vertex.fromBufferAttribute(positionAttribute, i)
       
-      // Multi-layer realistic stone surface noise
-      const noise1 = Math.sin(vertex.x * 8) * Math.cos(vertex.y * 6) * Math.sin(vertex.z * 10)
-      const noise2 = Math.sin(vertex.x * 20) * Math.cos(vertex.y * 15) * Math.sin(vertex.z * 25)
-      const noise3 = Math.sin(vertex.x * 40) * Math.cos(vertex.y * 35) * Math.sin(vertex.z * 50)
-      const noise4 = Math.sin(vertex.x * 80) * Math.cos(vertex.y * 70) * Math.sin(vertex.z * 90)
+      // Çok katmanlı gerçekçi asteroid yüzey gürültüsü
+      const noise1 = Math.sin(vertex.x * 12) * Math.cos(vertex.y * 8) * Math.sin(vertex.z * 15)
+      const noise2 = Math.sin(vertex.x * 25) * Math.cos(vertex.y * 20) * Math.sin(vertex.z * 30)
+      const noise3 = Math.sin(vertex.x * 50) * Math.cos(vertex.y * 45) * Math.sin(vertex.z * 60)
+      const noise4 = Math.sin(vertex.x * 100) * Math.cos(vertex.y * 90) * Math.sin(vertex.z * 110)
+      const noise5 = Math.sin(vertex.x * 200) * Math.cos(vertex.y * 180) * Math.sin(vertex.z * 220)
       
-      // Combine noise layers for realistic stone surface
-      const combinedNoise = (noise1 * 0.5 + noise2 * 0.3 + noise3 * 0.15 + noise4 * 0.05) * 0.4
+      // Krater ve çarpma izleri için ek gürültü
+      const craterNoise = Math.sin(vertex.x * 6) * Math.cos(vertex.y * 5) * Math.sin(vertex.z * 8)
+      const impactNoise = Math.sin(vertex.x * 15) * Math.cos(vertex.y * 12) * Math.sin(vertex.z * 18)
       
-      // Apply surface irregularities
+      // Gerçekçi asteroid yüzey deformasyonu
+      const combinedNoise = (
+        noise1 * 0.4 + 
+        noise2 * 0.25 + 
+        noise3 * 0.15 + 
+        noise4 * 0.1 + 
+        noise5 * 0.05 +
+        craterNoise * 0.3 +
+        impactNoise * 0.2
+      ) * 0.6
+      
+      // Yüzey düzensizliklerini uygula
       vertex.normalize()
       vertex.multiplyScalar(baseRadius * (1.0 + combinedNoise))
       
@@ -65,19 +78,20 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     baseGeometry.computeVertexNormals()
     baseGeometry.normalizeNormals()
     
-    // Surface detail geometry for enhanced stone texture
-    const surfaceDetail = new THREE.IcosahedronGeometry(baseRadius * 1.02, isMobile ? 1 : 2)
+    // Gelişmiş yüzey detay geometrisi
+    const surfaceDetail = new THREE.IcosahedronGeometry(baseRadius * 1.05, isMobile ? 2 : 3)
     const surfacePosition = surfaceDetail.getAttribute('position')
     
     for (let i = 0; i < surfacePosition.count; i++) {
       vertex.fromBufferAttribute(surfacePosition, i)
       
-      // Create crater-like stone indentations
-      const craterNoise = Math.sin(vertex.x * 12) * Math.cos(vertex.y * 10) * Math.sin(vertex.z * 15)
-      const weatheringNoise = Math.sin(vertex.x * 30) * Math.cos(vertex.y * 25) * Math.sin(vertex.z * 35)
+      // Krater benzeri asteroid çukurları
+      const craterNoise = Math.sin(vertex.x * 15) * Math.cos(vertex.y * 12) * Math.sin(vertex.z * 18)
+      const weatheringNoise = Math.sin(vertex.x * 35) * Math.cos(vertex.y * 30) * Math.sin(vertex.z * 40)
+      const erosionNoise = Math.sin(vertex.x * 60) * Math.cos(vertex.y * 55) * Math.sin(vertex.z * 70)
       
       vertex.normalize()
-      vertex.multiplyScalar(baseRadius * (1.01 + (craterNoise * 0.04) + (weatheringNoise * 0.02)))
+      vertex.multiplyScalar(baseRadius * (1.02 + (craterNoise * 0.06) + (weatheringNoise * 0.03) + (erosionNoise * 0.02)))
       
       surfacePosition.setXYZ(i, vertex.x, vertex.y, vertex.z)
     }
@@ -91,24 +105,26 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     }
   }, [data.info.radius_km, isMobile])
 
-  // 🚀 ENHANCED: Modern stone material with realistic textures
+  // 🚀 PROFESSIONAL: Ultra-realistic asteroid material with advanced PBR
   const asteroidMaterial = useMemo(() => {
-    const baseColor = data.is_hazardous ? '#8B4513' : '#696969' // Brown for hazardous, dark gray for normal
+    // Gerçek asteroid kompozisyonuna dayalı renkler
+    const baseColor = data.is_hazardous ? '#A0522D' : '#708090' // Daha gerçekçi renkler
     const material = new THREE.MeshStandardMaterial({
       color: baseColor,
-      roughness: 0.95, // Very rough stone surface
-      metalness: 0.05, // Very low metallic content
-      bumpScale: 0.5,
+      roughness: 0.98, // Çok pürüzlü asteroid yüzeyi
+      metalness: 0.02, // Çok düşük metalik içerik
+      bumpScale: 0.8,
+      normalScale: new THREE.Vector2(0.5, 0.5),
     })
     
-    // Create realistic stone texture using advanced canvas techniques
+    // Profesyonel asteroid tekstürü oluştur
     const canvas = document.createElement('canvas')
-    const size = isMobile ? 256 : 512 // Higher quality texture
+    const size = isMobile ? 512 : 1024 // Yüksek kalite tekstür
     canvas.width = size
     canvas.height = size
     const ctx = canvas.getContext('2d')!
     
-    // Create realistic stone texture pattern
+    // Gerçekçi asteroid yüzey deseni
     const imageData = ctx.createImageData(size, size)
     const pixelData = imageData.data
     
@@ -116,36 +132,47 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
       const x = (i / 4) % size
       const y = Math.floor((i / 4) / size)
       
-      // Advanced stone pattern with multiple noise layers
-      const noise1 = Math.sin(x * 0.05) * Math.cos(y * 0.04) 
-      const noise2 = Math.sin(x * 0.1) * Math.cos(y * 0.08) * 0.6
-      const noise3 = Math.sin(x * 0.2) * Math.cos(y * 0.15) * 0.4
-      const noise4 = Math.sin(x * 0.4) * Math.cos(y * 0.3) * 0.2
+      // Çok katmanlı asteroid yüzey gürültüsü
+      const noise1 = Math.sin(x * 0.03) * Math.cos(y * 0.025) 
+      const noise2 = Math.sin(x * 0.06) * Math.cos(y * 0.05) * 0.7
+      const noise3 = Math.sin(x * 0.12) * Math.cos(y * 0.1) * 0.5
+      const noise4 = Math.sin(x * 0.24) * Math.cos(y * 0.2) * 0.3
+      const noise5 = Math.sin(x * 0.48) * Math.cos(y * 0.4) * 0.2
       
-      // Create mineral vein-like patterns
-      const veinPattern = Math.sin(x * 0.02 + y * 0.03) * Math.cos(x * 0.025 + y * 0.02)
+      // Mineral damarları ve çatlaklar
+      const veinPattern = Math.sin(x * 0.015 + y * 0.02) * Math.cos(x * 0.018 + y * 0.015)
+      const crackPattern = Math.sin(x * 0.08 + y * 0.06) * Math.cos(x * 0.09 + y * 0.07)
       
-      const combinedNoise = (noise1 + noise2 + noise3 + noise4) + (veinPattern * 0.3)
-      const intensity = Math.max(40, Math.min(200, 110 + combinedNoise * 45))
+      // Krater ve çarpma izleri
+      const craterPattern = Math.sin(x * 0.04 + y * 0.03) * Math.cos(x * 0.045 + y * 0.035)
       
-      // Stone color variations
+      const combinedNoise = (
+        noise1 + noise2 + noise3 + noise4 + noise5 + 
+        veinPattern * 0.4 + 
+        crackPattern * 0.3 + 
+        craterPattern * 0.2
+      )
+      
+      const intensity = Math.max(30, Math.min(220, 120 + combinedNoise * 50))
+      
+      // Gerçekçi asteroid renk varyasyonları
       if (data.is_hazardous) {
-        // Hazardous asteroids: brownish-red stone
-        pixelData[i] = intensity * 0.8       // Red
-        pixelData[i + 1] = intensity * 0.5   // Green  
-        pixelData[i + 2] = intensity * 0.3   // Blue
+        // Tehlikeli asteroidler: kırmızımsı-kahverengi taş
+        pixelData[i] = intensity * 0.85      // Red
+        pixelData[i + 1] = intensity * 0.45  // Green  
+        pixelData[i + 2] = intensity * 0.25  // Blue
       } else {
-        // Normal asteroids: grayish stone
-        pixelData[i] = intensity * 0.7       // Red
+        // Normal asteroidler: gri-kahverengi taş
+        pixelData[i] = intensity * 0.75      // Red
         pixelData[i + 1] = intensity * 0.7   // Green  
-        pixelData[i + 2] = intensity * 0.8   // Blue
+        pixelData[i + 2] = intensity * 0.65  // Blue
       }
       pixelData[i + 3] = 255               // Alpha
     }
     
     ctx.putImageData(imageData, 0, 0)
     
-    // Create normal map for enhanced surface detail
+    // Gelişmiş normal map oluştur
     const normalCanvas = document.createElement('canvas')
     normalCanvas.width = size
     normalCanvas.height = size
@@ -157,8 +184,12 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
       const x = (i / 4) % size
       const y = Math.floor((i / 4) / size)
       
-      // Create normal map for surface bumps
-      const bumpIntensity = Math.sin(x * 0.3) * Math.cos(y * 0.25) * 128 + 128
+      // Yüzey çıkıntıları için normal map
+      const bump1 = Math.sin(x * 0.2) * Math.cos(y * 0.15) * 64 + 128
+      const bump2 = Math.sin(x * 0.4) * Math.cos(y * 0.3) * 32 + 128
+      const bump3 = Math.sin(x * 0.8) * Math.cos(y * 0.6) * 16 + 128
+      
+      const bumpIntensity = (bump1 + bump2 + bump3) / 3
       
       normalData[i] = bumpIntensity     // Red (X)
       normalData[i + 1] = 128           // Green (Y)  
@@ -168,19 +199,50 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     
     normalCtx.putImageData(normalImageData, 0, 0)
     
+    // Roughness map oluştur
+    const roughnessCanvas = document.createElement('canvas')
+    roughnessCanvas.width = size
+    roughnessCanvas.height = size
+    const roughnessCtx = roughnessCanvas.getContext('2d')!
+    const roughnessImageData = roughnessCtx.createImageData(size, size)
+    const roughnessData = roughnessImageData.data
+    
+    for (let i = 0; i < roughnessData.length; i += 4) {
+      const x = (i / 4) % size
+      const y = Math.floor((i / 4) / size)
+      
+      const roughness = Math.sin(x * 0.1) * Math.cos(y * 0.08) * 50 + 200
+      
+      roughnessData[i] = roughness      // Red
+      roughnessData[i + 1] = roughness  // Green  
+      roughnessData[i + 2] = roughness  // Blue
+      roughnessData[i + 3] = 255        // Alpha
+    }
+    
+    roughnessCtx.putImageData(roughnessImageData, 0, 0)
+    
+    // Tekstürleri oluştur
     const texture = new THREE.CanvasTexture(canvas)
     texture.wrapS = THREE.RepeatWrapping
     texture.wrapT = THREE.RepeatWrapping
     texture.repeat.set(1, 1)
+    texture.anisotropy = 16
     
     const normalTexture = new THREE.CanvasTexture(normalCanvas)
     normalTexture.wrapS = THREE.RepeatWrapping
     normalTexture.wrapT = THREE.RepeatWrapping
     normalTexture.repeat.set(1, 1)
     
+    const roughnessTexture = new THREE.CanvasTexture(roughnessCanvas)
+    roughnessTexture.wrapS = THREE.RepeatWrapping
+    roughnessTexture.wrapT = THREE.RepeatWrapping
+    roughnessTexture.repeat.set(1, 1)
+    
+    // Materyale tekstürleri uygula
     material.map = texture
     material.bumpMap = texture
     material.normalMap = normalTexture
+    material.roughnessMap = roughnessTexture
     
     return material
   }, [data.is_hazardous, isMobile])
@@ -248,11 +310,11 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     })
   }, [data.is_hazardous, data.orbital_data, hovered, showTooltip, isMobile])
 
-  // Gerçekçi yavaş asteroid rotasyonu (asteroidler gerçekte çok yavaş döner)
+  // Gerçekçi çok yavaş asteroid rotasyonu (gerçek asteroidler saatlerce döner)
   const rotationSpeed = useMemo(() => ({
-    x: (Math.random() - 0.5) * (isMobile ? 0.01 : 0.02),
-    y: (Math.random() - 0.5) * (isMobile ? 0.01 : 0.02),
-    z: (Math.random() - 0.5) * (isMobile ? 0.005 : 0.01)
+    x: (Math.random() - 0.5) * (isMobile ? 0.0005 : 0.001),
+    y: (Math.random() - 0.5) * (isMobile ? 0.0005 : 0.001),
+    z: (Math.random() - 0.5) * (isMobile ? 0.0002 : 0.0005)
   }), [isMobile])
 
   useFrame((state, delta) => {
