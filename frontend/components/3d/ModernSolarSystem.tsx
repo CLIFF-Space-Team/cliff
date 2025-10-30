@@ -13,9 +13,14 @@ interface ModernSolarSystemProps {
   quality?: 'low' | 'medium' | 'high'
 }
 
+// Global material cache for sun
+const sunMaterialCache = new Map<string, THREE.Material>()
+
 const ModernSun = React.memo(({ quality = 'high' }: { quality?: 'low' | 'medium' | 'high' }) => {
   const sunRef = useRef<THREE.Mesh>(null)
   const coronaRef = useRef<THREE.Mesh>(null)
+  const lastUpdateTime = useRef(0)
+  const updateInterval = useRef(16) // ~60fps
   
   const sunSize = useMemo(() => {
     switch (quality) {
@@ -36,13 +41,28 @@ const ModernSun = React.memo(({ quality = 'high' }: { quality?: 'low' | 'medium'
   }, [quality])
 
   const sunMaterial = useMemo(() => {
-    return new THREE.MeshBasicMaterial({
+    const cacheKey = `sun_material_${quality}`
+    
+    if (sunMaterialCache.has(cacheKey)) {
+      return sunMaterialCache.get(cacheKey)!
+    }
+    
+    const material = new THREE.MeshBasicMaterial({
       color: '#FDB813'
     })
-  }, [])
+    
+    sunMaterialCache.set(cacheKey, material)
+    return material
+  }, [quality])
 
   const coronaMaterial = useMemo(() => {
-    return new THREE.ShaderMaterial({
+    const cacheKey = `corona_material_${quality}`
+    
+    if (sunMaterialCache.has(cacheKey)) {
+      return sunMaterialCache.get(cacheKey) as THREE.ShaderMaterial
+    }
+    
+    const material = new THREE.ShaderMaterial({
       transparent: true,
       blending: THREE.AdditiveBlending,
       side: THREE.BackSide,
@@ -74,9 +94,18 @@ const ModernSun = React.memo(({ quality = 'high' }: { quality?: 'low' | 'medium'
         }
       `
     })
+    
+    sunMaterialCache.set(cacheKey, material)
+    return material
   }, [quality])
 
+  // Throttled animation update
   useFrame((state, delta) => {
+    const now = performance.now()
+    if (now - lastUpdateTime.current < updateInterval.current) return
+    
+    lastUpdateTime.current = now
+    
     if (sunRef.current) {
       sunRef.current.rotation.y += delta * 0.1
     }
@@ -113,8 +142,14 @@ const ModernSun = React.memo(({ quality = 'high' }: { quality?: 'low' | 'medium'
   )
 })
 
+// Global star field cache
+const starFieldCache = new Map<string, { positions: Float32Array, colors: Float32Array }>()
+const starMaterialCache = new Map<string, THREE.PointsMaterial>()
+
 const StarField = React.memo(({ count = 1000, quality }: { count?: number, quality: 'low' | 'medium' | 'high' }) => {
   const starsRef = useRef<THREE.Points>(null)
+  const lastUpdateTime = useRef(0)
+  const updateInterval = useRef(32) // ~30fps for stars
   
   const starCount = useMemo(() => {
     switch (quality) {
@@ -126,6 +161,13 @@ const StarField = React.memo(({ count = 1000, quality }: { count?: number, quali
   }, [count, quality])
 
   const [positions, colors] = useMemo(() => {
+    const cacheKey = `starfield_${starCount}_${quality}`
+    
+    if (starFieldCache.has(cacheKey)) {
+      const cached = starFieldCache.get(cacheKey)!
+      return [cached.positions, cached.colors]
+    }
+    
     const positions = new Float32Array(starCount * 3)
     const colors = new Float32Array(starCount * 3)
     
@@ -142,20 +184,36 @@ const StarField = React.memo(({ count = 1000, quality }: { count?: number, quali
       colors[i3 + 2] = intensity * 0.8
     }
     
+    starFieldCache.set(cacheKey, { positions, colors })
     return [positions, colors]
-  }, [starCount])
+  }, [starCount, quality])
 
   const starMaterial = useMemo(() => {
-    return new THREE.PointsMaterial({
+    const cacheKey = `star_material_${quality}`
+    
+    if (starMaterialCache.has(cacheKey)) {
+      return starMaterialCache.get(cacheKey)!
+    }
+    
+    const material = new THREE.PointsMaterial({
       size: quality === 'high' ? 2 : 1,
       vertexColors: true,
       transparent: true,
       opacity: 0.8,
       blending: THREE.AdditiveBlending
     })
+    
+    starMaterialCache.set(cacheKey, material)
+    return material
   }, [quality])
 
+  // Throttled star animation
   useFrame((state, delta) => {
+    const now = performance.now()
+    if (now - lastUpdateTime.current < updateInterval.current) return
+    
+    lastUpdateTime.current = now
+    
     if (starsRef.current) {
       starsRef.current.rotation.y += delta * 0.001
       starsRef.current.rotation.x += delta * 0.0005
@@ -185,6 +243,7 @@ export const ModernSolarSystem = React.memo(({
     refreshInterval: 300000 // 5 dakika
   })
   
+  // Optimized quality state management
   useEffect(() => {
     if (enablePerformanceMode) {
       setCurrentQuality('low')
@@ -193,10 +252,9 @@ export const ModernSolarSystem = React.memo(({
     }
   }, [enablePerformanceMode, quality])
 
-  // Kalite ve NASA verisi durumuna göre asteroid sayısını belirle
+  // Memoized asteroid count calculation
   const asteroidCount = useMemo(() => {
     if (isLoading || error) {
-      // Yükleme/hata durumunda fallback sayısı
       switch (currentQuality) {
         case 'low': return 20
         case 'medium': return 50
@@ -205,10 +263,8 @@ export const ModernSolarSystem = React.memo(({
       }
     }
     
-    // NASA API'sinden gelen gerçek veri sayısı
     const realCount = asteroids.length
     
-    // Kalite ayarına göre sınırla
     switch (currentQuality) {
       case 'low': return Math.min(realCount, 20)
       case 'medium': return Math.min(realCount, 50)
@@ -217,11 +273,19 @@ export const ModernSolarSystem = React.memo(({
     }
   }, [currentQuality, asteroids.length, isLoading, error])
 
-  console.log(`🌌 ModernSolarSystem: ${asteroids.length} NASA asteroids, showing ${asteroidCount}`)
+  // Memoized quality-dependent values
+  const starCount = useMemo(() => {
+    switch (currentQuality) {
+      case 'low': return 1000
+      case 'medium': return 1500
+      case 'high': return 2000
+      default: return 2000
+    }
+  }, [currentQuality])
 
   return (
     <group>
-      <StarField count={currentQuality === 'high' ? 2000 : 1000} quality={currentQuality} />
+      <StarField count={starCount} quality={currentQuality} />
       
       <ModernSun quality={currentQuality} />
       
