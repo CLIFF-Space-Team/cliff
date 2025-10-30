@@ -63,7 +63,7 @@ export function CosmicDust({
   // Subtle animation
   useFrame((state, delta) => {
     if (particlesRef.current) {
-      particlesRef.current.rotation.y += delta * 0.01
+      particlesRef.current.rotation.y += delta * 0.00005
     }
   })
   

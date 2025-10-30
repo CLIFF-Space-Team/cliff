@@ -168,9 +168,9 @@ const ThreatAsteroids: React.FC<{
         scale,
         color: getSeverityColor(threat.severity),
         rotationSpeed: {
-          x: (Math.random() - 0.5) * 0.02,
-          y: (Math.random() - 0.5) * 0.02,  
-          z: (Math.random() - 0.5) * 0.01
+          x: (Math.random() - 0.5) * 0.001,
+          y: (Math.random() - 0.5) * 0.001,
+          z: (Math.random() - 0.5) * 0.0005
         }
       }
     })
