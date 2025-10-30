@@ -1,8 +1,10 @@
 import React, { useMemo, useRef, useState, useCallback, useEffect } from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
+import { useFrame } from '@react-three/fiber'
 import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { SimpleCelestialBody } from '@/types/astronomical-data'
+import { useSolarSystemStore, solarSystemSelectors } from '@/stores/solarSystemStore'
+import { createAsteroidPBRMaterial } from './AsteroidPBRMaterial'
 
 interface AsteroidProps {
   data: SimpleCelestialBody
@@ -20,6 +22,7 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
   const [clicked, setClicked] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [showTooltip, setShowTooltip] = useState(false)
+  const timeScale = useSolarSystemStore(solarSystemSelectors.timeScale)
 
   // Mobile detection
   useEffect(() => {
@@ -91,98 +94,9 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     }
   }, [data.info.radius_km, isMobile])
 
-  // 🚀 ENHANCED: Modern stone material with realistic textures
+  // 🚀 ENHANCED: PBR taş malzeme (tek yerde yönetilen)
   const asteroidMaterial = useMemo(() => {
-    const baseColor = data.is_hazardous ? '#8B4513' : '#696969' // Brown for hazardous, dark gray for normal
-    const material = new THREE.MeshStandardMaterial({
-      color: baseColor,
-      roughness: 0.95, // Very rough stone surface
-      metalness: 0.05, // Very low metallic content
-      bumpScale: 0.5,
-    })
-    
-    // Create realistic stone texture using advanced canvas techniques
-    const canvas = document.createElement('canvas')
-    const size = isMobile ? 256 : 512 // Higher quality texture
-    canvas.width = size
-    canvas.height = size
-    const ctx = canvas.getContext('2d')!
-    
-    // Create realistic stone texture pattern
-    const imageData = ctx.createImageData(size, size)
-    const pixelData = imageData.data
-    
-    for (let i = 0; i < pixelData.length; i += 4) {
-      const x = (i / 4) % size
-      const y = Math.floor((i / 4) / size)
-      
-      // Advanced stone pattern with multiple noise layers
-      const noise1 = Math.sin(x * 0.05) * Math.cos(y * 0.04) 
-      const noise2 = Math.sin(x * 0.1) * Math.cos(y * 0.08) * 0.6
-      const noise3 = Math.sin(x * 0.2) * Math.cos(y * 0.15) * 0.4
-      const noise4 = Math.sin(x * 0.4) * Math.cos(y * 0.3) * 0.2
-      
-      // Create mineral vein-like patterns
-      const veinPattern = Math.sin(x * 0.02 + y * 0.03) * Math.cos(x * 0.025 + y * 0.02)
-      
-      const combinedNoise = (noise1 + noise2 + noise3 + noise4) + (veinPattern * 0.3)
-      const intensity = Math.max(40, Math.min(200, 110 + combinedNoise * 45))
-      
-      // Stone color variations
-      if (data.is_hazardous) {
-        // Hazardous asteroids: brownish-red stone
-        pixelData[i] = intensity * 0.8       // Red
-        pixelData[i + 1] = intensity * 0.5   // Green  
-        pixelData[i + 2] = intensity * 0.3   // Blue
-      } else {
-        // Normal asteroids: grayish stone
-        pixelData[i] = intensity * 0.7       // Red
-        pixelData[i + 1] = intensity * 0.7   // Green  
-        pixelData[i + 2] = intensity * 0.8   // Blue
-      }
-      pixelData[i + 3] = 255               // Alpha
-    }
-    
-    ctx.putImageData(imageData, 0, 0)
-    
-    // Create normal map for enhanced surface detail
-    const normalCanvas = document.createElement('canvas')
-    normalCanvas.width = size
-    normalCanvas.height = size
-    const normalCtx = normalCanvas.getContext('2d')!
-    const normalImageData = normalCtx.createImageData(size, size)
-    const normalData = normalImageData.data
-    
-    for (let i = 0; i < normalData.length; i += 4) {
-      const x = (i / 4) % size
-      const y = Math.floor((i / 4) / size)
-      
-      // Create normal map for surface bumps
-      const bumpIntensity = Math.sin(x * 0.3) * Math.cos(y * 0.25) * 128 + 128
-      
-      normalData[i] = bumpIntensity     // Red (X)
-      normalData[i + 1] = 128           // Green (Y)  
-      normalData[i + 2] = bumpIntensity // Blue (Z)
-      normalData[i + 3] = 255           // Alpha
-    }
-    
-    normalCtx.putImageData(normalImageData, 0, 0)
-    
-    const texture = new THREE.CanvasTexture(canvas)
-    texture.wrapS = THREE.RepeatWrapping
-    texture.wrapT = THREE.RepeatWrapping
-    texture.repeat.set(1, 1)
-    
-    const normalTexture = new THREE.CanvasTexture(normalCanvas)
-    normalTexture.wrapS = THREE.RepeatWrapping
-    normalTexture.wrapT = THREE.RepeatWrapping
-    normalTexture.repeat.set(1, 1)
-    
-    material.map = texture
-    material.bumpMap = texture
-    material.normalMap = normalTexture
-    
-    return material
+    return createAsteroidPBRMaterial({ hazardous: !!data.is_hazardous, quality: isMobile ? 'medium' : 'high' })
   }, [data.is_hazardous, isMobile])
 
   // Enhanced glow material with threat level coloring
@@ -248,27 +162,43 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     })
   }, [data.is_hazardous, data.orbital_data, hovered, showTooltip, isMobile])
 
-  // Gerçekçi yavaş asteroid rotasyonu (asteroidler gerçekte çok yavaş döner)
-  const rotationSpeed = useMemo(() => ({
-    x: (Math.random() - 0.5) * (isMobile ? 0.01 : 0.02),
-    y: (Math.random() - 0.5) * (isMobile ? 0.01 : 0.02),
-    z: (Math.random() - 0.5) * (isMobile ? 0.005 : 0.01)
-  }), [isMobile])
+  // Gerçekçi yavaş asteroid rotasyonu: dönme ekseni + açısal hız (rad/sn)
+  const spinAxisRef = useRef<THREE.Vector3>(new THREE.Vector3())
+  useEffect(() => {
+    const v = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5)
+    if (v.lengthSq() < 1e-6) v.set(1, 0, 0)
+    v.normalize()
+    spinAxisRef.current.copy(v)
+  }, [])
+
+  const spinAngularVelocity = useMemo(() => {
+    // Tipik dönem: 4-16 saat, küçükler daha hızlı
+    const radiusKm = Math.max(0.05, Number(data?.info?.radius_km) || 0.5)
+    const sizeFactor = Math.max(0.6, Math.min(1.6, 1.0 / Math.sqrt(radiusKm)))
+    const baseHours = 4 + Math.random() * 12
+    const periodHours = Math.max(2, baseHours / sizeFactor)
+    const w = (2 * Math.PI) / (periodHours * 3600)
+    return w
+  }, [data?.info?.radius_km])
+
+  // Görsel ölçek: gerçekçi ama gözle seçilebilir kılmak için hafif hızlandırma
+  const SPIN_VISUAL_SCALE = isMobile ? 10 : 12
 
   useFrame((state, delta) => {
     if (meshRef.current) {
-      meshRef.current.rotation.x += delta * rotationSpeed.x
-      meshRef.current.rotation.y += delta * rotationSpeed.y
-      meshRef.current.rotation.z += delta * rotationSpeed.z
-      
-      // Smooth hover animation - larger scale change
+      const axis = spinAxisRef.current
+      const angle = delta * spinAngularVelocity * (timeScale || 1) * SPIN_VISUAL_SCALE
+      if (angle > 0) {
+        const q = new THREE.Quaternion().setFromAxisAngle(axis, angle)
+        meshRef.current.applyQuaternion(q)
+      }
+
       const targetScale = (hovered || showTooltip) ? 1.2 : 1.0
       const currentScale = meshRef.current.scale.x
       const newScale = THREE.MathUtils.lerp(currentScale, targetScale, delta * 10)
       meshRef.current.scale.setScalar(newScale)
     }
-    
-    // Update glow material time
+
     if (glowRef.current && glowMaterial) {
       glowMaterial.uniforms.time.value = state.clock.elapsedTime
       glowMaterial.uniforms.intensity.value = (hovered || showTooltip) ? 2.0 : 1.2

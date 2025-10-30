@@ -39,7 +39,8 @@ const AsteroidBelt: React.FC = () => {
 
   useFrame((state, delta) => {
     if (instancedMeshRef.current) {
-      instancedMeshRef.current.rotation.y += delta * 0.01;
+      // Daha gerçekçi ve yavaş bant dönüşü
+      instancedMeshRef.current.rotation.y += delta * 0.001;
     }
   });
 

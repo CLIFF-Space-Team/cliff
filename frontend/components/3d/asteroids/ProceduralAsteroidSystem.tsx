@@ -26,6 +26,8 @@ interface AsteroidInstanceData {
   orbitAngle: number
   threatLevel: number
   isNearEarthObject: boolean
+  spinAxis: [number, number, number]
+  spinAngVel: number // rad/sec
 }
 
 export const ProceduralAsteroidSystem = React.memo(({
@@ -48,6 +50,7 @@ export const ProceduralAsteroidSystem = React.memo(({
   const [asteroidInstances, setAsteroidInstances] = useState<AsteroidInstanceData[]>([])
   const [pointPositions, setPointPositions] = useState<Float32Array | null>(null)
   const { camera } = useThree()
+  const SPIN_VISUAL_SCALE = 12
   
   // Dynamic Three.js import
   useEffect(() => {
@@ -156,6 +159,14 @@ export const ProceduralAsteroidSystem = React.memo(({
         baseColor[2] + (threatColor[2] - baseColor[2]) * threatLevel
       ]
       
+      // Spin parameters (realistic: 4-16 hours; small bodies spin faster)
+      const radiusKm = estimatedRadius || 0.5
+      const sizeFactor = Math.max(0.6, Math.min(1.6, 1.0 / Math.sqrt(Math.max(0.05, radiusKm))))
+      const baseHours = 4 + Math.random() * 12
+      const periodHours = Math.max(2, baseHours / sizeFactor)
+      const spinAngVel = (2 * Math.PI) / (periodHours * 3600)
+      const axisVec = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize()
+
       instances.push({
         position: [x, y, z],
         rotation: [
@@ -165,12 +176,14 @@ export const ProceduralAsteroidSystem = React.memo(({
         ],
         scale: [scale, scale * (0.8 + Math.random() * 0.4), scale],
         color,
-        // Gerçekçi yavaş dönüş hızları (gerçek asteroidler çok yavaş döner)
+        // speed: orbital speed scalar
         speed: 0.005 + Math.random() * 0.01,
         orbitRadius,
         orbitAngle,
         threatLevel,
-        isNearEarthObject: isNEO
+        isNearEarthObject: isNEO,
+        spinAxis: [axisVec.x, axisVec.y, axisVec.z],
+        spinAngVel: spinAngVel
       })
     }
     
@@ -231,10 +244,10 @@ export const ProceduralAsteroidSystem = React.memo(({
         instance.position = [x, y, z]
       }
 
-      // Çok daha yavaş, gözle takip edilebilir dönüş hızları
-      instance.rotation[0] += delta * instance.speed * 0.05
-      instance.rotation[1] += delta * instance.speed * 0.03
-      instance.rotation[2] += delta * instance.speed * 0.02
+      // Çok daha yavaş, gerçekçi spin: açısal hız ve eksen ile
+      instance.rotation[0] += delta * instance.spinAngVel * SPIN_VISUAL_SCALE * instance.spinAxis[0]
+      instance.rotation[1] += delta * instance.spinAngVel * SPIN_VISUAL_SCALE * instance.spinAxis[1]
+      instance.rotation[2] += delta * instance.spinAngVel * SPIN_VISUAL_SCALE * instance.spinAxis[2]
 
       position.set(...instance.position)
       scaleV.set(...instance.scale)

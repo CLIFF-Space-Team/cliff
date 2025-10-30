@@ -4,6 +4,7 @@ import React, { useMemo, useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { SimpleCelestialBody } from '@/types/astronomical-data'
+import { createAsteroidPBRMaterial } from './asteroids/AsteroidPBRMaterial'
 
 interface PerformantAsteroidsProps {
   count?: number
@@ -24,6 +25,7 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
 }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null!)
   const dummyObject = useMemo(() => new THREE.Object3D(), [])
+  const SPIN_VISUAL_SCALE = 12
   
   // Dünya boyutlarına göre asteroid boyutunu hesapla
   const calculateScaleFromEarth = (asteroidRadiusKm: number): number => {
@@ -104,17 +106,16 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
           )
         }
         
-        // Gerçekçi yavaş rotasyon hızı
-        const baseRotSpeed = 0.001
-        let rotSpeedMultiplier = 1.0
-        
-        if (nasaAsteroid.orbital_data?.relative_velocity?.kilometers_per_second) {
-          const velocityKms = parseFloat(nasaAsteroid.orbital_data.relative_velocity.kilometers_per_second)
-          if (!isNaN(velocityKms)) {
-            rotSpeedMultiplier = Math.max(0.5, Math.min(3.0, velocityKms / 20)) // 20 km/s = normal hız
-          }
-        }
-        
+        // Gerçekçi yavaş rotasyon hızı (rad/sn) - tipik dönem 4-16 saat
+        const radiusKm = nasaAsteroid.info.radius_km || 0.5
+        const sizeFactor = Math.max(0.6, Math.min(1.6, 1.0 / Math.sqrt(Math.max(0.05, radiusKm))))
+        const baseHours = 4 + Math.random() * 12
+        const periodHours = Math.max(2, baseHours / sizeFactor)
+        const angVel = (2 * Math.PI) / (periodHours * 3600)
+        // Rastgele dönme ekseni
+        const axis = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize()
+        const rotSpeedVec = new THREE.Vector3(axis.x * angVel, axis.y * angVel, axis.z * angVel)
+
         data.push({
           name: nasaAsteroid.name || `Asteroid ${i + 1}`,
           nasaData: nasaAsteroid,
@@ -124,11 +125,7 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
             Math.random() * Math.PI * 2,
             Math.random() * Math.PI * 2
           ),
-          rotationSpeed: new THREE.Vector3(
-            (Math.random() - 0.5) * baseRotSpeed * rotSpeedMultiplier,
-            (Math.random() - 0.5) * baseRotSpeed * rotSpeedMultiplier,
-            (Math.random() - 0.5) * baseRotSpeed * rotSpeedMultiplier * 0.5
-          ),
+          rotationSpeed: rotSpeedVec,
           scale: scale,
           orbitSpeed: THREE.MathUtils.randFloat(0.0005, 0.003),
           orbitAngle: Math.atan2(position.z, position.x),
@@ -145,6 +142,14 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
         const angle = Math.random() * Math.PI * 2
         const height = THREE.MathUtils.randFloat(-3, 3)
         
+        // Gerçekçi yavaş rotasyon hızı (procedural)
+        const radiusKm = 0.5 + Math.random() * 5
+        const sizeFactor = Math.max(0.6, Math.min(1.6, 1.0 / Math.sqrt(radiusKm)))
+        const baseHours = 4 + Math.random() * 12
+        const periodHours = Math.max(2, baseHours / sizeFactor)
+        const angVel = (2 * Math.PI) / (periodHours * 3600)
+        const axis = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize()
+
         data.push({
           name: `Procedural ${i + 1}`,
           position: new THREE.Vector3(
@@ -157,11 +162,7 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
             Math.random() * Math.PI * 2,
             Math.random() * Math.PI * 2
           ),
-          rotationSpeed: new THREE.Vector3(
-            (Math.random() - 0.5) * 0.002,
-            (Math.random() - 0.5) * 0.002,
-            (Math.random() - 0.5) * 0.001
-          ),
+          rotationSpeed: new THREE.Vector3(axis.x * angVel, axis.y * angVel, axis.z * angVel),
           scale: THREE.MathUtils.randFloat(0.3, 1.2),
           orbitSpeed: THREE.MathUtils.randFloat(0.001, 0.005),
           orbitAngle: angle,
@@ -196,21 +197,13 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
   }, [quality])
 
   const material = useMemo(() => {
-    return new THREE.MeshStandardMaterial({
-      color: '#8B7355',
-      roughness: 0.9,
-      metalness: 0.1,
-    })
-  }, [])
+    return createAsteroidPBRMaterial({ hazardous: false, quality: quality === 'high' ? 'high' : 'medium' }) as any
+  }, [quality])
 
   // Tehlike seviyesine göre renk materyali
   const hazardousMaterial = useMemo(() => {
-    return new THREE.MeshStandardMaterial({
-      color: '#D2691E',
-      roughness: 0.85,
-      metalness: 0.15,
-    })
-  }, [])
+    return createAsteroidPBRMaterial({ hazardous: true, quality: quality === 'high' ? 'high' : 'medium' }) as any
+  }, [quality])
 
   useEffect(() => {
     if (!meshRef.current) return
@@ -232,9 +225,9 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
     
     asteroidData.forEach((asteroid, i) => {
       // Çok daha yavaş, gözle takip edilebilir dönüş hızları
-      asteroid.rotation.x += asteroid.rotationSpeed.x * delta * 5
-      asteroid.rotation.y += asteroid.rotationSpeed.y * delta * 5
-      asteroid.rotation.z += asteroid.rotationSpeed.z * delta * 5
+      asteroid.rotation.x += asteroid.rotationSpeed.x * delta * SPIN_VISUAL_SCALE
+      asteroid.rotation.y += asteroid.rotationSpeed.y * delta * SPIN_VISUAL_SCALE
+      asteroid.rotation.z += asteroid.rotationSpeed.z * delta * SPIN_VISUAL_SCALE
       
       asteroid.orbitAngle += asteroid.orbitSpeed * delta * 5
       asteroid.position.x = Math.cos(asteroid.orbitAngle) * asteroid.orbitRadius
