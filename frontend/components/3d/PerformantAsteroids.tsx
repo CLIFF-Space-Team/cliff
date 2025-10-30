@@ -181,9 +181,9 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
           rotation,
           scale,
           rotationSpeed: new THREE.Vector3(
-            (Math.random() - 0.000005) * 0.00002,
-            (Math.random() - 0.0000055) * 0.00002,
-            (Math.random() - 0.000005) * 0.00001
+            (Math.random() - 0.5) * 0.00002,
+            (Math.random() - 0.5) * 0.00002,
+            (Math.random() - 0.5) * 0.00001
           ),
           orbitSpeed: THREE.MathUtils.randFloat(0.00001, 0.00005),
           orbitAngle: angle,
