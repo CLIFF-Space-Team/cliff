@@ -271,11 +271,11 @@ const ThreatAsteroid: React.FC<{
   useFrame((state, delta) => {
     if (!enableAnimation) return
     
-    // Rotasyon animasyonu
+    // Asteroidler artık dönmüyor - sabit kalıyorlar
     if (meshRef.current) {
-      meshRef.current.rotation.x += delta * instance.rotationSpeed.x
-      meshRef.current.rotation.y += delta * instance.rotationSpeed.y
-      meshRef.current.rotation.z += delta * instance.rotationSpeed.z
+      // meshRef.current.rotation.x += delta * instance.rotationSpeed.x
+      // meshRef.current.rotation.y += delta * instance.rotationSpeed.y
+      // meshRef.current.rotation.z += delta * instance.rotationSpeed.z
       
       // Hover efekti
       const targetScale = hovered ? 1.3 : 1.0

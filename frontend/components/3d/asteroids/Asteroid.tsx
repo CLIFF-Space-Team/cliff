@@ -319,9 +319,10 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
 
   useFrame((state, delta) => {
     if (meshRef.current) {
-      meshRef.current.rotation.x += delta * rotationSpeed.x
-      meshRef.current.rotation.y += delta * rotationSpeed.y
-      meshRef.current.rotation.z += delta * rotationSpeed.z
+      // Asteroidler artık dönmüyor - sabit kalıyorlar
+      // meshRef.current.rotation.x += delta * rotationSpeed.x
+      // meshRef.current.rotation.y += delta * rotationSpeed.y
+      // meshRef.current.rotation.z += delta * rotationSpeed.z
       
       // Smooth hover animation - larger scale change
       const targetScale = (hovered || showTooltip) ? 1.2 : 1.0

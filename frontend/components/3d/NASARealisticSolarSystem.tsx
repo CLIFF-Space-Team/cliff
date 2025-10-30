@@ -93,11 +93,11 @@ function LODAsteroid({ position, rotation, scale, speed, enableAnimation, camera
   useFrame((state, delta) => {
     if (!meshRef.current) return
 
-    // Animate if enabled
-    if (enableAnimation) {
-      meshRef.current.rotation.x += delta * speed
-      meshRef.current.rotation.y += delta * speed * 0.7
-    }
+    // Asteroidler artık dönmüyor - sabit kalıyorlar
+    // if (enableAnimation) {
+    //   meshRef.current.rotation.x += delta * speed
+    //   meshRef.current.rotation.y += delta * speed * 0.7
+    // }
   })
 
   return (
