@@ -334,16 +334,28 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
     meshRef.current.instanceMatrix.needsUpdate = true
   }, [asteroidData, dummyObject])
 
+  // Performans optimizasyonu: Frame skip mekanizması
+  const frameSkipRef = useRef(0)
+  const hazardousMeshRef = useRef<THREE.InstancedMesh>(null!)
+  
   useFrame((state, delta) => {
     if (!meshRef.current || !enableAnimation) return
     
-    asteroidData.forEach((asteroid, i) => {
-      // Gerçekçi çok yavaş dönüş hızları (asteroidler saatlerce döner)
-      asteroid.rotation.x += asteroid.rotationSpeed.x * delta * 10
-      asteroid.rotation.y += asteroid.rotationSpeed.y * delta * 10
-      asteroid.rotation.z += asteroid.rotationSpeed.z * delta * 10
+    // Her frame yerine 2'de bir güncelle (30 FPS yerine 60 FPS)
+    frameSkipRef.current++
+    if (frameSkipRef.current % 2 !== 0) return
+    
+    // Delta'yı sınırla (ani frame düşüşlerinde aşırı hareket önlenir)
+    const clampedDelta = Math.min(delta, 0.1)
+    
+    // Normal asteroidleri güncelle
+    normalAsteroids.forEach((asteroid, i) => {
+      // Çok daha yavaş ve gerçekçi hızlar
+      asteroid.rotation.x += asteroid.rotationSpeed.x * clampedDelta * 2
+      asteroid.rotation.y += asteroid.rotationSpeed.y * clampedDelta * 2
+      asteroid.rotation.z += asteroid.rotationSpeed.z * clampedDelta * 2
       
-      asteroid.orbitAngle += asteroid.orbitSpeed * delta * 5
+      asteroid.orbitAngle += asteroid.orbitSpeed * clampedDelta
       asteroid.position.x = Math.cos(asteroid.orbitAngle) * asteroid.orbitRadius
       asteroid.position.z = Math.sin(asteroid.orbitAngle) * asteroid.orbitRadius
       
@@ -356,6 +368,28 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
     })
     
     meshRef.current.instanceMatrix.needsUpdate = true
+    
+    // Tehlikeli asteroidleri güncelle
+    if (hazardousMeshRef.current && hazardousAsteroids.length > 0) {
+      hazardousAsteroids.forEach((asteroid, i) => {
+        asteroid.rotation.x += asteroid.rotationSpeed.x * clampedDelta * 2
+        asteroid.rotation.y += asteroid.rotationSpeed.y * clampedDelta * 2
+        asteroid.rotation.z += asteroid.rotationSpeed.z * clampedDelta * 2
+        
+        asteroid.orbitAngle += asteroid.orbitSpeed * clampedDelta
+        asteroid.position.x = Math.cos(asteroid.orbitAngle) * asteroid.orbitRadius
+        asteroid.position.z = Math.sin(asteroid.orbitAngle) * asteroid.orbitRadius
+        
+        dummyObject.position.copy(asteroid.position)
+        dummyObject.rotation.copy(asteroid.rotation)
+        dummyObject.scale.setScalar(asteroid.scale)
+        dummyObject.updateMatrix()
+        
+        hazardousMeshRef.current.setMatrixAt(i, dummyObject.matrix)
+      })
+      
+      hazardousMeshRef.current.instanceMatrix.needsUpdate = true
+    }
   })
 
   // Tehlikeli asteroitler için ayrı rendering
@@ -365,19 +399,24 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
   return (
     <group>
       {/* Normal asteroitler */}
-      <instancedMesh
-        ref={meshRef}
-        args={[geometry, material, normalAsteroids.length]}
-        castShadow
-        receiveShadow
-      />
+      {normalAsteroids.length > 0 && (
+        <instancedMesh
+          ref={meshRef}
+          args={[geometry, material, normalAsteroids.length]}
+          castShadow={quality !== 'low'}
+          receiveShadow={quality === 'high'}
+          frustumCulled={true}
+        />
+      )}
       
       {/* Tehlikeli asteroitler - farklı renkte */}
       {hazardousAsteroids.length > 0 && (
         <instancedMesh
+          ref={hazardousMeshRef}
           args={[geometry, hazardousMaterial, hazardousAsteroids.length]}
-          castShadow
-          receiveShadow
+          castShadow={quality !== 'low'}
+          receiveShadow={quality === 'high'}
+          frustumCulled={true}
         />
       )}
     </group>

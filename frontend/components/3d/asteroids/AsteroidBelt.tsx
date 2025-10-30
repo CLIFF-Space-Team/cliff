@@ -2,8 +2,8 @@ import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 
-const ASTEROID_COUNT = 2000;
-const ASTRONOMICAL_UNIT = 149.6e6 * 0.0000001; // Scaled down
+const ASTEROID_COUNT = 800;
+const ASTRONOMICAL_UNIT = 149.6e6 * 0.0000001;
 
 const AsteroidBelt: React.FC = () => {
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
@@ -37,16 +37,18 @@ const AsteroidBelt: React.FC = () => {
     return transforms;
   }, []);
 
+  const frameSkipRef = useRef(0)
+  
   useFrame((state, delta) => {
-    if (instancedMeshRef.current) {
-      // Gerçekçi çok yavaş asteroid kuşağı dönüşü
-      instancedMeshRef.current.rotation.y += delta * 0.0005;
+    frameSkipRef.current++
+    
+    if (instancedMeshRef.current && frameSkipRef.current % 3 === 0) {
+      instancedMeshRef.current.rotation.y += delta * 0.0003
     }
   });
 
-  // Enhanced asteroid geometry for belt
   const asteroidGeometry = useMemo(() => {
-    const geometry = new THREE.IcosahedronGeometry(0.1, 2)
+    const geometry = new THREE.IcosahedronGeometry(0.1, 1)
     
     // Add surface noise for realistic asteroid appearance
     const positionAttribute = geometry.getAttribute('position')

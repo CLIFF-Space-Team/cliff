@@ -4,6 +4,11 @@ import { Html } from '@react-three/drei'
 import * as THREE from 'three'
 import { SimpleCelestialBody } from '@/types/astronomical-data'
 
+// Global texture cache - tüm asteroidler arasında paylaşılır
+const textureCache = new Map<string, THREE.CanvasTexture>()
+const materialCache = new Map<string, THREE.MeshStandardMaterial>()
+const geometryCache = new Map<string, THREE.BufferGeometry>()
+
 interface AsteroidProps {
   data: SimpleCelestialBody
   position?: [number, number, number]
@@ -33,11 +38,22 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
 
   // 🚀 ENHANCED: Ultra-realistic asteroid geometry with professional stone modeling
   const { geometry, surfaceGeometry, baseRadius } = useMemo(() => {
-    // Gerçekçi boyut aralığı - NASA verilerine dayalı
-    const baseRadius = Math.min(Math.max(data.info.radius_km * 0.15, 1.0), 3.0) // Daha büyük ve görünür
+    const baseRadius = Math.min(Math.max(data.info.radius_km * 0.15, 1.0), 3.0)
     
-    // Yüksek detaylı irregular asteroid geometrisi
-    const baseGeometry = new THREE.IcosahedronGeometry(baseRadius, isMobile ? 3 : 4)
+    // Cache key oluştur
+    const geometryKey = `asteroid_${baseRadius.toFixed(2)}_${isMobile ? 'mobile' : 'desktop'}`
+    
+    // Cache'den kontrol et
+    if (geometryCache.has(geometryKey)) {
+      const cached = geometryCache.get(geometryKey)!
+      return {
+        geometry: cached.clone(),
+        surfaceGeometry: cached.clone(),
+        baseRadius
+      }
+    }
+    
+    const baseGeometry = new THREE.IcosahedronGeometry(baseRadius, isMobile ? 2 : 3)
     
     // Profesyonel asteroid yüzey deformasyonu
     const positionAttribute = baseGeometry.getAttribute('position')
@@ -98,6 +114,9 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     
     surfaceDetail.computeVertexNormals()
     
+    // Cache'e kaydet
+    geometryCache.set(geometryKey, baseGeometry.clone())
+    
     return {
       geometry: baseGeometry,
       surfaceGeometry: surfaceDetail,
@@ -107,19 +126,36 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
 
   // 🚀 PROFESSIONAL: Ultra-realistic asteroid material with advanced PBR
   const asteroidMaterial = useMemo(() => {
-    // Gerçek asteroid kompozisyonuna dayalı renkler
-    const baseColor = data.is_hazardous ? '#A0522D' : '#708090' // Daha gerçekçi renkler
+    const baseColor = data.is_hazardous ? '#A0522D' : '#708090'
+    const materialKey = `material_${data.is_hazardous ? 'hazardous' : 'normal'}_${isMobile ? 'mobile' : 'desktop'}`
+    
+    // Cache'den kontrol et
+    if (materialCache.has(materialKey)) {
+      return materialCache.get(materialKey)!.clone()
+    }
+    
     const material = new THREE.MeshStandardMaterial({
       color: baseColor,
-      roughness: 0.98, // Çok pürüzlü asteroid yüzeyi
-      metalness: 0.02, // Çok düşük metalik içerik
+      roughness: 0.98,
+      metalness: 0.02,
       bumpScale: 0.8,
       normalScale: new THREE.Vector2(0.5, 0.5),
     })
     
-    // Profesyonel asteroid tekstürü oluştur
+    // Texture cache key
+    const textureKey = `asteroid_texture_${data.is_hazardous ? 'hazardous' : 'normal'}_${isMobile ? 'mobile' : 'desktop'}`
+    
+    // Cache'den texture kontrol et
+    if (textureCache.has(textureKey)) {
+      const cachedTexture = textureCache.get(textureKey)!
+      material.map = cachedTexture
+      material.bumpMap = cachedTexture
+      materialCache.set(materialKey, material.clone())
+      return material
+    }
+    
     const canvas = document.createElement('canvas')
-    const size = isMobile ? 512 : 1024 // Yüksek kalite tekstür
+    const size = isMobile ? 256 : 512
     canvas.width = size
     canvas.height = size
     const ctx = canvas.getContext('2d')!
@@ -226,23 +262,31 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     texture.wrapS = THREE.RepeatWrapping
     texture.wrapT = THREE.RepeatWrapping
     texture.repeat.set(1, 1)
-    texture.anisotropy = 16
+    texture.anisotropy = isMobile ? 4 : 8
     
-    const normalTexture = new THREE.CanvasTexture(normalCanvas)
-    normalTexture.wrapS = THREE.RepeatWrapping
-    normalTexture.wrapT = THREE.RepeatWrapping
-    normalTexture.repeat.set(1, 1)
+    // Cache'e kaydet
+    textureCache.set(textureKey, texture)
     
-    const roughnessTexture = new THREE.CanvasTexture(roughnessCanvas)
-    roughnessTexture.wrapS = THREE.RepeatWrapping
-    roughnessTexture.wrapT = THREE.RepeatWrapping
-    roughnessTexture.repeat.set(1, 1)
+    // Normal map sadece desktop'ta
+    if (!isMobile) {
+      const normalTexture = new THREE.CanvasTexture(normalCanvas)
+      normalTexture.wrapS = THREE.RepeatWrapping
+      normalTexture.wrapT = THREE.RepeatWrapping
+      normalTexture.repeat.set(1, 1)
+      material.normalMap = normalTexture
+      
+      const roughnessTexture = new THREE.CanvasTexture(roughnessCanvas)
+      roughnessTexture.wrapS = THREE.RepeatWrapping
+      roughnessTexture.wrapT = THREE.RepeatWrapping
+      roughnessTexture.repeat.set(1, 1)
+      material.roughnessMap = roughnessTexture
+    }
     
-    // Materyale tekstürleri uygula
     material.map = texture
     material.bumpMap = texture
-    material.normalMap = normalTexture
-    material.roughnessMap = roughnessTexture
+    
+    // Material'i cache'e kaydet
+    materialCache.set(materialKey, material.clone())
     
     return material
   }, [data.is_hazardous, isMobile])
@@ -310,30 +354,36 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     })
   }, [data.is_hazardous, data.orbital_data, hovered, showTooltip, isMobile])
 
-  // Gerçekçi çok yavaş asteroid rotasyonu (gerçek asteroidler saatlerce döner)
   const rotationSpeed = useMemo(() => ({
-    x: (Math.random() - 0.5) * (isMobile ? 0.0005 : 0.001),
-    y: (Math.random() - 0.5) * (isMobile ? 0.0005 : 0.001),
-    z: (Math.random() - 0.5) * (isMobile ? 0.0002 : 0.0005)
+    x: (Math.random() - 0.5) * (isMobile ? 0.0002 : 0.0005),
+    y: (Math.random() - 0.5) * (isMobile ? 0.0002 : 0.0005),
+    z: (Math.random() - 0.5) * (isMobile ? 0.0001 : 0.0003)
   }), [isMobile])
 
+  const frameSkipRef = useRef(0)
+
   useFrame((state, delta) => {
+    frameSkipRef.current++
+    
+    // Her 2 frame'de bir güncelle (performans optimizasyonu)
+    if (frameSkipRef.current % 2 !== 0 && !hovered && !showTooltip) return
+    
+    const clampedDelta = Math.min(delta, 0.1)
+    
     if (meshRef.current) {
-      meshRef.current.rotation.x += delta * rotationSpeed.x
-      meshRef.current.rotation.y += delta * rotationSpeed.y
-      meshRef.current.rotation.z += delta * rotationSpeed.z
+      meshRef.current.rotation.x += clampedDelta * rotationSpeed.x
+      meshRef.current.rotation.y += clampedDelta * rotationSpeed.y
+      meshRef.current.rotation.z += clampedDelta * rotationSpeed.z
       
-      // Smooth hover animation - larger scale change
-      const targetScale = (hovered || showTooltip) ? 1.2 : 1.0
+      const targetScale = (hovered || showTooltip) ? 1.15 : 1.0
       const currentScale = meshRef.current.scale.x
-      const newScale = THREE.MathUtils.lerp(currentScale, targetScale, delta * 10)
+      const newScale = THREE.MathUtils.lerp(currentScale, targetScale, clampedDelta * 8)
       meshRef.current.scale.setScalar(newScale)
     }
     
-    // Update glow material time
-    if (glowRef.current && glowMaterial) {
+    if (glowRef.current && glowMaterial && frameSkipRef.current % 3 === 0) {
       glowMaterial.uniforms.time.value = state.clock.elapsedTime
-      glowMaterial.uniforms.intensity.value = (hovered || showTooltip) ? 2.0 : 1.2
+      glowMaterial.uniforms.intensity.value = (hovered || showTooltip) ? 1.8 : 1.0
     }
   })
 

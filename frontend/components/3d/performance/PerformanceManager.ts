@@ -265,8 +265,14 @@ export class PerformanceManager {
     this.frustum.setFromProjectionMatrix(this.cameraMatrix)
   }
   
-  // Update culling statistics
+  private cullFrameSkip = 0
+  
   private updateCullingStats(): void {
+    this.cullFrameSkip++
+    
+    // Frustum culling sadece her 5 frame'de bir (performans)
+    if (this.cullFrameSkip % 5 !== 0) return
+    
     this.visibleObjects.clear()
     this.culledObjects.clear()
     let totalObjects = 0
@@ -275,11 +281,9 @@ export class PerformanceManager {
       if (object.type === 'Mesh' || object.type === 'Group') {
         totalObjects++
         
-        // Check if object has geometry and is ready for frustum culling
         try {
           if (object.type === 'Mesh') {
             const mesh = object as THREE.Mesh
-            // Ensure geometry exists and has computed bounding sphere
             if (mesh.geometry && !mesh.geometry.boundingSphere) {
               mesh.geometry.computeBoundingSphere()
             }
@@ -287,14 +291,11 @@ export class PerformanceManager {
           
           if (this.frustum.intersectsObject(object)) {
             this.visibleObjects.add(object)
-            object.visible = true
           } else {
             this.culledObjects.add(object)
-            // Don't set visible = false here to avoid interfering with other systems
           }
         } catch (error) {
-          // Skip objects that can't be processed for frustum culling
-          this.visibleObjects.add(object) // Default to visible if can't determine
+          this.visibleObjects.add(object)
         }
       }
     })
@@ -304,9 +305,7 @@ export class PerformanceManager {
     this.metrics.totalObjects = totalObjects
   }
   
-  // Update detailed rendering metrics
   private updateDetailedMetrics(): void {
-    // Get renderer info
     const info = this.renderer.info
     
     this.metrics.drawCalls = info.render.calls
@@ -314,14 +313,9 @@ export class PerformanceManager {
     this.metrics.geometries = info.memory.geometries
     this.metrics.textures = info.memory.textures
     
-    // Calculate memory usage
     this.calculateMemoryUsage()
     
-    // Emit metrics update event
     this.emit('metricsUpdate', this.metrics)
-    
-    // Reset renderer info for next frame
-    info.reset()
   }
   
   // Calculate memory usage from caches
@@ -503,13 +497,12 @@ export class PerformanceManager {
     }
   }
   
-  // Apply distance-based LOD optimization
   public applyLODOptimization(object: THREE.Object3D, cameraDistance: number): void {
     const lodThresholds = {
-      ultra: 10,
-      high: 50,
-      medium: 200,
-      low: 1000
+      ultra: 15,
+      high: 80,
+      medium: 300,
+      low: 1500
     }
     
     let targetLOD: keyof typeof lodThresholds
@@ -518,9 +511,13 @@ export class PerformanceManager {
     else if (cameraDistance < lodThresholds.medium) targetLOD = 'medium'
     else targetLOD = 'low'
     
-    // Update LOD statistics
     this.metrics[`${targetLOD}LOD` as keyof PerformanceMetrics] = 
       (this.metrics[`${targetLOD}LOD` as keyof PerformanceMetrics] as number) + 1
+    
+    // Mesafeye göre görünürlük ayarla (çok uzaktakileri gizle)
+    if (cameraDistance > 2000 && object.type === 'Mesh') {
+      object.visible = false
+    }
   }
   
   // Register cache entries

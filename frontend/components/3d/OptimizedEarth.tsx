@@ -36,9 +36,9 @@ export const OptimizedEarth = React.memo(({
   const segments = useMemo(() => {
     switch (quality) {
       case 'low': return 16
-      case 'medium': return 32
-      case 'high': return 64
-      default: return 32
+      case 'medium': return 24
+      case 'high': return 48
+      default: return 24
     }
   }, [quality])
 
@@ -214,19 +214,23 @@ export const OptimizedEarth = React.memo(({
     })
   }, [showAtmosphere, quality])
 
-  // Animation
+  const frameSkipRef = useRef(0)
+  
   useFrame((state, delta) => {
     if (!enableRotation) return
+    
+    frameSkipRef.current++
+    const clampedDelta = Math.min(delta, 0.1)
 
     if (earthRef.current) {
-      earthRef.current.rotation.y += delta * 0.1
+      earthRef.current.rotation.y += clampedDelta * 0.05
     }
     
     if (cloudsRef.current && showClouds) {
-      cloudsRef.current.rotation.y += delta * 0.12
+      cloudsRef.current.rotation.y += clampedDelta * 0.06
     }
     
-    if (atmosphereRef.current && atmosphereMaterial?.uniforms && showAtmosphere) {
+    if (atmosphereRef.current && atmosphereMaterial?.uniforms && showAtmosphere && frameSkipRef.current % 3 === 0) {
       atmosphereMaterial.uniforms.time.value = state.clock.elapsedTime
     }
   })
@@ -242,15 +246,15 @@ export const OptimizedEarth = React.memo(({
       {/* Clouds */}
       {showClouds && cloudMaterial && (
         <mesh ref={cloudsRef} scale={earthSize * 1.005}>
-          <sphereGeometry args={[1, segments * 0.8, segments * 0.8]} />
+          <sphereGeometry args={[1, Math.floor(segments * 0.7), Math.floor(segments * 0.7)]} />
           <primitive object={cloudMaterial} />
         </mesh>
       )}
       
       {/* Atmosphere */}
-      {showAtmosphere && atmosphereMaterial && (
+      {showAtmosphere && atmosphereMaterial && quality !== 'low' && (
         <mesh ref={atmosphereRef} scale={earthSize * 1.1}>
-          <sphereGeometry args={[1, segments * 0.6, segments * 0.6]} />
+          <sphereGeometry args={[1, Math.floor(segments * 0.5), Math.floor(segments * 0.5)]} />
           <primitive object={atmosphereMaterial} />
         </mesh>
       )}

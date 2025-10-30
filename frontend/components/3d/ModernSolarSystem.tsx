@@ -76,12 +76,16 @@ const ModernSun = React.memo(({ quality = 'high' }: { quality?: 'low' | 'medium'
     })
   }, [quality])
 
+  const frameCountRef = useRef(0)
+  
   useFrame((state, delta) => {
+    frameCountRef.current++
+    
     if (sunRef.current) {
-      sunRef.current.rotation.y += delta * 0.1
+      sunRef.current.rotation.y += delta * 0.05
     }
     
-    if (coronaRef.current && coronaMaterial.uniforms) {
+    if (coronaRef.current && coronaMaterial.uniforms && frameCountRef.current % 2 === 0) {
       coronaMaterial.uniforms.time.value = state.clock.elapsedTime
     }
   })
@@ -115,12 +119,13 @@ const ModernSun = React.memo(({ quality = 'high' }: { quality?: 'low' | 'medium'
 
 const StarField = React.memo(({ count = 1000, quality }: { count?: number, quality: 'low' | 'medium' | 'high' }) => {
   const starsRef = useRef<THREE.Points>(null)
+  const frameCountRef = useRef(0)
   
   const starCount = useMemo(() => {
     switch (quality) {
-      case 'low': return Math.min(count, 300)
-      case 'medium': return Math.min(count, 600) 
-      case 'high': return count
+      case 'low': return Math.min(count, 200)
+      case 'medium': return Math.min(count, 400) 
+      case 'high': return Math.min(count, 800)
       default: return count
     }
   }, [count, quality])
@@ -156,9 +161,11 @@ const StarField = React.memo(({ count = 1000, quality }: { count?: number, quali
   }, [quality])
 
   useFrame((state, delta) => {
-    if (starsRef.current) {
-      starsRef.current.rotation.y += delta * 0.001
-      starsRef.current.rotation.x += delta * 0.0005
+    frameCountRef.current++
+    
+    if (starsRef.current && frameCountRef.current % 3 === 0) {
+      starsRef.current.rotation.y += delta * 0.0005
+      starsRef.current.rotation.x += delta * 0.00025
     }
   })
 
@@ -221,7 +228,7 @@ export const ModernSolarSystem = React.memo(({
 
   return (
     <group>
-      <StarField count={currentQuality === 'high' ? 2000 : 1000} quality={currentQuality} />
+      <StarField count={currentQuality === 'high' ? 800 : currentQuality === 'medium' ? 400 : 200} quality={currentQuality} />
       
       <ModernSun quality={currentQuality} />
       
