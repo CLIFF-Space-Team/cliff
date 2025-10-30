@@ -117,7 +117,7 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
           )
         }
         
-        const baseRotSpeed = 0.0001
+        const baseRotSpeed = 0.00001
         let rotSpeedMultiplier = 1.0
         
         if (nasaAsteroid.orbital_data?.relative_velocity?.kilometers_per_second) {
@@ -147,7 +147,7 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
           rotation,
           scale,
           rotationSpeed,
-          orbitSpeed: THREE.MathUtils.randFloat(0.0005, 0.003),
+          orbitSpeed: THREE.MathUtils.randFloat(0.00001, 0.00005),
           orbitAngle: Math.atan2(position.z, position.x),
           orbitRadius: position.length(),
           isHazardous: nasaAsteroid.is_hazardous || false,
@@ -181,11 +181,11 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
           rotation,
           scale,
           rotationSpeed: new THREE.Vector3(
-            (Math.random() - 0.5) * 0.0002,
-            (Math.random() - 0.5) * 0.0002,
-            (Math.random() - 0.5) * 0.0001
+            (Math.random() - 0.000005) * 0.00002,
+            (Math.random() - 0.0000055) * 0.00002,
+            (Math.random() - 0.000005) * 0.00001
           ),
-          orbitSpeed: THREE.MathUtils.randFloat(0.001, 0.005),
+          orbitSpeed: THREE.MathUtils.randFloat(0.00001, 0.00005),
           orbitAngle: angle,
           orbitRadius: distance,
           isHazardous: Math.random() > 0.8,
@@ -289,12 +289,12 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
     
     asteroidInstances.forEach((asteroid, i) => {
       // Update rotation
-      asteroid.rotation.x += asteroid.rotationSpeed.x * delta * 10
-      asteroid.rotation.y += asteroid.rotationSpeed.y * delta * 10
-      asteroid.rotation.z += asteroid.rotationSpeed.z * delta * 10
+      asteroid.rotation.x += asteroid.rotationSpeed.x * delta * 0.05
+      asteroid.rotation.y += asteroid.rotationSpeed.y * delta * 0.05
+      asteroid.rotation.z += asteroid.rotationSpeed.z * delta * 0.05
       
       // Update orbit
-      asteroid.orbitAngle += asteroid.orbitSpeed * delta * 5
+      asteroid.orbitAngle += asteroid.orbitSpeed * delta * 0.02
       asteroid.position.x = Math.cos(asteroid.orbitAngle) * asteroid.orbitRadius
       asteroid.position.z = Math.sin(asteroid.orbitAngle) * asteroid.orbitRadius
       

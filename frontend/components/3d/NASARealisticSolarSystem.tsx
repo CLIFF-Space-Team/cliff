@@ -309,9 +309,10 @@ function SolarSystemScene({
       <ProceduralAsteroidSystem
         count={quality === 'ultra' ? 220 : quality === 'high' ? 140 : quality === 'medium' ? 90 : 50}
         quality={quality}
-        enableAnimation={enableRotation}
+        enableAnimation={false}
         distributionRadius={[14, 28]}
         enableThreatVisualization
+        enableOrbitalMechanics={false}
       />
       
       {/* Phase 2: Cosmic Dust - Only in full mode for better performance in earth_focus */}
