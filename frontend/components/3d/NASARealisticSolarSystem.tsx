@@ -311,6 +311,8 @@ function SolarSystemScene({
         quality={quality}
         enableAnimation={enableRotation}
         distributionRadius={[14, 28]}
+        speedMultiplier={0.05}
+        updateFPS={24}
         enableThreatVisualization
       />
       

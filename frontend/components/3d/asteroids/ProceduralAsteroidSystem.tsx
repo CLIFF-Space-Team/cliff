@@ -14,6 +14,8 @@ interface ProceduralAsteroidSystemProps {
   enableThreatVisualization?: boolean
   enableOrbitalMechanics?: boolean
   maxAsteroids?: number
+  speedMultiplier?: number
+  updateFPS?: number
 }
 
 interface AsteroidInstanceData {
@@ -35,12 +37,15 @@ export const ProceduralAsteroidSystem = React.memo(({
   distributionRadius = [12, 28],
   enableThreatVisualization = true,
   enableOrbitalMechanics = true,
-  maxAsteroids = 200
+  maxAsteroids = 200,
+  speedMultiplier = 0.1,
+  updateFPS = 30
 }: ProceduralAsteroidSystemProps) => {
   
   // Refs
   const asteroidGroupRef = useRef<any>(null)
   const instancedMeshRef = useRef<any>(null)
+  const accumulatorRef = useRef(0)
   
   // State
   const [THREE, setTHREE] = useState<any>(null)
@@ -234,7 +239,7 @@ export const ProceduralAsteroidSystem = React.memo(({
         scale: [scale, scale * (0.8 + Math.random() * 0.4), scale],
         color,
         // Gerçekçi çok yavaş dönüş hızları (gerçek asteroidler saatlerce döner)
-        speed: 0.0002 + Math.random() * 0.0005,
+        speed: 0.00005 + Math.random() * 0.0002,
         orbitRadius,
         orbitAngle,
         threatLevel,
@@ -285,6 +290,12 @@ export const ProceduralAsteroidSystem = React.memo(({
   useFrame((state, delta) => {
     if (!enableAnimation || !instancedMeshRef.current || !THREE || !instancedMatrix || asteroidInstances.length === 0) return
 
+    const step = 1 / Math.max(1, updateFPS)
+    accumulatorRef.current += delta
+    if (accumulatorRef.current < step) return
+    const dt = accumulatorRef.current
+    accumulatorRef.current = 0
+
     const matrix = new THREE.Matrix4()
     const position = new THREE.Vector3()
     const scaleV = new THREE.Vector3()
@@ -292,17 +303,17 @@ export const ProceduralAsteroidSystem = React.memo(({
 
     asteroidInstances.forEach((instance, i) => {
       if (enableOrbitalMechanics) {
-        instance.orbitAngle += delta * instance.speed * 0.02
+        instance.orbitAngle += dt * instance.speed * speedMultiplier
         const x = instance.orbitRadius * Math.cos(instance.orbitAngle)
         const y = instance.position[1]
         const z = instance.orbitRadius * Math.sin(instance.orbitAngle)
         instance.position = [x, y, z]
       }
 
-      // Gerçekçi çok yavaş dönüş hızları (asteroidler saatlerce döner)
-      instance.rotation[0] += delta * instance.speed * 0.5
-      instance.rotation[1] += delta * instance.speed * 0.3
-      instance.rotation[2] += delta * instance.speed * 0.2
+      // Çok yavaş dönüş (gerçekçi)
+      instance.rotation[0] += dt * instance.speed * 0.3 * speedMultiplier
+      instance.rotation[1] += dt * instance.speed * 0.2 * speedMultiplier
+      instance.rotation[2] += dt * instance.speed * 0.15 * speedMultiplier
 
       position.set(...instance.position)
       scaleV.set(...instance.scale)

@@ -440,8 +440,10 @@ export class PerformanceManager {
   
   // Get quality level index
   private getQualityIndex(qualityName: string): number {
-    const qualities = ['DÃ¼ÅŸÃ¼k', 'Orta', 'YÃ¼ksek']
-    return qualities.indexOf(qualityName)
+    const n = (qualityName || '').toLowerCase()
+    if (n.includes('low') || n.includes('düş') || n.includes('dus')) return 0
+    if (n.includes('medium') || n.includes('orta') || n.includes('med')) return 1
+    return 2
   }
   
   // Get quality by index
@@ -458,7 +460,9 @@ export class PerformanceManager {
     
     // Update renderer settings
     this.renderer.shadowMap.enabled = quality.effects_enabled
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, quality.name === 'YÃ¼ksek' ? 2 : 1))
+    const qn = (quality.name || '').toLowerCase()
+    const isHigh = qn.includes('yük') || qn.includes('yuk') || qn.includes('high')
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, isHigh ? 2 : 1))
     
     // Limit quality history
     if (this.qualityHistory.length > 10) {

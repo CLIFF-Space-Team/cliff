@@ -12,6 +12,8 @@ interface PerformantAsteroidsProps {
   distributionRadius?: [number, number]
   nasaAsteroidsData?: SimpleCelestialBody[]
   useRealData?: boolean
+  speedMultiplier?: number
+  updateFPS?: number
 }
 
 export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
@@ -20,10 +22,14 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
   quality = 'high',
   distributionRadius = [10, 45],
   nasaAsteroidsData = [],
-  useRealData = false
+  useRealData = false,
+  speedMultiplier = 0.05,
+  updateFPS = 30
 }) => {
-  const meshRef = useRef<THREE.InstancedMesh>(null!)
+  const normalMeshRef = useRef<THREE.InstancedMesh>(null!)
+  const hazardMeshRef = useRef<THREE.InstancedMesh>(null!)
   const dummyObject = useMemo(() => new THREE.Object3D(), [])
+  const accumulatorRef = useRef(0)
   
   // Dünya boyutlarına göre asteroid boyutunu hesapla
   const calculateScaleFromEarth = (asteroidRadiusKm: number): number => {
@@ -320,42 +326,67 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
   }, [quality])
 
   useEffect(() => {
-    if (!meshRef.current) return
-    
-    asteroidData.forEach((asteroid, i) => {
-      dummyObject.position.copy(asteroid.position)
-      dummyObject.rotation.copy(asteroid.rotation)
-      dummyObject.scale.setScalar(asteroid.scale)
-      dummyObject.updateMatrix()
-      
-      meshRef.current.setMatrixAt(i, dummyObject.matrix)
-    })
-    
-    meshRef.current.instanceMatrix.needsUpdate = true
+    const hazardousAsteroids = asteroidData.filter(a => a.isHazardous)
+    const normalAsteroids = asteroidData.filter(a => !a.isHazardous)
+
+    if (normalMeshRef.current) {
+      normalAsteroids.forEach((asteroid, i) => {
+        dummyObject.position.copy(asteroid.position)
+        dummyObject.rotation.copy(asteroid.rotation)
+        dummyObject.scale.setScalar(asteroid.scale)
+        dummyObject.updateMatrix()
+        normalMeshRef.current.setMatrixAt(i, dummyObject.matrix)
+      })
+      normalMeshRef.current.instanceMatrix.needsUpdate = true
+    }
+
+    if (hazardMeshRef.current) {
+      hazardousAsteroids.forEach((asteroid, i) => {
+        dummyObject.position.copy(asteroid.position)
+        dummyObject.rotation.copy(asteroid.rotation)
+        dummyObject.scale.setScalar(asteroid.scale)
+        dummyObject.updateMatrix()
+        hazardMeshRef.current.setMatrixAt(i, dummyObject.matrix)
+      })
+      hazardMeshRef.current.instanceMatrix.needsUpdate = true
+    }
   }, [asteroidData, dummyObject])
 
   useFrame((state, delta) => {
-    if (!meshRef.current || !enableAnimation) return
-    
-    asteroidData.forEach((asteroid, i) => {
-      // Gerçekçi çok yavaş dönüş hızları (asteroidler saatlerce döner)
-      asteroid.rotation.x += asteroid.rotationSpeed.x * delta * 10
-      asteroid.rotation.y += asteroid.rotationSpeed.y * delta * 10
-      asteroid.rotation.z += asteroid.rotationSpeed.z * delta * 10
-      
-      asteroid.orbitAngle += asteroid.orbitSpeed * delta * 5
-      asteroid.position.x = Math.cos(asteroid.orbitAngle) * asteroid.orbitRadius
-      asteroid.position.z = Math.sin(asteroid.orbitAngle) * asteroid.orbitRadius
-      
-      dummyObject.position.copy(asteroid.position)
-      dummyObject.rotation.copy(asteroid.rotation)
-      dummyObject.scale.setScalar(asteroid.scale)
-      dummyObject.updateMatrix()
-      
-      meshRef.current.setMatrixAt(i, dummyObject.matrix)
-    })
-    
-    meshRef.current.instanceMatrix.needsUpdate = true
+    if (!enableAnimation) return
+
+    // Throttle updates to reduce CPU usage
+    const step = 1 / Math.max(1, updateFPS)
+    accumulatorRef.current += delta
+    if (accumulatorRef.current < step) return
+    const dt = accumulatorRef.current
+    accumulatorRef.current = 0
+
+    const hazardousAsteroids = asteroidData.filter(a => a.isHazardous)
+    const normalAsteroids = asteroidData.filter(a => !a.isHazardous)
+
+    const updateAndWrite = (asteroids: typeof asteroidData, target: THREE.InstancedMesh | null | undefined) => {
+      if (!target) return
+      asteroids.forEach((asteroid, i) => {
+        asteroid.rotation.x += asteroid.rotationSpeed.x * dt * speedMultiplier
+        asteroid.rotation.y += asteroid.rotationSpeed.y * dt * speedMultiplier
+        asteroid.rotation.z += asteroid.rotationSpeed.z * dt * speedMultiplier
+
+        asteroid.orbitAngle += asteroid.orbitSpeed * dt * speedMultiplier
+        asteroid.position.x = Math.cos(asteroid.orbitAngle) * asteroid.orbitRadius
+        asteroid.position.z = Math.sin(asteroid.orbitAngle) * asteroid.orbitRadius
+
+        dummyObject.position.copy(asteroid.position)
+        dummyObject.rotation.copy(asteroid.rotation)
+        dummyObject.scale.setScalar(asteroid.scale)
+        dummyObject.updateMatrix()
+        target.setMatrixAt(i, dummyObject.matrix)
+      })
+      target.instanceMatrix.needsUpdate = true
+    }
+
+    updateAndWrite(normalAsteroids, normalMeshRef.current)
+    updateAndWrite(hazardousAsteroids, hazardMeshRef.current)
   })
 
   // Tehlikeli asteroitler için ayrı rendering
@@ -366,18 +397,19 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
     <group>
       {/* Normal asteroitler */}
       <instancedMesh
-        ref={meshRef}
+        ref={normalMeshRef}
         args={[geometry, material, normalAsteroids.length]}
-        castShadow
-        receiveShadow
+        castShadow={quality === 'high'}
+        receiveShadow={quality === 'high'}
       />
       
       {/* Tehlikeli asteroitler - farklı renkte */}
       {hazardousAsteroids.length > 0 && (
         <instancedMesh
+          ref={hazardMeshRef}
           args={[geometry, hazardousMaterial, hazardousAsteroids.length]}
-          castShadow
-          receiveShadow
+          castShadow={quality === 'high'}
+          receiveShadow={quality === 'high'}
         />
       )}
     </group>
