@@ -96,9 +96,9 @@
     "space-apps-challenge"
   ],
   "description": "🌌 CLIFF Frontend - Advanced space threat monitoring dashboard with AI-powered analysis and real-time 3D visualization",
-  "homepage": "https://github.com/yourusername/cliff-frontend",
+  "homepage": "https://github.com/CLIFF-Space-Team/cliff",
   "bugs": {
-    "url": "https://github.com/yourusername/cliff-frontend/issues"
+    "url": "https://github.com/CLIFF-Space-Team/cliff/issues"
   },
   "license": "MIT",
   "engines": {

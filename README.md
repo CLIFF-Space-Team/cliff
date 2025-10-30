@@ -92,7 +92,7 @@
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/kynuxdev/cliff.git
+git clone https://github.com/CLIFF-Space-Team/cliff.git
 cd cliff
 ```
 
@@ -426,7 +426,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 <div align="center">
 
-**Made with ❤️ by [kynuxdev](https://github.com/kynuxdev)**
+**Made with ❤️ by [CLIFF Space Team](https://github.com/CLIFF-Space-Team)**
 
 *Monitoring the cosmos, one asteroid at a time* 🌠
 

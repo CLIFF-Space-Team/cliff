@@ -127,8 +127,8 @@ Rulesets'te tanımlı status check'ler:
 
 **Örnek:**
 ```
-/backend/ @kynuxdev
-/frontend/ @kynuxdev
+/backend/ @CLIFF-Space-Team/core-team
+/frontend/ @CLIFF-Space-Team/core-team
 ```
 
 ## 🎯 Workflow Kullanımı

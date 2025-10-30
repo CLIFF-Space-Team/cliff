@@ -2,35 +2,35 @@
 # Her değişiklik için otomatik olarak ilgili kod sahipleri review için atanır
 
 # Global owners - Tüm dosyalar için varsayılan
-* @kynuxdev
+* @CLIFF-Space-Team/core-team
 
 # Backend
-/backend/ @kynuxdev
-/backend/app/ @kynuxdev
-/backend/app/api/ @kynuxdev
-/backend/app/services/ @kynuxdev
-/backend/app/models/ @kynuxdev
+/backend/ @CLIFF-Space-Team/core-team
+/backend/app/ @CLIFF-Space-Team/core-team
+/backend/app/api/ @CLIFF-Space-Team/core-team
+/backend/app/services/ @CLIFF-Space-Team/core-team
+/backend/app/models/ @CLIFF-Space-Team/core-team
 
 # Frontend
-/frontend/ @kynuxdev
-/frontend/components/ @kynuxdev
-/frontend/app/ @kynuxdev
-/frontend/hooks/ @kynuxdev
-/frontend/lib/ @kynuxdev
+/frontend/ @CLIFF-Space-Team/core-team
+/frontend/components/ @CLIFF-Space-Team/core-team
+/frontend/app/ @CLIFF-Space-Team/core-team
+/frontend/hooks/ @CLIFF-Space-Team/core-team
+/frontend/lib/ @CLIFF-Space-Team/core-team
 
 # 3D Components - Özel dikkat gerektiren bölüm
-/frontend/components/3d/ @kynuxdev
+/frontend/components/3d/ @CLIFF-Space-Team/core-team
 
 # Configuration Files
-/.github/ @kynuxdev
-/docker-compose.yml @kynuxdev
-/.gitignore @kynuxdev
+/.github/ @CLIFF-Space-Team/core-team
+/docker-compose.yml @CLIFF-Space-Team/core-team
+/.gitignore @CLIFF-Space-Team/core-team
 
 # Documentation
-*.md @kynuxdev
-/README.md @kynuxdev
+*.md @CLIFF-Space-Team/core-team
+/README.md @CLIFF-Space-Team/core-team
 
 # CI/CD
-/.github/workflows/ @kynuxdev
-/.github/rulesets/ @kynuxdev
+/.github/workflows/ @CLIFF-Space-Team/core-team
+/.github/rulesets/ @CLIFF-Space-Team/core-team
 
