@@ -90,7 +90,7 @@ function PerformanceIndicator() {
 export function CentralVisualization() {
   const { quality, showOrbits, enableRotation } = useDashboardStore()
   const [isReady, setIsReady] = React.useState(false)
-  const [displayMode, setDisplayMode] = React.useState<'earth_focus' | 'full'>('earth_focus')
+  const [displayMode, setDisplayMode] = React.useState<'earth_focus' | 'full'>('full')
   const [presetLabels, setPresetLabels] = React.useState({ earth: '3D Dünya', system: 'Güneş Sistemi' })
 
   React.useEffect(() => {

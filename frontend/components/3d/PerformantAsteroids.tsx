@@ -130,7 +130,7 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
             (Math.random() - 0.5) * baseRotSpeed * rotSpeedMultiplier * 0.3
           ),
           scale: scale,
-          orbitSpeed: THREE.MathUtils.randFloat(0.0005, 0.003),
+          orbitSpeed: THREE.MathUtils.randFloat(0.00001, 0.00005),
           orbitAngle: Math.atan2(position.z, position.x),
           orbitRadius: position.length(),
           isHazardous: nasaAsteroid.is_hazardous || false,
@@ -163,7 +163,7 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
             (Math.random() - 0.5) * 0.0001
           ),
           scale: THREE.MathUtils.randFloat(0.3, 1.2),
-          orbitSpeed: THREE.MathUtils.randFloat(0.001, 0.005),
+          orbitSpeed: THREE.MathUtils.randFloat(0.00002, 0.0001),
           orbitAngle: angle,
           orbitRadius: distance,
           isHazardous: Math.random() > 0.8,
@@ -339,11 +339,12 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
     
     asteroidData.forEach((asteroid, i) => {
       // Gerçekçi çok yavaş dönüş hızları (asteroidler saatlerce döner)
-      asteroid.rotation.x += asteroid.rotationSpeed.x * delta * 10
-      asteroid.rotation.y += asteroid.rotationSpeed.y * delta * 10
-      asteroid.rotation.z += asteroid.rotationSpeed.z * delta * 10
+      asteroid.rotation.x += asteroid.rotationSpeed.x * delta * 2
+      asteroid.rotation.y += asteroid.rotationSpeed.y * delta * 2
+      asteroid.rotation.z += asteroid.rotationSpeed.z * delta * 2
       
-      asteroid.orbitAngle += asteroid.orbitSpeed * delta * 5
+      // Gerçekçi çok yavaş orbital hareket (asteroidler yıllarca döner)
+      asteroid.orbitAngle += asteroid.orbitSpeed * delta * 0.5
       asteroid.position.x = Math.cos(asteroid.orbitAngle) * asteroid.orbitRadius
       asteroid.position.z = Math.sin(asteroid.orbitAngle) * asteroid.orbitRadius
       

@@ -233,8 +233,8 @@ export const ProceduralAsteroidSystem = React.memo(({
         ],
         scale: [scale, scale * (0.8 + Math.random() * 0.4), scale],
         color,
-        // Gerçekçi çok yavaş dönüş hızları (gerçek asteroidler saatlerce döner)
-        speed: 0.0002 + Math.random() * 0.0005,
+        // Gerçekçi çok yavaş dönüş ve orbital hızlar (gerçek asteroidler saatlerce/yıllarca döner)
+        speed: 0.00001 + Math.random() * 0.00005,
         orbitRadius,
         orbitAngle,
         threatLevel,
@@ -292,7 +292,8 @@ export const ProceduralAsteroidSystem = React.memo(({
 
     asteroidInstances.forEach((instance, i) => {
       if (enableOrbitalMechanics) {
-        instance.orbitAngle += delta * instance.speed * 0.02
+        // Gerçekçi çok yavaş orbital hareket (asteroidler yıllarca döner)
+        instance.orbitAngle += delta * instance.speed * 0.5
         const x = instance.orbitRadius * Math.cos(instance.orbitAngle)
         const y = instance.position[1]
         const z = instance.orbitRadius * Math.sin(instance.orbitAngle)
@@ -300,9 +301,9 @@ export const ProceduralAsteroidSystem = React.memo(({
       }
 
       // Gerçekçi çok yavaş dönüş hızları (asteroidler saatlerce döner)
-      instance.rotation[0] += delta * instance.speed * 0.5
-      instance.rotation[1] += delta * instance.speed * 0.3
-      instance.rotation[2] += delta * instance.speed * 0.2
+      instance.rotation[0] += delta * instance.speed * 2
+      instance.rotation[1] += delta * instance.speed * 1.5
+      instance.rotation[2] += delta * instance.speed * 1
 
       position.set(...instance.position)
       scaleV.set(...instance.scale)
