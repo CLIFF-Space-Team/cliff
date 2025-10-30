@@ -1,0 +1,36 @@
+# CLIFF Project Code Owners
+# Her değişiklik için otomatik olarak ilgili kod sahipleri review için atanır
+
+# Global owners - Tüm dosyalar için varsayılan
+* @kynuxdev
+
+# Backend
+/backend/ @kynuxdev
+/backend/app/ @kynuxdev
+/backend/app/api/ @kynuxdev
+/backend/app/services/ @kynuxdev
+/backend/app/models/ @kynuxdev
+
+# Frontend
+/frontend/ @kynuxdev
+/frontend/components/ @kynuxdev
+/frontend/app/ @kynuxdev
+/frontend/hooks/ @kynuxdev
+/frontend/lib/ @kynuxdev
+
+# 3D Components - Özel dikkat gerektiren bölüm
+/frontend/components/3d/ @kynuxdev
+
+# Configuration Files
+/.github/ @kynuxdev
+/docker-compose.yml @kynuxdev
+/.gitignore @kynuxdev
+
+# Documentation
+*.md @kynuxdev
+/README.md @kynuxdev
+
+# CI/CD
+/.github/workflows/ @kynuxdev
+/.github/rulesets/ @kynuxdev
+
