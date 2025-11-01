@@ -26,6 +26,11 @@ import { CraterEarthOverlay } from './CraterEarthOverlay'
 import { CraterCrossSection } from './CraterCrossSection'
 import { useLoader } from '@react-three/fiber'
 import { TextureLoader } from 'three'
+import { ImpactPhysics } from '@/services/ImpactPhysics'
+import { SphericalShockWave } from './SphericalShockWave'
+import { AtmosphericPressureWave } from './AtmosphericPressureWave'
+import { ScientificShockWave } from './ScientificShockWave'
+import { EarthSurfaceIntegration } from './EarthSurfaceIntegration'
 
 interface ImpactVisualization3DProps {
   location: ImpactLocation
@@ -39,13 +44,24 @@ interface ImpactVisualization3DProps {
   particleMultiplier?: number
   externalProgress?: number
   shouldResetAnimation?: boolean
+  asteroidParams?: {
+    diameter_m: number
+    velocity_kms: number
+  }
 }
 
 function latLngToVector3(lat: number, lng: number, radius: number = 1.8): THREE.Vector3 {
+  // Spherical coordinates to Cartesian
+  // φ (phi) = colatitude (90° - latitude)
+  // θ (theta) = longitude
   const phi = (90 - lat) * (Math.PI / 180)
-  const theta = (lng + 180) * (Math.PI / 180)
+  const theta = lng * (Math.PI / 180)
   
-  const x = -radius * Math.sin(phi) * Math.cos(theta)
+  // Standard spherical to Cartesian conversion
+  // x = r * sin(φ) * cos(θ)
+  // y = r * cos(φ)  
+  // z = r * sin(φ) * sin(θ)
+  const x = radius * Math.sin(phi) * Math.cos(theta)
   const y = radius * Math.cos(phi)
   const z = radius * Math.sin(phi) * Math.sin(theta)
   
@@ -92,7 +108,10 @@ function EffectRing({
     const earthRadius_km = 6371
     const scale = (radius_km / earthRadius_km) * earthRadius * adjustedProgress
     
-    ringRef.current.scale.set(scale, scale, 1)
+    // Ring dünya yüzeyinde kalır - tüm eksenlerde eşit scale
+    ringRef.current.scale.set(scale, scale, scale)
+    // Position sabit tut
+    ringRef.current.position.copy(centerPos)
     materialRef.current.opacity = opacity * (1 - adjustedProgress * 0.7)
   })
   
@@ -235,11 +254,31 @@ function AsteroidApproach({
     [targetLocation.lat, targetLocation.lng]
   )
   
-  // Sabit başlangıç pozisyonu ve yörünge hesaplama
+  // Sabit başlangıç pozisyonu ve yörünge hesaplama - gerçekçi giriş açısı
   const { startPos, direction } = useMemo(() => {
-    const direction = targetPos.clone().normalize()
+    // Hedef yüzeye olan normal vektör
+    const surfaceNormal = targetPos.clone().normalize()
+    
+    // 45 derece açı ile yaklaşım için teğet vektör hesapla
     const startDistance = 15
-    const startPos = direction.clone().multiplyScalar(startDistance)
+    const angle = 45 * Math.PI / 180
+    
+    // Dünya'nın dönüş eksenine göre teğet vektör
+    const tangent = new THREE.Vector3()
+    if (Math.abs(surfaceNormal.y) < 0.99) {
+      tangent.crossVectors(surfaceNormal, new THREE.Vector3(0, 1, 0)).normalize()
+    } else {
+      tangent.crossVectors(surfaceNormal, new THREE.Vector3(1, 0, 0)).normalize()
+    }
+    
+    // Başlangıç pozisyonu: hedeften açılı olarak uzaklaş
+    const radialComponent = surfaceNormal.clone().multiplyScalar(Math.cos(angle))
+    const tangentialComponent = tangent.clone().multiplyScalar(Math.sin(angle))
+    const offsetDirection = radialComponent.clone().add(tangentialComponent).normalize()
+    const startPos = targetPos.clone().add(offsetDirection.multiplyScalar(startDistance - 1.8))
+    
+    // Yön: başlangıçtan hedefe
+    const direction = new THREE.Vector3().subVectors(targetPos, startPos).normalize()
     
     return { startPos, direction }
   }, [targetPos])
@@ -351,7 +390,8 @@ export function ImpactVisualization3D({
   enablePostProcessing = true,
   particleMultiplier = 1,
   externalProgress = 0,
-  shouldResetAnimation = false
+  shouldResetAnimation = false,
+  asteroidParams
 }: ImpactVisualization3DProps) {
   const [animationProgress, setAnimationProgress] = useState(externalProgress)
   const { camera } = useThree()
@@ -362,6 +402,18 @@ export function ImpactVisualization3D({
     () => latLngToVector3(location.lat, location.lng, 1.85),
     [location.lat, location.lng]
   )
+  
+  // Dinamik fiziksel timeline hesaplaması
+  const physicsTimeline = useMemo(() => {
+    if (!asteroidParams) return null
+    
+    const physics = new ImpactPhysics()
+    return physics.calculateImpactTimeline(
+      asteroidParams.diameter_m,
+      asteroidParams.velocity_kms,
+      15 // başlangıç mesafesi km
+    )
+  }, [asteroidParams])
   
   useFrame((state, delta) => {
     if (!isAnimating) return
@@ -377,13 +429,35 @@ export function ImpactVisualization3D({
       onAnimationComplete()
     }
     
-    if (newProgress > 0.25 && newProgress < 0.35) {
-      const shakeIntensity = Math.sin((newProgress - 0.25) / 0.10 * Math.PI) * 0.15
+    // Otomatik kamera kontrolleri
+    if (newProgress < timeline.approachEnd) {
+      // Asteroid takibi - yaklaşma sırasında
+      const targetCameraPos = impactPosition.clone().multiplyScalar(0.5)
+      targetCameraPos.z += 6
+      targetCameraPos.y += 2
+      camera.position.lerp(targetCameraPos, 0.02)
+      camera.lookAt(impactPosition)
+    } else if (newProgress >= timeline.impactStart && newProgress < timeline.impactEnd + 0.02) {
+      // Dramatic zoom - çarpma anında
+      const zoomTarget = impactPosition.clone()
+      zoomTarget.z += 3.5
+      zoomTarget.y += 1.5
+      camera.position.lerp(zoomTarget, 0.15)
+      camera.lookAt(impactPosition)
+    } else if (newProgress >= timeline.impactEnd && newProgress < timeline.impactEnd + 0.10) {
+      // Kamera sarsıntısı - patlama sonrası
+      const shakeIntensity = Math.sin((newProgress - timeline.impactEnd) / 0.10 * Math.PI) * 0.20
       camera.position.x = originalCameraPosition.current.x + (Math.random() - 0.5) * shakeIntensity
       camera.position.y = originalCameraPosition.current.y + (Math.random() - 0.5) * shakeIntensity
       camera.position.z = originalCameraPosition.current.z + (Math.random() - 0.5) * shakeIntensity
+    } else if (newProgress >= timeline.shockStart && newProgress < timeline.shockEnd) {
+      // Geniş açı - shock wave yayılımını göster
+      const wideAngleTarget = new THREE.Vector3(0, 8, 8)
+      camera.position.lerp(wideAngleTarget, 0.01)
+      camera.lookAt(0, 0, 0)
     } else {
-      camera.position.lerp(originalCameraPosition.current, 0.1)
+      // Orijinal pozisyona geri dön
+      camera.position.lerp(originalCameraPosition.current, 0.05)
     }
   })
   
@@ -394,7 +468,25 @@ export function ImpactVisualization3D({
       originalCameraPosition.current = camera.position.clone()
       previousResetFlag.current = shouldResetAnimation
     }
-  }, [shouldResetAnimation])
+  }, [shouldResetAnimation, camera])
+  
+  // Kamerayı impact pozisyonuna odakla
+  useEffect(() => {
+    // Kamerayı dünya merkezine baktır
+    camera.lookAt(0, 0, 0)
+    camera.updateProjectionMatrix()
+  }, [camera])
+  
+  // İlk yüklemede kamerayı İstanbul'a yönlendir
+  useEffect(() => {
+    if (location && !results) {
+      // İstanbul'a bakmak için kamera pozisyonu
+      const targetPos = latLngToVector3(location.lat, location.lng, 1.8)
+      const cameraOffset = targetPos.clone().normalize().multiplyScalar(6)
+      camera.position.copy(cameraOffset)
+      camera.lookAt(0, 0, 0)
+    }
+  }, [location, results, camera])
   
   // External progress değiştiğinde sync et
   useEffect(() => {
@@ -407,13 +499,48 @@ export function ImpactVisualization3D({
   const earthDayTexture = useLoader(TextureLoader, '/textures/earth-day.jpg')
   const earthNormalTexture = useLoader(TextureLoader, '/textures/earth-normal.jpg')
   
+  // Dinamik timeline eşikleri
+  const timeline = useMemo(() => {
+    if (physicsTimeline) {
+      return {
+        approachEnd: physicsTimeline.phases.approach.end,
+        atmosphereStart: physicsTimeline.phases.atmosphereEntry.start,
+        atmosphereEnd: physicsTimeline.phases.atmosphereEntry.end,
+        impactStart: physicsTimeline.phases.impact.start,
+        impactEnd: physicsTimeline.phases.impact.end,
+        fireballStart: physicsTimeline.phases.fireball.start,
+        fireballEnd: physicsTimeline.phases.fireball.end,
+        shockStart: physicsTimeline.phases.shockWave.start,
+        shockEnd: physicsTimeline.phases.shockWave.end,
+        thermalStart: physicsTimeline.phases.thermal.start,
+        debrisStart: physicsTimeline.phases.debris.start,
+        debrisEnd: physicsTimeline.phases.debris.end
+      }
+    }
+    // Fallback sabit değerler
+    return {
+      approachEnd: 0.20,
+      atmosphereStart: 0.15,
+      atmosphereEnd: 0.20,
+      impactStart: 0.20,
+      impactEnd: 0.22,
+      fireballStart: 0.20,
+      fireballEnd: 0.35,
+      shockStart: 0.22,
+      shockEnd: 0.70,
+      thermalStart: 0.23,
+      debrisStart: 0.30,
+      debrisEnd: 0.85
+    }
+  }, [physicsTimeline])
+  
   const chromaticOffset = useMemo(() => {
-    if (animationProgress > 0.25 && animationProgress < 0.38) {
-      const value = 0.003 * Math.sin((animationProgress - 0.25) / 0.13 * Math.PI)
+    if (animationProgress > timeline.impactStart && animationProgress < timeline.impactEnd + 0.08) {
+      const value = 0.003 * Math.sin((animationProgress - timeline.impactStart) / 0.13 * Math.PI)
       return new Vector2(value, value)
     }
     return new Vector2(0, 0)
-  }, [animationProgress])
+  }, [animationProgress, timeline])
   
   return (
     <>
@@ -435,29 +562,32 @@ export function ImpactVisualization3D({
         nasaTexture="/textures/earth-day.jpg"
       />
       
-      {results && animationProgress >= 0 && animationProgress < 0.25 && (
+      {results && animationProgress >= 0 && animationProgress < timeline.approachEnd && (
         <AsteroidApproach
           targetLocation={location}
-          progress={animationProgress / 0.25}
+          progress={animationProgress / timeline.approachEnd}
           size={Math.min(0.3, impactIntensity / 300)}
-          velocity={20}
+          velocity={asteroidParams?.velocity_kms || 20}
           isAnimating={isAnimating}
         />
       )}
       
-      {animationProgress >= 0.25 && animationProgress < 0.80 && (
+      {animationProgress >= timeline.impactStart && animationProgress < timeline.fireballEnd && (
         <>
-          <ImpactFlash location={location} progress={(animationProgress - 0.25) / 0.55} />
+          <ImpactFlash 
+            location={location} 
+            progress={(animationProgress - timeline.impactStart) / (timeline.fireballEnd - timeline.impactStart)} 
+          />
           {enableEffects && (
             <>
               <Fireball
                 position={impactPosition}
-                progress={(animationProgress - 0.25) / 0.55}
+                progress={(animationProgress - timeline.fireballStart) / (timeline.fireballEnd - timeline.fireballStart)}
                 maxSize={Math.min(0.7, impactIntensity / 120)}
               />
               <ExplosionParticles
                 position={impactPosition}
-                progress={(animationProgress - 0.28) / 0.52}
+                progress={(animationProgress - timeline.impactEnd) / (timeline.fireballEnd - timeline.impactEnd)}
                 intensity={Math.min(2, impactIntensity / 50) * particleMultiplier}
               />
             </>
@@ -465,20 +595,20 @@ export function ImpactVisualization3D({
         </>
       )}
       
-      {animationProgress >= 0.75 && animationProgress < 1 && enableEffects && (
+      {animationProgress >= timeline.debrisStart && animationProgress < 1 && enableEffects && (
         <BallisticDebris
           impactPosition={impactPosition}
-          progress={animationProgress}
+          progress={(animationProgress - timeline.debrisStart) / (1 - timeline.debrisStart)}
           intensity={Math.min(2, impactIntensity / 50) * particleMultiplier}
         />
       )}
       
-      {results && animationProgress > 0.30 && (
+      {results && animationProgress > timeline.impactEnd && (
         <>
           <RealisticCraterFormation
             impactPosition={impactPosition}
             crater={results.crater}
-            progress={animationProgress}
+            progress={(animationProgress - timeline.impactEnd) / (1 - timeline.impactEnd)}
           />
           
           {/* Crater-Earth seamless overlay */}
@@ -486,81 +616,111 @@ export function ImpactVisualization3D({
             impactPosition={impactPosition}
             craterDiameter_m={results.crater.finalDiameter_m}
             craterDepth_m={results.crater.finalDepth_m}
-            progress={animationProgress}
+            progress={(animationProgress - timeline.impactEnd) / (1 - timeline.impactEnd)}
             earthTexture={earthDayTexture}
             earthNormalMap={earthNormalTexture}
           />
         </>
       )}
       
-      {results && animationProgress > 0.28 && (
+      {results && animationProgress > timeline.shockStart && (
         <SeismicWaves
           impactPosition={impactPosition}
           magnitude={results.seismic.magnitude}
-          progress={animationProgress}
+          progress={(animationProgress - timeline.shockStart) / (1 - timeline.shockStart)}
         />
       )}
       
-      {results && animationProgress > 0.35 && animationProgress < 0.95 && enableEffects && (
+      {results && animationProgress > timeline.fireballStart && animationProgress < 0.95 && enableEffects && (
         <MushroomCloud
           position={impactPosition}
           energy_megatons={results.energy.megatonsTNT}
-          progress={animationProgress}
+          progress={(animationProgress - timeline.fireballStart) / (0.95 - timeline.fireballStart)}
         />
       )}
       
-      {results && animationProgress > 0.25 && animationProgress < 1 && (
+      {results && animationProgress > timeline.shockStart && animationProgress < 1 && (
         <>
-          <SedovTaylorShock
+          {/* BİLİMSEL ŞOK DALGASI SİSTEMİ */}
+          {/* Ana bilimsel şok dalgası - Sedov-Taylor + Rankine-Hugoniot */}
+          <ScientificShockWave
             impactPosition={impactPosition}
+            progress={animationProgress}
             energy_joules={results.energy.joules}
-            progress={animationProgress}
-            delay={0.30}
+            delay={timeline.shockStart}
           />
           
-          <ShockWave
-            center={impactPosition}
+          {/* Dünya yüzeyi entegrasyonu - krater ve deformasyon */}
+          <EarthSurfaceIntegration
+            impactPosition={impactPosition}
             progress={animationProgress}
-            maxRadius={results.crater.radius_km / 6371 * 1.8}
-            color="#ff0000"
-            opacity={0.9}
-            delay={0.45}
+            craterRadius_km={results.crater.finalDiameter_m / 2000}
+            delay={timeline.impactEnd}
           />
           
-          <EffectRing
-            center={location}
-            radius_km={results.crater.radius_km}
-            color="#ff0000"
-            opacity={0.9}
+          {/* Çoklu basınç katmanları */}
+          <AtmosphericPressureWave
+            impactPosition={impactPosition}
             progress={animationProgress}
-            delay={0.28}
-          />
-          
-          <EffectRing
-            center={location}
+            pressure_psi={20}
             radius_km={results.airBlast.radius_20psi_km}
-            color="#ff4400"
-            opacity={0.8}
-            progress={animationProgress}
-            delay={0.40}
+            delay={timeline.shockStart + 0.005}
           />
           
-          <ShockWave
+          <AtmosphericPressureWave
+            impactPosition={impactPosition}
+            progress={animationProgress}
+            pressure_psi={10}
+            radius_km={results.airBlast.radius_10psi_km}
+            delay={timeline.shockStart + 0.01}
+          />
+          
+          <AtmosphericPressureWave
+            impactPosition={impactPosition}
+            progress={animationProgress}
+            pressure_psi={5}
+            radius_km={results.airBlast.radius_5psi_km}
+            delay={timeline.shockStart + 0.015}
+          />
+          
+          <AtmosphericPressureWave
+            impactPosition={impactPosition}
+            progress={animationProgress}
+            pressure_psi={1}
+            radius_km={results.airBlast.radius_1psi_km}
+            delay={timeline.shockStart + 0.025}
+          />
+          
+          {/* Geniş küresel yayılım - dünya çapında */}
+          <SphericalShockWave
             center={impactPosition}
             progress={animationProgress}
-            maxRadius={results.airBlast.radius_5psi_km / 6371 * 1.8}
-            color="#ff6600"
-            opacity={0.7}
-            delay={0.48}
+            maxRadius_km={results.airBlast.radius_1psi_km * 1.5}
+            color="#ff4400"
+            opacity={1.6}
+            delay={timeline.shockStart + 0.035}
+            intensity={2.2}
           />
           
-          <EffectRing
-            center={location}
-            radius_km={results.airBlast.radius_5psi_km}
-            color="#ff8800"
-            opacity={0.7}
+          <SphericalShockWave
+            center={impactPosition}
             progress={animationProgress}
-            delay={0.52}
+            maxRadius_km={results.airBlast.radius_1psi_km * 2.5}
+            color="#ff8844"
+            opacity={1.0}
+            delay={timeline.shockStart + 0.05}
+            intensity={1.5}
+          />
+          
+          {/* Termal radyasyon - ışık hızında */}
+          <SphericalShockWave
+            center={impactPosition}
+            progress={animationProgress}
+            maxRadius_km={results.thermal.firstDegree_km}
+            color="#ffdd66"
+            opacity={0.7}
+            delay={timeline.thermalStart}
+            intensity={1.2}
           />
           
           <AtmosphericDistortion
@@ -569,61 +729,33 @@ export function ImpactVisualization3D({
             maxRadius={results.airBlast.radius_1psi_km / 6371 * 1.8}
           />
           
-          <EffectRing
-            center={location}
-            radius_km={results.airBlast.radius_1psi_km}
-            color="#ffaa00"
-            opacity={0.6}
-            progress={animationProgress}
-            delay={0.60}
-          />
-          
           <HeatHaze
             position={impactPosition}
             radius={results.thermal.secondDegree_km / 6371 * 1.8}
             progress={animationProgress}
             intensity={Math.min(impactIntensity / 400, 2)}
-            delay={0.65}
-          />
-          
-          <EffectRing
-            center={location}
-            radius_km={results.thermal.thirdDegree_km}
-            color="#ffcc00"
-            opacity={0.6}
-            progress={animationProgress}
-            delay={0.68}
-          />
-          
-          <EffectRing
-            center={location}
-            radius_km={results.thermal.secondDegree_km}
-            color="#ffdd00"
-            opacity={0.5}
-            progress={animationProgress}
-            delay={0.72}
-          />
-          
-          <EffectRing
-            center={location}
-            radius_km={results.thermal.firstDegree_km}
-            color="#ffee88"
-            opacity={0.4}
-            progress={animationProgress}
-            delay={0.76}
+            delay={timeline.thermalStart}
           />
         </>
       )}
       
       {enablePostProcessing && (
         <EffectComposer>
+          {/* Patlama fazı - yüksek bloom */}
           <Bloom
-            intensity={animationProgress > 0.25 && animationProgress < 0.40 ? 0.7 : 0.05}
-            luminanceThreshold={0.85}
-            luminanceSmoothing={0.9}
+            intensity={
+              animationProgress >= timeline.impactStart && animationProgress < timeline.fireballEnd 
+                ? 1.2 
+                : animationProgress >= timeline.shockStart && animationProgress < timeline.shockEnd
+                ? 0.3
+                : 0.05
+            }
+            luminanceThreshold={0.7}
+            luminanceSmoothing={0.95}
             blendFunction={BlendFunction.ADD}
           />
-          {animationProgress > 0.25 && animationProgress < 0.38 && (
+          {/* Şok dalgası fazı - chromatic aberration */}
+          {animationProgress >= timeline.impactStart && animationProgress < timeline.impactEnd + 0.05 && (
             <ChromaticAberration
               offset={chromaticOffset}
               radialModulation={false}
