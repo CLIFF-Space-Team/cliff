@@ -118,7 +118,12 @@ export function ImpactSimulator() {
         <PerformanceIndicator fps={currentFps} />
         
         <Canvas
-          camera={{ position: [0, 0, 6], fov: 50 }}
+          camera={{ 
+            position: [3, 2, 5],
+            fov: 50,
+            near: 0.1,
+            far: 1000
+          }}
           shadows
           gl={{ 
             antialias: true,
@@ -146,6 +151,10 @@ export function ImpactSimulator() {
               particleMultiplier={qualitySettings.particles / 100}
               externalProgress={animationProgress}
               shouldResetAnimation={resetAnimationFlag}
+              asteroidParams={{
+                diameter_m: asteroid.diameter_m,
+                velocity_kms: asteroid.velocity_kms
+              }}
             />
             
             <OrbitControls
@@ -157,6 +166,7 @@ export function ImpactSimulator() {
               enableDamping
               dampingFactor={0.05}
               zoomSpeed={0.8}
+              target={[0, 0, 0]}
             />
           </Suspense>
         </Canvas>
@@ -166,6 +176,9 @@ export function ImpactSimulator() {
             <AnimationTimeline
               progress={animationProgress}
               isPlaying={!isPaused}
+              asteroidVelocity={asteroid.velocity_kms}
+              asteroidDiameter={asteroid.diameter_m}
+              impactEnergy={results?.energy.megatonsTNT}
             />
             
             <SimulationControls

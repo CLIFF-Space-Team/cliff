@@ -37,13 +37,24 @@ export function ShockWave({
         opacity: { value: opacity }
       },
       vertexShader: `
+        uniform float progress;
         varying vec2 vUv;
         varying vec3 vNormal;
+        varying float vDistFromCenter;
         
         void main() {
           vUv = uv;
           vNormal = normalize(normalMatrix * normal);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          
+          // Hemisphere üzerinde mesafe hesapla
+          vec3 spherePos = normalize(position);
+          vDistFromCenter = length(position.xy) / 2.0;
+          
+          // Dalga efekti için hafif yükseklik
+          float wave = sin(vDistFromCenter * 20.0 - progress * 10.0) * 0.02;
+          vec3 displaced = position + normal * wave * progress;
+          
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);
         }
       `,
       fragmentShader: `
@@ -54,26 +65,30 @@ export function ShockWave({
         
         varying vec2 vUv;
         varying vec3 vNormal;
+        varying float vDistFromCenter;
         
         void main() {
-          float dist = length(vUv - 0.5) * 2.0;
+          // Hemisphere üzerinde radyal mesafe
+          float dist = vDistFromCenter;
           
-          float wave1 = sin((dist - progress * 2.0) * 15.0) * 0.5 + 0.5;
-          float wave2 = sin((dist - progress * 2.0) * 30.0 + time * 2.0) * 0.3 + 0.7;
-          float wave = wave1 * wave2;
+          // Ana şok dalgası halası
+          float shockRing = smoothstep(progress - 0.03, progress, dist) * 
+                           smoothstep(progress + 0.08, progress + 0.03, dist);
           
-          float shockRing = smoothstep(progress - 0.05, progress, dist) * 
-                           smoothstep(progress + 0.15, progress + 0.05, dist);
+          // Takip eden dalgalar
+          float trailingWaves = sin((dist - progress) * 25.0 + time * 3.0) * 0.5 + 0.5;
+          trailingWaves *= smoothstep(0.0, progress - 0.05, dist) * 
+                          smoothstep(progress + 0.15, progress, dist);
           
-          float trailingWaves = sin((dist - progress * 2.0) * 8.0) * 0.5 + 0.5;
-          trailingWaves *= smoothstep(0.0, progress, dist) * smoothstep(progress + 0.3, progress, dist);
+          // Kenar yumuşatma
+          float edgeFade = smoothstep(0.0, 0.02, dist) * smoothstep(1.0, 0.9, dist);
           
-          float edgeFade = smoothstep(0.0, 0.05, dist) * smoothstep(1.0, 0.95, dist);
+          // Görünürlük artırıldı
+          float alpha = (shockRing * 3.0 + trailingWaves * 1.2) * edgeFade * opacity;
           
-          float alpha = (shockRing * 2.0 + trailingWaves * 0.5) * edgeFade * opacity * sin(progress * 3.14159);
-          
-          vec3 hotCore = vec3(1.0, 1.0, 0.8);
-          vec3 finalColor = mix(color, hotCore, shockRing * (1.0 - progress));
+          // Sıcak merkez rengi
+          vec3 hotCore = vec3(1.0, 0.9, 0.6);
+          vec3 finalColor = mix(color, hotCore, shockRing * 0.8);
           
           gl_FragColor = vec4(finalColor, alpha);
         }
@@ -102,12 +117,12 @@ export function ShockWave({
     
     waveRef.current.visible = true
     
+    // Hemisphere dünya yüzeyinde yayılır - sadece yatay ölçekleme
     const scale = maxRadius * Math.pow(adjustedProgress, 0.6)
-    waveRef.current.scale.set(scale, scale, 1)
+    waveRef.current.scale.set(scale, scale, scale)
     
-    const pulseIntensity = Math.sin(adjustedProgress * Math.PI) * 1.5
+    // Position sabit - dünya yüzeyinde kalır
     waveRef.current.position.copy(center)
-    waveRef.current.position.addScaledVector(normal, 0.01 * pulseIntensity)
     
     materialRef.current.uniforms.time.value += delta
     materialRef.current.uniforms.progress.value = adjustedProgress
@@ -120,7 +135,8 @@ export function ShockWave({
       position={center}
       quaternion={quaternion}
     >
-      <planeGeometry args={[2, 2, 32, 32]} />
+      {/* Hemisphere geometry - dünya yüzeyinde yayılır */}
+      <sphereGeometry args={[2, 64, 64, 0, Math.PI * 2, 0, Math.PI / 2]} />
       <primitive ref={materialRef} object={shaderMaterial} attach="material" />
     </mesh>
   )

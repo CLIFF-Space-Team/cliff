@@ -47,21 +47,24 @@ export function SedovTaylorShock({
         
         varying vec2 vUv;
         varying float vDistance;
+        varying vec3 vNormal;
         
         void main() {
           vUv = uv;
+          vNormal = normalize(normalMatrix * normal);
           
-          vec3 pos = position;
-          float dist = length(pos.xy);
+          // Hemisphere üzerinde radyal mesafe
+          float dist = length(position.xy) / 2.0;
           vDistance = dist;
           
-          float wave = sin((dist - shockRadius) * 50.0) * 0.03;
-          wave *= smoothstep(shockRadius + 0.5, shockRadius, dist);
-          wave *= smoothstep(0.0, shockRadius - 0.5, dist);
+          // Sedov-Taylor şok dalgası - hemisphere üzerinde
+          float wave = sin((dist - shockRadius) * 30.0) * 0.04;
+          wave *= smoothstep(shockRadius + 0.1, shockRadius, dist);
+          wave *= smoothstep(0.0, shockRadius - 0.1, dist);
           
-          pos.z += wave * progress;
+          vec3 displaced = position + normal * wave * progress;
           
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);
         }
       `,
       fragmentShader: `
@@ -71,22 +74,32 @@ export function SedovTaylorShock({
         
         varying vec2 vUv;
         varying float vDistance;
+        varying vec3 vNormal;
         
         void main() {
-          float dist = length(vUv - 0.5) * 2.0;
+          // Hemisphere üzerinde radyal mesafe
+          float dist = vDistance;
           
-          float shockFront = abs(vDistance - shockRadius);
-          float frontIntensity = 1.0 - smoothstep(0.0, 0.3, shockFront);
+          // Sedov-Taylor şok cephesi
+          float shockFront = abs(dist - shockRadius);
+          float frontIntensity = 1.0 - smoothstep(0.0, 0.15, shockFront);
           
-          float wave = sin((vDistance - shockRadius) * 40.0 + time * 10.0) * 0.5 + 0.5;
+          // Dalga animasyonu
+          float wave = sin((dist - shockRadius) * 35.0 + time * 8.0) * 0.5 + 0.5;
           
+          // Renk gradyanı
           vec3 color = mix(
-            vec3(1.0, 0.5, 0.0),
-            vec3(1.0, 1.0, 0.5),
+            vec3(1.0, 0.4, 0.0),  // Turuncu
+            vec3(1.0, 1.0, 0.7),  // Sarı-beyaz
             frontIntensity
           );
           
-          float alpha = frontIntensity * wave * progress * 0.7;
+          // Görünürlük artırıldı
+          float alpha = frontIntensity * wave * progress * 1.5;
+          
+          // Kenar fade
+          float edgeFade = smoothstep(0.0, 0.05, dist) * smoothstep(1.0, 0.85, dist);
+          alpha *= edgeFade;
           
           gl_FragColor = vec4(color, alpha);
         }
@@ -116,7 +129,9 @@ export function SedovTaylorShock({
       shockMaterial.uniforms.progress.value = Math.min(localProgress * 1.5, 1)
     }
     
+    // Hemisphere dünya yüzeyinde yayılır
     meshRef.current.scale.setScalar(R_scaled * 3)
+    meshRef.current.position.copy(impactPosition)
   })
   
   const normal = useMemo(() => impactPosition.clone().normalize(), [impactPosition])
@@ -132,9 +147,11 @@ export function SedovTaylorShock({
       quaternion={quaternion}
       visible={false}
     >
-      <planeGeometry args={[2, 2, 64, 64]} />
+      {/* Hemisphere geometry - dünya yüzeyinde yayılan şok dalgası */}
+      <sphereGeometry args={[2, 64, 64, 0, Math.PI * 2, 0, Math.PI / 2]} />
       <primitive object={shockMaterial} attach="material" />
     </mesh>
   )
 }
+
 

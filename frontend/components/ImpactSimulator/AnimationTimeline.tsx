@@ -6,25 +6,46 @@ import { motion } from 'framer-motion'
 interface AnimationTimelineProps {
   progress: number
   isPlaying: boolean
+  asteroidVelocity?: number
+  asteroidDiameter?: number
+  impactEnergy?: number
 }
 
 const TIMELINE_EVENTS = [
   { time: 0.0, label: 'Başlangıç', color: '#888', description: 'Uzayda (15 km mesafe)', scientific: 'v = 20 km/s' },
-  { time: 0.12, label: 'Yaklaşma', color: '#4488ff', description: 'Hızlı yaklaşım', scientific: '5 km mesafe' },
-  { time: 0.20, label: 'Atmosfer', color: '#ffaa00', description: '100 km yükseklikte', scientific: 'Sürtünme başlıyor' },
-  { time: 0.25, label: 'Çarpma!', color: '#ff0000', description: 'Yüzeye temas (t=0)', scientific: 'E = mv²/2' },
-  { time: 0.30, label: 'Fireball', color: '#ff6600', description: 'Patlama genişliyor', scientific: 'T = 7000K → 2000K' },
-  { time: 0.45, label: 'Shock Wave', color: '#ff8800', description: 'Süpersonik şok dalgası', scientific: 'v = 343 m/s + psi yayılımı' },
-  { time: 0.65, label: 'Termal', color: '#ffcc00', description: 'Yoğun ısı radyasyonu', scientific: 'Işık hızı (299,792 km/s)' },
-  { time: 0.75, label: 'Debris', color: '#aa8866', description: 'Balistik enkaz fırlatma', scientific: 'h = v²/2g, v₀ ≤ 2 km/s' },
-  { time: 0.88, label: 'Yerleşme', color: '#666', description: 'Gravitasyonel düşüş', scientific: 'a = -g = -9.8 m/s²' },
-  { time: 1.0, label: 'Tamamlandı', color: '#00ff88', description: 'Enkaz yere yerleşti', scientific: 'Son krater oluşumu' }
+  { time: 0.10, label: 'Yaklaşma', color: '#4488ff', description: 'Hızlı yaklaşım', scientific: '5 km mesafe' },
+  { time: 0.15, label: 'Atmosfer', color: '#ffaa00', description: '100 km yükseklikte', scientific: 'Sürtünme başlıyor' },
+  { time: 0.20, label: 'Çarpma!', color: '#ff0000', description: 'Yüzeye temas (t=0)', scientific: 'E = mv²/2' },
+  { time: 0.22, label: 'Fireball', color: '#ff6600', description: 'Patlama genişliyor', scientific: 'T = 7000K → 2000K' },
+  { time: 0.23, label: 'Shock Wave', color: '#ff8800', description: 'Süpersonik şok dalgası', scientific: 'v = 343 m/s + psi yayılımı' },
+  { time: 0.25, label: 'Termal', color: '#ffcc00', description: 'Işık hızı radyasyon', scientific: 'c = 299,792 km/s' },
+  { time: 0.35, label: 'Debris', color: '#aa8866', description: 'Balistik enkaz fırlatma', scientific: 'h = v²/2g, v₀ ≤ 2 km/s' },
+  { time: 0.70, label: 'Yayılım', color: '#666', description: 'Şok dalgası genişliyor', scientific: 'R ∝ t²/⁵ (Sedov-Taylor)' },
+  { time: 0.88, label: 'Yerleşme', color: '#444', description: 'Gravitasyonel düşüş', scientific: 'a = -g = -9.8 m/s²' },
+  { time: 1.0, label: 'Tamamlandı', color: '#00ff88', description: 'Simülasyon sonu', scientific: 'Final krater durumu' }
 ]
 
-export function AnimationTimeline({ progress, isPlaying }: AnimationTimelineProps) {
+export function AnimationTimeline({ 
+  progress, 
+  isPlaying, 
+  asteroidVelocity = 20, 
+  asteroidDiameter = 100,
+  impactEnergy = 0
+}: AnimationTimelineProps) {
   const currentPhase = TIMELINE_EVENTS.reduce((prev, curr) => {
     return progress >= curr.time ? curr : prev
   }, TIMELINE_EVENTS[0])
+  
+  // Dinamik fiziksel hesaplamalar
+  const currentVelocity = progress < 0.20 ? asteroidVelocity * (1 - progress * 0.1) : 0
+  const currentTemperature = progress >= 0.20 && progress < 0.35 
+    ? 7000 - (progress - 0.20) * 33333 // 7000K'den 2000K'ye düşüş
+    : progress >= 0.15 && progress < 0.20
+    ? 3000 + (progress - 0.15) * 80000 // Atmosferde ısınma
+    : 300
+  const currentPressure = progress >= 0.23 && progress < 0.70
+    ? 20 * Math.exp(-(progress - 0.23) * 10) // Exponential decay
+    : 0
   
   return (
     <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-20 w-full max-w-4xl px-4">
@@ -111,6 +132,39 @@ export function AnimationTimeline({ progress, isPlaying }: AnimationTimelineProp
                 {Math.round(progress * 100)}%
               </p>
               <p className="text-xs text-cliff-light-gray">Tamamlandı</p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Bilimsel Veriler Overlay */}
+        <div className="mt-3 pt-3 border-t border-cliff-white/10">
+          <div className="grid grid-cols-4 gap-3">
+            <div className="bg-blue-500/10 rounded-lg p-2 border border-blue-500/30">
+              <p className="text-[10px] text-blue-300 mb-1">Hız</p>
+              <p className="text-sm font-bold text-white font-mono">
+                {currentVelocity > 0 ? `${currentVelocity.toFixed(1)} km/s` : '—'}
+              </p>
+            </div>
+            
+            <div className="bg-orange-500/10 rounded-lg p-2 border border-orange-500/30">
+              <p className="text-[10px] text-orange-300 mb-1">Sıcaklık</p>
+              <p className="text-sm font-bold text-white font-mono">
+                {currentTemperature > 300 ? `${Math.round(currentTemperature)} K` : '300 K'}
+              </p>
+            </div>
+            
+            <div className="bg-red-500/10 rounded-lg p-2 border border-red-500/30">
+              <p className="text-[10px] text-red-300 mb-1">Basınç</p>
+              <p className="text-sm font-bold text-white font-mono">
+                {currentPressure > 0.1 ? `${currentPressure.toFixed(1)} PSI` : '—'}
+              </p>
+            </div>
+            
+            <div className="bg-yellow-500/10 rounded-lg p-2 border border-yellow-500/30">
+              <p className="text-[10px] text-yellow-300 mb-1">Enerji</p>
+              <p className="text-sm font-bold text-white font-mono">
+                {impactEnergy > 0 ? `${impactEnergy.toFixed(1)} MT` : '—'}
+              </p>
             </div>
           </div>
         </div>
