@@ -74,15 +74,15 @@ export const ProceduralAsteroidSystem = React.memo(({
   const asteroidGeometry = useMemo(() => {
     if (!THREE) return null
     
-    const segments = {
-      low: 12,
-      medium: 16,
-      high: 20,
-      ultra: 28
-    }[quality] || 20
+    const subdivisions = {
+      low: 1,
+      medium: 2,
+      high: 3,
+      ultra: 4
+    }[quality] || 2
     
-    // Create high-detail irregular asteroid geometry
-    const geometry = new THREE.IcosahedronGeometry(1, Math.floor(segments / 6))
+    // Create high-detail irregular asteroid geometry with subdivision
+    const geometry = new THREE.IcosahedronGeometry(1, subdivisions)
     
     // Professional asteroid surface deformation
     const positions = geometry.getAttribute('position')
@@ -171,13 +171,74 @@ export const ProceduralAsteroidSystem = React.memo(({
     texture.wrapT = THREE.RepeatWrapping
     texture.repeat.set(1, 1)
     texture.anisotropy = 16
+    texture.encoding = THREE.sRGBEncoding
     
+    // Generate procedural normal map for surface detail
+    const normalCanvas = document.createElement('canvas')
+    normalCanvas.width = size
+    normalCanvas.height = size
+    const normalCtx = normalCanvas.getContext('2d')!
+    const normalImageData = normalCtx.createImageData(size, size)
+    const normalData = normalImageData.data
+    
+    for (let i = 0; i < normalData.length; i += 4) {
+      const x = (i / 4) % size
+      const y = Math.floor((i / 4) / size)
+      
+      // Calculate surface normals from height map
+      const height = Math.sin(x * 0.1) * Math.cos(y * 0.1) + 
+                    Math.sin(x * 0.2) * Math.cos(y * 0.2) * 0.5
+      
+      normalData[i] = 128 + height * 127 // R (X normal)
+      normalData[i + 1] = 128 - height * 64 // G (Y normal)
+      normalData[i + 2] = 180 + height * 75 // B (Z normal - pointing out)
+      normalData[i + 3] = 255 // Alpha
+    }
+    
+    normalCtx.putImageData(normalImageData, 0, 0)
+    const normalMap = new THREE.CanvasTexture(normalCanvas)
+    normalMap.wrapS = THREE.RepeatWrapping
+    normalMap.wrapT = THREE.RepeatWrapping
+    normalMap.anisotropy = 16
+    
+    // Generate procedural roughness map
+    const roughnessCanvas = document.createElement('canvas')
+    roughnessCanvas.width = size
+    roughnessCanvas.height = size
+    const roughnessCtx = roughnessCanvas.getContext('2d')!
+    const roughnessImageData = roughnessCtx.createImageData(size, size)
+    const roughnessData = roughnessImageData.data
+    
+    for (let i = 0; i < roughnessData.length; i += 4) {
+      const x = (i / 4) % size
+      const y = Math.floor((i / 4) / size)
+      
+      // Varied roughness - some areas smooth (metallic minerals), others rough
+      const roughnessVariation = Math.sin(x * 0.15) * Math.cos(y * 0.12) + 
+                                  Math.sin(x * 0.3) * Math.cos(y * 0.25) * 0.5
+      const roughness = Math.max(200, Math.min(255, 230 + roughnessVariation * 25))
+      
+      roughnessData[i] = roughness
+      roughnessData[i + 1] = roughness
+      roughnessData[i + 2] = roughness
+      roughnessData[i + 3] = 255
+    }
+    
+    roughnessCtx.putImageData(roughnessImageData, 0, 0)
+    const roughnessMap = new THREE.CanvasTexture(roughnessCanvas)
+    roughnessMap.wrapS = THREE.RepeatWrapping
+    roughnessMap.wrapT = THREE.RepeatWrapping
+    
+    // PBR Material with all maps
     const mat = new THREE.MeshStandardMaterial({
       color: '#8B7355',
       map: texture,
-      metalness: 0.05,
+      normalMap: normalMap,
+      normalScale: new THREE.Vector2(0.8, 0.8),
+      roughnessMap: roughnessMap,
       roughness: 0.95,
-      bumpScale: 0.5
+      metalness: 0.05,
+      envMapIntensity: 0.3
     })
     
     return mat
@@ -299,10 +360,10 @@ export const ProceduralAsteroidSystem = React.memo(({
         instance.position = [x, y, z]
       }
 
-      // Gerçekçi çok yavaş dönüş hızları (asteroidler saatlerce döner)
-      instance.rotation[0] += delta * instance.speed * 0.5
-      instance.rotation[1] += delta * instance.speed * 0.3
-      instance.rotation[2] += delta * instance.speed * 0.2
+      // Asteroidler artık dönmüyor - sabit kalıyorlar
+      // instance.rotation[0] += delta * instance.speed * 0.5
+      // instance.rotation[1] += delta * instance.speed * 0.3
+      // instance.rotation[2] += delta * instance.speed * 0.2
 
       position.set(...instance.position)
       scaleV.set(...instance.scale)

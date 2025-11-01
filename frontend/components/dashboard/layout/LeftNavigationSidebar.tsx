@@ -3,6 +3,7 @@
 import React, { useMemo, useCallback, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
 import { 
   Globe, 
   Shield, 
@@ -14,7 +15,8 @@ import {
   Activity,
   AlertTriangle,
   Satellite,
-  Bot
+  Bot,
+  Rocket
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ViewType } from '@/types/dashboard-layout'
@@ -231,6 +233,43 @@ export const LeftNavigationSidebar: React.FC<{}> = () => {
               </button>
             )
           })}
+        </div>
+        
+        {/* Özel Özellikler */}
+        {isExpanded && (
+          <div className="mt-6">
+            <h3 className="text-cliff-light-gray text-xs font-semibold uppercase tracking-wider mb-3">
+              İnteraktif Araçlar
+            </h3>
+          </div>
+        )}
+        
+        <div className="space-y-1">
+          <Link href="/impact-simulator">
+            <button
+              className={cn(
+                'w-full flex items-center gap-3 rounded-xl text-left transition-all duration-200',
+                'hover:transform hover:scale-[1.02] group relative overflow-hidden',
+                isExpanded ? 'p-3' : 'p-3 justify-center',
+                'text-cliff-light-gray hover:text-cliff-white hover:bg-orange-500/20 hover:border-transparent'
+              )}
+            >
+              <Rocket className="w-5 h-5 transition-colors relative z-10 shrink-0 group-hover:text-orange-400" />
+              
+              {isExpanded && (
+                <div className="flex-1 relative z-10">
+                  <div className="font-medium text-sm">Çarpma Simülatörü</div>
+                  <div className="text-xs opacity-70 mt-0.5">Asteroid etki analizi</div>
+                </div>
+              )}
+              
+              {isExpanded && (
+                <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-xs">
+                  YENİ
+                </Badge>
+              )}
+            </button>
+          </Link>
         </div>
       </div>
 

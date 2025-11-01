@@ -67,9 +67,9 @@ export class PostProcessingManager {
       enableColorGrading: true,
       enableAntiAliasing: true,
       
-      bloomStrength: 0.8,
+      bloomStrength: 0.2,
       bloomRadius: 0.4,
-      bloomThreshold: 0.7,
+      bloomThreshold: 0.85,
       
       exposure: 1.0,
       contrast: 1.1,

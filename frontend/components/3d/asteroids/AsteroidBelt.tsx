@@ -38,10 +38,10 @@ const AsteroidBelt: React.FC = () => {
   }, []);
 
   useFrame((state, delta) => {
-    if (instancedMeshRef.current) {
-      // Gerçekçi çok yavaş asteroid kuşağı dönüşü
-      instancedMeshRef.current.rotation.y += delta * 0.0005;
-    }
+    // Asteroid kuşağı artık dönmüyor - sabit kalıyor
+    // if (instancedMeshRef.current) {
+    //   instancedMeshRef.current.rotation.y += delta * 0.0005;
+    // }
   });
 
   // Enhanced asteroid geometry for belt

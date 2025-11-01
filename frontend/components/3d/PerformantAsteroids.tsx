@@ -288,10 +288,10 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
     lastUpdateTime.current = now
     
     asteroidInstances.forEach((asteroid, i) => {
-      // Update rotation
-      asteroid.rotation.x += asteroid.rotationSpeed.x * delta * 0.05
-      asteroid.rotation.y += asteroid.rotationSpeed.y * delta * 0.05
-      asteroid.rotation.z += asteroid.rotationSpeed.z * delta * 0.05
+      // Asteroidler artık dönmüyor - sabit kalıyorlar
+      // asteroid.rotation.x += asteroid.rotationSpeed.x * delta * 0.05
+      // asteroid.rotation.y += asteroid.rotationSpeed.y * delta * 0.05
+      // asteroid.rotation.z += asteroid.rotationSpeed.z * delta * 0.05
       
       // Update orbit
       asteroid.orbitAngle += asteroid.orbitSpeed * delta * 0.02
