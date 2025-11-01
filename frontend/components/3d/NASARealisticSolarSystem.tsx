@@ -53,7 +53,7 @@ function ScenePerformanceManager({ quality, onQualityChange }: any) {
       enableBloom: quality !== 'low',
       enableColorGrading: quality !== 'low',
       enableAntiAliasing: quality !== 'low',
-      bloomStrength: quality === 'ultra' ? 0.8 : quality === 'high' ? 0.6 : 0.4,
+      bloomStrength: quality === 'ultra' ? 0.3 : quality === 'high' ? 0.2 : 0.15,
       renderScale: quality === 'low' ? 0.75 : 1.0
     })
 
@@ -86,84 +86,7 @@ function ScenePerformanceManager({ quality, onQualityChange }: any) {
   return null
 }
 
-// LOD-aware Asteroid with distance-based quality
-function LODAsteroid({ position, rotation, scale, speed, enableAnimation, cameraPosition }: any) {
-  const meshRef = useRef<THREE.Mesh>(null)
-
-  useFrame((state, delta) => {
-    if (!meshRef.current) return
-
-    // Asteroidler artık dönmüyor - sabit kalıyorlar
-    // if (enableAnimation) {
-    //   meshRef.current.rotation.x += delta * speed
-    //   meshRef.current.rotation.y += delta * speed * 0.7
-    // }
-  })
-
-  return (
-    <mesh
-      ref={meshRef}
-      position={position}
-      rotation={rotation}
-      scale={scale}
-      castShadow
-      receiveShadow
-    >
-      <dodecahedronGeometry args={[1, 0]} />
-      <meshStandardMaterial
-        color="#8B7355"
-        roughness={0.9}
-        metalness={0.1}
-      />
-    </mesh>
-  )
-}
-
-// Enhanced Asteroid Belt with LOD
-function SimpleAsteroidBelt({ 
-  count = 100,
-  quality = 'high',
-  enableAnimation = true,
-  cameraPosition = new THREE.Vector3(0, 20, 35)
-}: any) {
-  const asteroidCount = useMemo(() => {
-    const multipliers = { low: 0.3, medium: 0.5, high: 0.75, ultra: 1.0 }
-    return Math.floor(count * multipliers[quality])
-  }, [count, quality])
-  
-  const asteroids = useMemo(() => {
-    const temp = []
-    for (let i = 0; i < asteroidCount; i++) {
-      const angle = (i / asteroidCount) * Math.PI * 2
-      const radius = 15 + Math.random() * 10
-      const x = Math.cos(angle) * radius
-      const z = Math.sin(angle) * radius
-      const y = (Math.random() - 0.5) * 2
-      const size = 0.05 + Math.random() * 0.15
-      
-      temp.push({
-        position: [x, y, z] as [number, number, number],
-        rotation: [Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI] as [number, number, number],
-        scale: size,
-        speed: 0.1 + Math.random() * 0.2
-      })
-    }
-    return temp
-  }, [asteroidCount])
-  
-  return (
-    <group>
-      {asteroids.map((asteroid, i) => (
-        <LODAsteroid 
-          key={i} 
-          {...asteroid} 
-          enableAnimation={enableAnimation}
-          cameraPosition={cameraPosition}
-        />
-      ))}
-    </group>
-  )
-}
+// Note: SimpleAsteroidBelt removed - using ProceduralAsteroidSystem instead for better performance and quality
 
 // Orbital Path Ring
 function OrbitalPath({ radius, color = "#4A90E2", opacity = 0.1 }: any) {
@@ -307,12 +230,13 @@ function SolarSystemScene({
       
       {/* Enhanced Asteroids: Procedural system with PBR/instancing */}
       <ProceduralAsteroidSystem
-        count={quality === 'ultra' ? 220 : quality === 'high' ? 140 : quality === 'medium' ? 90 : 50}
+        count={quality === 'ultra' ? 100 : quality === 'high' ? 50 : quality === 'medium' ? 30 : 20}
         quality={quality}
         enableAnimation={false}
         distributionRadius={[14, 28]}
         enableThreatVisualization
         enableOrbitalMechanics={false}
+        maxAsteroids={100}
       />
       
       {/* Phase 2: Cosmic Dust - Only in full mode for better performance in earth_focus */}
@@ -360,7 +284,7 @@ export function NASARealisticSolarSystem({
   enableRotation = true,
   displayMode = 'full'
 }: NASARealisticSolarSystemProps) {
-  const [showFPSMonitor] = useState(false)
+  const [showFPSMonitor] = useState(true) // Enable FPS monitoring for performance tracking
   const shadowsEnabled = quality !== 'low'
   const reflectionsEnabled = quality !== 'low'
   const setQuality = useDashboardStore((s) => s.setQuality)
@@ -437,13 +361,13 @@ export function NASARealisticSolarSystem({
         </Suspense>
       </Canvas>
       
-      {/* Minimal FPS Monitor in corner */}
+      {/* FPS Monitor with performance metrics */}
       {showFPSMonitor && (
         <div className="absolute top-4 right-4 z-20">
           <FPSMonitor
-            compact={true}
-            showGraph={false}
-            showDetails={false}
+            compact={quality === 'low' || quality === 'medium'}
+            showGraph={quality === 'high' || quality === 'ultra'}
+            showDetails={quality === 'ultra'}
           />
         </div>
       )}

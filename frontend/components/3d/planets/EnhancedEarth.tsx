@@ -10,6 +10,7 @@ import {
 } from '../shaders/AtmosphericScatteringShader'
 import { createAuroraMaterial, updateAurora } from '../shaders/AuroraShader'
 import { useEarthEventsStore } from '@/stores/earthEventsStore'
+import { useGIBSEarthTexture } from '@/hooks/use-gibs-texture'
 
 interface EnhancedEarthProps {
   position?: [number, number, number]
@@ -149,14 +150,14 @@ export function EnhancedEarth({
   enableRotation = true,
   sunPosition = new THREE.Vector3(-20, 0, 0),
   nasaTexture = '/textures/earth-night.jpg',
-  showEarthEvents = true
-}: EnhancedEarthProps) {
+  showEarthEvents = true,
+  useGIBS = false
+}: EnhancedEarthProps & { useGIBS?: boolean }) {
   const earthRef = useRef<THREE.Mesh>(null)
   const cloudsRef = useRef<THREE.Mesh>(null)
   const atmosphereRef = useRef<THREE.Mesh>(null)
   const auroraRef = useRef<THREE.Mesh>(null)
 
-  // Earth events integration
   const { events, fetchEvents } = useEarthEventsStore()
   
   useEffect(() => {
@@ -165,12 +166,36 @@ export function EnhancedEarth({
     }
   }, [showEarthEvents, fetchEvents])
   
-  // Load textures
-  const earthTexture = useLoader(THREE.TextureLoader, nasaTexture)
+  const { texture: gibsTexture } = useGIBSEarthTexture()
+  
+  const earthTextureLocal = useLoader(THREE.TextureLoader, nasaTexture)
   const normalMap = useLoader(THREE.TextureLoader, '/textures/earth-normal.jpg')
   const specularMap = useLoader(THREE.TextureLoader, '/textures/earth-specular.jpg')
   const cloudsTexture = useLoader(THREE.TextureLoader, '/textures/earth-clouds.jpg')
   const nightTexture = useLoader(THREE.TextureLoader, '/textures/earth-night.jpg')
+  
+  const earthTexture = useGIBS && gibsTexture ? gibsTexture : earthTextureLocal
+  
+  // Ultra-high quality texture optimization
+  useEffect(() => {
+    const textures = [earthTexture, normalMap, specularMap, cloudsTexture, nightTexture]
+    textures.forEach(texture => {
+      if (texture) {
+        texture.anisotropy = 16 // Maximum anisotropic filtering
+        texture.colorSpace = THREE.SRGBColorSpace
+        texture.generateMipmaps = true
+        texture.minFilter = THREE.LinearMipmapLinearFilter
+        texture.magFilter = THREE.LinearFilter
+        texture.wrapS = THREE.RepeatWrapping
+        texture.wrapT = THREE.RepeatWrapping
+        
+        // Enhanced texture quality settings
+        if (texture === normalMap) {
+          texture.encoding = THREE.LinearEncoding
+        }
+      }
+    })
+  }, [earthTexture, normalMap, specularMap, cloudsTexture, nightTexture])
   
   // Create atmospheric scattering material
   const atmosphereMaterial = useMemo(() => {
@@ -211,7 +236,7 @@ export function EnhancedEarth({
     // Custom shader for day/night transition with city lights
     return new THREE.ShaderMaterial({
       uniforms: {
-        dayTexture: { value: nightTexture },
+        dayTexture: { value: earthTexture },
         nightTexture: { value: nightTexture },
         normalMap: { value: normalMap },
         specularMap: { value: specularMap },
@@ -222,12 +247,17 @@ export function EnhancedEarth({
         varying vec2 vUv;
         varying vec3 vNormal;
         varying vec3 vPosition;
+        varying vec3 vViewPosition;
+        varying vec3 vWorldNormal;
         
         void main() {
           vUv = uv;
           vNormal = normalize(normalMatrix * normal);
+          vWorldNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
           vPosition = (modelMatrix * vec4(position, 1.0)).xyz;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+          vViewPosition = -mvPosition.xyz;
+          gl_Position = projectionMatrix * mvPosition;
         }
       `,
       fragmentShader: `
@@ -240,37 +270,71 @@ export function EnhancedEarth({
         varying vec2 vUv;
         varying vec3 vNormal;
         varying vec3 vPosition;
+        varying vec3 vViewPosition;
+        varying vec3 vWorldNormal;
+        
+        // Fresnel equation for realistic reflections
+        float fresnel(vec3 viewDir, vec3 normal, float power) {
+          return pow(1.0 - max(dot(viewDir, normal), 0.0), power);
+        }
         
         void main() {
           // Calculate sun direction
           vec3 sunDir = normalize(sunPosition - vPosition);
+          vec3 viewDir = normalize(vViewPosition);
           
-          // Calculate day/night factor
-          float sunDot = dot(vNormal, sunDir);
-          float dayNightFactor = smoothstep(-0.1, 0.3, sunDot);
+          // Enhanced normal mapping with proper TBN space
+          vec3 normalSample = texture2D(normalMap, vUv).xyz * 2.0 - 1.0;
+          normalSample.xy *= 2.5; // Enhanced normal strength
+          vec3 perturbedNormal = normalize(vWorldNormal + normalSample);
           
-          // Sample textures
+          // Calculate day/night factor with smoother transition
+          float sunDot = dot(perturbedNormal, sunDir);
+          float dayNightFactor = smoothstep(-0.15, 0.35, sunDot);
+          float twilightBand = smoothstep(-0.15, 0.0, sunDot) * smoothstep(0.35, 0.1, sunDot);
+          
+          // Sample textures with enhanced filtering
           vec4 dayColor = texture2D(dayTexture, vUv);
           vec4 nightColor = texture2D(nightTexture, vUv);
           
-          // Enhance night lights with glow
-          nightColor.rgb *= 2.5;
-          nightColor.rgb += vec3(0.1, 0.1, 0.05); // Slight glow
+          // Enhanced night lights (more realistic city glow)
+          nightColor.rgb *= 3.0;
+          nightColor.rgb += vec3(0.15, 0.12, 0.08); // Warm urban glow
+          
+          // Twilight zone (warm orange/red at terminator)
+          vec3 twilightColor = vec3(1.0, 0.6, 0.3) * twilightBand * 0.5;
           
           // Mix day and night
           vec4 finalColor = mix(nightColor, dayColor, dayNightFactor);
+          finalColor.rgb += twilightColor;
           
-          // Apply normal mapping for surface detail
-          vec3 normal = texture2D(normalMap, vUv).xyz * 2.0 - 1.0;
-          float normalDot = dot(normal, sunDir);
-          finalColor.rgb *= 0.8 + 0.2 * normalDot;
-          
-          // Apply specular for water reflection
+          // Enhanced ocean specular (Fresnel-based)
           vec4 specular = texture2D(specularMap, vUv);
-          vec3 reflectDir = reflect(-sunDir, vNormal);
-          vec3 viewDir = normalize(cameraPosition - vPosition);
-          float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
-          finalColor.rgb += specular.rgb * spec * dayNightFactor * 0.5;
+          float isOcean = specular.r;
+          
+          if (isOcean > 0.5) {
+            // Fresnel effect for water
+            float fresnelFactor = fresnel(viewDir, perturbedNormal, 3.0);
+            
+            // Specular highlight
+            vec3 halfDir = normalize(sunDir + viewDir);
+            float specPower = 128.0; // Very sharp water reflections
+            float spec = pow(max(dot(perturbedNormal, halfDir), 0.0), specPower);
+            
+            // Combine ocean effects
+            vec3 oceanSpecular = vec3(1.0) * spec * dayNightFactor * 0.8;
+            vec3 oceanFresnel = vec3(0.2, 0.3, 0.4) * fresnelFactor * dayNightFactor * 0.3;
+            
+            finalColor.rgb += oceanSpecular + oceanFresnel;
+          }
+          
+          // Atmospheric scattering (blue tint at edges)
+          float atmosphereFactor = fresnel(viewDir, vNormal, 4.0);
+          vec3 atmosphereColor = vec3(0.5, 0.7, 1.0) * atmosphereFactor * 0.15;
+          finalColor.rgb += atmosphereColor * dayNightFactor;
+          
+          // Slight ambient boost for realism
+          finalColor.rgb = max(finalColor.rgb, dayColor.rgb * 0.05);
           
           gl_FragColor = finalColor;
         }
