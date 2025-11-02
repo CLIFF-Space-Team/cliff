@@ -20,6 +20,7 @@ export interface ImpactLocation {
   isOcean: boolean
   depth?: number
   population?: number
+  cityName?: string
 }
 
 export interface ImpactResults {
@@ -203,56 +204,6 @@ export class ImpactCalculator {
       tsunami,
       casualties,
       comparison
-    }
-  }
-  
-  private calculateMass(asteroid: AsteroidParams): number {
-    const radius = asteroid.diameter_m / 2
-    const volume = (4/3) * Math.PI * Math.pow(radius, 3)
-    const density = asteroid.density || 2600
-    return volume * density
-  }
-  
-  private calculateKineticEnergy(mass_kg: number, velocity_kms: number) {
-    const velocity_ms = velocity_kms * 1000
-    const joules = 0.5 * mass_kg * Math.pow(velocity_ms, 2)
-    const megatonsTNT = joules / 4.184e15
-    
-    return { joules, megatonsTNT }
-  }
-  
-  private calculateCrater(energy_megatons: number, angle_deg: number) {
-    const angleFactor = Math.sin(angle_deg * Math.PI / 180)
-    const radius_km = 0.13 * Math.pow(energy_megatons, 0.3) * angleFactor
-    const depth_km = radius_km * 0.3
-    
-    return { radius_km, depth_km }
-  }
-  
-  private calculateAirBlast(energy_megatons: number) {
-    return {
-      radius_20psi_km: 0.28 * Math.pow(energy_megatons, 0.33),
-      radius_5psi_km: 1.03 * Math.pow(energy_megatons, 0.33),
-      radius_1psi_km: 2.20 * Math.pow(energy_megatons, 0.33)
-    }
-  }
-  
-  private calculateThermal(energy_megatons: number) {
-    return {
-      thirdDegree_km: 0.67 * Math.pow(energy_megatons, 0.41),
-      secondDegree_km: 1.15 * Math.pow(energy_megatons, 0.41),
-      firstDegree_km: 1.49 * Math.pow(energy_megatons, 0.41)
-    }
-  }
-  
-  private calculateSeismic(energy_joules: number) {
-    const magnitude = (2/3) * (Math.log10(energy_joules) - 4.8)
-    const clampedMagnitude = Math.min(Math.max(magnitude, 0), 10)
-    const feltRadius_km = 100 * Math.pow(10, 0.5 * clampedMagnitude)
-    
-    return {
-      magnitude: clampedMagnitude,
-      feltRadius_km
     }
   }
   

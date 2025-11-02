@@ -310,9 +310,10 @@ export function EnhancedAtmosphericEntry({
       const velocities = ablationVelocities
       
       for (let i = 0; i < 200; i++) {
-        positions.array[i * 3] += velocities[i * 3] * delta * 2
-        positions.array[i * 3 + 1] += velocities[i * 3 + 1] * delta * 2
-        positions.array[i * 3 + 2] += velocities[i * 3 + 2] * delta * 2
+        const x = positions.getX(i) + velocities[i * 3] * delta * 2
+        const y = positions.getY(i) + velocities[i * 3 + 1] * delta * 2
+        const z = positions.getZ(i) + velocities[i * 3 + 2] * delta * 2
+        positions.setXYZ(i, x, y, z)
       }
       
       positions.needsUpdate = true
@@ -324,13 +325,12 @@ export function EnhancedAtmosphericEntry({
       
       const positions = trailRef.current.geometry.attributes.position
       for (let i = 0; i < particleCount; i++) {
-        positions.array[i * 3] = asteroidPosition.x + trailInitialOffsets[i * 3]
-        positions.array[i * 3 + 1] = asteroidPosition.y + trailInitialOffsets[i * 3 + 1]
-        positions.array[i * 3 + 2] = asteroidPosition.z + trailInitialOffsets[i * 3 + 2]
+        const x = asteroidPosition.x + trailInitialOffsets[i * 3]
+        const y = asteroidPosition.y + trailInitialOffsets[i * 3 + 1]
+        const z = asteroidPosition.z + trailInitialOffsets[i * 3 + 2]
         
         const turbulence = Math.sin(state.clock.elapsedTime * 2 + i * 0.1) * 0.02
-        positions.array[i * 3] += turbulence
-        positions.array[i * 3 + 1] += turbulence * 0.5
+        positions.setXYZ(i, x + turbulence, y + turbulence * 0.5, z)
       }
       positions.needsUpdate = true
     }

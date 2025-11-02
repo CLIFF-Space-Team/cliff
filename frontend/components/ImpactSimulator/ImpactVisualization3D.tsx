@@ -29,8 +29,6 @@ import { TextureLoader } from 'three'
 import { ImpactPhysics } from '@/services/ImpactPhysics'
 import { SphericalShockWave } from './SphericalShockWave'
 import { AtmosphericPressureWave } from './AtmosphericPressureWave'
-import { ScientificShockWave } from './ScientificShockWave'
-import { EarthSurfaceIntegration } from './EarthSurfaceIntegration'
 
 interface ImpactVisualization3DProps {
   location: ImpactLocation
@@ -641,30 +639,31 @@ export function ImpactVisualization3D({
       
       {results && animationProgress > timeline.shockStart && animationProgress < 1 && (
         <>
-          {/* BİLİMSEL ŞOK DALGASI SİSTEMİ */}
-          {/* Ana bilimsel şok dalgası - Sedov-Taylor + Rankine-Hugoniot */}
-          <ScientificShockWave
+          {/* Ana Sedov-Taylor şok dalgası */}
+          <SedovTaylorShock
             impactPosition={impactPosition}
             progress={animationProgress}
-            energy_joules={results.energy.joules}
             delay={timeline.shockStart}
           />
           
-          {/* Dünya yüzeyi entegrasyonu - krater ve deformasyon */}
-          <EarthSurfaceIntegration
-            impactPosition={impactPosition}
+          {/* Küresel şok dalgası - dünya çapında yayılım */}
+          <SphericalShockWave
+            center={impactPosition}
             progress={animationProgress}
-            craterRadius_km={results.crater.finalDiameter_m / 2000}
-            delay={timeline.impactEnd}
+            maxRadius_km={results.crater.radius_km * 5}
+            color="#ff2200"
+            opacity={1.8}
+            delay={timeline.shockStart}
+            intensity={2.5}
           />
           
-          {/* Çoklu basınç katmanları */}
+          {/* Basınç dalgaları - çoklu katmanlar */}
           <AtmosphericPressureWave
             impactPosition={impactPosition}
             progress={animationProgress}
             pressure_psi={20}
             radius_km={results.airBlast.radius_20psi_km}
-            delay={timeline.shockStart + 0.005}
+            delay={timeline.shockStart + 0.01}
           />
           
           <AtmosphericPressureWave
@@ -672,7 +671,7 @@ export function ImpactVisualization3D({
             progress={animationProgress}
             pressure_psi={10}
             radius_km={results.airBlast.radius_10psi_km}
-            delay={timeline.shockStart + 0.01}
+            delay={timeline.shockStart + 0.02}
           />
           
           <AtmosphericPressureWave
@@ -680,7 +679,7 @@ export function ImpactVisualization3D({
             progress={animationProgress}
             pressure_psi={5}
             radius_km={results.airBlast.radius_5psi_km}
-            delay={timeline.shockStart + 0.015}
+            delay={timeline.shockStart + 0.03}
           />
           
           <AtmosphericPressureWave
@@ -688,39 +687,29 @@ export function ImpactVisualization3D({
             progress={animationProgress}
             pressure_psi={1}
             radius_km={results.airBlast.radius_1psi_km}
-            delay={timeline.shockStart + 0.025}
-          />
-          
-          {/* Geniş küresel yayılım - dünya çapında */}
-          <SphericalShockWave
-            center={impactPosition}
-            progress={animationProgress}
-            maxRadius_km={results.airBlast.radius_1psi_km * 1.5}
-            color="#ff4400"
-            opacity={1.6}
-            delay={timeline.shockStart + 0.035}
-            intensity={2.2}
-          />
-          
-          <SphericalShockWave
-            center={impactPosition}
-            progress={animationProgress}
-            maxRadius_km={results.airBlast.radius_1psi_km * 2.5}
-            color="#ff8844"
-            opacity={1.0}
             delay={timeline.shockStart + 0.05}
+          />
+          
+          {/* Geniş atmosferik dalgalar */}
+          <SphericalShockWave
+            center={impactPosition}
+            progress={animationProgress}
+            maxRadius_km={results.airBlast.radius_1psi_km * 2}
+            color="#ffaa44"
+            opacity={1.2}
+            delay={timeline.shockStart + 0.08}
             intensity={1.5}
           />
           
-          {/* Termal radyasyon - ışık hızında */}
+          {/* Termal radyasyon dalgaları */}
           <SphericalShockWave
             center={impactPosition}
             progress={animationProgress}
             maxRadius_km={results.thermal.firstDegree_km}
-            color="#ffdd66"
-            opacity={0.7}
+            color="#ffdd88"
+            opacity={0.8}
             delay={timeline.thermalStart}
-            intensity={1.2}
+            intensity={1.0}
           />
           
           <AtmosphericDistortion

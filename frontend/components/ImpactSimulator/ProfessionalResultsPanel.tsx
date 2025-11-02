@@ -1,13 +1,18 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImpactResults, ImpactLocation } from './types'
 import { 
   AlertTriangle, Flame, Waves, Activity, Zap, Users, Mountain, 
-  Wind, Globe, TrendingUp, FileText, Download, Share2, ChevronDown, ChevronUp
+  Wind, Globe, TrendingUp, FileText, Download, Share2, ChevronDown, ChevronUp, Sparkles, Presentation
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
+import { MemeGenerator } from './MemeGenerator'
+import { SlideReport } from './SlideReport/SlideReport'
+import { MemeComposer } from './3D/MemeComposer'
 
 interface ProfessionalResultsPanelProps {
   results: ImpactResults
@@ -30,37 +35,190 @@ export function ProfessionalResultsPanel({
     crater: true,
     effects: true
   })
+  const [showMemeGenerator, setShowMemeGenerator] = useState(false)
+  const [showSlideReport, setShowSlideReport] = useState(false)
+  const [impactImage, setImpactImage] = useState<string>()
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false)
+  const reportRef = useRef<HTMLDivElement>(null)
   
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }))
   }
   
-  const formatScientific = (num: number) => num.toExponential(2)
-  const formatNumber = (num: number, decimals: number = 2) => num.toFixed(decimals)
+  const handleDownloadPNG = async () => {
+    if (!reportRef.current) return
+    
+    try {
+      const canvas = await html2canvas(reportRef.current, {
+        backgroundColor: '#000000',
+        scale: 2,
+        logging: false,
+      })
+      
+      const link = document.createElement('a')
+      link.download = `asteroid-impact-report-${location.cityName || 'location'}-${Date.now()}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+    } catch (error) {
+      console.error('PNG indirme hatası:', error)
+    }
+  }
+  
+  const handleDownloadPDF = async () => {
+    if (!reportRef.current) return
+    
+    try {
+      const canvas = await html2canvas(reportRef.current, {
+        backgroundColor: '#000000',
+        scale: 2,
+        logging: false,
+      })
+      
+      const imgData = canvas.toDataURL('image/png')
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      })
+      
+      const imgWidth = 210
+      const imgHeight = (canvas.height * imgWidth) / canvas.width
+      
+      let heightLeft = imgHeight
+      let position = 0
+      
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+      heightLeft -= 297
+      
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight
+        pdf.addPage()
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
+        heightLeft -= 297
+      }
+      
+      pdf.save(`asteroid-impact-report-${location.cityName || 'location'}-${Date.now()}.pdf`)
+    } catch (error) {
+      console.error('PDF indirme hatası:', error)
+    }
+  }
+
+  const handleOpenSlideReport = async () => {
+    if (!impactImage && !isGeneratingImage) {
+      setIsGeneratingImage(true)
+      try {
+        const imageData = await MemeComposer.renderImpact({
+          lat: location.lat,
+          lng: location.lng,
+          impactMetrics: {
+            energy: results.energy.megatonsTNT,
+            craterDiameter: results.crater.finalDiameter_m / 1000,
+            craterDepth: results.crater.finalDepth_m / 1000,
+            magnitude: results.seismic.magnitude,
+            thermalRadiation: results.thermal.fireball_maxRadius_m,
+            maxWindSpeed: results.airBlast.radius_20psi_km,
+            seismicMagnitude: results.seismic.magnitude
+          },
+          asteroidDiameter: asteroidParams.diameter_m
+        })
+        setImpactImage(imageData)
+      } catch (error) {
+        console.error('3D görsel üretimi hatası:', error)
+      } finally {
+        setIsGeneratingImage(false)
+      }
+    }
+    setShowSlideReport(true)
+  }
+  
+  const formatScientific = (num: number) => {
+    if (num === null || num === undefined || isNaN(num) || !isFinite(num)) {
+      return '0.00e+0'
+    }
+    return num.toExponential(2)
+  }
+  
+  const formatNumber = (num: number, decimals: number = 2) => {
+    if (num === null || num === undefined || isNaN(num) || !isFinite(num)) {
+      return '0.00'
+    }
+    return num.toFixed(decimals)
+  }
   
   return (
-    <Card className="bg-pure-black/95 backdrop-blur-md border-cliff-white/10 h-full overflow-y-auto">
-      <CardHeader className="border-b border-cliff-white/10">
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-cliff-white">
-            <FileText className="h-5 w-5 text-blue-400" />
-            Bilimsel Etki Raporu
-          </CardTitle>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="sm" className="h-8 px-2">
-              <Share2 className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" className="h-8 px-2">
-              <Download className="h-4 w-4" />
-            </Button>
+    <>
+      <MemeGenerator
+        open={showMemeGenerator}
+        onClose={() => setShowMemeGenerator(false)}
+        memeOptions={{
+          asteroidParams,
+          location,
+          results
+        }}
+      />
+      {showSlideReport && (
+        <SlideReport
+          results={results}
+          location={location}
+          asteroidParams={asteroidParams}
+          onClose={() => setShowSlideReport(false)}
+          impactImage={impactImage}
+        />
+      )}
+      <Card className="bg-pure-black/95 backdrop-blur-md border-cliff-white/10 h-full flex flex-col">
+        <CardHeader className="border-b border-cliff-white/10 flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-cliff-white">
+              <FileText className="h-5 w-5 text-blue-400" />
+              Bilimsel Etki Raporu
+            </CardTitle>
+            <div className="flex gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-3 gap-1.5"
+                onClick={handleOpenSlideReport}
+                disabled={isGeneratingImage}
+                title="Slayt Raporu"
+              >
+                <Presentation className="h-4 w-4 text-blue-400" />
+                <span className="text-xs">{isGeneratingImage ? '⏳' : 'Slayt'}</span>
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-2"
+                onClick={() => setShowMemeGenerator(true)}
+                title="Meme oluştur ve paylaş"
+              >
+                <Sparkles className="h-4 w-4 text-orange-400" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-2"
+                onClick={handleDownloadPNG}
+                title="PNG olarak indir"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 px-2"
+                onClick={handleDownloadPDF}
+                title="PDF olarak indir"
+              >
+                <FileText className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        </div>
         <p className="text-xs text-cliff-light-gray mt-1">
           NASA/JPL Impact Physics • Collins et al. (2005) • Holsapple & Housen (2007)
         </p>
       </CardHeader>
       
-      <CardContent className="space-y-3 p-4">
+      <CardContent className="space-y-3 p-4 overflow-y-auto flex-1" ref={reportRef}>
         {/* Genel Özet */}
         <div className="bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-lg p-4">
           <div className="flex items-start gap-3">
@@ -447,6 +605,7 @@ export function ProfessionalResultsPanel({
         </div>
       </CardContent>
     </Card>
+    </>
   )
 }
 

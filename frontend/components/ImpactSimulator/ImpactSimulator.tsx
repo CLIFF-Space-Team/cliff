@@ -194,7 +194,7 @@ export function ImpactSimulator() {
       </div>
       
       {/* Sağ Panel - Preview veya Sonuçlar */}
-      <div className="w-96 flex-shrink-0">
+      <div className="w-96 flex-shrink-0 h-full">
         <AnimatePresence mode="wait">
           {results ? (
             <motion.div
@@ -203,6 +203,7 @@ export function ImpactSimulator() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
+              className="h-full"
             >
               <ProfessionalResultsPanel 
                 results={results} 
@@ -217,6 +218,7 @@ export function ImpactSimulator() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
+              className="h-full"
             >
               <EnhancedAsteroidPreview asteroid={asteroid} />
             </motion.div>
