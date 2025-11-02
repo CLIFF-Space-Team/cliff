@@ -5,7 +5,6 @@
 
 import { useRef, useMemo, useState } from 'react'
 import { useFrame, useLoader, ThreeEvent } from '@react-three/fiber'
-import { TextureLoader } from 'three/src/loaders/TextureLoader'
 import * as THREE from 'three'
 import {
   SimpleCelestialBody,
@@ -78,7 +77,7 @@ export const BaseSatelliteComponent: React.FC<BaseSatelliteComponentProps> = ({
   })
   
   // Load textures
-  const textures = useLoader(TextureLoader, [
+  const textures = useLoader(THREE.TextureLoader, [
     satelliteBody.texture_url || satelliteBody.textures?.diffuse || '',
     // No normal or specular for simple version
   ].filter(Boolean))

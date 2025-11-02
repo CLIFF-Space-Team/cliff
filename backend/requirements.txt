@@ -1,4 +1,14 @@
 # 🌌 CLIFF Backend - Python Dependencies
+# 
+# Copyright (c) 2025 kynuxdev
+# CLIFF Proprietary Source Available License
+# 
+# UYARI: Bu kod TÜBİTAK, NASA veya herhangi bir yarışmada kullanılamaz.
+# Yetkisiz kullanım telif hakkı ihlalidir.
+# 
+# WARNING: This code cannot be used in TÜBİTAK, NASA, or any competitions.
+# Unauthorized use constitutes copyright infringement.
+#
 # FastAPI and Core Dependencies
 fastapi==0.104.1
 uvicorn[standard]==0.24.0

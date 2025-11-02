@@ -5,7 +5,6 @@
 
 import { useRef, useMemo, useEffect, useState } from 'react'
 import { useFrame, useLoader, ThreeEvent } from '@react-three/fiber'
-import { TextureLoader } from 'three/src/loaders/TextureLoader'
 import * as THREE from 'three'
 import {
   SimpleCelestialBody,
@@ -77,7 +76,7 @@ export const BasePlanetComponent: React.FC<BasePlanetComponentProps> = ({
     // Add more texture URLs as needed
   ].filter(Boolean)
   
-  const textures = textureUrls.length > 0 ? useLoader(TextureLoader, textureUrls) : []
+  const textures = textureUrls.length > 0 ? useLoader(THREE.TextureLoader, textureUrls) : []
   
   // Create geometry with quality-appropriate segments
   const geometry = useMemo(() => {

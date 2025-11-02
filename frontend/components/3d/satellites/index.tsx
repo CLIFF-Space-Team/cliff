@@ -1,3 +1,14 @@
+/**
+ * Copyright (c) 2025 kynuxdev
+ * CLIFF Proprietary Source Available License
+ * 
+ * UYARI: Bu kod TÜBİTAK, NASA veya herhangi bir yarışmada kullanılamaz.
+ * Yetkisiz kullanım telif hakkı ihlalidir.
+ * 
+ * WARNING: This code cannot be used in TÜBİTAK, NASA, or any competitions.
+ * Unauthorized use constitutes copyright infringement.
+ */
+
 // CLIFF 3D Solar System - Major Satellite Systems
 // Specialized components for major moons and satellites
 
@@ -5,7 +16,6 @@
 
 import { useMemo, useRef } from 'react'
 import { useFrame, useLoader } from '@react-three/fiber'
-import { TextureLoader } from 'three/src/loaders/TextureLoader'
 import * as THREE from 'three'
 import { BaseSatelliteComponent, SatelliteComponentProps } from './BaseSatelliteComponent'
 import { SIMPLE_MOONS, SIMPLE_PLANETS } from '../../../types/astronomical-data'
@@ -30,7 +40,7 @@ const MoonComponent: React.FC<MoonComponentProps> = (props) => {
   const earthData = SIMPLE_PLANETS.earth
 
   const phaseRef = useRef<THREE.Mesh>(null)
-  const [moonTexture, moonNormalTexture] = useLoader(TextureLoader, [
+  const [moonTexture, moonNormalTexture] = useLoader(THREE.TextureLoader, [
     '/textures/moon-surface.jpg',
     '/textures/moon-normal.jpg'
   ])

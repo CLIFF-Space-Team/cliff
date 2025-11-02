@@ -1,6 +1,6 @@
 'use client'
 
-// ?? CRITICAL FIX: Removed direct Three.js import for SSR safety
+import * as THREE from 'three'
 import { useMemo, useRef, useEffect } from 'react'
 
 // Material Preset Type Export
