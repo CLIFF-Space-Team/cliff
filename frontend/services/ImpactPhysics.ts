@@ -8,83 +8,73 @@ export class ImpactPhysics {
     velocity_kms: number,
     distance_km: number
   ) {
-    const velocity_ms = velocity_kms * 1000
+    // Animasyon için normalize edilmiş timeline (0-1 arası)
+    // Gerçek fizik yerine görsel açıdan anlamlı zamanlamalar
     
-    const approachTime = (distance_km * 1000) / velocity_ms
-    
-    const atmosphereTime = 100000 / velocity_ms
-    
-    const craterFormationTime = diameter_m / velocity_ms
-    
-    const shockWaveSpeed = this.SOUND_SPEED
-    const maxShockRadius = 100
-    const shockDuration = (maxShockRadius * 1000) / shockWaveSpeed
-    
-    const thermalSpeed = 299792458
-    const thermalDuration = 0.1
-    
-    const debrisEjectionTime = Math.sqrt((2 * 2000) / this.GRAVITY)
-    
-    const totalDuration = approachTime + atmosphereTime + craterFormationTime + 
-                          shockDuration + debrisEjectionTime
+    const approachPhase = 0.35      // %35 - Yaklaşma (en uzun faz)
+    const atmospherePhase = 0.10    // %10 - Atmosfere giriş
+    const impactPhase = 0.03        // %3 - Çarpma anı
+    const fireballPhase = 0.15      // %15 - Fireball
+    const shockPhase = 0.30         // %30 - Şok dalgası yayılımı
+    const debrisPhase = 0.20        // %20 - Debris evresi
     
     return {
       phases: {
         approach: {
           start: 0,
-          end: approachTime / totalDuration,
-          duration: approachTime,
+          end: approachPhase,
+          duration: approachPhase,
           description: 'Asteroid uzaydan yaklaşıyor'
         },
         atmosphereEntry: {
-          start: approachTime / totalDuration,
-          end: (approachTime + atmosphereTime) / totalDuration,
-          duration: atmosphereTime,
+          start: approachPhase - 0.05,
+          end: approachPhase + atmospherePhase,
+          duration: atmospherePhase,
           description: 'Atmosfere giriş (100km yükseklik)'
         },
         impact: {
-          start: (approachTime + atmosphereTime) / totalDuration,
-          end: (approachTime + atmosphereTime + craterFormationTime) / totalDuration,
-          duration: craterFormationTime,
+          start: approachPhase + atmospherePhase,
+          end: approachPhase + atmospherePhase + impactPhase,
+          duration: impactPhase,
           description: 'Yüzeye temas ve krater oluşumu'
         },
         fireball: {
-          start: (approachTime + atmosphereTime) / totalDuration,
-          end: (approachTime + atmosphereTime + craterFormationTime + 5) / totalDuration,
-          duration: 5,
+          start: approachPhase + atmospherePhase,
+          end: approachPhase + atmospherePhase + fireballPhase,
+          duration: fireballPhase,
           description: 'Fireball genişlemesi'
         },
         shockWave: {
-          start: (approachTime + atmosphereTime + craterFormationTime) / totalDuration,
-          end: (approachTime + atmosphereTime + craterFormationTime + shockDuration) / totalDuration,
-          duration: shockDuration,
-          speed: shockWaveSpeed,
-          description: `Ses hızında yayılma (${shockWaveSpeed} m/s)`
+          start: approachPhase + atmospherePhase + impactPhase,
+          end: approachPhase + atmospherePhase + impactPhase + shockPhase,
+          duration: shockPhase,
+          speed: this.SOUND_SPEED,
+          description: `Ses hızında yayılma (${this.SOUND_SPEED} m/s)`
         },
         thermal: {
-          start: (approachTime + atmosphereTime + craterFormationTime) / totalDuration,
-          end: (approachTime + atmosphereTime + craterFormationTime + thermalDuration) / totalDuration,
-          duration: thermalDuration,
-          speed: thermalSpeed,
+          start: approachPhase + atmospherePhase + impactPhase,
+          end: approachPhase + atmospherePhase + impactPhase + 0.05,
+          duration: 0.05,
+          speed: 299792458,
           description: 'Işık hızında termal radyasyon'
         },
         debris: {
-          start: (approachTime + atmosphereTime + craterFormationTime) / totalDuration,
-          end: (approachTime + atmosphereTime + craterFormationTime + debrisEjectionTime) / totalDuration,
-          duration: debrisEjectionTime,
+          start: approachPhase + atmospherePhase + impactPhase + 0.05,
+          end: approachPhase + atmospherePhase + impactPhase + debrisPhase,
+          duration: debrisPhase,
           maxHeight: 2000,
-          description: `Debris ${debrisEjectionTime.toFixed(1)}s içinde ${2000}m yüksekliğe çıkar`
+          description: `Debris fırlatılıyor`
         }
       },
-      totalDuration,
+      totalDuration: 1.0, // Toplam animasyon süresi normalize
       scientificData: {
-        approachVelocity: velocity_ms,
+        approachVelocity: velocity_kms * 1000,
         atmosphereEntryAltitude: 100000,
-        craterFormationTime,
-        shockWaveSpeed,
-        thermalRadiationSpeed: thermalSpeed,
+        craterFormationTime: diameter_m / (velocity_kms * 1000),
+        shockWaveSpeed: this.SOUND_SPEED,
+        thermalRadiationSpeed: 299792458,
         debrisMaxHeight: 2000,
-        debrisFlightTime: debrisEjectionTime
+        debrisFlightTime: Math.sqrt((2 * 2000) / this.GRAVITY)
       }
     }
   }

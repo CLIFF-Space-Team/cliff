@@ -90,6 +90,10 @@ rich==13.7.0
 tqdm==4.66.1
 colorama==0.4.6
 
+# Azure AI Services
+azure-ai-projects
+azure-identity
+
 # NASA and Space Data Specific
 astroquery==0.4.6
 

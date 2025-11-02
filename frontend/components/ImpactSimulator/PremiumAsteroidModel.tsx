@@ -21,7 +21,7 @@ function getBlackbodyColor(temperature: number): THREE.Color {
   return new THREE.Color(0.5, 0.1, 0.0)
 }
 
-export function PremiumAsteroidModel({ 
+export const PremiumAsteroidModel = React.memo(function PremiumAsteroidModel({ 
   diameter, 
   atmosphereProgress = 0,
   velocity = 20,
@@ -83,7 +83,6 @@ export function PremiumAsteroidModel({
     }
     
     geo.computeVertexNormals()
-    geo.computeTangents()
     return geo
   }, [subdivisionLevel])
   
@@ -93,10 +92,6 @@ export function PremiumAsteroidModel({
     return realAsteroidTextures.generateAsteroidTextures(asteroidType, resolution, diameter)
   }, [asteroidType, quality, diameter])
   
-  const heatIntensity = atmosphereProgress * (velocity / 30)
-  const temperature = 300 + heatIntensity * 6000
-  const heatColor = getBlackbodyColor(temperature)
-  
   const atmosphereShader = useMemo(() => {
     return new THREE.ShaderMaterial({
       transparent: true,
@@ -104,8 +99,8 @@ export function PremiumAsteroidModel({
       blending: THREE.AdditiveBlending,
       depthWrite: false,
       uniforms: {
-        glowColor: { value: heatColor },
-        intensity: { value: heatIntensity },
+        glowColor: { value: new THREE.Color(1, 0.5, 0) },
+        intensity: { value: 0 },
         time: { value: 0 }
       },
       vertexShader: `
@@ -135,9 +130,13 @@ export function PremiumAsteroidModel({
         }
       `
     })
-  }, [heatColor, heatIntensity])
+  }, [])
   
   useFrame((state, delta) => {
+    const heatIntensity = atmosphereProgress * (velocity / 30)
+    const temperature = 300 + heatIntensity * 6000
+    const heatColor = getBlackbodyColor(temperature)
+    
     if (meshRef.current) {
       meshRef.current.rotation.y += delta * 0.3
       meshRef.current.rotation.x += delta * 0.1
@@ -148,47 +147,32 @@ export function PremiumAsteroidModel({
       glowRef.current.scale.setScalar(1 + atmosphereProgress * 0.3 * pulsate)
     }
     
-    if (atmosphereShader.uniforms) {
-      atmosphereShader.uniforms.time.value = state.clock.elapsedTime
-      atmosphereShader.uniforms.intensity.value = heatIntensity
-      atmosphereShader.uniforms.glowColor.value = heatColor
-    }
+    atmosphereShader.uniforms.time.value = state.clock.elapsedTime
+    atmosphereShader.uniforms.intensity.value = heatIntensity
+    atmosphereShader.uniforms.glowColor.value.copy(heatColor)
   })
   
   // Ultra-realistic PBR material
   const asteroidMaterial = useMemo(() => {
-    const material = new THREE.MeshPhysicalMaterial({
+    return new THREE.MeshPhysicalMaterial({
       map: asteroidTextures.diffuse,
       normalMap: asteroidTextures.normal,
       normalScale: new THREE.Vector2(3.5, 3.5),
       roughnessMap: asteroidTextures.roughness,
       roughness: 0.92,
-      metalnessMap: asteroidType === 'M-type' ? asteroidTextures.roughness : undefined,
       metalness: asteroidType === 'M-type' ? 0.6 : 0.08,
       displacementMap: asteroidTextures.displacement,
       displacementScale: 0.15,
       aoMap: asteroidTextures.ao,
       aoMapIntensity: 1.2,
-      emissive: heatColor,
-      emissiveIntensity: Math.min(heatIntensity * 1.5, 2.0),
+      emissive: new THREE.Color(0, 0, 0),
+      emissiveIntensity: 0,
       clearcoat: asteroidType === 'M-type' ? 0.3 : 0.0,
       clearcoatRoughness: 0.4,
       envMapIntensity: 0.5,
       reflectivity: asteroidType === 'M-type' ? 0.5 : 0.1
     })
-    
-    material.needsUpdate = true
-    return material
-  }, [asteroidTextures, heatColor, heatIntensity, asteroidType])
-  
-  // Update material on heat changes
-  useEffect(() => {
-    if (meshRef.current) {
-      const mat = meshRef.current.material as THREE.MeshPhysicalMaterial
-      mat.emissive = heatColor
-      mat.emissiveIntensity = Math.min(heatIntensity * 1.5, 2.0)
-    }
-  }, [heatColor, heatIntensity])
+  }, [asteroidTextures, asteroidType])
   
   return (
     <group>
@@ -203,5 +187,5 @@ export function PremiumAsteroidModel({
       )}
     </group>
   )
-}
+})
 

@@ -35,6 +35,7 @@ export {
 } from './specialized-cards'
 
 // Form Components
+export { Input } from './input'
 export { Textarea } from './textarea'
 export {
   Select,
@@ -50,6 +51,20 @@ export {
 } from './select'
 export { Slider } from './slider'
 export { Label } from './label'
+
+// Dialog Components
+export {
+  Dialog,
+  DialogPortal,
+  DialogOverlay,
+  DialogClose,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from './dialog'
 
 // Gallery Components
 export { MobileImageGallery } from './mobile-image-gallery'
