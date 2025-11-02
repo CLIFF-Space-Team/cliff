@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { AsteroidParams, ImpactLocation } from './types'
-import { Rocket, MapPin, Settings } from 'lucide-react'
+import { Rocket, MapPin, Settings, Map } from 'lucide-react'
+import { LocationPicker } from './LocationPicker'
 
 interface ControlPanelProps {
   asteroid: AsteroidParams
@@ -43,7 +44,16 @@ export function ControlPanel({
   onSimulate,
   isSimulating
 }: ControlPanelProps) {
+  const [showLocationPicker, setShowLocationPicker] = useState(false)
+  
   return (
+    <>
+      <LocationPicker
+        open={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onLocationSelect={onLocationChange}
+        initialLocation={location}
+      />
     <Card className="bg-pure-black/80 backdrop-blur-md border-cliff-white/10">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-cliff-white">
@@ -130,30 +140,41 @@ export function ControlPanel({
         {/* Hedef Konum */}
         <div className="space-y-2">
           <Label className="text-cliff-white">Hedef Konum</Label>
-          <Select
-            onValueChange={(value) => {
-              const preset = PRESET_LOCATIONS[parseInt(value)]
-              onLocationChange({
-                lat: preset.lat,
-                lng: preset.lng,
-                isOcean: preset.isOcean,
-                population: preset.population,
-                depth: preset.depth,
-                cityName: preset.name
-              })
-            }}
-          >
-            <SelectTrigger className="bg-pure-black/50 border-cliff-white/20 text-cliff-white">
-              <SelectValue placeholder="Konum seçin..." />
-            </SelectTrigger>
-            <SelectContent>
-              {PRESET_LOCATIONS.map((preset, index) => (
-                <SelectItem key={index} value={index.toString()}>
-                  {preset.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex gap-2">
+            <Select
+              onValueChange={(value) => {
+                const preset = PRESET_LOCATIONS[parseInt(value)]
+                onLocationChange({
+                  lat: preset.lat,
+                  lng: preset.lng,
+                  isOcean: preset.isOcean,
+                  population: preset.population,
+                  depth: preset.depth,
+                  cityName: preset.name
+                })
+              }}
+            >
+              <SelectTrigger className="flex-1 bg-pure-black/50 border-cliff-white/20 text-cliff-white">
+                <SelectValue placeholder="Konum seçin..." />
+              </SelectTrigger>
+              <SelectContent>
+                {PRESET_LOCATIONS.map((preset, index) => (
+                  <SelectItem key={index} value={index.toString()}>
+                    {preset.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              onClick={() => setShowLocationPicker(true)}
+              variant="outline"
+              size="icon"
+              className="bg-pure-black/50 border-cliff-white/20 text-cliff-white hover:bg-cliff-white/10"
+              title="Haritadan seç"
+            >
+              <Map className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         {/* Konum Bilgileri */}
@@ -186,6 +207,7 @@ export function ControlPanel({
         </div>
       </CardContent>
     </Card>
+    </>
   )
 }
 

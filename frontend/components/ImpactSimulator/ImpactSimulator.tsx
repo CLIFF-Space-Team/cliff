@@ -118,7 +118,12 @@ export function ImpactSimulator() {
         <PerformanceIndicator fps={currentFps} />
         
         <Canvas
-          camera={{ position: [0, 0, 6], fov: 50 }}
+          camera={{ 
+            position: [3, 2, 5],
+            fov: 50,
+            near: 0.1,
+            far: 1000
+          }}
           shadows
           gl={{ 
             antialias: true,
@@ -146,6 +151,10 @@ export function ImpactSimulator() {
               particleMultiplier={qualitySettings.particles / 100}
               externalProgress={animationProgress}
               shouldResetAnimation={resetAnimationFlag}
+              asteroidParams={{
+                diameter_m: asteroid.diameter_m,
+                velocity_kms: asteroid.velocity_kms
+              }}
             />
             
             <OrbitControls
@@ -157,6 +166,7 @@ export function ImpactSimulator() {
               enableDamping
               dampingFactor={0.05}
               zoomSpeed={0.8}
+              target={[0, 0, 0]}
             />
           </Suspense>
         </Canvas>
@@ -166,6 +176,9 @@ export function ImpactSimulator() {
             <AnimationTimeline
               progress={animationProgress}
               isPlaying={!isPaused}
+              asteroidVelocity={asteroid.velocity_kms}
+              asteroidDiameter={asteroid.diameter_m}
+              impactEnergy={results?.energy.megatonsTNT}
             />
             
             <SimulationControls
@@ -181,7 +194,7 @@ export function ImpactSimulator() {
       </div>
       
       {/* Sağ Panel - Preview veya Sonuçlar */}
-      <div className="w-96 flex-shrink-0">
+      <div className="w-96 flex-shrink-0 h-full">
         <AnimatePresence mode="wait">
           {results ? (
             <motion.div
@@ -190,6 +203,7 @@ export function ImpactSimulator() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
+              className="h-full"
             >
               <ProfessionalResultsPanel 
                 results={results} 
@@ -204,6 +218,7 @@ export function ImpactSimulator() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
+              className="h-full"
             >
               <EnhancedAsteroidPreview asteroid={asteroid} />
             </motion.div>
