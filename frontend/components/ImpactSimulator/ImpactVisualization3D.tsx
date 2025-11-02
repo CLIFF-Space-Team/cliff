@@ -49,10 +49,17 @@ interface ImpactVisualization3DProps {
 }
 
 function latLngToVector3(lat: number, lng: number, radius: number = 1.8): THREE.Vector3 {
+  // Spherical coordinates to Cartesian
+  // φ (phi) = colatitude (90° - latitude)
+  // θ (theta) = longitude
   const phi = (90 - lat) * (Math.PI / 180)
-  const theta = (lng + 180) * (Math.PI / 180)
+  const theta = lng * (Math.PI / 180)
   
-  const x = -radius * Math.sin(phi) * Math.cos(theta)
+  // Standard spherical to Cartesian conversion
+  // x = r * sin(φ) * cos(θ)
+  // y = r * cos(φ)  
+  // z = r * sin(φ) * sin(θ)
+  const x = radius * Math.sin(phi) * Math.cos(theta)
   const y = radius * Math.cos(phi)
   const z = radius * Math.sin(phi) * Math.sin(theta)
   
@@ -459,7 +466,25 @@ export function ImpactVisualization3D({
       originalCameraPosition.current = camera.position.clone()
       previousResetFlag.current = shouldResetAnimation
     }
-  }, [shouldResetAnimation])
+  }, [shouldResetAnimation, camera])
+  
+  // Kamerayı impact pozisyonuna odakla
+  useEffect(() => {
+    // Kamerayı dünya merkezine baktır
+    camera.lookAt(0, 0, 0)
+    camera.updateProjectionMatrix()
+  }, [camera])
+  
+  // İlk yüklemede kamerayı İstanbul'a yönlendir
+  useEffect(() => {
+    if (location && !results) {
+      // İstanbul'a bakmak için kamera pozisyonu
+      const targetPos = latLngToVector3(location.lat, location.lng, 1.8)
+      const cameraOffset = targetPos.clone().normalize().multiplyScalar(6)
+      camera.position.copy(cameraOffset)
+      camera.lookAt(0, 0, 0)
+    }
+  }, [location, results, camera])
   
   // External progress değiştiğinde sync et
   useEffect(() => {
@@ -617,7 +642,6 @@ export function ImpactVisualization3D({
           {/* Ana Sedov-Taylor şok dalgası */}
           <SedovTaylorShock
             impactPosition={impactPosition}
-            energy_joules={results.energy.joules}
             progress={animationProgress}
             delay={timeline.shockStart}
           />
