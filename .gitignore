@@ -210,6 +210,9 @@ nginx-cliff-config.txt
 HIZLI-DUZELTME.md
 
 # ==================== DOCUMENTATION ====================
-# Keep all markdown files for documentation
-# !*.md
+# Ignore all markdown files except critical ones
+*.md
+!README.md
+!LICENSE.md
+!CONTRIBUTING.md
 
