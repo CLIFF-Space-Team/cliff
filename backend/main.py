@@ -2,6 +2,15 @@
 🌌 CLIFF - Cosmic Level Intelligent Forecast Framework
 FastAPI Main Application
 
+Copyright (c) 2025 kynuxdev
+CLIFF Proprietary Source Available License
+
+UYARI: Bu kod TÜBİTAK, NASA veya herhangi bir yarışmada kullanılamaz.
+Yetkisiz kullanım telif hakkı ihlalidir.
+
+WARNING: This code cannot be used in TÜBİTAK, NASA, or any competitions.
+Unauthorized use constitutes copyright infringement.
+
 This is the main entry point for the CLIFF backend API.
 Handles space threat monitoring, AI integration, and real-time data processing.
 """

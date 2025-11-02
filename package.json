@@ -48,8 +48,12 @@
     "websocket",
     "space-apps-challenge"
   ],
-  "author": "CLIFF Team",
-  "license": "MIT",
+  "author": {
+    "name": "kynuxdev",
+    "email": "admin@kynux.dev",
+    "url": "cliff.kynux.dev"
+  },
+  "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
     "concurrently": "^8.2.2",
     "cross-env": "^7.0.3",

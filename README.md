@@ -2,12 +2,36 @@
 
 <div align="center">
 
+<div style="background-color: #ef4444; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 3px solid #dc2626;">
+
+# ⚠️ YASAL UYARI / LEGAL WARNING ⚠️
+
+**Bu proje özel lisansa tabidir. Yarışmalara katılım YASAKTIR.**
+
+This project is licensed under a proprietary license. Competition participation is PROHIBITED.
+
+**TÜBİTAK, NASA veya herhangi bir yarışmaya bu projeyle katılım KESİNLİKLE YASAKTIR!**
+
+TÜBİTAK, NASA, or any competition participation with this project is STRICTLY PROHIBITED!
+
+Yetkisiz kullanım telif hakkı ihlalidir ve yasal işlem başlatılacaktır.
+
+Unauthorized use constitutes copyright infringement and will result in legal action.
+
+[Detaylı Lisans Bilgileri](LICENSE) | [Yarışma Yasağı Bildirimi](COMPETITION-NOTICE.md)
+
+</div>
+
+</div>
+
+<div align="center">
+
 ![CLIFF Banner](https://img.shields.io/badge/NASA-Space%20Apps%20Challenge%202025-blue?style=for-the-badge)
 ![TÜBİTAK](https://img.shields.io/badge/TÜBİTAK-4006%20%7C%202204-red?style=for-the-badge)
 ![Türkiye 1.](https://img.shields.io/badge/NASA%20Space%20Apps-Türkiye%20Aksaray%201.-gold?style=for-the-badge)
 ![Python](https://img.shields.io/badge/Python-3.11+-green?style=for-the-badge&logo=python)
 ![Next.js](https://img.shields.io/badge/Next.js-14.1-black?style=for-the-badge&logo=next.js)
-![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
+![License](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)
 
 ### 🏆 Başarılarımız
 
@@ -835,23 +859,49 @@ style(ui): button renkleri iyileştirildi
 
 ## 📝 Lisans
 
-Bu proje **MIT Lisansı** altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakın.
+### ⚠️ ÖNEMLİ LİSANS UYARISI / IMPORTANT LICENSE WARNING
 
-```
-MIT License
+Bu proje **CLIFF Proprietary Source Available License v1.0** altında lisanslanmıştır.
 
-Copyright (c) 2025 CLIFF Space Team
+This project is licensed under **CLIFF Proprietary Source Available License v1.0**.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+### 🔒 LİSANS KISITLAMALARI / LICENSE RESTRICTIONS
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-```
+**KESİNLİKLE YASAK OLan KULLANIMLAR / STRICTLY PROHIBITED USES:**
+
+- ❌ **TÜBİTAK, NASA veya herhangi bir yarışmaya katılım**
+- ❌ **Ticari kullanım**
+- ❌ **Kod kopyalama, fork, clone**
+- ❌ **Başka projelere entegrasyon**
+- ❌ **Modifikasyon ve dağıtım**
+
+- ❌ **TÜBİTAK, NASA, or any competition participation**
+- ❌ **Commercial use**
+- ❌ **Code copying, fork, clone**
+- ❌ **Integration into other projects**
+- ❌ **Modification and distribution**
+
+**İZİN VERİLEN KULLANIMLAR / PERMITTED USES:**
+
+- ✅ **Sadece görüntüleme ve eğitim amaçlı inceleme**
+- ✅ **Viewing and educational review only**
+
+### 📄 Detaylı Bilgiler / Detailed Information
+
+- **[Tam Lisans Metni](LICENSE)** - Complete License Text
+- **[Yarışma Yasağı Bildirimi](COMPETITION-NOTICE.md)** - Competition Prohibition Notice
+- **[Telif Hakkı Bildirimi](NOTICE.md)** - Copyright Notice
+
+### 👤 Telif Hakkı Sahibi / Copyright Owner
+
+**kynuxdev**  
+Email: admin@kynux.dev  
+Website: cliff.kynux.dev
+
+**Copyright (c) 2025 kynuxdev - All Rights Reserved**
+
+Yetkisiz kullanım telif hakkı ihlalidir ve yasal işlem başlatılacaktır.  
+Unauthorized use constitutes copyright infringement and will result in legal action.
 
 ---
 

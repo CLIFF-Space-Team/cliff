@@ -1,22 +1,182 @@
-MIT License
+CLIFF Proprietary Source Available License v1.0
 
-Copyright (c) 2025 knynuxdev
+Copyright (c) 2025 kynuxdev
+All Rights Reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+================================================================================
+⚠️ YASAL UYARI / LEGAL WARNING ⚠️
+================================================================================
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Bu yazılım ve kaynak kodlarının telif hakkı kynuxdev'e aittir.
+This software and its source code are the proprietary property of kynuxdev.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+================================================================================
+YETKİSİZ KULLANIM YASAKTIR / UNAUTHORIZED USE IS PROHIBITED
+================================================================================
 
+AŞAĞIDAKİ FAALİYETLER KESINLIKLE YASAKTIR / THE FOLLOWING ACTIVITIES ARE STRICTLY PROHIBITED:
+
+1. YARIŞMALARA KATILIM YASAKTIR / COMPETITION PARTICIPATION IS PROHIBITED
+   
+   Bu projeyi veya projeden alınan herhangi bir kodu, parçayı, fikri, 
+   algoritması, tasarımı veya özelliği kullanarak:
+   
+   - TÜBİTAK (Türkiye Bilimsel ve Teknolojik Araştırma Kurumu) 
+     programlarına katılım YASAKTIR
+   - NASA Space Apps Challenge veya benzeri yarışmalara katılım YASAKTIR
+   - Herhangi bir yarışmaya, hackathon'a, bilim fuarına katılım YASAKTIR
+   - Üniversite veya okul projelerinde kullanım YASAKTIR
+   
+   Using this project or any code, parts, ideas, algorithms, designs, or 
+   features derived from it to participate in:
+   
+   - TÜBİTAK (The Scientific and Technological Research Council of Turkey) 
+     programs is PROHIBITED
+   - NASA Space Apps Challenge or similar competitions is PROHIBITED
+   - Any competition, hackathon, or science fair is PROHIBITED
+   - University or school projects is PROHIBITED
+
+2. TİCARİ KULLANIM YASAKTIR / COMMERCIAL USE IS PROHIBITED
+   
+   Bu projeyi herhangi bir ticari amaçla kullanmak YASAKTIR.
+   Using this project for any commercial purpose is PROHIBITED.
+
+3. KOPYALAMA VE DAĞITIM YASAKTIR / COPYING AND DISTRIBUTION IS PROHIBITED
+   
+   Bu projenin kodlarını, parçalarını veya herhangi bir kısmını 
+   kopyalamak, fork etmek, clone etmek, modifiye etmek, dağıtmak 
+   veya herhangi bir şekilde çoğaltmak YASAKTIR.
+   
+   Copying, forking, cloning, modifying, distributing, or reproducing 
+   any part of this project is PROHIBITED.
+
+4. KOD ENTEGRASYONU YASAKTIR / CODE INTEGRATION IS PROHIBITED
+   
+   Bu projeden alınan herhangi bir kodu başka bir projeye, siteye, 
+   uygulamaya veya sistem'e entegre etmek YASAKTIR.
+   
+   Integrating any code from this project into another project, website, 
+   application, or system is PROHIBITED.
+
+================================================================================
+İZİN VERİLEN KULLANIMLAR / PERMITTED USES
+================================================================================
+
+SADECE AŞAĞIDAKİ KULLANIMLAR İZİN VERİLİR / ONLY THE FOLLOWING USES ARE PERMITTED:
+
+1. GÖRÜNTÜLEME / VIEWING
+   Kaynak kodları sadece görüntüleme ve okuma amaçlı inceleyebilirsiniz.
+   You may view and read the source code for inspection purposes only.
+
+2. EĞİTİM AMAÇLI İNCELEME / EDUCATIONAL REVIEW
+   Öğrenme ve eğitim amaçlı olarak kaynak kodlarına bakabilirsiniz,
+   ancak hiçbir kodu kopyalayamaz, kullanamaz veya türetebilirsiniz.
+   You may review the source code for learning and educational purposes,
+   but you may not copy, use, or derive any code from it.
+
+================================================================================
+TELİF HAKKI İHLALİ VE YASAL YAPTIRIMLAR / COPYRIGHT INFRINGEMENT AND LEGAL PENALTIES
+================================================================================
+
+1. TELİF HAKKI İHLALİ / COPYRIGHT INFRINGEMENT
+   
+   Bu lisansın şartlarını ihlal eden herhangi bir kullanım, telif hakkı 
+   ihlali teşkil eder ve yasal işlem başlatılabilir.
+   
+   Any use that violates the terms of this license constitutes copyright 
+   infringement and may result in legal action.
+
+2. YASAL TAKİP / LEGAL PROSECUTION
+   
+   İhlal tespit edildiğinde:
+   
+   - DMCA (Digital Millennium Copyright Act) takdown talebi gönderilecektir
+   - Telif hakkı ihlali için mahkemeye başvurulabilir
+   - İhlalde bulunan kişi veya kuruluşlardan tazminat talep edilebilir
+   - İhlal edilen içeriğin derhal kaldırılması talep edilecektir
+   
+   Upon detection of violation:
+   
+   - DMCA (Digital Millennium Copyright Act) takedown request will be filed
+   - Legal action for copyright infringement may be initiated
+   - Compensation may be sought from violating individuals or entities
+   - Immediate removal of infringing content will be demanded
+
+3. TAZMİNAT / COMPENSATION
+   
+   İhlal durumunda, yazılımın ticari değeri, zarar ve ziyan, avukat masrafları 
+   ve diğer yasal giderler için tazminat talep edilebilir.
+   
+   In case of violation, compensation may be sought for the commercial value 
+   of the software, damages, legal fees, and other legal expenses.
+
+4. KRİMİNAL YAPTIRIM / CRIMINAL PENALTIES
+   
+   Telif hakkı ihlali, bazı yargı yetkilerinde suç teşkil edebilir ve 
+   kriminal yaptırımlar uygulanabilir.
+   
+   Copyright infringement may constitute a crime in some jurisdictions 
+   and may result in criminal penalties.
+
+================================================================================
+İHLAL BİLDİRİMİ / VIOLATION REPORTING
+================================================================================
+
+İhlal tespit ettiyseniz veya bildirmek istiyorsanız, lütfen aşağıdaki 
+iletişim bilgileri ile iletişime geçin:
+   
+If you detect a violation or wish to report one, please contact us using 
+the following information:
+
+Email: admin@kynux.dev
+Website: cliff.kynux.dev
+Owner: kynuxdev
+
+================================================================================
+YASAL UYARILAR VE TÜM YETKİLER / LEGAL NOTICES AND ALL RIGHTS RESERVED
+================================================================================
+
+Bu lisans, 5846 sayılı Fikir ve Sanat Eserleri Kanunu ve uluslararası 
+telif hakkı yasaları tarafından korunmaktadır.
+
+This license is protected by Turkish Law No. 5846 on Intellectual and 
+Artistic Works and international copyright laws.
+
+Tüm hakları saklıdır. Bu lisansın hiçbir hükmü, telif hakkı sahibinin 
+yetkilerini sınırlandırmaz.
+
+All rights reserved. Nothing in this license shall limit the rights of 
+the copyright owner.
+
+Bu lisans altında verilen herhangi bir izin, özel olarak belirtilmediği 
+sürece, telif hakkı sahibinin yazılı izni olmadan devredilemez veya 
+sublisanslanamaz.
+
+Any permission granted under this license may not be transferred or 
+sublicensed without the written consent of the copyright owner, unless 
+specifically stated otherwise.
+
+================================================================================
+SON UYARI / FINAL WARNING
+================================================================================
+
+Bu projeyi, kodunu, parçalarını, fikirlerini veya özelliklerini kullanarak 
+herhangi bir yarışmaya katılım girişimi, yasal işlem ile sonuçlanacaktır.
+
+Any attempt to use this project, its code, parts, ideas, or features to 
+participate in any competition will result in legal action.
+
+YASAL SORUN YAŞAMAK İSTEMİYORSANIZ, BU PROJEYİ YARışMALARDA KULLANMAYIN!
+
+IF YOU DO NOT WANT TO FACE LEGAL ISSUES, DO NOT USE THIS PROJECT IN COMPETITIONS!
+
+================================================================================
+
+Bu lisans, 1 Ocak 2025 tarihinde yürürlüğe girmiştir.
+This license entered into force on January 1, 2025.
+
+Telif Hakkı Sahibi / Copyright Owner: kynuxdev
+Email: admin@kynux.dev
+Website: cliff.kynux.dev
+
+================================================================================

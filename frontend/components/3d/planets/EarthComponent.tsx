@@ -5,7 +5,6 @@
 
 import { useRef, useMemo } from 'react'
 import { useFrame, useLoader } from '@react-three/fiber'
-import { TextureLoader } from 'three/src/loaders/TextureLoader'
 import * as THREE from 'three'
 import { 
   BasePlanetComponent, 
@@ -100,7 +99,7 @@ export const EarthComponent: React.FC<EarthComponentProps> = ({
     earthCloudsTexture,
     moonTexture,
     moonNormalTexture
-  ] = useLoader(TextureLoader, [
+  ] = useLoader(THREE.TextureLoader, [
     textureURLs.earthDay,
     textureURLs.earthNight,
     textureURLs.earthNormal,

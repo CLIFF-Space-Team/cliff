@@ -102,7 +102,12 @@
   "bugs": {
     "url": "https://github.com/CLIFF-Space-Team/cliff/issues"
   },
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
+  "author": {
+    "name": "kynuxdev",
+    "email": "admin@kynux.dev",
+    "url": "cliff.kynux.dev"
+  },
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"

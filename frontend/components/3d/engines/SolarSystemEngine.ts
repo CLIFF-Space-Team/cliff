@@ -1,5 +1,16 @@
+/**
+ * Copyright (c) 2025 kynuxdev
+ * CLIFF Proprietary Source Available License
+ * 
+ * UYARI: Bu kod TÜBİTAK, NASA veya herhangi bir yarışmada kullanılamaz.
+ * Yetkisiz kullanım telif hakkı ihlalidir.
+ * 
+ * WARNING: This code cannot be used in TÜBİTAK, NASA, or any competitions.
+ * Unauthorized use constitutes copyright infringement.
+ */
+
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PerformanceManager } from '../performance/PerformanceManager';
 import { CelestialBodyManager } from '../managers/CelestialBodyManager';
 import { OrbitalMechanicsEngine } from './OrbitalMechanicsEngine';
