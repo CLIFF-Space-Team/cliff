@@ -28,6 +28,14 @@ from app.services.grok_ai_services import (
     GrokStreamChunk
 )
 
+from app.services.azure_ai_agent_service import (
+    get_azure_agent_service,
+    AzureAIAgentService,
+    AzureAgentRequest,
+    AzureAgentResponse,
+    AzureAgentMessage
+)
+
 logger = structlog.get_logger(__name__)
 router = APIRouter()
 
@@ -685,3 +693,195 @@ async def unified_chat_stream(
             status_code=500,
             detail=f"Streaming setup failed: {str(e)}"
         )
+
+# ========================================
+# 🤖 AZURE AI AGENT ENDPOINTS
+# ========================================
+
+@router.post("/azure-agent/chat")
+async def azure_agent_chat(
+    message: str,
+    thread_id: Optional[str] = None,
+    azure_service: AzureAIAgentService = Depends(get_azure_agent_service)
+) -> Dict[str, Any]:
+    """
+    🤖 Azure AI Agent Chat (Agent219)
+    
+    Azure AI Agents ile sohbet et
+    Thread tabanlı konuşma yönetimi
+    
+    Args:
+        message: Kullanıcı mesajı
+        thread_id: Mevcut konuşma thread'i (opsiyonel)
+    
+    Returns:
+        Agent yanıtı ve thread_id
+    """
+    try:
+        if not message or not message.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Message cannot be empty"
+            )
+        
+        logger.info(f"🤖 Azure Agent chat request", has_thread=bool(thread_id))
+        
+        # İstek oluştur
+        request = AzureAgentRequest(
+            messages=[
+                AzureAgentMessage(
+                    role="user",
+                    content=message.strip()
+                )
+            ],
+            thread_id=thread_id
+        )
+        
+        # Agent'tan yanıt al
+        response = await azure_service.chat_completion(request)
+        
+        if response.success:
+            logger.info(
+                f"✅ Azure Agent response generated",
+                thread_id=response.thread_id,
+                response_time_ms=response.response_time_ms
+            )
+            
+            return {
+                "success": True,
+                "content": response.content,
+                "thread_id": response.thread_id,
+                "response_time_ms": response.response_time_ms,
+                "timestamp": response.timestamp,
+                "provider": "azure_ai_agent"
+            }
+        else:
+            logger.error(f"❌ Azure Agent failed: {response.error_message}")
+            
+            return {
+                "success": False,
+                "content": None,
+                "error": response.error_message,
+                "thread_id": response.thread_id,
+                "timestamp": response.timestamp
+            }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        error_msg = f"Azure Agent chat error: {str(e)}"
+        logger.error(error_msg)
+        
+        return {
+            "success": False,
+            "content": None,
+            "error": error_msg,
+            "timestamp": datetime.now().isoformat()
+        }
+
+
+@router.post("/azure-agent/conversation")
+async def azure_agent_conversation(
+    messages: List[Dict[str, str]],
+    thread_id: Optional[str] = None,
+    azure_service: AzureAIAgentService = Depends(get_azure_agent_service)
+) -> Dict[str, Any]:
+    """
+    🤖 Azure AI Agent Conversation
+    
+    Multi-turn conversation with Azure AI Agent
+    Thread tabanlı konuşma geçmişi
+    
+    Args:
+        messages: Mesaj listesi (role, content)
+        thread_id: Mevcut konuşma thread'i
+    """
+    try:
+        if not messages:
+            raise HTTPException(
+                status_code=400,
+                detail="Messages array cannot be empty"
+            )
+        
+        # Mesajları dönüştür
+        agent_messages = []
+        for msg in messages:
+            if "role" not in msg or "content" not in msg:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Each message must have 'role' and 'content'"
+                )
+            
+            agent_messages.append(
+                AzureAgentMessage(
+                    role=msg["role"],
+                    content=msg["content"]
+                )
+            )
+        
+        # İstek oluştur
+        request = AzureAgentRequest(
+            messages=agent_messages,
+            thread_id=thread_id
+        )
+        
+        # Yanıt al
+        response = await azure_service.chat_completion(request)
+        
+        logger.info(
+            f"🤖 Azure Agent conversation completed",
+            messages_count=len(messages),
+            thread_id=response.thread_id,
+            success=response.success
+        )
+        
+        return {
+            "success": response.success,
+            "content": response.content,
+            "thread_id": response.thread_id,
+            "response_time_ms": response.response_time_ms,
+            "error": response.error_message,
+            "timestamp": response.timestamp,
+            "provider": "azure_ai_agent"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        error_msg = f"Azure Agent conversation error: {str(e)}"
+        logger.error(error_msg)
+        
+        return {
+            "success": False,
+            "content": None,
+            "error": error_msg,
+            "timestamp": datetime.now().isoformat()
+        }
+
+
+@router.get("/azure-agent/status")
+async def azure_agent_status(
+    azure_service: AzureAIAgentService = Depends(get_azure_agent_service)
+) -> Dict[str, Any]:
+    """
+    📊 Azure AI Agent Status
+    
+    Azure Agent servis durumunu kontrol et
+    """
+    try:
+        status = azure_service.get_service_info()
+        
+        return {
+            "success": True,
+            "status": status,
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    except Exception as e:
+        logger.error(f"Azure Agent status error: {str(e)}")
+        
+        return {
+            "success": False,
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }

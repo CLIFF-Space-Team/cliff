@@ -16,6 +16,7 @@ interface Message {
   isError?: boolean
   image_url?: string
   isImageGeneration?: boolean
+  thread_id?: string
 }
 
 interface ModernChatInterfaceProps {
@@ -35,6 +36,8 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
   const [isTyping, setIsTyping] = useState(false)
   const [isGeneratingImage, setIsGeneratingImage] = useState(false)
   const [lastUserMessage, setLastUserMessage] = useState<string>('')
+  const [useAzureAgent, setUseAzureAgent] = useState(false)
+  const [azureThreadId, setAzureThreadId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -119,28 +122,43 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
     setIsTyping(true)
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            ...messages.slice(-5).map(m => ({
-              role: m.sender === 'user' ? 'user' : 'assistant',
-              content: m.content
-            })),
-            {
-              role: 'user',
-              content: lastUserMessage
-            }
-          ],
-          model: 'grok-4-fast-reasoning',
-          temperature: 0.7,
-          max_tokens: 2048,
-          use_fallback: true
+      let response: Response
+      
+      if (useAzureAgent) {
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/azure-agent/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: lastUserMessage,
+            thread_id: azureThreadId
+          })
         })
-      })
+      } else {
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: [
+              ...messages.slice(-5).map(m => ({
+                role: m.sender === 'user' ? 'user' : 'assistant',
+                content: m.content
+              })),
+              {
+                role: 'user',
+                content: lastUserMessage
+              }
+            ],
+            model: 'grok-4-fast-reasoning',
+            temperature: 0.7,
+            max_tokens: 2048,
+            use_fallback: true
+          })
+        })
+      }
 
       if (!response.ok) {
         throw new Error('API yanıtı başarısız')
@@ -150,12 +168,17 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
       
       setIsTyping(false)
 
+      if (useAzureAgent && data.thread_id) {
+        setAzureThreadId(data.thread_id)
+      }
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: data.content || 'Üzgünüm, bir hata oluştu.',
         sender: 'ai',
         timestamp: new Date(),
-        isError: !data.content
+        isError: !data.content,
+        thread_id: data.thread_id
       }
 
       setMessages(prev => [...prev, aiMessage])
@@ -175,7 +198,7 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
     } finally {
       setIsLoading(false)
     }
-  }, [lastUserMessage, messages, isLoading])
+  }, [lastUserMessage, messages, isLoading, useAzureAgent, azureThreadId])
 
   const sendMessage = useCallback(async () => {
     if (!inputValue.trim() || isLoading) return
@@ -244,32 +267,49 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
       return
     }
 
-    // Normal AI chat
+    // Azure Agent veya Normal AI chat
     setIsTyping(true)
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [
-            ...messages.slice(-5).map(m => ({
-              role: m.sender === 'user' ? 'user' : 'assistant',
-              content: m.content
-            })),
-            {
-              role: 'user',
-              content: userMessage.content
-            }
-          ],
-          model: 'grok-4-fast-reasoning',
-          temperature: 0.7,
-          max_tokens: 2048,
-          use_fallback: true
+      let response: Response
+      
+      if (useAzureAgent) {
+        // Azure AI Agent kullan
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/azure-agent/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: userMessage.content,
+            thread_id: azureThreadId
+          })
         })
-      })
+      } else {
+        // Normal Grok AI kullan
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: [
+              ...messages.slice(-5).map(m => ({
+                role: m.sender === 'user' ? 'user' : 'assistant',
+                content: m.content
+              })),
+              {
+                role: 'user',
+                content: userMessage.content
+              }
+            ],
+            model: 'grok-4-fast-reasoning',
+            temperature: 0.7,
+            max_tokens: 2048,
+            use_fallback: true
+          })
+        })
+      }
 
       if (!response.ok) {
         throw new Error('API yanıtı başarısız')
@@ -279,12 +319,17 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
       
       setIsTyping(false)
 
+      if (useAzureAgent && data.thread_id) {
+        setAzureThreadId(data.thread_id)
+      }
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: data.content || 'Üzgünüm, bir hata oluştu.',
         sender: 'ai',
         timestamp: new Date(),
-        isError: !data.content
+        isError: !data.content,
+        thread_id: data.thread_id
       }
 
       setMessages(prev => [...prev, aiMessage])
@@ -304,7 +349,7 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
     } finally {
       setIsLoading(false)
     }
-  }, [inputValue, messages, isLoading, detectImageRequest, generateImage])
+  }, [inputValue, messages, isLoading, detectImageRequest, generateImage, useAzureAgent, azureThreadId])
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -453,10 +498,12 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
                 <div className="flex items-center gap-2">
                   <h3 className="text-white font-bold text-sm">CLIFF AI</h3>
                   <span className="px-2 py-0.5 bg-white/10 text-white text-xs rounded-full font-medium">
-                    SPACE AND NATURE
+                    {useAzureAgent ? 'AZURE AGENT' : 'SPACE AND NATURE'}
                   </span>
                 </div>
-                <p className="text-xs text-white/60">Grok AI ile güçlendirildi</p>
+                <p className="text-xs text-white/60">
+                  {useAzureAgent ? 'Azure AI Agent219 ile güçlendirildi' : 'Grok AI ile güçlendirildi'}
+                </p>
               </div>
             </div>
             {onClose && (
@@ -467,6 +514,26 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
                 <X className="w-4 h-4 text-white/80" />
               </button>
             )}
+            
+            {/* AI Model Selector */}
+            <div className="px-2">
+              <button
+                onClick={() => {
+                  setUseAzureAgent(!useAzureAgent)
+                  if (useAzureAgent) {
+                    setAzureThreadId(null)
+                  }
+                }}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
+                  useAzureAgent 
+                    ? "bg-blue-500/20 text-blue-300 border border-blue-500/30" 
+                    : "bg-white/10 text-white/60 border border-white/20 hover:bg-white/20"
+                )}
+              >
+                {useAzureAgent ? '🤖 Azure Agent Aktif' : '🧠 Grok AI Aktif'}
+              </button>
+            </div>
           </div>
 
           {/* Messages Area */}

@@ -56,8 +56,9 @@ class Settings(BaseSettings):
     # Google AI Studio API Keys
     GOOGLE_API_KEY: str = Field(default="AIzaSyBvhE8k7R2nQ3mL9wJ5xT1pK6aY4fM2qN7s8uV0")
     GEMINI_API_KEY: str = Field(default="AIzaSyBvhE8k7R2nQ3mL9wJ5xT1pK6aY4fM2qN7s8uV0")
-    
-    # Gemini Models Configuration - Latest and most capable models
+    AZURE_AI_ENDPOINT: str= Field(default="https://kynux-mhgmg52x-eastus2.services.ai.azure.com/api/projects/kynux-mhgmg52x-eastus2-project")
+    AZURE_AGENT_ID: str= Field(default="asst_AJg6SvBS1cDAnzJLl53ht6rs")
+        # Gemini Models Configuration - Latest and most capable models
     GEMINI_PRO_MODEL: str = Field(default="gemini-2.5-pro")  # Best reasoning for complex educational content
     GEMINI_FLASH_MODEL: str = Field(default="gemini-2.5-pro")  # Fast responses for real-time interactions
     GEMINI_VISION_MODEL: str = Field(default="gemini-2.5-pro")  # Image and diagram analysis

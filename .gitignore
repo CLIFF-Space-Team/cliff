@@ -193,8 +193,26 @@ test-results/
 playwright-report/
 .playwright/
 
+# ==================== DEPLOYMENT ====================
+# Test files
+backend/test_*.py
+!backend/test_api_endpoints.py
+!backend/test_websocket.py
+
+# Local configuration files
+frontend/.npmrc
+
+# Server-specific configs (examples only)
+web.config
+nginx-cliff-config.txt
+
+# Temporary documentation
+HIZLI-DUZELTME.md
+
 # ==================== DOCUMENTATION ====================
-# Ignore all .md files except README.md
+# Ignore all markdown files except critical ones
 *.md
 !README.md
+!LICENSE.md
+!CONTRIBUTING.md
 

@@ -47,6 +47,13 @@ Dünya'ya yaklaşan asteroid tehditlerini halkın anlayabileceği şekilde görs
 
 ## 🚀 Öne Çıkan Özellikler
 
+### 🤖 Azure AI Agent Entegrasyonu (YENİ!)
+
+- **Agent219** ile doğrudan sohbet edebilme
+- Thread tabanlı konuşma yönetimi
+- Grok AI ile Azure Agent arasında anlık geçiş
+- Konuşma geçmişi saklama ve sürdürme
+
 ### 🎮 Gelişmiş Asteroid Çarpma Simülatörü
 
 CLIFF'in en özgün özelliklerinden biri olan **İnteraktif Çarpma Simülatörü**, fizik tabanlı gerçekçi asteroid çarpma senaryoları sunar:
@@ -137,6 +144,8 @@ CLIFF'in en özgün özelliklerinden biri olan **İnteraktif Çarpma Simülatör
 ├── MongoDB (Motor)          - NoSQL veritabanı (async driver)
 ├── Redis 6.0+               - Önbellekleme ve oturum yönetimi
 ├── Google Gemini AI         - Yapay zeka ve doğal dil işleme
+├── Azure AI Agents          - Agent219 entegrasyonu
+├── Grok AI                  - Advanced reasoning AI
 ├── NumPy & SciPy            - Bilimsel hesaplamalar
 ├── Astroquery               - Astronomik veri sorgulama
 ├── APScheduler              - Otomatik görev zamanlama
@@ -227,6 +236,10 @@ MONGODB_NAME=cliff_db
 
 # Cache
 REDIS_URL=redis://localhost:6379/0
+
+# Azure AI Agent (Opsiyonel - Agent219 için)
+AZURE_AI_ENDPOINT=https://kynux-mhgmg52x-eastus2.services.ai.azure.com/api/projects/kynux-mhgmg52x-eastus2-project
+AZURE_AGENT_ID=asst_AJg6SvBS1cDAnzJLl53ht6rs
 
 # Güvenlik
 JWT_SECRET=your-super-secret-key-min-32-characters-long
@@ -943,6 +956,62 @@ Aksaray'dan dünyaya uzanan bir lise öğrencileri grubu tarafından geliştiril
 - 📋 Eğitim modu ve oyunlaştırma
 - 📋 Topluluk tahmin yarışmaları
 - 📋 AR/VR desteği
+
+---
+
+## 🤖 Azure AI Agent Kullanımı
+
+CLIFF artık Azure AI Agent219 desteği ile gelir! 
+
+### 📚 Dokümantasyon
+
+- 📖 **[Tam Kurulum Kılavuzu](./AZURE_AI_AGENT_SETUP.md)**
+- 🔑 **[CLI Olmadan Kullanım](./AZURE_AI_AGENT_NO_CLI.md)** ← Azure CLI'niz yok mu? Buraya bakın!
+
+### ⚡ Hızlı Başlangıç
+
+#### Azure CLI'niz VAR ise:
+
+1. **Paketleri yükleyin:**
+```bash
+cd backend
+pip install azure-ai-projects azure-identity
+```
+
+2. **Azure'a giriş yapın:**
+```bash
+az login
+```
+
+#### Azure CLI'niz YOK ise:
+
+1. **Paketleri yükleyin:**
+```bash
+cd backend
+pip install azure-ai-projects azure-identity
+```
+
+2. **API Key ekleyin:**
+```bash
+# backend/.env dosyasına ekleyin
+AZURE_API_KEY=your-api-key-here
+```
+
+> **Detaylı talimatlar için:** [CLI Olmadan Kullanım Kılavuzu](./AZURE_AI_AGENT_NO_CLI.md)
+
+### 💬 Kullanım
+
+**Chat arayüzünde Azure Agent'ı aktifleştirin:**
+   - Chat penceresini açın
+   - "🧠 Grok AI Aktif" butonuna tıklayın
+   - "🤖 Azure Agent Aktif" moduna geçin
+
+### Test Etme
+
+```bash
+cd backend
+python test_azure_agent.py
+```
 
 ---
 
