@@ -54,8 +54,6 @@ class Settings(BaseSettings):
     # GEMINI 2.5 PRO API CONFIGURATION - NASA Challenge Winning AI 🚀
     # =============================================================================
     # Google AI Studio API Keys
-    GOOGLE_API_KEY: str = Field(default="AIzaSyBvhE8k7R2nQ3mL9wJ5xT1pK6aY4fM2qN7s8uV0")
-    GEMINI_API_KEY: str = Field(default="AIzaSyBvhE8k7R2nQ3mL9wJ5xT1pK6aY4fM2qN7s8uV0")
     AZURE_AI_ENDPOINT: str= Field(default="https://kynux-mhgmg52x-eastus2.services.ai.azure.com/api/projects/kynux-mhgmg52x-eastus2-project")
     AZURE_AGENT_ID: str= Field(default="asst_AJg6SvBS1cDAnzJLl53ht6rs")
         # Gemini Models Configuration - Latest and most capable models
@@ -86,7 +84,7 @@ class Settings(BaseSettings):
     # =============================================================================
     # Custom Vertex AI API Configuration
     VERTEX_AI_BASE_URL: str = Field(default="https://beta.vertexapis.com")
-    VERTEX_AI_API_KEY: str = Field(default="sk-1a67670ecba1415cb332ec77880e0caa")
+    VERTEX_AI_API_KEY: str = Field(default="sk-")
     VERTEX_AI_PROJECT_ID: str = Field(default="cliff-ai-project")  # Real project for Gemini 2.5 Pro
     VERTEX_AI_LOCATION: str = Field(default="us-central1")  # Standard US location
     
@@ -99,13 +97,13 @@ class Settings(BaseSettings):
     VERTEX_AI_EMBEDDING_MODEL: str = Field(default="text-embedding-004")  # For semantic search and context
     
     # Cortex AI Configuration - Using Grok as primary model
-    CORTEX_API_KEY: str = Field(default="sk-1a67670ecba1415cb332ec77880e0caa")
-    CORTEX_BASE_URL: str = Field(default="https://cortexapi.net/v1/chat/completions")
+    CORTEX_API_KEY: str = Field(default="sk-")
+    CORTEX_BASE_URL: str = Field(default="https://../v1/chat/completions")
     CORTEX_CHAT_MODEL: str = Field(default="grok-4-fast-reasoning")  # Primary chat model
     
     # Image Generation Configuration
-    CORTEX_IMAGE_API_KEY: str = Field(default="sk-1a67670ecba1415cb332ec77880e0caa")
-    CORTEX_IMAGE_BASE_URL: str = Field(default="https://cortexapi.net/v1/chat/completions")
+    CORTEX_IMAGE_API_KEY: str = Field(default="sk-")
+    CORTEX_IMAGE_BASE_URL: str = Field(default="https://...net/v1/chat/completions")
     CORTEX_IMAGE_MODEL: str = Field(default="imagen-4.0-ultra-generate-preview-06-06")
     
     # Grok AI Configuration - Fast reasoning chat model via CortexAPI
@@ -135,7 +133,7 @@ class Settings(BaseSettings):
     # DATABASE CONFIGURATION
     # =============================================================================
     # MongoDB Database
-    MONGODB_URL: str = Field(default="mongodb+srv://kralbotcu3141:kralbotcu3141@cluster0.af5h8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+    MONGODB_URL: str = Field(default="mongodb+srv://..:..@cluster0.af5h8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
     MONGODB_HOST: str = Field(default="localhost")
     MONGODB_PORT: int = Field(default=27017)
     MONGODB_NAME: str = Field(default="cliff_db")
