@@ -274,8 +274,16 @@ class NASAServices:
             logger.error(f"APOD çekme hatası: {str(e)}")
             return {"error": str(e), "status": "failed"}
 nasa_services = NASAServices()
+
 async def close_client():
     await nasa_services.close_session()
+
+def get_nasa_services() -> NASAServices:
+    return nasa_services
+
+async def get_full_nasa_service() -> NASAServices:
+    return nasa_services
+
 class SimplifiedNASAServices:
     def __init__(self):
         self.nasa_base_url = "https://api.nasa.gov"
@@ -357,3 +365,6 @@ class SimplifiedNASAServices:
             logger.error(f"Close approaches hatası: {str(e)}")
             raise
 simplified_nasa_services = SimplifiedNASAServices()
+
+def get_simplified_nasa_services() -> SimplifiedNASAServices:
+    return simplified_nasa_services

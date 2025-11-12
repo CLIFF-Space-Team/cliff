@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     AI_API_KEY: Optional[str] = Field(default=None)
     AI_MODEL: str = Field(default="meta/llama-4-maverick-instruct")
     
+    GOOGLE_API_KEY: Optional[str] = Field(default=None)
+    GEMINI_API_KEY: Optional[str] = Field(default=None)
+    CORTEX_IMAGE_API_KEY: Optional[str] = Field(default=None)
+    
     MONGODB_URL: str = Field(default="mongodb+srv://..:..@cluster0.af5h8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
     MONGODB_HOST: str = Field(default="localhost")
     MONGODB_PORT: int = Field(default=27017)
