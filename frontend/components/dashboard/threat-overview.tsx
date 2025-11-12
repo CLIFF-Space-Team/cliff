@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, MetricCard, ThreatCard } from '@/components/ui'
 import { Badge, ThreatLevelBadge, StatusBadge } from '@/components/ui'
@@ -10,13 +9,11 @@ import { AlertTriangle, Shield, Target, Activity, TrendingUp, Clock, Globe, Brai
 import { cn, formatNumber, formatRelativeTime } from '@/lib/utils'
 import { convertThreatLevel, getThreatColor } from '@/types/api'
 import { motion, AnimatePresence } from 'framer-motion'
-
 interface ThreatOverviewProps {
   className?: string
   compact?: boolean
   showDetails?: boolean
 }
-
 const ThreatOverview: React.FC<ThreatOverviewProps> = ({ 
   className, 
   compact = false, 
@@ -36,23 +33,16 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
     timeUntilNext,
     formatTimeRemaining
   } = useAIAnalysis()
-  
-  // Otomatik analiz başlatma - kullanıcı dashboard'a girdiğinde
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!isAnalysisRunning && !latestSummary) {
         startAnalysis()
       }
     }, 2000) // 2 saniye sonra otomatik başlat
-
     return () => clearTimeout(timer)
   }, [startAnalysis, isAnalysisRunning, latestSummary])
-
-  // AI Insights hazırlama
   const aiInsights = useMemo(() => {
     const insights = []
-    
-    // Recent insights'tan al
     if (recentInsights.length > 0) {
       return recentInsights.slice(0, 3).map(insight => ({
         type: insight.insight_type === 'HIGH_RISK' ? 'warning' :
@@ -64,13 +54,10 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
         confidence: insight.confidence_score
       }))
     }
-    
-    // Fallback - gerçek zamanlı AI önerileri
     if (comprehensiveAssessment?.active_threats?.length > 0) {
       const highThreats = comprehensiveAssessment.active_threats.filter(t =>
         convertThreatLevel(t.severity) === 'Yüksek'
       )
-      
       if (highThreats.length > 0) {
         insights.push({
           type: 'warning',
@@ -80,8 +67,6 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
           confidence: 0.92
         })
       }
-      
-      // Asteroid analizi
       const asteroids = comprehensiveAssessment.active_threats.filter(t => t.threat_type === 'asteroid')
       if (asteroids.length > 0) {
         insights.push({
@@ -93,8 +78,6 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
         })
       }
     }
-    
-    // Sistem sağlığı AI değerlendirmesi
     insights.push({
       type: 'success',
       icon: CheckCircle,
@@ -102,18 +85,12 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
       message: 'Tüm izleme sistemleri optimal çalışıyor. Veri akışı stabil.',
       confidence: 0.95
     })
-    
     return insights.slice(0, 3) // En fazla 3 insight
   }, [recentInsights, comprehensiveAssessment])
-
-  // Basitleştirilmiş tehdit metrikleri + AI Enhancement
   const threatMetrics = useMemo(() => {
     if (!comprehensiveAssessment && !threatLevel) return null
-
     const assessment = comprehensiveAssessment
     const level = threatLevel
-
-    // Basit tehdit sayma - yeni 3 seviyeli sistem
     const activeThreats = assessment?.active_threats || []
     const high = activeThreats.filter(t => 
       convertThreatLevel(t.severity) === 'Yüksek'
@@ -125,11 +102,8 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
       convertThreatLevel(t.severity) === 'Düşük'
     ).length
     const total = activeThreats.length
-
-    // AI Analiz Progress - Real-time tracking
     let aiProgress = 0
     let aiStatus = 'Hazır'
-    
     if (isStartingAnalysis) {
       aiProgress = 0
       aiStatus = 'Başlatılıyor'
@@ -143,15 +117,12 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
       aiProgress = 0
       aiStatus = 'Başlatılacak'
     }
-
-    // Son 24 saatteki yeni uyarılar
     const newIn24h = activeAlerts.filter(alert => {
       const created = new Date(alert.created_at)
       const now = new Date()
       const diffHours = (now.getTime() - created.getTime()) / (1000 * 60 * 60)
       return diffHours <= 24
     }).length
-
     return {
       total: total,
       high: high,
@@ -165,16 +136,12 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
       aiStatus: aiStatus
     }
   }, [comprehensiveAssessment, threatLevel, activeAlerts, currentAnalysis, latestSummary, isAnalysisRunning])
-
-  // Basitleştirilmiş tehdit türleri
   const activeThreatTypes = useMemo(() => {
     if (!comprehensiveAssessment) return []
-
     const threatCategories = comprehensiveAssessment.threat_categories || {}
     return Object.entries(threatCategories)
       .filter(([_, count]) => count > 0)
       .map(([type, count]) => {
-        // Türkçe isim dönüşümü
         const turkishNames: Record<string, string> = {
           'asteroid': 'Asteroit',
           'earth_event': 'Doğal Olay', 
@@ -182,8 +149,6 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
           'solar_flare': 'Güneş Patlaması',
           'geomagnetic': 'Jeomanyetik'
         }
-
-        // Bu türdeki en yüksek seviye
         const maxSeverity = comprehensiveAssessment.active_threats
           .filter(t => t.threat_type === type)
           .reduce((max, threat) => {
@@ -192,7 +157,6 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
             if (current === 'Orta' && max !== 'Yüksek') return 'Orta'
             return max === 'Yüksek' ? 'Yüksek' : 'Düşük'
           }, 'Düşük')
-
         return {
           type: turkishNames[type] || type,
           count: count as number,
@@ -201,10 +165,7 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
       })
       .slice(0, 5) // Maksimum 5 tür göster
   }, [comprehensiveAssessment])
-
   const lastUpdated = lastRefresh
-
-  // Loading durumu
   if (isLoading && !threatMetrics) {
     return (
       <Card variant="default" className={cn("animate-pulse", className)}>
@@ -221,8 +182,6 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
       </Card>
     )
   }
-
-  // Veri yoksa
   if (!threatMetrics) {
     return (
       <Card variant="default" className={cn(className)}>
@@ -241,7 +200,6 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
       </Card>
     )
   }
-
   return (
     <Card variant="default" className={cn("relative overflow-hidden", className)}>
       <CardHeader>
@@ -255,7 +213,7 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
             />
           </CardTitle>
           <div className="flex items-center gap-3">
-            {/* Refresh Button */}
+            {}
             <button
               onClick={() => refreshAnalysis && refreshAnalysis()}
               disabled={isAnalysisRunning || isStartingAnalysis}
@@ -273,14 +231,12 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
               )} />
               {isAnalysisRunning || isStartingAnalysis ? "Analiz Ediliyor" : "Yenile"}
             </button>
-            
-            {/* Cooldown Timer */}
+            {}
             {!canAnalyze && timeUntilNext > 0 && (
               <div className="text-xs text-amber-400 bg-amber-500/10 px-2 py-1 rounded border border-amber-500/20">
                 ⏱️ {formatTimeRemaining && formatTimeRemaining(timeUntilNext)}
               </div>
             )}
-            
             <div className="flex items-center gap-2 text-sm text-cliff-light-gray">
               <Clock className="h-4 w-4" />
               {lastUpdated && formatRelativeTime(lastUpdated)}
@@ -288,9 +244,8 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
           </div>
         </div>
       </CardHeader>
-      
       <CardContent className="space-y-6">
-        {/* AI Analiz Durumu - Geliştirilmiş Real-time */}
+        {}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -315,20 +270,17 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
               {threatMetrics.aiStatus}
             </Badge>
           </div>
-          
-          {/* Progress Bar */}
+          {}
           <Progress
             value={threatMetrics.aiProgress}
             className="h-3 mb-2"
           />
-          
-          {/* Real-time Activity Display */}
+          {}
           <div className="space-y-2">
             <div className="text-xs text-cliff-light-gray">
               {currentAnalysis?.current_activity || "Gerçek zamanlı NASA veri analizi sistemi"}
             </div>
-            
-            {/* Current Phase Display */}
+            {}
             {(isAnalysisRunning || isStartingAnalysis) && (
               <div className="flex items-center justify-between text-xs bg-slate-800/50 rounded px-2 py-1">
                 <span className="text-blue-400 capitalize">
@@ -339,8 +291,7 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
                 </span>
               </div>
             )}
-            
-            {/* Analysis Stats - Modern Cards */}
+            {}
             {currentAnalysis && (
               <div className="grid grid-cols-3 gap-2 pt-1">
                 <div className="bg-slate-800/30 rounded px-2 py-1 text-center">
@@ -365,8 +316,7 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
             )}
           </div>
         </motion.div>
-
-        {/* AI Insights */}
+        {}
         <AnimatePresence mode="wait">
           {aiInsights.length > 0 && (
             <motion.div
@@ -420,8 +370,7 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Temel Metrikler - Basitleştirilmiş */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <MetricCard
             value={formatNumber(threatMetrics.total)}
@@ -430,7 +379,6 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
             trend="stable"
             className="border-blue-500/20"
           />
-          
           <MetricCard
             value={threatMetrics.high}
             title="Yüksek Seviye"
@@ -438,7 +386,6 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
             trend={threatMetrics.high > 0 ? "up" : "stable"}
             className="border-red-500/20"
           />
-          
           <MetricCard
             value={threatMetrics.activeMonitoring}
             title="Aktif İzleme"
@@ -447,8 +394,7 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
             className="border-green-500/20"
           />
         </div>
-
-        {/* 3 Seviyeli Tehdit Dağılımı */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <Card className="border-red-500/30">
             <CardContent className="p-4 text-center">
@@ -456,14 +402,12 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
               <div className="text-xs text-red-300">Yüksek</div>
             </CardContent>
           </Card>
-          
           <Card className="border-orange-500/30">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-orange-400">{threatMetrics.medium}</div>
               <div className="text-xs text-orange-300">Orta</div>
             </CardContent>
           </Card>
-          
           <Card className="border-green-500/30">
             <CardContent className="p-4 text-center">
               <div className="text-2xl font-bold text-green-400">{threatMetrics.low}</div>
@@ -471,8 +415,7 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
             </CardContent>
           </Card>
         </div>
-
-        {/* Aktif Tehdit Türleri - Basitleştirilmiş */}
+        {}
         {showDetails && activeThreatTypes && activeThreatTypes.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-lg font-semibold text-cliff-white flex items-center gap-2">
@@ -494,7 +437,6 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
                       {threatType.type}
                     </span>
                   </div>
-                  
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" size="sm">
                       {threatType.count} aktif
@@ -512,8 +454,7 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
             </div>
           </div>
         )}
-
-        {/* Hızlı İstatistikler */}
+        {}
         {showDetails && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t border-cliff-light-gray/30">
             <div className="text-center">
@@ -522,14 +463,12 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
               </div>
               <div className="text-xs text-cliff-light-gray">Son 24 Saat</div>
             </div>
-            
             <div className="text-center">
               <div className="text-2xl font-bold text-green-400">
                 {formatNumber(threatMetrics.activeMonitoring)}
               </div>
               <div className="text-xs text-cliff-light-gray">İzlemede</div>
             </div>
-            
             <div className="text-center md:col-span-1 col-span-2">
               <div 
                 className="text-2xl font-bold"
@@ -541,8 +480,7 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
             </div>
           </div>
         )}
-
-        {/* Arka plan efektleri - basitleştirilmiş */}
+        {}
         <div className="absolute inset-0 opacity-5 pointer-events-none overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-radial from-cyan-400 to-transparent animate-pulse-slow" />
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-radial from-blue-400 to-transparent animate-pulse-slow delay-1000" />
@@ -551,5 +489,4 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
     </Card>
   )
 }
-
 export default ThreatOverview

@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -9,7 +8,6 @@ import { Share2, Download, Loader2, Copy, Check } from 'lucide-react'
 import { MemeComposer } from './3D/MemeComposer'
 import { RealisticMemeRenderer } from '@/services/RealisticMemeRenderer'
 import { ImpactResults, ImpactLocation } from './types'
-
 interface MemeGeneratorProps {
   open: boolean
   onClose: () => void
@@ -24,14 +22,12 @@ interface MemeGeneratorProps {
     results: ImpactResults
   }
 }
-
 export function MemeGenerator({ open, onClose, memeOptions }: MemeGeneratorProps) {
   const [generating, setGenerating] = useState(false)
   const [memeImage, setMemeImage] = useState<string | null>(null)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [customText, setCustomText] = useState('')
   const [copied, setCopied] = useState(false)
-
   const handleGenerate = async () => {
     setGenerating(true)
     try {
@@ -44,9 +40,7 @@ export function MemeGenerator({ open, onClose, memeOptions }: MemeGeneratorProps
         asteroidDiameter_m: memeOptions.asteroidParams.diameter_m,
         customText: customText
       })
-
       setMemeImage(finalImage)
-      
       const url = `${window.location.origin}/impact-meme/${Date.now()}`
       setShareUrl(url)
     } catch (error) {
@@ -55,20 +49,16 @@ export function MemeGenerator({ open, onClose, memeOptions }: MemeGeneratorProps
       setGenerating(false)
     }
   }
-
   const handleShare = (platform: 'twitter' | 'facebook' | 'whatsapp' | 'instagram') => {
     if (!shareUrl) return
-    
     const text = encodeURIComponent(customText || `${memeOptions.location.cityName || 'Burası'}'ya asteroid düştü! 💥☄️`)
     const url = encodeURIComponent(shareUrl)
-    
     const urls = {
       twitter: `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
       whatsapp: `https://wa.me/?text=${text}%20${url}`,
       instagram: shareUrl
     }
-    
     if (platform === 'instagram') {
       handleDownload()
       alert('Instagram için görseli indirip manuel olarak yükleyebilirsiniz!')
@@ -76,10 +66,8 @@ export function MemeGenerator({ open, onClose, memeOptions }: MemeGeneratorProps
       window.open(urls[platform], '_blank', 'width=600,height=400')
     }
   }
-
   const handleCopyLink = async () => {
     if (!shareUrl) return
-    
     try {
       await navigator.clipboard.writeText(shareUrl)
       setCopied(true)
@@ -88,16 +76,13 @@ export function MemeGenerator({ open, onClose, memeOptions }: MemeGeneratorProps
       console.error('Link kopyalama hatası:', error)
     }
   }
-
   const handleDownload = () => {
     if (!memeImage) return
-    
     const link = document.createElement('a')
     link.download = `asteroid-impact-meme-${Date.now()}.png`
     link.href = memeImage
     link.click()
   }
-
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl bg-pure-black border-cliff-white/20">
@@ -110,7 +95,6 @@ export function MemeGenerator({ open, onClose, memeOptions }: MemeGeneratorProps
             Arkadaşlarınızla paylaşmak için eğlenceli bir meme oluşturun!
           </DialogDescription>
         </DialogHeader>
-
         <div className="space-y-4">
           {!memeImage ? (
             <>
@@ -127,7 +111,6 @@ export function MemeGenerator({ open, onClose, memeOptions }: MemeGeneratorProps
                   Boş bırakırsanız otomatik metin kullanılır
                 </p>
               </div>
-
               <div className="bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-lg p-4">
                 <h4 className="text-sm font-semibold text-white mb-2">Önizleme Bilgileri:</h4>
                 <ul className="text-xs text-cliff-white space-y-1">
@@ -137,7 +120,6 @@ export function MemeGenerator({ open, onClose, memeOptions }: MemeGeneratorProps
                   <li>🔥 Krater: {(memeOptions.results.crater.finalDiameter_m / 1000).toFixed(2)} km</li>
                 </ul>
               </div>
-
               <Button
                 onClick={handleGenerate}
                 disabled={generating}
@@ -165,7 +147,6 @@ export function MemeGenerator({ open, onClose, memeOptions }: MemeGeneratorProps
                   className="w-full h-auto"
                 />
               </div>
-
               <div className="bg-pure-black/50 border border-cliff-white/20 rounded-lg p-4">
                 <Label className="text-cliff-white text-sm mb-2 block">Paylaşım Linki:</Label>
                 <div className="flex gap-2">
@@ -188,7 +169,6 @@ export function MemeGenerator({ open, onClose, memeOptions }: MemeGeneratorProps
                   </Button>
                 </div>
               </div>
-
               <div className="space-y-2">
                 <Label className="text-cliff-white text-sm">Sosyal Medyada Paylaş:</Label>
                 <div className="grid grid-cols-2 gap-2">
@@ -230,7 +210,6 @@ export function MemeGenerator({ open, onClose, memeOptions }: MemeGeneratorProps
                   </Button>
                 </div>
               </div>
-
               <div className="flex gap-2">
                 <Button
                   onClick={handleDownload}
@@ -259,4 +238,3 @@ export function MemeGenerator({ open, onClose, memeOptions }: MemeGeneratorProps
     </Dialog>
   )
 }
-

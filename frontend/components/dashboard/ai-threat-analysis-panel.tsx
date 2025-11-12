@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -26,12 +25,10 @@ import {
   Lightbulb,
   Shield
 } from 'lucide-react'
-
 interface AIAnalysisPanelProps {
   className?: string
   compact?: boolean
 }
-
 const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({ 
   className, 
   compact = false 
@@ -49,9 +46,7 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
     isStartingAnalysis,
     isConnected
   } = useAIAnalysis()
-
   const [showAdvanced, setShowAdvanced] = useState(false)
-
   const handleStartAnalysis = useCallback(async () => {
     try {
       await startAnalysis({
@@ -63,7 +58,6 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
       console.error('Failed to start analysis:', error)
     }
   }, [startAnalysis])
-
   const getPhaseDescription = (phase: string) => {
     const phases: Record<string, string> = {
       'initialization': 'Sistem Başlatılıyor',
@@ -78,7 +72,6 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
     }
     return phases[phase] || phase
   }
-
   const getPhaseBorderColor = (phase: string) => {
     const colors: Record<string, string> = {
       'initialization': 'border-blue-500/50',
@@ -93,7 +86,6 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
     }
     return colors[phase] || 'border-gray-500/50'
   }
-
   if (compact) {
     return (
       <Card className={cn("relative overflow-hidden", className)}>
@@ -116,7 +108,6 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
                 </p>
               </div>
             </div>
-            
             <div className="flex items-center gap-2">
               {urgentCorrelations.length > 0 && (
                 <Badge variant="destructive" size="sm">
@@ -141,7 +132,6 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
       </Card>
     )
   }
-
   return (
     <Card className={cn("relative overflow-hidden", className)}>
       <CardHeader>
@@ -157,12 +147,10 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
               isConnected ? "bg-green-500" : "bg-red-500"
             )} />
           </CardTitle>
-          
           <div className="flex items-center gap-2">
             <Badge variant={isAISystemHealthy ? "success" : "destructive"} size="sm">
               {isAISystemHealthy ? "Sağlıklı" : "Hata"}
             </Badge>
-            
             {!isAnalysisRunning && (
               <Button 
                 onClick={handleStartAnalysis}
@@ -185,9 +173,8 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
           </div>
         </div>
       </CardHeader>
-
       <CardContent className="space-y-6">
-        {/* Real-time Analysis Progress */}
+        {}
         {isAnalysisRunning && currentAnalysis && (
           <Card className={cn(
             "border-2 transition-all duration-500",
@@ -206,17 +193,14 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
                 </Badge>
               </div>
             </CardHeader>
-            
             <CardContent className="pt-0 space-y-4">
               <Progress 
                 value={currentAnalysis.progress_percentage} 
                 className="h-2"
               />
-              
               <div className="text-sm text-gray-400">
                 {currentAnalysis.current_activity}
               </div>
-              
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <div className="text-lg font-bold text-blue-400">
@@ -237,7 +221,6 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
                   <div className="text-xs text-gray-400">AI Insight</div>
                 </div>
               </div>
-              
               {currentAnalysis.estimated_completion_time && (
                 <div className="flex items-center gap-2 text-sm text-gray-400">
                   <Clock className="h-4 w-4" />
@@ -247,8 +230,7 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
             </CardContent>
           </Card>
         )}
-
-        {/* Latest Summary Report */}
+        {}
         {latestSummary && (
           <Card className="border-emerald-500/30">
             <CardHeader>
@@ -284,7 +266,6 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
                   <div className="text-xs text-gray-400">AI Öneri</div>
                 </div>
               </div>
-              
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-400">Genel Risk:</span>
@@ -296,13 +277,11 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
                     {latestSummary.overall_risk_assessment}
                   </Badge>
                 </div>
-                
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-400">Güvenilirlik:</span>
                   <Progress value={latestSummary.confidence_score * 100} className="w-20 h-2" />
                 </div>
               </div>
-              
               {latestSummary.immediate_actions_required.length > 0 && (
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium text-red-400 flex items-center gap-1">
@@ -322,8 +301,7 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
             </CardContent>
           </Card>
         )}
-
-        {/* Recent AI Insights */}
+        {}
         {recentInsights.length > 0 && (
           <Card>
             <CardHeader>
@@ -353,11 +331,9 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
                         </span>
                       </div>
                     </div>
-                    
                     <p className="text-xs text-gray-300 mb-2">
                       {insight.description}
                     </p>
-                    
                     <div className="flex items-center justify-between">
                       <Badge 
                         variant={insight.impact_assessment === 'CRITICAL' ? 'destructive' : 'secondary'}
@@ -375,8 +351,7 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
             </CardContent>
           </Card>
         )}
-
-        {/* Urgent Correlations */}
+        {}
         {urgentCorrelations.length > 0 && (
           <Card className="border-red-500/50">
             <CardHeader>
@@ -403,11 +378,9 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
                         Risk: {(alert.compound_risk_score * 100).toFixed(0)}%
                       </div>
                     </div>
-                    
                     <p className="text-sm text-gray-300 mb-2">
                       {alert.ai_analysis_summary}
                     </p>
-                    
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" size="sm">
                         {alert.related_threat_ids.length + 1} Tehdit
@@ -422,8 +395,7 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
             </CardContent>
           </Card>
         )}
-
-        {/* System Status */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card className="border-blue-500/30">
             <CardContent className="p-4">
@@ -438,7 +410,6 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
               </div>
             </CardContent>
           </Card>
-          
           <Card className="border-green-500/30">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -457,5 +428,4 @@ const AIThreatAnalysisPanel: React.FC<AIAnalysisPanelProps> = ({
     </Card>
   )
 }
-
 export default AIThreatAnalysisPanel

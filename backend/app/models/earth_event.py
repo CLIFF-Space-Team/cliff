@@ -1,12 +1,7 @@
-from beanie import Document
+﻿from beanie import Document
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-
-# =============================================================================
-# BASITLEŞTIRILMIŞ EARTH EVENT MODELS
-# =============================================================================
-
 class SimpleEarthEventModel(BaseModel):
     """Basit doğal olay modeli"""
     id: str = Field(..., description="Olay ID")
@@ -18,8 +13,6 @@ class SimpleEarthEventModel(BaseModel):
     description: Optional[str] = Field(None, description="Kısa açıklama")
     source: Optional[str] = Field(default="NASA EONET", description="Veri kaynağı")
     coordinates: Optional[Dict[str, float]] = Field(None, description="Koordinatlar (lat, lon)")
-    
-    # Türkçe alan isimleri için alias
     class Config:
         json_schema_extra = {
             "example": {
@@ -33,8 +26,6 @@ class SimpleEarthEventModel(BaseModel):
                 "coordinates": {"lat": 37.734, "lon": 15.004}
             }
         }
-
-
 class EarthEventStatistics(BaseModel):
     """Doğal olay istatistikleri"""
     total_events: int = Field(default=0, description="Toplam olay sayısı")
@@ -42,42 +33,28 @@ class EarthEventStatistics(BaseModel):
     by_category: Dict[str, int] = Field(default_factory=dict, description="Kategoriye göre dağılım")
     by_severity: Dict[str, int] = Field(default_factory=dict, description="Önem derecesine göre")
     by_region: Dict[str, int] = Field(default_factory=dict, description="Bölgeye göre")
-
-
 class EarthEventDocument(Document):
     """MongoDB için doğal olay dokümanı"""
     event_id: str = Field(..., description="Unique event ID")
     title: str = Field(..., description="Event title")
     category: str = Field(..., description="Event category in Turkish")
     severity: str = Field(..., description="Severity level: Düşük, Orta, Yüksek")
-    
-    # Zaman bilgileri
     event_date: datetime = Field(..., description="Event occurrence date")
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Record creation time")
     last_updated: datetime = Field(default_factory=datetime.utcnow, description="Last update time")
-    
-    # Konum bilgileri
     location_name: Optional[str] = Field(None, description="Location name")
     coordinates: Optional[Dict[str, float]] = Field(None, description="Geographic coordinates")
     country: Optional[str] = Field(None, description="Country name")
     region: Optional[str] = Field(None, description="Geographic region")
-    
-    # Olay detayları
     description: Optional[str] = Field(None, description="Event description")
     source_url: Optional[str] = Field(None, description="Source URL")
     magnitude: Optional[float] = Field(None, description="Event magnitude/intensity")
-    
-    # Status
     is_active: bool = Field(default=True, description="Is event still active")
     is_closed: bool = Field(default=False, description="Is event closed")
-    
-    # Metadata
     data_source: str = Field(default="NASA EONET", description="Data source")
     raw_data: Optional[Dict[str, Any]] = Field(None, description="Original raw data")
-    
     class Settings:
         name = "earth_events"
-        
     @property
     def turkish_category(self) -> str:
         """Kategoriyi Türkçe'ye çevir"""
@@ -96,7 +73,6 @@ class EarthEventDocument(Document):
             "Temperature Extremes": "Aşırı Sıcaklıklar"
         }
         return category_mapping.get(self.category, self.category)
-    
     @property 
     def severity_color(self) -> str:
         """Önem derecesine göre renk"""
@@ -106,12 +82,6 @@ class EarthEventDocument(Document):
             "Yüksek": "#ef4444"    # Kırmızı
         }
         return colors.get(self.severity, "#6b7280")  # Gri default
-
-
-# =============================================================================
-# EARTH EVENT CATEGORY MAPPINGS
-# =============================================================================
-
 EARTH_EVENT_CATEGORIES = {
     "volcanoes": {
         "turkish": "Yanardağ",
@@ -164,8 +134,6 @@ EARTH_EVENT_CATEGORIES = {
         "description": "Kar fırtınaları ve buzlanma"
     }
 }
-
-
 def categorize_earth_event(original_category: str, title: str = "") -> tuple[str, str]:
     """
     NASA EONET kategorisini Türkçe kategoriye çevir
@@ -173,8 +141,6 @@ def categorize_earth_event(original_category: str, title: str = "") -> tuple[str
     """
     title_lower = title.lower()
     cat_lower = original_category.lower()
-    
-    # Kategori belirleme
     if "volcano" in cat_lower or "yanardağ" in title_lower:
         category = "Yanardağ"
     elif "wildfire" in cat_lower or "fire" in cat_lower or "yangın" in title_lower:
@@ -197,20 +163,14 @@ def categorize_earth_event(original_category: str, title: str = "") -> tuple[str
         category = "Kar Fırtınası"
     else:
         category = "Diğer"
-    
-    # Önem derecesi belirleme
     severity = "Düşük"
     if any(keyword in title_lower for keyword in ["major", "severe", "extreme", "critical", "şiddetli", "büyük", "kritik"]):
         severity = "Yüksek"
     elif any(keyword in title_lower for keyword in ["moderate", "significant", "orta", "önemli"]):
         severity = "Orta"
-    
     return category, severity
-
-
 def get_region_from_coordinates(lat: float, lon: float) -> str:
     """Koordinatlardan bölge belirle"""
-    # Basit bölge belirleme
     if lat >= 35 and lat <= 42 and lon >= 26 and lon <= 45:
         return "Türkiye"
     elif lat >= 40 and lat <= 70 and lon >= -10 and lon <= 40:
@@ -227,50 +187,32 @@ def get_region_from_coordinates(lat: float, lon: float) -> str:
         return "Okyanusya"
     else:
         return "Diğer Bölgeler"
-
-
-# =============================================================================
-# UTILITY FUNCTIONS
-# =============================================================================
-
 class EarthEventProcessor:
     """Doğal olay verilerini işleme sınıfı"""
-    
     @staticmethod
     def process_nasa_event(raw_event: Dict[str, Any]) -> SimpleEarthEventModel:
         """NASA EONET verisini basit modele çevir"""
         try:
-            # Temel bilgileri çıkar
             event_id = raw_event.get("id", "unknown")
             title = raw_event.get("title", "Bilinmeyen Olay")
-            
-            # Kategoriyi belirle
             category_data = raw_event.get("categories", [{}])
             original_category = category_data[0].get("title", "") if category_data else ""
             category, severity = categorize_earth_event(original_category, title)
-            
-            # Tarih bilgisi
             date = ""
             location = None
             coordinates = None
-            
-            # Geometri verilerinden en son bilgiyi al
             geometry = raw_event.get("geometry", [])
             if geometry:
                 last_geom = geometry[-1]
                 date = last_geom.get("date", "")[:10]  # Sadece tarih kısmı
-                
                 if last_geom.get("coordinates"):
                     coords = last_geom["coordinates"]
                     if isinstance(coords, list) and len(coords) >= 2:
                         coordinates = {"lat": coords[1], "lon": coords[0]}
                         location = get_region_from_coordinates(coords[1], coords[0])
-            
-            # Açıklamayı sınırla
             description = raw_event.get("description", "")
             if description and len(description) > 150:
                 description = description[:147] + "..."
-            
             return SimpleEarthEventModel(
                 id=event_id,
                 title=title,
@@ -281,9 +223,7 @@ class EarthEventProcessor:
                 description=description,
                 coordinates=coordinates
             )
-            
         except Exception as e:
-            # Hata durumunda minimal model döndür
             return SimpleEarthEventModel(
                 id=raw_event.get("id", "error"),
                 title="Veri İşleme Hatası",
@@ -291,29 +231,19 @@ class EarthEventProcessor:
                 severity="Düşük",
                 date=""
             )
-    
     @staticmethod
     def calculate_statistics(events: List[SimpleEarthEventModel]) -> EarthEventStatistics:
         """Olay istatistiklerini hesapla"""
         if not events:
             return EarthEventStatistics()
-        
-        # Kategori dağılımı
         by_category = {}
         by_severity = {"Düşük": 0, "Orta": 0, "Yüksek": 0}
         by_region = {}
-        
         for event in events:
-            # Kategori
             by_category[event.category] = by_category.get(event.category, 0) + 1
-            
-            # Önem derecesi
             by_severity[event.severity] += 1
-            
-            # Bölge
             if event.location:
                 by_region[event.location] = by_region.get(event.location, 0) + 1
-        
         return EarthEventStatistics(
             total_events=len(events),
             active_events=len(events),  # Hepsi aktif kabul et
@@ -321,9 +251,6 @@ class EarthEventProcessor:
             by_severity=by_severity,
             by_region=by_region
         )
-
-
-# Geriye dönük uyumluluk için eski class adı
 class EarthEvent(EarthEventDocument):
     """Geriye dönük uyumluluk için"""
     pass

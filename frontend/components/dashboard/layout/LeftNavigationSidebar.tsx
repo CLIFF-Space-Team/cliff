@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useMemo, useCallback, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
@@ -21,14 +20,10 @@ import {
 import { cn } from '@/lib/utils'
 import { ViewType } from '@/types/dashboard-layout'
 import { useDashboardStore } from '@/stores/useDashboardStore'
-
-// Sidebar width configurations
 const SIDEBAR_WIDTHS = {
   collapsed: 80,
   expanded: 280
 } as const
-
-// Navigation items with enhanced styling
 const NAVIGATION_ITEMS = [
   {
     id: 'earth-events' as ViewType,
@@ -75,8 +70,6 @@ const NAVIGATION_ITEMS = [
     description: 'Yapay zeka sohbet arayüzü'
   }
 ] as const
-
-// Status indicators data
 const STATUS_INDICATORS = [
   {
     label: 'Aktif Tehditler',
@@ -107,8 +100,6 @@ const STATUS_INDICATORS = [
     bgColor: 'bg-green-500/10'
   }
 ] as const
-
-// Animation variants
 const sidebarVariants = {
   collapsed: {
     width: SIDEBAR_WIDTHS.collapsed,
@@ -119,7 +110,6 @@ const sidebarVariants = {
     transition: { duration: 0.3, ease: [0.4, 0.0, 0.2, 1] }
   }
 }
-
 const itemVariants = {
   collapsed: {
     opacity: 0,
@@ -132,11 +122,9 @@ const itemVariants = {
     transition: { duration: 0.3, delay: 0.1 }
   }
 }
-
 export const LeftNavigationSidebar: React.FC<{}> = () => {
   const { activeView, setView } = useDashboardStore()
   const [isExpanded, setIsExpanded] = useState(true) // Sidebar genişletilmiş başlar
-
   return (
     <div
       className={cn(
@@ -147,7 +135,7 @@ export const LeftNavigationSidebar: React.FC<{}> = () => {
       )}
       style={{ transition: 'width 0.3s ease' }}
     >
-      {/* Header with toggle */}
+      {}
       <div className="p-4 border-b border-cliff-light-gray/10">
         <div className="flex items-center justify-between">
           {isExpanded && (
@@ -161,7 +149,6 @@ export const LeftNavigationSidebar: React.FC<{}> = () => {
               </div>
             </div>
           )}
-          
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className={cn(
@@ -177,20 +164,17 @@ export const LeftNavigationSidebar: React.FC<{}> = () => {
           </button>
         </div>
       </div>
-
-      {/* Navigation Items */}
+      {}
       <div className="flex-1 p-4 space-y-2 overflow-y-auto">
         {isExpanded && (
           <h3 className="text-cliff-light-gray text-xs font-semibold uppercase tracking-wider mb-3">
             Navigasyon
           </h3>
         )}
-
         <div className="space-y-1">
           {NAVIGATION_ITEMS.map((item) => {
             const IconComponent = item.icon
             const isActive = activeView === item.id
-            
             return (
               <button
                 key={item.id}
@@ -204,7 +188,7 @@ export const LeftNavigationSidebar: React.FC<{}> = () => {
                     : `text-cliff-light-gray hover:text-cliff-white ${item.hoverColor} hover:border-transparent hover:bg-cliff-light-gray/10`
                 )}
               >
-                {/* Background glow */}
+                {}
                 {isActive && (
                   <div
                     className={cn(
@@ -213,20 +197,17 @@ export const LeftNavigationSidebar: React.FC<{}> = () => {
                     )}
                   />
                 )}
-                
                 <IconComponent className={cn(
                   'w-5 h-5 transition-colors relative z-10 shrink-0',
                   isActive ? item.color : 'group-hover:text-cliff-white'
                 )} />
-                
                 {isExpanded && (
                   <div className="flex-1 relative z-10">
                     <div className="font-medium text-sm">{item.label}</div>
                     <div className="text-xs opacity-70 mt-0.5">{item.description}</div>
                   </div>
                 )}
-                
-                {/* Active indicator dot */}
+                {}
                 {isActive && isExpanded && (
                   <div className={cn('w-2 h-2 rounded-full relative z-10', item.color)} />
                 )}
@@ -234,8 +215,7 @@ export const LeftNavigationSidebar: React.FC<{}> = () => {
             )
           })}
         </div>
-        
-        {/* Özel Özellikler */}
+        {}
         {isExpanded && (
           <div className="mt-6">
             <h3 className="text-cliff-light-gray text-xs font-semibold uppercase tracking-wider mb-3">
@@ -243,7 +223,6 @@ export const LeftNavigationSidebar: React.FC<{}> = () => {
             </h3>
           </div>
         )}
-        
         <div className="space-y-1">
           <Link href="/impact-simulator">
             <button
@@ -255,14 +234,12 @@ export const LeftNavigationSidebar: React.FC<{}> = () => {
               )}
             >
               <Rocket className="w-5 h-5 transition-colors relative z-10 shrink-0 group-hover:text-orange-400" />
-              
               {isExpanded && (
                 <div className="flex-1 relative z-10">
                   <div className="font-medium text-sm">Çarpma Simülatörü</div>
                   <div className="text-xs opacity-70 mt-0.5">Asteroid etki analizi</div>
                 </div>
               )}
-              
               {isExpanded && (
                 <Badge className="bg-orange-500/20 text-orange-400 border-orange-500/30 text-xs">
                   YENİ
@@ -272,8 +249,7 @@ export const LeftNavigationSidebar: React.FC<{}> = () => {
           </Link>
         </div>
       </div>
-
-      {/* Status Section */}
+      {}
       <div className="p-4 border-t border-cliff-light-gray/10">
         {isExpanded ? (
           <div className="space-y-3">
@@ -331,8 +307,7 @@ export const LeftNavigationSidebar: React.FC<{}> = () => {
           </div>
         )}
       </div>
-
-      {/* Performance indicator */}
+      {}
       <div className="p-4 border-t border-cliff-light-gray/10">
         <div className={cn("flex items-center gap-2", !isExpanded && "justify-center")}>
           <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />

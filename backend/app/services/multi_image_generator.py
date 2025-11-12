@@ -1,10 +1,4 @@
-"""
-🎨 Multi-Image Generation Service
-Otomatik 4 görsel üreten kapsamlı AI görsel üretim sistemi
-Profesyonel kalitede, bağlam-tabanlı, çoklu görsel üretimi
-"""
-
-import asyncio
+﻿import asyncio
 import hashlib
 import json
 from typing import Dict, List, Optional, Any, Tuple
@@ -14,7 +8,6 @@ from enum import Enum
 from concurrent.futures import ThreadPoolExecutor
 import structlog
 from pydantic import BaseModel, Field
-
 from app.services.image_generation_service import (
     EnhancedCortexImageService,
     ImageGenerationRequest,
@@ -46,9 +39,7 @@ from app.services.performance_optimizer import (
     get_performance_optimizer,
     with_performance_monitoring
 )
-
 logger = structlog.get_logger(__name__)
-
 class ContentType(str, Enum):
     """İçerik türleri"""
     SCIENTIFIC = "scientific"
@@ -61,14 +52,12 @@ class ContentType(str, Enum):
     NATURE = "nature"
     ABSTRACT = "abstract"
     DOCUMENTARY = "documentary"
-
 class ImagePurpose(str, Enum):
     """Görsel amacı"""
     HERO = "hero"  # Ana görsel
     DETAIL = "detail"  # Detay görseli
     CONTEXT = "context"  # Bağlam görseli
     ARTISTIC = "artistic"  # Sanatsal görsel
-
 class CompositionStyle(str, Enum):
     """Kompozisyon stileri"""
     CINEMATIC = "cinematic"
@@ -77,7 +66,6 @@ class CompositionStyle(str, Enum):
     SCIENTIFIC = "scientific"
     COMMERCIAL = "commercial"
     EDITORIAL = "editorial"
-
 @dataclass
 class ContentAnalysis:
     """İçerik analiz sonuçları"""
@@ -91,7 +79,6 @@ class ContentAnalysis:
     complexity_level: str
     suggested_compositions: List[CompositionStyle]
     confidence_score: float
-
 class MultiImageRequest(BaseModel):
     """Çoklu görsel üretim isteği"""
     content: str = Field(..., description="Ana içerik/metin")
@@ -105,7 +92,6 @@ class MultiImageRequest(BaseModel):
     include_variations: bool = Field(default=True, description="Varyasyonlar dahil edilsin mi")
     professional_grade: bool = Field(default=True, description="Profesyonel kalite")
     context_aware: bool = Field(default=True, description="Bağlam farkındalığı")
-
 class GeneratedImageInfo(BaseModel):
     """Üretilen görsel bilgisi"""
     image_url: str
@@ -119,7 +105,6 @@ class GeneratedImageInfo(BaseModel):
     enhancement_applied: bool
     original_prompt: str
     enhanced_prompt: str
-
 class MultiImageResponse(BaseModel):
     """Çoklu görsel üretim yanıtı"""
     success: bool
@@ -134,20 +119,16 @@ class MultiImageResponse(BaseModel):
     suggestions: List[str] = Field(default_factory=list)
     error_message: Optional[str] = None
     timestamp: str = Field(default_factory=lambda: datetime.now().isoformat())
-
 class MultiImageGenerator:
     """
     Kapsamlı AI-tabanlı çoklu görsel üretim sistemi
     """
-    
     def __init__(self):
         self.image_service: Optional[EnhancedCortexImageService] = None
         self.prompt_enhancer: Optional[IntelligentPromptEnhancer] = None
         self.advanced_composer: Optional[AdvancedPromptComposer] = None
         self.performance_optimizer: Optional[PerformanceOptimizer] = None
         self.chat_service = enhanced_cortex_service
-        
-        # Professional photography/artistic styles
         self.professional_styles = {
             ImagePurpose.HERO: [
                 "cinematic masterpiece, dramatic lighting, professional composition",
@@ -170,8 +151,6 @@ class MultiImageGenerator:
                 "abstract artistic expression, creative excellence, unique perspective"
             ]
         }
-        
-        # Composition techniques
         self.composition_techniques = {
             CompositionStyle.CINEMATIC: [
                 "rule of thirds, cinematic aspect ratio, dramatic depth of field",
@@ -194,12 +173,8 @@ class MultiImageGenerator:
                 "advertising photography quality, perfect presentation, commercial appeal"
             ]
         }
-        
-        # Cache for content analysis
         self.analysis_cache: Dict[str, ContentAnalysis] = {}
         self.cache_ttl_hours = 4
-        
-        # Performance metrics
         self.metrics = {
             "total_requests": 0,
             "successful_requests": 0,
@@ -208,9 +183,7 @@ class MultiImageGenerator:
             "cache_hits": 0,
             "content_analysis_count": 0
         }
-        
         logger.info("Multi-Image Generator initialized with professional composition system")
-    
     async def initialize(self):
         """Servisleri initialize et"""
         self.image_service = await get_enhanced_image_service()
@@ -218,46 +191,35 @@ class MultiImageGenerator:
         self.advanced_composer = await get_advanced_composer()
         self.performance_optimizer = await get_performance_optimizer()
         logger.info("Multi-Image Generator services initialized with advanced composition and performance optimization")
-    
     async def analyze_content(self, content: str, content_type: Optional[ContentType] = None) -> ContentAnalysis:
         """
         İçeriği AI ile analiz et ve görsel konseptlerini belirle
         """
-        # Cache kontrolü
         cache_key = hashlib.md5(f"{content}_{content_type}".encode()).hexdigest()
-        
         if cache_key in self.analysis_cache:
             cached_analysis = self.analysis_cache[cache_key]
-            # TTL kontrolü
             if hasattr(cached_analysis, '_cached_at'):
                 if datetime.now() - cached_analysis._cached_at < timedelta(hours=self.cache_ttl_hours):
                     self.metrics["cache_hits"] += 1
                     logger.info("Content analysis cache hit")
                     return cached_analysis
-        
         try:
-            # AI ile içerik analizi
             analysis_prompt = self._create_content_analysis_prompt(content, content_type)
-            
             messages = [
                 ChatMessage(role=MessageRole.SYSTEM, content=self._get_analysis_system_prompt()),
                 ChatMessage(role=MessageRole.USER, content=analysis_prompt)
             ]
-            
             chat_request = EnhancedChatRequest(
                 messages=messages,
                 model=ModelType.GROK_4_FAST_REASONING,
                 temperature=0.7,
                 max_tokens=2000
             )
-            
             logger.info(f"Analyzing content: {content[:50]}...")
             response = await self.chat_service.chat_completion(chat_request)
-            
             if response.success and response.content:
                 try:
                     analysis_data = json.loads(response.content)
-                    
                     content_analysis = ContentAnalysis(
                         main_theme=analysis_data.get('main_theme', 'General'),
                         content_type=ContentType(analysis_data.get('content_type', 'general')),
@@ -270,29 +232,20 @@ class MultiImageGenerator:
                         suggested_compositions=[CompositionStyle(style) for style in analysis_data.get('suggested_compositions', ['cinematic'])],
                         confidence_score=analysis_data.get('confidence_score', 0.8)
                     )
-                    
-                    # Cache'e kaydet
                     content_analysis._cached_at = datetime.now()
                     self.analysis_cache[cache_key] = content_analysis
                     self.metrics["content_analysis_count"] += 1
-                    
                     logger.info(f"Content analysis completed with confidence: {content_analysis.confidence_score:.2f}")
                     return content_analysis
-                    
                 except json.JSONDecodeError:
                     logger.warning("Failed to parse content analysis JSON, using fallback")
-                    
-            # Fallback analysis
             return self._create_fallback_analysis(content, content_type)
-            
         except Exception as e:
             logger.error(f"Content analysis error: {str(e)}")
             return self._create_fallback_analysis(content, content_type)
-    
     def _get_analysis_system_prompt(self) -> str:
         """İçerik analizi sistem prompt'u"""
         return """Sen uzman bir görsel konsept analisti ve yaratıcı direktörüsün. Görevin verilen içeriği analiz edip, profesyonel kalitede görsel üretimi için detaylı konseptler oluşturmak.
-
 GÖREV:
 1. Ana temayı belirle
 2. İçerik türünü kategorize et
@@ -302,10 +255,8 @@ GÖREV:
 6. Teknik gereksinimleri listele
 7. Hedef kitleyi analiz et
 8. Kompozisyon önerilerini sun
-
 İçerik Türleri: scientific, artistic, educational, commercial, narrative, technical, space, nature, abstract, documentary
 Kompozisyon Stilleri: cinematic, documentary, artistic, scientific, commercial, editorial
-
 Yanıtını şu JSON formatında ver:
 {
   "main_theme": "ana tema",
@@ -319,20 +270,15 @@ Yanıtını şu JSON formatında ver:
   "suggested_compositions": ["stil1", "stil2"],
   "confidence_score": 0.95
 }"""
-    
     def _create_content_analysis_prompt(self, content: str, content_type: Optional[ContentType]) -> str:
         """İçerik analiz prompt'u oluştur"""
         return f"""
 Aşağıdaki içeriği analiz et ve profesyonel görsel üretimi için detaylı konseptler oluştur:
-
 İÇERİK: "{content}"
-
 {f"Belirtilen İçerik Türü: {content_type.value}" if content_type else "İçerik Türü: Otomatik belirle"}
-
 Bu içeriği kapsamlı bir şekilde analiz et ve 4 farklı profesyonel görsel için gerekli tüm bilgileri sağla.
 Görsel üretiminde kullanılacak anahtar kavramları, atmosferi, teknik gereksinimleri ve kompozisyon önerilerini detaylandır.
 """
-    
     def _create_fallback_analysis(self, content: str, content_type: Optional[ContentType]) -> ContentAnalysis:
         """Fallback içerik analizi"""
         return ContentAnalysis(
@@ -347,40 +293,27 @@ Görsel üretiminde kullanılacak anahtar kavramları, atmosferi, teknik gereksi
             suggested_compositions=[CompositionStyle.CINEMATIC, CompositionStyle.ARTISTIC],
             confidence_score=0.6
         )
-    
     async def generate_prompt_variations(self, base_analysis: ContentAnalysis, 
                                        image_count: int = 4) -> List[Tuple[str, ImagePurpose, str]]:
         """
         İçerik analizine göre çeşitli prompt varyasyonları oluştur
         """
         try:
-            # Her görsel için farklı amaç ve perspektif
             image_purposes = [ImagePurpose.HERO, ImagePurpose.DETAIL, ImagePurpose.CONTEXT, ImagePurpose.ARTISTIC]
             if image_count > 4:
                 image_purposes.extend([ImagePurpose.HERO, ImagePurpose.DETAIL] * ((image_count - 4) // 2 + 1))
-            
             prompts = []
-            
             for i, purpose in enumerate(image_purposes[:image_count]):
-                # Purpose'a göre prompt oluştur
                 base_prompt = self._create_purpose_specific_prompt(base_analysis, purpose, i)
-                
-                # Professional enhancement ekle
                 enhanced_prompt = await self._enhance_with_professional_techniques(
                     base_prompt, purpose, base_analysis.suggested_compositions[0] if base_analysis.suggested_compositions else CompositionStyle.CINEMATIC
                 )
-                
                 prompts.append((enhanced_prompt, purpose, f"Professional {purpose.value} image"))
-                
                 logger.info(f"Generated {purpose.value} prompt: {enhanced_prompt[:60]}...")
-            
             return prompts
-            
         except Exception as e:
             logger.error(f"Prompt variation generation error: {str(e)}")
-            # Fallback simple prompts
             return [(f"Professional high-quality image of {base_analysis.main_theme}", ImagePurpose.HERO, "Hero image")] * image_count
-    
     def _create_purpose_specific_prompt(self, analysis: ContentAnalysis, purpose: ImagePurpose, index: int) -> str:
         """Purpose'a özel prompt oluştur"""
         base_elements = {
@@ -389,25 +322,17 @@ Görsel üretiminde kullanılacak anahtar kavramları, atmosferi, teknik gereksi
             "mood": ", ".join(analysis.mood_descriptors[:2]),
             "visual_elements": ", ".join(analysis.visual_elements[:3])
         }
-        
         purpose_templates = {
             ImagePurpose.HERO: f"Magnificent {base_elements['theme']} featuring {base_elements['key_concepts']}, {base_elements['mood']} atmosphere, {base_elements['visual_elements']}, epic composition",
-            
             ImagePurpose.DETAIL: f"Intricate close-up detail of {base_elements['key_concepts']} from {base_elements['theme']}, {base_elements['mood']} lighting, {base_elements['visual_elements']}, macro photography excellence",
-            
             ImagePurpose.CONTEXT: f"Wide contextual view of {base_elements['theme']} environment, {base_elements['key_concepts']} in natural setting, {base_elements['mood']} atmosphere, {base_elements['visual_elements']}, environmental storytelling",
-            
             ImagePurpose.ARTISTIC: f"Artistic interpretation of {base_elements['theme']}, creative visualization of {base_elements['key_concepts']}, {base_elements['mood']} artistic mood, {base_elements['visual_elements']}, fine art quality"
         }
-        
         return purpose_templates.get(purpose, base_elements['theme'])
-    
     async def _enhance_with_professional_techniques(self, base_prompt: str, purpose: ImagePurpose,
                                                   composition_style: CompositionStyle) -> str:
         """Professional fotoğrafçılık teknikleri ile enhance et - Advanced Composer kullanarak"""
-        
         try:
-            # Advanced composer kullanarak profesyonel geliştirme
             if self.advanced_composer:
                 enhancement_result = await self.advanced_composer.enhance_with_advanced_composition(
                     user_input=base_prompt,
@@ -415,45 +340,30 @@ Görsel üretiminde kullanılacak anahtar kavramları, atmosferi, teknik gereksi
                     creativity_level=0.8,
                     quality_level="high"
                 )
-                
                 if enhancement_result.get("success"):
                     logger.info(f"Advanced composition applied to {purpose.value} image")
                     return enhancement_result["enhanced_prompt"]
-            
-            # Fallback: Original method
             professional_elements = self.professional_styles.get(purpose, ["professional quality"])
             composition_elements = self.composition_techniques.get(composition_style, ["professional composition"])
-            
-            # Quality enhancers
             quality_terms = [
                 "ultra-high resolution", "professional photography", "award-winning quality",
                 "perfect composition", "studio lighting", "color accuracy", "sharp focus",
                 "professional equipment", "expert technique", "commercial grade"
             ]
-            
-            # Combine all elements
             enhanced_prompt = f"{base_prompt}, {professional_elements[0]}, {composition_elements[0]}, {', '.join(quality_terms[:3])}"
-            
             return enhanced_prompt
-            
         except Exception as e:
             logger.error(f"Advanced enhancement error: {str(e)}, using fallback")
-            # Simple fallback
             return f"{base_prompt}, professional photography, high quality, award-winning composition"
-    
     async def generate_multiple_images(self, request: MultiImageRequest) -> MultiImageResponse:
         """
         Ana çoklu görsel üretim fonksiyonu - Performance Optimized
         """
         start_time = datetime.now()
         self.metrics["total_requests"] += 1
-        
         try:
-            # Initialize services if needed
             if not self.image_service:
                 await self.initialize()
-            
-            # Performance monitoring ve resource management
             if self.performance_optimizer:
                 async with GenerationSlotManager(self.performance_optimizer):
                     logger.info(f"Starting optimized multi-image generation for: {request.content[:50]}...")
@@ -461,28 +371,19 @@ Görsel üretiminde kullanılacak anahtar kavramları, atmosferi, teknik gereksi
             else:
                 logger.info(f"Starting multi-image generation for: {request.content[:50]}...")
                 return await self._generate_with_monitoring(request, start_time)
-                
         except Exception as e:
             if self.performance_optimizer:
                 self.performance_optimizer.record_error()
             return await self._handle_generation_error(e, request, start_time)
-    
     async def _generate_with_monitoring(self, request: MultiImageRequest, start_time: datetime) -> MultiImageResponse:
         """Performance monitoring ile görsel üretimi"""
         try:
-            
-            # 1. İçerik analizi
             content_analysis = await self.analyze_content(request.content, request.content_type)
             logger.info(f"Content analysis completed - Theme: {content_analysis.main_theme}, Confidence: {content_analysis.confidence_score:.2f}")
-            
-            # 2. Prompt varyasyonları oluştur
             prompt_variations = await self.generate_prompt_variations(content_analysis, request.image_count)
             logger.info(f"Generated {len(prompt_variations)} prompt variations")
-            
-            # 3. Paralel görsel üretimi
             generation_tasks = []
             for i, (enhanced_prompt, purpose, description) in enumerate(prompt_variations):
-                
                 image_request = ImageGenerationRequest(
                     prompt=enhanced_prompt,
                     model="imagen-4.0-ultra-generate-preview-06-06",
@@ -497,29 +398,20 @@ Görsel üretiminde kullanılacak anahtar kavramları, atmosferi, teknik gereksi
                         "batch_index": i
                     }
                 )
-                
-                # Async task oluştur
                 task = self._generate_single_image_with_metadata(
                     image_request, purpose, description, enhanced_prompt
                 )
                 generation_tasks.append(task)
-            
-            # Tüm görselleri paralel üret - Performance monitoring ile
             if self.performance_optimizer:
                 self.performance_optimizer.record_generation_start()
-            
             logger.info(f"Starting parallel generation of {len(generation_tasks)} images...")
             results = await asyncio.gather(*generation_tasks, return_exceptions=True)
-            
             if self.performance_optimizer:
                 self.performance_optimizer.record_generation_complete()
-            
-            # Sonuçları işle
             generated_images = []
             successful_generations = 0
             failed_generations = 0
             total_generation_time = 0
-            
             for i, result in enumerate(results):
                 if isinstance(result, Exception):
                     logger.error(f"Image {i+1} generation failed: {str(result)}")
@@ -530,24 +422,14 @@ Görsel üretiminde kullanılacak anahtar kavramları, atmosferi, teknik gereksi
                     total_generation_time += result.get('generation_time_ms', 0)
                 else:
                     failed_generations += 1
-            
             total_processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
             average_generation_time = int(total_generation_time / successful_generations) if successful_generations > 0 else 0
-            
-            # Metrics güncelle
             self.metrics["successful_requests"] += 1 if successful_generations > 0 else 0
             self.metrics["total_images_generated"] += successful_generations
-            
-            # Performance monitoring kayıt
             if self.performance_optimizer:
                 self.performance_optimizer.record_request(total_processing_time / 1000.0)
-            
-            # Quality metrics hesapla
             quality_metrics = self._calculate_quality_metrics(generated_images, content_analysis)
-            
-            # Suggestions oluştur
             suggestions = self._generate_suggestions(content_analysis, successful_generations, failed_generations)
-            
             response = MultiImageResponse(
                 success=successful_generations > 0,
                 content_analysis=content_analysis.__dict__,
@@ -560,43 +442,33 @@ Görsel üretiminde kullanılacak anahtar kavramları, atmosferi, teknik gereksi
                 quality_metrics=quality_metrics,
                 suggestions=suggestions
             )
-            
             logger.info(f"Multi-image generation completed: {successful_generations}/{len(prompt_variations)} successful in {total_processing_time}ms")
-            
             return response
-            
         except Exception as e:
             error_msg = f"Multi-image generation error: {str(e)}"
             logger.error(error_msg)
-            
             return MultiImageResponse(
                 success=False,
                 error_message=error_msg,
                 total_processing_time_ms=int((datetime.now() - start_time).total_seconds() * 1000)
             )
-    
     async def _handle_generation_error(self, error: Exception, request: MultiImageRequest, start_time: datetime) -> MultiImageResponse:
         """Hata durumlarını handle eder"""
         self.metrics["total_requests"] += 1  # Hatalı da olsa request sayısına dahil
         logger.error(f"Multi-image generation failed: {str(error)}")
-        
-        # Return error response with empty images
         return MultiImageResponse(
             success=False,
             error_message=str(error),
             total_processing_time_ms=int((datetime.now() - start_time).total_seconds() * 1000)
         )
-    
     async def _generate_single_image_with_metadata(self, image_request: ImageGenerationRequest,
                                                  purpose: ImagePurpose, description: str,
                                                  original_prompt: str) -> Optional[GeneratedImageInfo]:
         """Tek görsel üret ve metadata ile birlikte döndür"""
         try:
             start_time = datetime.now()
-            
             response = await self.image_service.generate_image(image_request)
             generation_time = int((datetime.now() - start_time).total_seconds() * 1000)
-            
             if response.success and response.image_url:
                 return GeneratedImageInfo(
                     image_url=response.image_url,
@@ -620,11 +492,9 @@ Görsel üretiminde kullanılacak anahtar kavramları, atmosferi, teknik gereksi
             else:
                 logger.error(f"Image generation failed for {purpose.value}: {response.error_message}")
                 return None
-                
         except Exception as e:
             logger.error(f"Single image generation error for {purpose.value}: {str(e)}")
             return None
-    
     def _extract_composition_elements(self, prompt: str) -> List[str]:
         """Prompt'tan kompozisyon öğelerini çıkar"""
         composition_keywords = [
@@ -632,41 +502,27 @@ Görsel üretiminde kullanılacak anahtar kavramları, atmosferi, teknik gereksi
             "depth of field", "rule of thirds", "leading lines", "symmetry",
             "contrast", "color grading", "perspective", "framing"
         ]
-        
         found_elements = []
         prompt_lower = prompt.lower()
-        
         for keyword in composition_keywords:
             if keyword in prompt_lower:
                 found_elements.append(keyword)
-        
         return found_elements[:5]  # İlk 5 öğe
-    
     def _calculate_quality_metrics(self, generated_images: List[GeneratedImageInfo], 
                                  content_analysis: ContentAnalysis) -> Dict[str, Any]:
         """Kalite metrikleri hesapla"""
         if not generated_images:
             return {"overall_quality_score": 0.0}
-        
         total_score = 0.0
         enhancement_usage = 0
         avg_generation_time = 0
-        
         for img in generated_images:
-            # Enhancement kullanımı
             if img.enhancement_applied:
                 enhancement_usage += 1
-            
-            # Ortalama süre
             avg_generation_time += img.generation_time_ms
-            
-            # Kompozisyon puanı (kompozisyon öğesi sayısına göre)
             composition_score = min(1.0, len(img.composition_elements) / 3.0)
-            
-            # Genel puan
             image_score = (composition_score + content_analysis.confidence_score) / 2.0
             total_score += image_score
-        
         return {
             "overall_quality_score": total_score / len(generated_images),
             "enhancement_usage_rate": enhancement_usage / len(generated_images),
@@ -675,30 +531,23 @@ Görsel üretiminde kullanılacak anahtar kavramları, atmosferi, teknik gereksi
             "successful_image_count": len(generated_images),
             "composition_complexity": sum(len(img.composition_elements) for img in generated_images) / len(generated_images)
         }
-    
     def _generate_suggestions(self, content_analysis: ContentAnalysis,
                             successful: int, failed: int) -> List[str]:
         """İyileştirme önerileri oluştur"""
         suggestions = []
-        
         if content_analysis.confidence_score < 0.7:
             suggestions.append("Consider providing more specific content description for better analysis")
-        
         if failed > 0:
             suggestions.append(f"{failed} images failed to generate - consider adjusting creativity level or style")
-        
         if successful == 4:
             suggestions.append("All images generated successfully! Consider trying different styles for variety")
-        
         suggestions.extend([
             "Use specific visual styles (photorealistic, artistic, cinematic) for different effects",
             "Adjust creativity level: lower for consistent results, higher for unique variations",
             "Professional grade mode ensures commercial-quality results",
             "Try different composition styles for various use cases"
         ])
-        
         return suggestions[:4]  # En fazla 4 öneri
-    
     def get_service_stats(self) -> Dict[str, Any]:
         """Servis istatistikleri"""
         return {
@@ -710,20 +559,15 @@ Görsel üretiminde kullanılacak anahtar kavramları, atmosferi, teknik gereksi
             "professional_styles_count": sum(len(styles) for styles in self.professional_styles.values()),
             "composition_techniques_count": sum(len(techs) for techs in self.composition_techniques.values())
         }
-    
     async def cleanup(self):
         """Temizlik işlemleri"""
         self.analysis_cache.clear()
         if self.image_service:
             await self.image_service.cleanup()
-
-# Global service instance
 multi_image_generator = MultiImageGenerator()
-
 async def get_multi_image_service() -> MultiImageGenerator:
     """Dependency injection için service instance"""
     return multi_image_generator
-
 async def cleanup_multi_image_service():
     """App shutdown için temizlik"""
     await multi_image_generator.cleanup()

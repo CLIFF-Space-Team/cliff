@@ -1,15 +1,13 @@
 'use client'
-
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Shield, Globe, Satellite } from 'lucide-react'
-
 export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 p-6">
-      {/* Header */}
+      {}
       <header className="mb-8">
         <div className="flex items-center gap-3 mb-4">
           <Shield className="h-10 w-10 text-blue-400" />
@@ -27,10 +25,9 @@ export default function Dashboard() {
           <Badge variant="success">All Systems Nominal</Badge>
         </div>
       </header>
-
-      {/* Main Dashboard */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Threat Overview Card */}
+        {}
         <Card variant="cosmic">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -54,8 +51,7 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Earth Monitoring Card */}
+        {}
         <Card variant="cosmic">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -79,8 +75,7 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Space Objects Card */}
+        {}
         <Card variant="cosmic">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -105,8 +100,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Action Buttons */}
+      {}
       <div className="mt-8 flex flex-wrap gap-4">
         <Button variant="cosmic">
           <Satellite className="h-4 w-4 mr-2" />
@@ -121,8 +115,7 @@ export default function Dashboard() {
           Threat Analysis
         </Button>
       </div>
-
-      {/* Status Footer */}
+      {}
       <footer className="mt-12 p-4 border-t border-slate-800/50">
         <div className="flex justify-between items-center text-sm text-slate-400">
           <span>CLIFF Dashboard v1.0.0</span>

@@ -1,14 +1,11 @@
-"use client"
-
+﻿"use client"
 import React from 'react'
 import { Button } from '@/components/ui/button'
 import { exportToCSV } from '@/lib/api/asteroids'
-
 type Props = {
   filename?: string
   rows: any[]
 }
-
 export default function ExportMenu({ filename = 'neos', rows }: Props) {
   const onCSV = () => exportToCSV(`${filename}.csv`, rows)
   const onJSON = () => {
@@ -25,5 +22,3 @@ export default function ExportMenu({ filename = 'neos', rows }: Props) {
     </div>
   )
 }
-
-

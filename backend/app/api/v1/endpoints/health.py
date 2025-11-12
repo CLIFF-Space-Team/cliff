@@ -1,9 +1,4 @@
-"""
-🌌 CLIFF System Health Check API Endpoints
-Comprehensive system monitoring and health assessment
-"""
-
-import asyncio
+﻿import asyncio
 import psutil
 import time
 from datetime import datetime
@@ -12,26 +7,17 @@ from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import structlog
-
 from app.core.config import settings, Settings, get_settings
 from app.core.database import check_database_health, get_connection_status, get_database_stats
 from app.services.nasa_services import get_nasa_services, NASAServices
 from app.services.ai_services import get_ai_services, VertexAIServices
-
-# Setup logging and router
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/health", tags=["Health Check"])
-
-# ==============================================================================
-# RESPONSE MODELS
-# ==============================================================================
-
 class SystemMetrics(BaseModel):
     """System performance metrics"""
     cpu_usage_percent: float
     memory_usage_percent: float
     disk_usage_percent: float
-
 class DetailedSystemMetrics(BaseModel):
     """Detailed system performance metrics"""
     cpu_usage_percent: float
@@ -42,12 +28,10 @@ class DetailedSystemMetrics(BaseModel):
     uptime_seconds: int
     network_bytes_sent: int
     network_bytes_recv: int
-
 class DatabaseHealth(BaseModel):
     """Database health status"""
     connected: bool
     stats: Optional[Dict[str, Any]] = None
-
 class HealthResponse(BaseModel):
     """Basic health check response"""
     status: str
@@ -57,7 +41,6 @@ class HealthResponse(BaseModel):
     database: Optional[bool] = None
     system: Optional[SystemMetrics] = None
     error: Optional[str] = None
-
 class DetailedHealthResponse(BaseModel):
     """Detailed health check response"""
     status: str
@@ -69,37 +52,24 @@ class DetailedHealthResponse(BaseModel):
     system: Optional[DetailedSystemMetrics] = None
     external_services: Optional[Dict[str, Any]] = None
     error: Optional[str] = None
-
-# ==============================================================================
-# SYSTEM HEALTH CHECK ENDPOINTS
-# ==============================================================================
-
 @router.get("/", response_model=HealthResponse)
 async def get_health_status(settings: Settings = Depends(get_settings)) -> HealthResponse:
     """
     Temel sistem durumu kontrolü
     """
     try:
-        # Temel sistem bilgileri
         current_time = datetime.utcnow()
-        
-        # Database bağlantı testi
         db_health_result = await check_database_health()
         db_healthy = db_health_result.get("status") == "healthy"
-        
-        # Sistem metrikleri
         cpu_usage = psutil.cpu_percent(interval=1)
         memory = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
-        
-        # Genel sistem durumu
         is_healthy = (
             db_healthy and
             cpu_usage < 90 and
             memory.percent < 90 and
             disk.percent < 90
         )
-        
         return HealthResponse(
             status="healthy" if is_healthy else "unhealthy",
             timestamp=current_time,
@@ -112,7 +82,6 @@ async def get_health_status(settings: Settings = Depends(get_settings)) -> Healt
                 disk_usage_percent=disk.percent
             )
         )
-        
     except Exception as e:
         logger.error(f"Health check failed: {str(e)}")
         return HealthResponse(
@@ -121,7 +90,6 @@ async def get_health_status(settings: Settings = Depends(get_settings)) -> Healt
             error=str(e),
             service=settings.APP_NAME
         )
-
 @router.get("/detailed", response_model=DetailedHealthResponse)
 async def get_detailed_health(settings: Settings = Depends(get_settings)) -> DetailedHealthResponse:
     """
@@ -129,27 +97,15 @@ async def get_detailed_health(settings: Settings = Depends(get_settings)) -> Det
     """
     try:
         current_time = datetime.utcnow()
-        
-        # Database kontrolü
         db_healthy = await check_database_health()
         db_stats = await get_database_stats() if db_healthy else None
-        
-        # Sistem metrikleri
         cpu_usage = psutil.cpu_percent(interval=1)
         memory = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
-        
-        # Boot time ve uptime
         boot_time = datetime.fromtimestamp(psutil.boot_time())
         uptime_seconds = (current_time - boot_time).total_seconds()
-        
-        # Network durumu
         network_stats = psutil.net_io_counters()
-        
-        # External service durumları
         external_services = {}
-        
-        # NASA API testi
         try:
             nasa_services = get_nasa_services()
             nasa_test = await nasa_services.health_check()
@@ -164,7 +120,6 @@ async def get_detailed_health(settings: Settings = Depends(get_settings)) -> Det
                 "error": str(e),
                 "last_check": current_time
             }
-        
         return DetailedHealthResponse(
             status="healthy" if db_healthy else "degraded",
             timestamp=current_time,
@@ -187,7 +142,6 @@ async def get_detailed_health(settings: Settings = Depends(get_settings)) -> Det
             ),
             external_services=external_services
         )
-        
     except Exception as e:
         logger.error(f"Detailed health check failed: {str(e)}")
         return DetailedHealthResponse(
@@ -196,7 +150,6 @@ async def get_detailed_health(settings: Settings = Depends(get_settings)) -> Det
             error=str(e),
             service=settings.APP_NAME
         )
-
 @router.get("/database")
 async def database_health_check() -> JSONResponse:
     """
@@ -206,11 +159,8 @@ async def database_health_check() -> JSONResponse:
     try:
         start_time = time.time()
         logger.info("Starting database health check...")
-        
-        # Run health check
         health_result = await check_database_health()
         connection_status = get_connection_status()
-        
         db_health = {
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "database_type": "MongoDB Atlas",
@@ -219,8 +169,6 @@ async def database_health_check() -> JSONResponse:
             "connection_status": connection_status,
             "response_time_ms": round((time.time() - start_time) * 1000, 2)
         }
-        
-        # Determine status
         if health_result.get("status") == "healthy":
             db_health["overall_status"] = "healthy"
             status_code = 200
@@ -229,8 +177,6 @@ async def database_health_check() -> JSONResponse:
             db_health["overall_status"] = "unhealthy"
             status_code = 503
             logger.warning(f"⚠️ Database health check FAILED: {health_result.get('error')}")
-        
-        # Add troubleshooting info if needed
         if db_health["overall_status"] != "healthy":
             db_health["troubleshooting"] = [
                 "Check MongoDB SSL certificate configuration",
@@ -239,9 +185,7 @@ async def database_health_check() -> JSONResponse:
                 "Review SSL handshake timeout settings",
                 "Ensure database credentials are correct"
             ]
-        
         return JSONResponse(content=db_health, status_code=status_code)
-        
     except Exception as e:
         logger.error(f"Database health check failed: {str(e)}")
         error_response = {
@@ -256,8 +200,6 @@ async def database_health_check() -> JSONResponse:
             ]
         }
         return JSONResponse(content=error_response, status_code=503)
-
-
 @router.get("/services")
 async def services_health_check(
     nasa_services: NASAServices = Depends(get_nasa_services),
@@ -270,14 +212,11 @@ async def services_health_check(
     try:
         start_time = time.time()
         logger.info("Starting services health check...")
-        
         services_health = {
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "services": {},
             "response_time_ms": 0
         }
-        
-        # NASA API Services
         try:
             nasa_health = await nasa_services.health_check()
             services_health["services"]["nasa_apis"] = {
@@ -292,8 +231,6 @@ async def services_health_check(
                 "status": "error",
                 "error": str(e)
             }
-        
-        # Vertex AI Services
         try:
             ai_test = await ai_services.test_gemini_api_connection()
             services_health["services"]["vertex_ai"] = {
@@ -308,8 +245,6 @@ async def services_health_check(
                 "status": "error",
                 "error": str(e)
             }
-        
-        # Calculate overall services status
         service_statuses = [svc.get("status") for svc in services_health["services"].values()]
         if any(status == "error" for status in service_statuses):
             services_health["overall_status"] = "unhealthy"
@@ -320,13 +255,9 @@ async def services_health_check(
         else:
             services_health["overall_status"] = "healthy"
             status_code = 200
-        
         services_health["response_time_ms"] = round((time.time() - start_time) * 1000, 2)
-        
         logger.info(f"Services health check completed: {services_health['overall_status']} ({services_health['response_time_ms']}ms)")
-        
         return JSONResponse(content=services_health, status_code=status_code)
-        
     except Exception as e:
         logger.error(f"Services health check failed: {str(e)}")
         error_response = {
@@ -335,8 +266,6 @@ async def services_health_check(
             "error": str(e)
         }
         return JSONResponse(content=error_response, status_code=503)
-
-
 @router.get("/metrics")
 async def system_metrics() -> JSONResponse:
     """
@@ -345,20 +274,16 @@ async def system_metrics() -> JSONResponse:
     """
     try:
         logger.info("Collecting system metrics...")
-        
         metrics = {
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "system": {},
             "application": {},
             "network": {}
         }
-        
-        # System metrics
         try:
             cpu_times = psutil.cpu_times()
             memory = psutil.virtual_memory()
             disk = psutil.disk_usage('/')
-            
             metrics["system"] = {
                 "cpu": {
                     "usage_percent": psutil.cpu_percent(interval=1),
@@ -387,12 +312,9 @@ async def system_metrics() -> JSONResponse:
             }
         except Exception as e:
             metrics["system"] = {"error": f"Failed to collect system metrics: {str(e)}"}
-        
-        # Application metrics
         try:
             import os
             process = psutil.Process(os.getpid())
-            
             metrics["application"] = {
                 "process_id": os.getpid(),
                 "memory_usage_mb": round(process.memory_info().rss / (1024**2), 2),
@@ -403,8 +325,6 @@ async def system_metrics() -> JSONResponse:
             }
         except Exception as e:
             metrics["application"] = {"error": f"Failed to collect application metrics: {str(e)}"}
-        
-        # Network metrics (simplified)
         try:
             net_io = psutil.net_io_counters()
             metrics["network"] = {
@@ -415,10 +335,8 @@ async def system_metrics() -> JSONResponse:
             }
         except Exception as e:
             metrics["network"] = {"error": f"Failed to collect network metrics: {str(e)}"}
-        
         logger.info("System metrics collected successfully")
         return JSONResponse(content=metrics)
-        
     except Exception as e:
         logger.error(f"Failed to collect system metrics: {str(e)}")
         error_response = {
@@ -426,8 +344,6 @@ async def system_metrics() -> JSONResponse:
             "error": str(e)
         }
         return JSONResponse(content=error_response, status_code=500)
-
-
 @router.post("/test")
 async def run_health_tests(background_tasks: BackgroundTasks) -> JSONResponse:
     """
@@ -437,10 +353,7 @@ async def run_health_tests(background_tasks: BackgroundTasks) -> JSONResponse:
     try:
         test_id = f"TEST-{int(datetime.utcnow().timestamp() * 1000)}"
         logger.info(f"Starting health test suite: {test_id}")
-        
-        # Add background task for extensive testing
         background_tasks.add_task(_run_extensive_health_tests, test_id)
-        
         return JSONResponse(content={
             "test_id": test_id,
             "status": "initiated",
@@ -448,28 +361,18 @@ async def run_health_tests(background_tasks: BackgroundTasks) -> JSONResponse:
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "estimated_duration": "30-60 seconds"
         })
-        
     except Exception as e:
         logger.error(f"Failed to start health tests: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to start health tests: {str(e)}")
-
-
 async def _run_extensive_health_tests(test_id: str) -> None:
     """Run extensive health tests in background"""
     try:
         logger.info(f"Running extensive health tests: {test_id}")
-        
-        # Simulate comprehensive testing
         await asyncio.sleep(5)  # Database stress test
         await asyncio.sleep(3)  # API endpoint testing
         await asyncio.sleep(2)  # Memory leak detection
         await asyncio.sleep(5)  # Performance benchmarking
-        
         logger.info(f"Health test suite completed: {test_id}")
-        
     except Exception as e:
         logger.error(f"Health test suite failed: {test_id} - {str(e)}")
-
-
-# Import required dependency at module level
 from fastapi import Depends

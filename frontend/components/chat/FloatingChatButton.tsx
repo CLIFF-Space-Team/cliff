@@ -1,26 +1,21 @@
-'use client'
-
+﻿'use client'
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageCircle, X, Sparkles } from 'lucide-react'
 import ModernChatInterface from './ModernChatInterface'
 import { cn } from '@/lib/utils'
-
 interface FloatingChatButtonProps {
   className?: string
 }
-
 const FloatingChatButton: React.FC<FloatingChatButtonProps> = ({ className }) => {
   const [isChatOpen, setIsChatOpen] = useState(false)
   const [hasNewMessage, setHasNewMessage] = useState(false)
-
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen)
     if (!isChatOpen) {
       setHasNewMessage(false)
     }
   }
-
   return (
     <>
       <AnimatePresence>
@@ -43,10 +38,8 @@ const FloatingChatButton: React.FC<FloatingChatButtonProps> = ({ className }) =>
             )}
           >
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-600 to-blue-600 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300" />
-            
             <div className="relative">
               <MessageCircle className="w-7 h-7 text-white" />
-              
               {hasNewMessage && (
                 <motion.div
                   initial={{ scale: 0 }}
@@ -61,7 +54,6 @@ const FloatingChatButton: React.FC<FloatingChatButtonProps> = ({ className }) =>
                 </motion.div>
               )}
             </div>
-
             <motion.div
               className="absolute -inset-2"
               animate={{ rotate: 360 }}
@@ -73,10 +65,8 @@ const FloatingChatButton: React.FC<FloatingChatButtonProps> = ({ className }) =>
           </motion.button>
         )}
       </AnimatePresence>
-
       <ModernChatInterface isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
     </>
   )
 }
-
 export default FloatingChatButton

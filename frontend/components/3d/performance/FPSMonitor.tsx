@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
@@ -16,7 +15,6 @@ import {
   HardDrive
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
 interface FPSMonitorProps {
   className?: string
   compact?: boolean
@@ -24,7 +22,6 @@ interface FPSMonitorProps {
   showGraph?: boolean
   showDetails?: boolean
 }
-
 interface PerformanceData {
   fps: number
   averageFPS: number
@@ -37,7 +34,6 @@ interface PerformanceData {
   quality: string
   performanceRatio: number
 }
-
 const FPSMonitor: React.FC<FPSMonitorProps> = ({
   className,
   compact = false,
@@ -57,27 +53,21 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
     quality: 'high',
     performanceRatio: 1.0
   })
-  
   const [fpsHistory, setFpsHistory] = useState<number[]>([])
   const [isExpanded, setIsExpanded] = useState(!compact)
   const intervalRef = useRef<NodeJS.Timeout>()
   const frameCountRef = useRef(0)
   const lastTimeRef = useRef(performance.now())
-
-  // Simulated performance data (in real app, this would come from PerformanceManager)
   useEffect(() => {
     const updatePerformance = () => {
       const now = performance.now()
       const deltaTime = now - lastTimeRef.current
       frameCountRef.current++
-
-      // Simulate realistic FPS variations
       const baseFPS = 58 + Math.random() * 8 // 58-66 FPS range
       const currentFPS = Math.max(30, Math.min(120, baseFPS))
       const avgFPS = fpsHistory.length > 0 
         ? fpsHistory.reduce((a, b) => a + b, 0) / fpsHistory.length 
         : currentFPS
-
       const newData: PerformanceData = {
         fps: currentFPS,
         averageFPS: avgFPS,
@@ -90,18 +80,13 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
         quality: currentFPS > 55 ? 'high' : currentFPS > 45 ? 'medium' : 'low',
         performanceRatio: currentFPS / targetFPS
       }
-
       setPerformanceData(newData)
-
-      // Update FPS history
       setFpsHistory(prev => {
         const newHistory = [...prev, currentFPS]
         return newHistory.slice(-60) // Keep last 60 samples
       })
-
       lastTimeRef.current = now
     }
-
     intervalRef.current = setInterval(updatePerformance, 250) // 4 times per second
     return () => {
       if (intervalRef.current) {
@@ -109,8 +94,6 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
       }
     }
   }, [targetFPS])
-
-  // Performance status
   const getPerformanceStatus = () => {
     if (performanceData.fps >= targetFPS * 0.95) {
       return { status: 'excellent', color: 'text-accent-success', bgColor: 'bg-accent-success/10', icon: CheckCircle }
@@ -122,25 +105,20 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
       return { status: 'poor', color: 'text-accent-danger', bgColor: 'bg-accent-danger/10', icon: AlertTriangle }
     }
   }
-
   const performanceStatus = getPerformanceStatus()
   const StatusIcon = performanceStatus.icon
-
-  // FPS Graph Component
   const FPSGraph = () => {
     const maxFPS = Math.max(targetFPS * 1.2, ...fpsHistory)
     const minFPS = Math.min(targetFPS * 0.5, ...fpsHistory)
     const range = maxFPS - minFPS
-
     return (
       <div className="relative h-16 w-full bg-cliff-dark-gray/20 rounded-lg overflow-hidden">
-        {/* Target FPS line */}
+        {}
         <div 
           className="absolute left-0 right-0 border-t border-accent-info/40 border-dashed z-10"
           style={{ top: `${((maxFPS - targetFPS) / range) * 100}%` }}
         />
-        
-        {/* FPS curve */}
+        {}
         <svg className="absolute inset-0 w-full h-full">
           <polyline
             fill="none"
@@ -154,8 +132,7 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
             }).join(' ')}
           />
         </svg>
-
-        {/* Performance indicators */}
+        {}
         <div className="absolute top-1 left-1 text-xs text-cliff-light-gray/60">
           {Math.round(maxFPS)}
         </div>
@@ -165,7 +142,6 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
       </div>
     )
   }
-
   if (compact) {
     return (
       <div className={cn("flex items-center gap-2", className)}>
@@ -178,21 +154,19 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
             {Math.round(performanceData.fps)} FPS
           </span>
         </div>
-        
         <Badge variant="default" className="bg-cliff-dark-gray/30 text-cliff-light-gray border-cliff-dark-gray/50">
           {performanceData.quality.toUpperCase()}
         </Badge>
       </div>
     )
   }
-
   return (
     <Card className={cn(
       "bg-pure-black-gradient border-cliff-dark-gray/30 overflow-hidden",
       className
     )}>
       <CardContent className="p-4">
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className={cn(
@@ -206,7 +180,6 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
               <p className="text-sm text-cliff-light-gray">Real-time 3D render metrikleri</p>
             </div>
           </div>
-          
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -216,8 +189,7 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
             <Activity className="h-5 w-5" />
           </motion.button>
         </div>
-
-        {/* Main FPS Display */}
+        {}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className={cn(
             "p-4 rounded-lg border transition-all duration-300",
@@ -235,7 +207,6 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
               <span className="text-sm text-cliff-light-gray/60">/ {targetFPS}</span>
             </div>
           </div>
-
           <div className="p-4 rounded-lg border border-cliff-dark-gray/30 bg-cliff-dark-gray/10">
             <div className="flex items-center gap-2 mb-2">
               <Zap className="h-4 w-4 text-accent-info" />
@@ -249,8 +220,7 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
             </div>
           </div>
         </div>
-
-        {/* FPS Graph */}
+        {}
         {showGraph && fpsHistory.length > 5 && (
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
@@ -260,8 +230,7 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
             <FPSGraph />
           </div>
         )}
-
-        {/* Detailed Metrics */}
+        {}
         <AnimatePresence>
           {isExpanded && showDetails && (
             <motion.div
@@ -279,7 +248,6 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
                       {performanceData.frameTime.toFixed(2)}ms
                     </span>
                   </div>
-                  
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-cliff-light-gray">Quality</span>
                     <Badge variant="default" className={cn(
@@ -291,28 +259,24 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
                       {performanceData.quality.toUpperCase()}
                     </Badge>
                   </div>
-                  
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-cliff-light-gray">Draw Calls</span>
                     <span className="text-sm text-white font-mono">
                       {performanceData.drawCalls}
                     </span>
                   </div>
-                  
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-cliff-light-gray">Memory</span>
                     <span className="text-sm text-white font-mono">
                       {Math.round(performanceData.memoryUsed)}MB
                     </span>
                   </div>
-                  
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-cliff-light-gray">Triangles</span>
                     <span className="text-sm text-white font-mono">
                       {Math.floor(performanceData.triangles / 1000)}K
                     </span>
                   </div>
-                  
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-cliff-light-gray">Objects</span>
                     <span className="text-sm text-white font-mono">
@@ -321,8 +285,7 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
                   </div>
                 </div>
               </div>
-
-              {/* Performance Health */}
+              {}
               <div className="border-t border-cliff-dark-gray/30 pt-3">
                 <h4 className="text-sm font-semibold text-white mb-3">Performans Sağlığı</h4>
                 <div className="space-y-2">
@@ -355,5 +318,4 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
     </Card>
   )
 }
-
 export default FPSMonitor

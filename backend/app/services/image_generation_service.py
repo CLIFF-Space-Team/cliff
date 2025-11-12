@@ -1,15 +1,9 @@
-"""
-Enhanced Cortex AI Image Generation Service
-Intelligent image generation with Grok-4-fast-reasoning powered prompt enhancement
-"""
-
-import asyncio
+﻿import asyncio
 import httpx
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 import structlog
 from pydantic import BaseModel, Field
-
 from app.core.config import settings
 from app.services.intelligent_prompt_enhancer import (
     IntelligentPromptEnhancer,
@@ -18,9 +12,7 @@ from app.services.intelligent_prompt_enhancer import (
     PromptCategory,
     intelligent_prompt_enhancer
 )
-
 logger = structlog.get_logger(__name__)
-
 class ImageGenerationRequest(BaseModel):
     prompt: str = Field(..., description="Image generation prompt")
     model: str = Field(default="ideogram-v3-quality", description="Image model")
@@ -30,7 +22,6 @@ class ImageGenerationRequest(BaseModel):
     enhance_prompt: bool = Field(default=True, description="Use intelligent prompt enhancement")
     creativity_level: float = Field(default=0.8, ge=0.0, le=1.0, description="AI creativity level")
     detail_level: str = Field(default="high", description="Detail level: low, medium, high")
-
 class ImageGenerationResponse(BaseModel):
     success: bool
     image_url: Optional[str] = None
@@ -43,23 +34,17 @@ class ImageGenerationResponse(BaseModel):
     error_message: Optional[str] = None
     timestamp: str
     suggestions: Optional[List[str]] = None
-
 class EnhancedCortexImageService:
     """
     Enhanced Cortex AI Image Generation Service
     Powered by Grok-4-fast-reasoning for intelligent prompt enhancement
     """
-    
     def __init__(self):
         self.api_key = settings.CORTEX_IMAGE_API_KEY or "sk-1a67670ecba1415cb332ec77880e0caa"
         self.api_url = "https://cortexapi.net/v1/chat/completions"
         self.default_model = "imagen-4.0-ultra-generate-preview-06-06"
         self.http_client: Optional[httpx.AsyncClient] = None
-        
-        # Intelligent prompt enhancer
         self.prompt_enhancer = intelligent_prompt_enhancer
-        
-        # Performance metrikleri
         self.metrics = {
             "total_generations": 0,
             "successful_generations": 0,
@@ -68,49 +53,34 @@ class EnhancedCortexImageService:
             "average_generation_time_ms": 0,
             "average_enhancement_time_ms": 0
         }
-        
         logger.info("Enhanced Cortex Image Generation Service initialized with intelligent prompt enhancement")
-    
     async def detect_image_request(self, message: str) -> Dict[str, Any]:
         """
         Gelişmiş görsel talebi tespiti
         """
         image_keywords = [
-            # Türkçe
             "görsel oluştur", "resim yap", "fotoğraf çek", "görsel çiz", "çiz",
             "göster", "oluştur", "yap", "tasarla", "görsel", "resim", "fotoğraf", 
             "çizim", "illüstrasyon", "şekil", "diyagram",
-            
-            # İngilizce
             "create image", "generate picture", "draw", "visualize", "show me",
             "imagine", "picture of", "illustration", "artwork", "design",
-            
-            # Uzay temalı spesifik
             "uzay gemisi çiz", "mars yüzeyi", "galaksi göster", "nebula", 
             "robot", "astronot", "uzay", "space", "planet", "star",
             "solar system", "spacecraft", "galaxy", "universe",
-            
-            # Sanat temalı
             "paint", "sketch", "render", "artistic", "creative", "fantasy",
             "realistic", "photorealistic", "3d render", "digital art"
         ]
-        
         message_lower = message.lower()
         detected_keywords = []
         confidence_boost = 0.0
-        
         for keyword in image_keywords:
             if keyword in message_lower:
                 detected_keywords.append(keyword)
-                # Daha spesifik anahtar kelimeler daha yüksek güven verir
                 if len(keyword.split()) > 1:  # Multi-word keywords
                     confidence_boost += 0.3
                 else:
                     confidence_boost += 0.1
-        
         has_intent = len(detected_keywords) > 0
-        
-        # Kategori tespiti
         category_keywords = {
             "space": ["uzay", "space", "mars", "dünya", "earth", "güneş", "sun", "ay", "moon", 
                      "gezegen", "planet", "yıldız", "star", "galaksi", "galaxy", "nebula",
@@ -123,10 +93,8 @@ class EnhancedCortexImageService:
             "portrait": ["portre", "portrait", "yüz", "face", "kişi", "person", "insan", "human"],
             "object": ["nesne", "object", "araç", "vehicle", "makine", "machine", "alet", "tool"]
         }
-        
         detected_category = "general"
         category_confidence = 0.0
-        
         for category, keywords in category_keywords.items():
             category_matches = sum(1 for keyword in keywords if keyword in message_lower)
             if category_matches > 0:
@@ -134,8 +102,6 @@ class EnhancedCortexImageService:
                 if current_confidence > category_confidence:
                     detected_category = category
                     category_confidence = current_confidence
-        
-        # Stil tespiti
         style_keywords = {
             "photorealistic": ["gerçekçi", "realistic", "photorealistic", "photo", "real"],
             "artistic": ["sanatsal", "artistic", "painting", "art", "creative"],
@@ -144,10 +110,8 @@ class EnhancedCortexImageService:
             "futuristic": ["fütüristik", "futuristic", "sci-fi", "cyberpunk", "modern"],
             "vintage": ["eski", "vintage", "retro", "classic", "antique"]
         }
-        
         detected_style = None
         style_confidence = 0.0
-        
         for style, keywords in style_keywords.items():
             style_matches = sum(1 for keyword in keywords if keyword in message_lower)
             if style_matches > 0:
@@ -155,10 +119,7 @@ class EnhancedCortexImageService:
                 if current_confidence > style_confidence:
                     detected_style = style
                     style_confidence = current_confidence
-        
-        # Final confidence hesaplama
         final_confidence = min(1.0, (confidence_boost + category_confidence + style_confidence) / 3)
-        
         return {
             "has_image_intent": has_intent,
             "detected_keywords": detected_keywords,
@@ -174,7 +135,6 @@ class EnhancedCortexImageService:
                 "enhancement_recommended": final_confidence > 0.3
             }
         }
-    
     async def enhance_prompt_with_ai(self, prompt: str, context: Dict[str, Any] = None,
                                    style: Optional[str] = None, creativity_level: float = 0.8,
                                    detail_level: str = "high") -> Dict[str, Any]:
@@ -183,8 +143,6 @@ class EnhancedCortexImageService:
         """
         try:
             start_time = datetime.now()
-            
-            # Prompt enhancement request oluştur
             enhancement_request = PromptEnhancementRequest(
                 user_input=prompt,
                 preferred_style=PromptStyle(style) if style and style in [s.value for s in PromptStyle] else None,
@@ -193,26 +151,18 @@ class EnhancedCortexImageService:
                 include_technical=True,
                 use_cache=True
             )
-            
-            # Context'ten kategori tahmin etmeye çalış
             if context:
                 if context.get("detected_category"):
                     try:
                         enhancement_request.target_category = PromptCategory(context["detected_category"])
                     except ValueError:
                         pass  # Geçersiz kategori, otomatik belirlenmesi için bırak
-            
             logger.info(f"Enhancing prompt with AI: {prompt[:50]}...")
-            
-            # AI ile prompt geliştir
             enhancement_response = await self.prompt_enhancer.enhance_prompt(enhancement_request)
-            
             enhancement_time = int((datetime.now() - start_time).total_seconds() * 1000)
-            
             if enhancement_response.success:
                 logger.info(f"Prompt enhanced successfully in {enhancement_time}ms")
                 logger.info(f"Enhancement confidence: {enhancement_response.confidence_score:.2f}")
-                
                 return {
                     "success": True,
                     "original_prompt": prompt,
@@ -225,10 +175,7 @@ class EnhancedCortexImageService:
                 }
             else:
                 logger.warning(f"AI prompt enhancement failed: {enhancement_response.error_message}")
-                
-                # Fallback: Basit geliştirme
                 fallback_prompt = await self.fallback_prompt_enhancement(prompt, context, style)
-                
                 return {
                     "success": False,
                     "original_prompt": prompt,
@@ -237,13 +184,9 @@ class EnhancedCortexImageService:
                     "enhancement_time_ms": enhancement_time,
                     "fallback_used": True
                 }
-        
         except Exception as e:
             logger.error(f"AI prompt enhancement error: {str(e)}")
-            
-            # Fallback: Basit geliştirme
             fallback_prompt = await self.fallback_prompt_enhancement(prompt, context, style)
-            
             return {
                 "success": False,
                 "original_prompt": prompt,
@@ -251,19 +194,15 @@ class EnhancedCortexImageService:
                 "error_message": str(e),
                 "fallback_used": True
             }
-    
     async def fallback_prompt_enhancement(self, prompt: str, context: Dict[str, Any] = None,
                                         style: Optional[str] = None) -> str:
         """
         Fallback prompt geliştirme (AI başarısız olursa)
         """
-        # Temel kalite artırıcılar
         quality_enhancers = [
             "high quality", "detailed", "professional", "8k resolution", 
             "ultra-realistic", "best quality", "masterpiece"
         ]
-        
-        # Stil belirleyiciler
         style_enhancers = {
             "photorealistic": "photorealistic, professional photography, realistic lighting",
             "artistic": "artistic, digital painting, creative composition",
@@ -272,12 +211,9 @@ class EnhancedCortexImageService:
             "futuristic": "futuristic design, sci-fi aesthetic, advanced technology",
             "vintage": "vintage style, retro aesthetic, classic composition"
         }
-        
-        # Context analizi
         context_enhancers = []
         if context:
             category = context.get("detected_category", "general")
-            
             if category == "space":
                 context_enhancers.extend([
                     "cosmic colors", "space environment", "NASA style", 
@@ -293,49 +229,30 @@ class EnhancedCortexImageService:
                     "magical atmosphere", "mythical elements", "fantasy art style",
                     "enchanted setting"
                 ])
-        
-        # Türkçe-İngilizce çeviri (gelişmiş)
         translations = {
-            # Uzay
             "uzay gemisi": "spacecraft", "mars yüzeyi": "mars surface", 
             "ay yüzeyi": "lunar surface", "uzay istasyonu": "space station",
             "astronot": "astronaut", "galaksi": "galaxy", "nebula": "nebula",
             "kara delik": "black hole", "güneş sistemi": "solar system",
             "gezegen": "planet", "yıldız": "star", "kuyruklu yıldız": "comet",
-            
-            # Doğa
             "orman": "forest", "ağaç": "tree", "çiçek": "flower",
             "deniz": "ocean", "göl": "lake", "dağ": "mountain",
             "hayvan": "animal", "kedi": "cat", "köpek": "dog",
-            
-            # Fantastik
             "ejder": "dragon", "büyücü": "wizard", "peri": "fairy",
             "unicorn": "unicorn", "büyülü": "magical",
-            
-            # Genel
             "güzel": "beautiful", "büyük": "large", "küçük": "small",
             "renkli": "colorful", "parlak": "bright", "karanlık": "dark"
         }
-        
-        # Prompt'u çevir
         enhanced_prompt = prompt.lower()
         for tr_word, en_word in translations.items():
             enhanced_prompt = enhanced_prompt.replace(tr_word, en_word)
-        
-        # Geliştirmeleri ekle
         final_enhancements = []
         final_enhancements.extend(quality_enhancers[:3])  # İlk 3 kalite artırıcı
-        
         if style and style in style_enhancers:
             final_enhancements.append(style_enhancers[style])
-        
         final_enhancements.extend(context_enhancers[:2])  # İlk 2 context artırıcı
-        
-        # Final prompt oluştur
         final_prompt = f"{enhanced_prompt}, {', '.join(final_enhancements)}"
-        
         return final_prompt.strip()
-    
     async def generate_image(self, request: ImageGenerationRequest) -> ImageGenerationResponse:
         """
         Gelişmiş görsel oluşturma
@@ -343,13 +260,10 @@ class EnhancedCortexImageService:
         try:
             start_time = datetime.now()
             self.metrics["total_generations"] += 1
-            
-            # Prompt geliştirme
             enhanced_prompt = request.prompt
             prompt_analysis = None
             suggestions = None
             enhancement_time = 0
-            
             if request.enhance_prompt:
                 logger.info("Using intelligent prompt enhancement...")
                 enhancement_result = await self.enhance_prompt_with_ai(
@@ -359,18 +273,13 @@ class EnhancedCortexImageService:
                     creativity_level=request.creativity_level,
                     detail_level=request.detail_level
                 )
-                
                 enhanced_prompt = enhancement_result["enhanced_prompt"]
                 prompt_analysis = enhancement_result.get("analysis")
                 suggestions = enhancement_result.get("suggestions")
                 enhancement_time = enhancement_result.get("enhancement_time_ms", 0)
-                
                 if enhancement_result["success"]:
                     self.metrics["prompt_enhancements_used"] += 1
-            
             logger.info(f"Generating image with enhanced prompt: {enhanced_prompt[:100]}...")
-            
-            # API payload
             payload = {
                 "model": request.model,
                 "messages": [
@@ -380,26 +289,17 @@ class EnhancedCortexImageService:
                     }
                 ]
             }
-            
             headers = {
                 'Authorization': f'Bearer {self.api_key}',
                 'Content-Type': 'application/json'
             }
-            
-            # HTTP client oluştur
             if not self.http_client:
                 self.http_client = httpx.AsyncClient(timeout=httpx.Timeout(60.0))
-            
             response = await self.http_client.post(self.api_url, json=payload, headers=headers)
             generation_time = int((datetime.now() - start_time).total_seconds() * 1000)
-            
-            # Metrics güncelle
             self._update_metrics(True, generation_time, enhancement_time)
-            
             if response.status_code == 200:
                 data = response.json()
-                
-                # Image URL'yi farklı formatlardan çıkarmaya çalış
                 image_url = None
                 if data.get("choices") and len(data["choices"]) > 0:
                     choice = data["choices"][0]
@@ -411,7 +311,6 @@ class EnhancedCortexImageService:
                         choice.get("image_url") or
                         choice.get("url")
                     )
-                
                 if image_url:
                     logger.info(f"Image generated successfully in {generation_time}ms")
                     return ImageGenerationResponse(
@@ -442,7 +341,6 @@ class EnhancedCortexImageService:
                 error_msg = f"API error {response.status_code}: {response.text[:200]}"
                 logger.error(f"Image generation failed: {error_msg}")
                 self._update_metrics(False, generation_time, enhancement_time)
-                
                 return ImageGenerationResponse(
                     success=False,
                     error_message=error_msg,
@@ -453,12 +351,10 @@ class EnhancedCortexImageService:
                     prompt_enhancement_time_ms=enhancement_time,
                     timestamp=datetime.now().isoformat()
                 )
-                
         except httpx.TimeoutException:
             error_msg = "Image generation timeout (60s)"
             logger.error(f"{error_msg}")
             self._update_metrics(False, 60000, enhancement_time)
-            
             return ImageGenerationResponse(
                 success=False,
                 error_message=error_msg,
@@ -467,12 +363,10 @@ class EnhancedCortexImageService:
                 model_used=request.model,
                 timestamp=datetime.now().isoformat()
             )
-            
         except Exception as e:
             error_msg = f"Image generation error: {str(e)}"
             logger.error(error_msg)
             self._update_metrics(False, 0, enhancement_time)
-            
             return ImageGenerationResponse(
                 success=False,
                 error_message=error_msg,
@@ -481,28 +375,23 @@ class EnhancedCortexImageService:
                 model_used=request.model,
                 timestamp=datetime.now().isoformat()
             )
-    
     def _update_metrics(self, success: bool, generation_time_ms: int, enhancement_time_ms: int):
         """Metrics güncelle"""
         if success:
             self.metrics["successful_generations"] += 1
         else:
             self.metrics["failed_generations"] += 1
-        
-        # Ortalama süreleri güncelle
         total = self.metrics["total_generations"]
         if total > 0:
             current_gen_avg = self.metrics["average_generation_time_ms"]
             new_gen_avg = ((current_gen_avg * (total - 1)) + generation_time_ms) / total
             self.metrics["average_generation_time_ms"] = int(new_gen_avg)
-            
             if enhancement_time_ms > 0:
                 current_enh_avg = self.metrics["average_enhancement_time_ms"]
                 enh_count = self.metrics["prompt_enhancements_used"]
                 if enh_count > 0:
                     new_enh_avg = ((current_enh_avg * (enh_count - 1)) + enhancement_time_ms) / enh_count
                     self.metrics["average_enhancement_time_ms"] = int(new_enh_avg)
-    
     async def test_api_connection(self) -> Dict[str, Any]:
         """
         API bağlantısını test et
@@ -513,10 +402,8 @@ class EnhancedCortexImageService:
                 model=self.default_model,
                 enhance_prompt=False  # Test için basit tutalaim
             )
-            
             logger.info("Testing Enhanced Cortex Image API connection...")
             response = await self.generate_image(test_request)
-            
             return {
                 "success": response.success,
                 "api_url": self.api_url,
@@ -529,7 +416,6 @@ class EnhancedCortexImageService:
                     "error": response.error_message if not response.success else None
                 }
             }
-            
         except Exception as e:
             return {
                 "success": False,
@@ -539,49 +425,36 @@ class EnhancedCortexImageService:
                 "api_key_configured": bool(self.api_key and len(self.api_key) > 20),
                 "prompt_enhancer_available": bool(self.prompt_enhancer)
             }
-    
     def get_metrics(self) -> Dict[str, Any]:
         """Performans metriklerini al"""
         success_rate = 0.0
         enhancement_usage_rate = 0.0
-        
         if self.metrics["total_generations"] > 0:
             success_rate = (self.metrics["successful_generations"] / self.metrics["total_generations"]) * 100
             enhancement_usage_rate = (self.metrics["prompt_enhancements_used"] / self.metrics["total_generations"]) * 100
-        
         return {
             **self.metrics,
             "success_rate": success_rate,
             "enhancement_usage_rate": enhancement_usage_rate,
             "cache_stats": self.prompt_enhancer.get_cache_stats()
         }
-    
     def get_available_styles(self) -> List[str]:
         """Mevcut stilleri al"""
         return [style.value for style in PromptStyle]
-    
     def get_available_categories(self) -> List[str]:
         """Mevcut kategorileri al"""
         return [category.value for category in PromptCategory]
-    
     async def cleanup(self):
         """Temizlik işlemleri"""
         if self.http_client:
             await self.http_client.aclose()
-
-# Global service instance
 enhanced_cortex_image_service = EnhancedCortexImageService()
-
 async def get_enhanced_image_service() -> EnhancedCortexImageService:
     """Get enhanced image service for dependency injection"""
     return enhanced_cortex_image_service
-
-# Cleanup function for app shutdown
 async def cleanup_enhanced_image_service():
     """Cleanup enhanced image service on app shutdown"""
     await enhanced_cortex_image_service.cleanup()
-
-# Yardımcı fonksiyonlar
 async def generate_enhanced_image(prompt: str, style: Optional[str] = None,
                                 enhance: bool = True) -> ImageGenerationResponse:
     """Hızlı görsel oluşturma fonksiyonu"""
@@ -591,8 +464,6 @@ async def generate_enhanced_image(prompt: str, style: Optional[str] = None,
         enhance_prompt=enhance
     )
     return await enhanced_cortex_image_service.generate_image(request)
-
-# Backward compatibility
 cortex_image_service = enhanced_cortex_image_service
 get_image_service = get_enhanced_image_service
 cleanup_image_service = cleanup_enhanced_image_service

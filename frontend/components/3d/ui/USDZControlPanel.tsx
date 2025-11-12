@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -21,11 +20,7 @@ import {
   Maximize,
   Minimize
 } from 'lucide-react'
-// Hook kullanımını kaldırıyoruz - Canvas dışında güvenli değil
-// import { useUSDZPerformanceManager } from '../performance/USDZPerformanceManager'
 import { useAsteroidData } from '@/hooks/use-asteroid-data'
-
-// Performance metrics type (USDZPerformanceManager'dan bağımsız)
 interface PerformanceMetrics {
   fps: number
   memoryUsage: number
@@ -33,8 +28,6 @@ interface PerformanceMetrics {
   performanceScore: number
   lodLevel: string
 }
-
-// Control Panel Props
 interface USDZControlPanelProps {
   onQualityChange: (quality: 'low' | 'medium' | 'high' | 'ultra') => void
   onEffectsToggle: (enabled: boolean) => void
@@ -45,11 +38,8 @@ interface USDZControlPanelProps {
   effectsEnabled: boolean
   animationEnabled: boolean
   className?: string
-  // Performance metrics'leri props olarak alacağız
   performanceMetrics?: PerformanceMetrics | null
 }
-
-// Quality Settings Panel
 const QualityControlPanel = ({ 
   currentQuality, 
   onQualityChange,
@@ -67,14 +57,12 @@ const QualityControlPanel = ({
     { value: 'high', label: 'High', color: 'text-green-400', icon: '●●●' },
     { value: 'ultra', label: 'Ultra', color: 'text-purple-400', icon: '●●●●' }
   ] as const
-
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-3">
         <Settings className="w-4 h-4 text-blue-400" />
         <span className="text-sm font-semibold text-cliff-white">USDZ Quality</span>
       </div>
-      
       <div className="grid grid-cols-2 gap-2">
         {qualityOptions.map((option) => (
           <motion.button
@@ -93,7 +81,6 @@ const QualityControlPanel = ({
           </motion.button>
         ))}
       </div>
-
       <div className="pt-3 border-t border-cliff-light-gray/20">
         <label className="flex items-center gap-2">
           <input
@@ -108,14 +95,11 @@ const QualityControlPanel = ({
     </div>
   )
 }
-
-// Performance Metrics Panel - Hook kullanımı kaldırıldı
 const PerformanceMetricsPanel = ({ 
   metrics 
 }: { 
   metrics?: PerformanceMetrics | null 
 }) => {
-  // Canvas dışında kullanım için static/mock data
   const mockMetrics: PerformanceMetrics = {
     fps: 60,
     memoryUsage: 128,
@@ -123,30 +107,24 @@ const PerformanceMetricsPanel = ({
     performanceScore: 95,
     lodLevel: 'high'
   }
-
   const displayMetrics = metrics || mockMetrics
-
-  // FPS değerlendirme fonksiyonu
   const getFPSColor = (fps: number) => {
     if (fps >= 60) return 'text-green-400'
     if (fps >= 45) return 'text-yellow-400'
     if (fps >= 30) return 'text-orange-400'
     return 'text-red-400'
   }
-
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-3">
         <Monitor className="w-4 h-4 text-green-400" />
         <span className="text-sm font-semibold text-cliff-white">Performance</span>
       </div>
-      
       {!metrics && (
         <div className="text-xs text-cliff-light-gray/70 mb-3 p-2 bg-amber-500/10 rounded border border-amber-500/20">
           ⚠️ Live metrics available only during Canvas rendering
         </div>
       )}
-      
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-pure-black/50 rounded-lg p-3 border border-cliff-light-gray/20">
           <div className="text-xs text-cliff-light-gray mb-1">FPS</div>
@@ -154,21 +132,18 @@ const PerformanceMetricsPanel = ({
             {displayMetrics.fps}
           </div>
         </div>
-        
         <div className="bg-pure-black/50 rounded-lg p-3 border border-cliff-light-gray/20">
           <div className="text-xs text-cliff-light-gray mb-1">Memory</div>
           <div className="text-lg font-bold text-blue-400">
             {displayMetrics.memoryUsage}MB
           </div>
         </div>
-        
         <div className="bg-pure-black/50 rounded-lg p-3 border border-cliff-light-gray/20">
           <div className="text-xs text-cliff-light-gray mb-1">Draw Calls</div>
           <div className="text-lg font-bold text-purple-400">
             {displayMetrics.drawCalls}
           </div>
         </div>
-        
         <div className="bg-pure-black/50 rounded-lg p-3 border border-cliff-light-gray/20">
           <div className="text-xs text-cliff-light-gray mb-1">Score</div>
           <div className="text-lg font-bold text-yellow-400">
@@ -176,33 +151,26 @@ const PerformanceMetricsPanel = ({
           </div>
         </div>
       </div>
-      
       <div className="text-xs text-cliff-light-gray">
         LOD Level: <span className="text-blue-400 font-semibold">{displayMetrics.lodLevel.toUpperCase()}</span>
       </div>
     </div>
   )
 }
-
-// NASA Data Panel
 const NASADataPanel = () => {
   const { asteroids, isLoading, error } = useAsteroidData()
   const [showDetails, setShowDetails] = useState(false)
-
   const hazardousCount = asteroids.filter(asteroid => asteroid.is_hazardous).length
   const todayCount = asteroids.filter(asteroid => {
     const today = new Date().toISOString().split('T')[0]
-    // Check if approach date is mentioned in interesting facts
     return asteroid.interesting_facts.some(fact => fact.includes(today) || fact.includes('Yaklaşma'))
   }).length
-
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-3">
         <Satellite className="w-4 h-4 text-yellow-400" />
         <span className="text-sm font-semibold text-cliff-white">NASA Data</span>
       </div>
-      
       {isLoading ? (
         <div className="text-sm text-cliff-light-gray">Loading NASA data...</div>
       ) : error ? (
@@ -214,23 +182,19 @@ const NASADataPanel = () => {
               <div className="text-xs text-cliff-light-gray mb-1">Total Asteroids</div>
               <div className="text-lg font-bold text-green-400">{asteroids.length}</div>
             </div>
-            
             <div className="bg-pure-black/50 rounded-lg p-3 border border-cliff-light-gray/20">
               <div className="text-xs text-cliff-light-gray mb-1">Hazardous</div>
               <div className="text-lg font-bold text-red-400">{hazardousCount}</div>
             </div>
-            
             <div className="bg-pure-black/50 rounded-lg p-3 border border-cliff-light-gray/20">
               <div className="text-xs text-cliff-light-gray mb-1">Close Approach</div>
               <div className="text-lg font-bold text-blue-400">{todayCount}</div>
             </div>
-            
             <div className="bg-pure-black/50 rounded-lg p-3 border border-cliff-light-gray/20">
               <div className="text-xs text-cliff-light-gray mb-1">Status</div>
               <div className="text-xs font-bold text-green-400">LIVE</div>
             </div>
           </div>
-          
           <motion.button
             onClick={() => setShowDetails(!showDetails)}
             className="w-full flex items-center justify-between p-2 bg-pure-black/30 rounded-lg border border-cliff-light-gray/20 hover:border-blue-400/50 transition-colors"
@@ -240,7 +204,6 @@ const NASADataPanel = () => {
             <span className="text-sm text-cliff-light-gray">Show Details</span>
             {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </motion.button>
-          
           <AnimatePresence>
             {showDetails && (
               <motion.div
@@ -273,8 +236,6 @@ const NASADataPanel = () => {
     </div>
   )
 }
-
-// Camera Controls Panel
 const CameraControlsPanel = ({ 
   onCameraReset,
   onFullscreen,
@@ -292,7 +253,6 @@ const CameraControlsPanel = ({
         <Eye className="w-4 h-4 text-purple-400" />
         <span className="text-sm font-semibold text-cliff-white">Camera</span>
       </div>
-      
       <div className="grid grid-cols-2 gap-2">
         <motion.button
           onClick={onCameraReset}
@@ -303,7 +263,6 @@ const CameraControlsPanel = ({
           <RotateCcw className="w-3 h-3" />
           <span className="text-xs text-cliff-light-gray">Reset</span>
         </motion.button>
-        
         <motion.button
           onClick={onFullscreen}
           className="flex items-center justify-center gap-2 p-2 bg-pure-black/50 rounded-lg border border-cliff-light-gray/20 hover:border-blue-400/50 transition-colors"
@@ -314,7 +273,6 @@ const CameraControlsPanel = ({
           <span className="text-xs text-cliff-light-gray">Full</span>
         </motion.button>
       </div>
-      
       <div className="pt-3 border-t border-cliff-light-gray/20">
         <label className="flex items-center gap-2">
           <input
@@ -329,8 +287,6 @@ const CameraControlsPanel = ({
     </div>
   )
 }
-
-// Main USDZ Control Panel
 export const USDZControlPanel: React.FC<USDZControlPanelProps> = ({
   onQualityChange,
   onEffectsToggle,
@@ -345,17 +301,15 @@ export const USDZControlPanel: React.FC<USDZControlPanelProps> = ({
 }) => {
   const [activePanel, setActivePanel] = useState<'quality' | 'performance' | 'data' | 'camera'>('quality')
   const [isCollapsed, setIsCollapsed] = useState(false)
-
   const panels = [
     { id: 'quality', label: 'Quality', icon: Settings, color: 'text-blue-400' },
     { id: 'performance', label: 'Performance', icon: BarChart3, color: 'text-green-400' },
     { id: 'data', label: 'NASA Data', icon: Satellite, color: 'text-yellow-400' },
     { id: 'camera', label: 'Camera', icon: Eye, color: 'text-purple-400' }
   ] as const
-
   return (
     <div className={`bg-pure-black/90 backdrop-blur-md rounded-xl border border-cliff-light-gray/20 shadow-2xl ${className}`}>
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between p-4 border-b border-cliff-light-gray/20">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
@@ -370,7 +324,6 @@ export const USDZControlPanel: React.FC<USDZControlPanelProps> = ({
           {isCollapsed ? <Maximize className="w-4 h-4 text-cliff-light-gray" /> : <Minimize className="w-4 h-4 text-cliff-light-gray" />}
         </motion.button>
       </div>
-
       <AnimatePresence>
         {!isCollapsed && (
           <motion.div
@@ -379,7 +332,7 @@ export const USDZControlPanel: React.FC<USDZControlPanelProps> = ({
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
           >
-            {/* Panel Tabs */}
+            {}
             <div className="flex border-b border-cliff-light-gray/20">
               {panels.map((panel) => (
                 <motion.button
@@ -400,8 +353,7 @@ export const USDZControlPanel: React.FC<USDZControlPanelProps> = ({
                 </motion.button>
               ))}
             </div>
-
-            {/* Panel Content */}
+            {}
             <div className="p-4">
               <AnimatePresence mode="wait">
                 <motion.div
@@ -419,13 +371,10 @@ export const USDZControlPanel: React.FC<USDZControlPanelProps> = ({
                       onEffectsToggle={onEffectsToggle}
                     />
                   )}
-                  
                   {activePanel === 'performance' && (
                     <PerformanceMetricsPanel metrics={performanceMetrics} />
                   )}
-                  
                   {activePanel === 'data' && <NASADataPanel />}
-                  
                   {activePanel === 'camera' && (
                     <CameraControlsPanel
                       onCameraReset={onCameraReset}
@@ -443,8 +392,6 @@ export const USDZControlPanel: React.FC<USDZControlPanelProps> = ({
     </div>
   )
 }
-
-// Floating Quick Controls for Mobile
 export const USDZQuickControls = ({
   onQualityChange,
   currentQuality,
@@ -479,5 +426,4 @@ export const USDZQuickControls = ({
     </motion.div>
   )
 }
-
 export default USDZControlPanel

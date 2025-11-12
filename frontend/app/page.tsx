@@ -1,5 +1,4 @@
 'use client'
-
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
@@ -9,34 +8,25 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import EarthPreview from '@/components/landing/EarthPreview'
 import { FloatingChatButton } from '@/components/chat'
-
-// Scroll Navigation Component
 const ScrollNavigation = () => {
   const [activeSection, setActiveSection] = useState('hero')
   const [scrollProgress, setScrollProgress] = useState(0)
-
   const sections = React.useMemo(() => [
     { id: 'hero', icon: Home, label: 'Ana Sayfa' },
-    { id: 'features', icon: Star, label: 'Ã–zellikler' },
-    { id: 'cta', icon: Rocket, label: 'BaÅŸla' },
+    { id: 'features', icon: Star, label: 'Özellikler' },
+    { id: 'cta', icon: Rocket, label: 'Baþla' },
   ], [])
-
   useEffect(() => {
     let ticking = false
-    
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
           const scrollPosition = window.scrollY
           const windowHeight = window.innerHeight
           const documentHeight = document.documentElement.scrollHeight
-
-          // Calculate overall scroll progress (0 to 1)
           const maxScroll = documentHeight - windowHeight
           const progress = maxScroll > 0 ? scrollPosition / maxScroll : 0
           setScrollProgress(Math.min(Math.max(progress, 0), 1))
-
-          // Determine active section
           const centerPosition = scrollPosition + windowHeight / 2
           for (const section of sections) {
             const element = document.getElementById(section.id)
@@ -53,25 +43,21 @@ const ScrollNavigation = () => {
         ticking = true
       }
     }
-
     window.addEventListener('scroll', handleScroll, { passive: true })
     handleScroll()
     return () => window.removeEventListener('scroll', handleScroll)
   }, [sections])
-
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id)
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
     }
   }
-
   const activeIndex = sections.findIndex(s => s.id === activeSection)
-
   return (
     <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden lg:block">
       <div className="relative flex flex-col items-center gap-10">
-        {/* Background connection line segments - avoid icons */}
+        {}
         {sections.map((_, index) => {
           if (index === sections.length - 1) return null
           return (
@@ -87,25 +73,18 @@ const ScrollNavigation = () => {
             />
           )
         })}
-        
-        {/* Dynamic progress line based on scroll position */}
+        {}
         {sections.map((_, index) => {
           if (index === sections.length - 1) return null
-          
-          // Calculate progress for this segment
           const segmentProgress = scrollProgress * (sections.length - 1)
           const segmentStart = index
           const segmentEnd = index + 1
-          
           let height = 0
           if (segmentProgress > segmentEnd) {
-            // Fully filled
             height = 100
           } else if (segmentProgress > segmentStart) {
-            // Partially filled
             height = ((segmentProgress - segmentStart) / (segmentEnd - segmentStart)) * 100
           }
-          
           return (
             <motion.div
               key={`progress-${index}`}
@@ -131,18 +110,16 @@ const ScrollNavigation = () => {
             </motion.div>
           )
         })}
-        
         {sections.map((section) => {
           const isActive = activeSection === section.id
           const Icon = section.icon
-          
           return (
             <button
               key={section.id}
               onClick={() => scrollToSection(section.id)}
               className="group relative z-20 transition-transform hover:scale-105 active:scale-95"
             >
-              {/* Icon container */}
+              {}
               <div
                 className={`relative w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 bg-pure-black ${
                   isActive
@@ -157,8 +134,7 @@ const ScrollNavigation = () => {
                   }`}
                 />
               </div>
-              
-              {/* Label tooltip */}
+              {}
               <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
                 <div className="bg-black/90 px-3 py-1.5 rounded-lg border border-white/20 whitespace-nowrap">
                   <span className="text-xs font-medium text-white">{section.label}</span>
@@ -171,81 +147,69 @@ const ScrollNavigation = () => {
     </div>
   )
 }
-
 export default function LandingPage() {
   const [scrollY, setScrollY] = useState(0)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
-  // Deterministic yÄ±ldÄ±zlar (SSR/CSR uyumu iÃ§in)
   const starCount = 30
   const stars = React.useMemo(() => Array.from({ length: starCount }, (_, i) => i), [])
   const seededRand = (seed: number) => {
-    // Deterministic [0,1) Ã¼retici
     const x = Math.sin(seed * 9301 + 49297) * 233280
     return x - Math.floor(x)
   }
-
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
-
   useEffect(() => { setMounted(true) }, [])
-
-  // Disable scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden'
     } else {
       document.body.style.overflow = 'unset'
     }
-    
     return () => {
       document.body.style.overflow = 'unset'
     }
   }, [isMobileMenuOpen])
-
   const features = [
     {
       icon: Globe,
-      title: "3D GÃ¼neÅŸ Sistemi",
-      description: "GerÃ§ek zamanlÄ± astronomik veriler ile interaktif 3D uzay simÃ¼lasyonu",
+      title: "3D Güneþ Sistemi",
+      description: "Gerçek zamanlý astronomik veriler ile interaktif 3D uzay simülasyonu",
       gradient: "from-blue-500/20 to-cyan-500/20"
     },
     {
       icon: Shield,
       title: "Tehdit Analizi",
-      description: "GeliÅŸmiÅŸ AI algoritmalarÄ± ile uzay tehditlerinin erken tespiti",
+      description: "Geliþmiþ AI algoritmalarý ile uzay tehditlerinin erken tespiti",
       gradient: "from-red-500/20 to-orange-500/20"
     },
     {
       icon: Zap,
-      title: "AI YardÄ±mcÄ±sÄ±",
-      description: "DoÄŸal dil iÅŸleme ile uzay bilimi eÄŸitimi ve analiz desteÄŸi",
+      title: "AI Yardýmcýsý",
+      description: "Doðal dil iþleme ile uzay bilimi eðitimi ve analiz desteði",
       gradient: "from-purple-500/20 to-pink-500/20"
     },
     {
       icon: Activity,
-      title: "GerÃ§ek ZamanlÄ± Ä°zleme",
-      description: "NASA API'leri ile canlÄ± uzay hava durumu ve asteroid takibi",
+      title: "Gerçek Zamanlý Ýzleme",
+      description: "NASA API'leri ile canlý uzay hava durumu ve asteroid takibi",
       gradient: "from-green-500/20 to-emerald-500/20"
     }
   ]
-
   const stats = [
-    { value: "60+", label: "FPS Performans", description: "3D Render HÄ±zÄ±" },
-    { value: "24/7", label: "GerÃ§ek ZamanlÄ±", description: "NASA Veri AkÄ±ÅŸÄ±" },
-    { value: "AI", label: "Yapay Zeka", description: "AkÄ±llÄ± Analiz" },
-    { value: "âˆž", label: "SÄ±nÄ±rsÄ±z", description: "KeÅŸif Ä°mkanÄ±" }
+    { value: "60+", label: "FPS Performans", description: "3D Render Hýzý" },
+    { value: "24/7", label: "Gerçek Zamanlý", description: "NASA Veri Akýþý" },
+    { value: "AI", label: "Yapay Zeka", description: "Akýllý Analiz" },
+    { value: "?", label: "Sýnýrsýz", description: "Keþif Ýmkaný" }
   ]
-
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden safe-area-top safe-area-bottom">
-      {/* Scroll Navigation - Right Side */}
+      {}
       <ScrollNavigation />
-      
-      {/* Navigation Header - Responsive */}
+      {}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -257,7 +221,7 @@ export default function LandingPage() {
       >
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 md:h-20">
-            {/* Logo - Responsive */}
+            {}
             <motion.div
               className="flex items-center space-x-2 md:space-x-3"
               whileHover={{ scale: 1.05 }}
@@ -271,14 +235,13 @@ export default function LandingPage() {
                 <p className="text-xs text-cliff-light-gray hidden sm:block">Space System</p>
               </div>
             </motion.div>
-
-            {/* Desktop Navigation */}
+            {}
             <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
               {[
                 { name: 'Ana Sayfa', href: '#', active: true },
-                { name: 'Ã–zellikler', href: '#features' },
-                { name: 'HakkÄ±nda', href: '#about' },
-                { name: 'Ä°letiÅŸim', href: '#contact' }
+                { name: 'Özellikler', href: '#features' },
+                { name: 'Hakkýnda', href: '#about' },
+                { name: 'Ýletiþim', href: '#contact' }
               ].map((item) => (
                 <motion.a
                   key={item.name}
@@ -295,8 +258,7 @@ export default function LandingPage() {
                 </motion.a>
               ))}
             </nav>
-
-            {/* Desktop CTA + Mobile Menu Button */}
+            {}
             <div className="flex items-center space-x-3">
               <Link href="/dashboard" className="hidden md:block">
                 <motion.div
@@ -320,8 +282,7 @@ export default function LandingPage() {
                   </Button>
                 </motion.div>
               </Link>
-
-              {/* Mobile Menu Button */}
+              {}
               <Button
                 variant="ghost"
                 size="sm"
@@ -333,8 +294,7 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-
-        {/* Mobile Navigation Menu */}
+        {}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <motion.div
@@ -347,9 +307,9 @@ export default function LandingPage() {
                 <nav className="space-y-2">
                   {[
                     { name: 'Ana Sayfa', href: '#', active: true },
-                    { name: 'Ã–zellikler', href: '#features' },
-                    { name: 'HakkÄ±nda', href: '#about' },
-                    { name: 'Ä°letiÅŸim', href: '#contact' }
+                    { name: 'Özellikler', href: '#features' },
+                    { name: 'Hakkýnda', href: '#about' },
+                    { name: 'Ýletiþim', href: '#contact' }
                   ].map((item) => (
                     <motion.a
                       key={item.name}
@@ -366,7 +326,6 @@ export default function LandingPage() {
                     </motion.a>
                   ))}
                 </nav>
-                
                 <div className="pt-4 border-t border-cliff-white/10">
                   <Link href="/dashboard" className="block">
                     <motion.div
@@ -396,13 +355,12 @@ export default function LandingPage() {
           )}
         </AnimatePresence>
       </motion.header>
-
-      {/* Hero Section - Responsive */}
+      {}
       <section id="hero" className="relative min-h-screen flex items-center justify-center px-4 md:px-6 lg:px-8 pt-16 md:pt-20">
-        {/* Background Effects - Minimalist */}
+        {}
         <div className="absolute inset-0 bg-gradient-to-b from-pure-black via-[#0a0a0a] to-pure-black" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.02)_0%,_transparent_50%)]" />
-        {/* Minimal star effect */}
+        {}
         <div className="absolute inset-0 opacity-20" suppressHydrationWarning>
           {mounted && stars.map((i) => {
             const r1 = seededRand(i + 1)
@@ -421,17 +379,16 @@ export default function LandingPage() {
             )
           })}
         </div>
-
-        {/* Content Grid - Responsive */}
+        {}
         <div className="container mx-auto grid lg:grid-cols-2 gap-8 lg:gap-12 items-center relative z-10">
-          {/* Left Content */}
+          {}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-center lg:text-left space-y-6 md:space-y-8"
           >
-            {/* Badge */}
+            {}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -445,22 +402,19 @@ export default function LandingPage() {
                 </div>
               </Badge>
             </motion.div>
-
-            {/* Main Title - Responsive Typography */}
+            {}
             <div className="space-y-4">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight responsive-title">
                 <span className="text-gradient-minimal">CLIFF 3D</span>
                 <br />
                 <span className="text-cliff-white">Space System</span>
               </h1>
-              
               <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-cliff-light-gray max-w-2xl mx-auto lg:mx-0">
-                Kozmik Seviye AkÄ±llÄ± Tahmin Ã‡erÃ§evesi ile uzay bilimlerinde 
-                <span className="text-accent-success font-semibold"> yeni nesil keÅŸif</span> deneyimi
+                Kozmik Seviye Akýllý Tahmin Çerçevesi ile uzay bilimlerinde 
+                <span className="text-accent-success font-semibold"> yeni nesil keþif</span> deneyimi
               </p>
             </div>
-
-            {/* CTA Buttons - Responsive */}
+            {}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -481,7 +435,7 @@ export default function LandingPage() {
                     size="lg"
                     className="w-full sm:w-auto bg-gradient-to-r from-cliff-white to-cliff-light-gray text-pure-black hover:from-cliff-light-gray hover:to-cliff-white transition-all duration-600 ease-in-out font-semibold text-base md:text-lg px-6 md:px-8 py-3 md:py-4 tap-target relative overflow-hidden group"
                   >
-                    Sisteme GiriÅŸ Yap
+                    Sisteme Giriþ Yap
                     <motion.div
                       whileHover={{ x: 5 }}
                       transition={{ type: "spring", stiffness: 400 }}
@@ -493,17 +447,15 @@ export default function LandingPage() {
                   </Button>
                 </motion.div>
               </Link>
-              
               <Button 
                 variant="outline" 
                 size="lg"
                 className="w-full sm:w-auto border-cliff-white/30 text-cliff-white hover:bg-cliff-white/10 transition-all duration-600 ease-in-out text-base md:text-lg px-6 md:px-8 py-3 md:py-4 tap-target"
               >
-                Demo Ä°zle
+                Demo Ýzle
               </Button>
             </motion.div>
-
-            {/* Stats Grid - Responsive */}
+            {}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -531,28 +483,25 @@ export default function LandingPage() {
               ))}
             </motion.div>
           </motion.div>
-
-          {/* Right Content - 3D Earth Preview */}
+          {}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="relative h-64 sm:h-80 md:h-96 lg:h-full min-h-[400px] lg:min-h-[600px]"
           >
-            {/* 3D Earth Container */}
+            {}
             <div className="relative w-full h-full rounded-2xl overflow-hidden border border-cliff-white/10 bg-pure-black-gradient">
-              {/* Performance Indicator */}
+              {}
               <div className="absolute top-3 right-3 md:top-4 md:right-4 z-10 bg-pure-black/80 backdrop-blur-md rounded-lg px-2 py-1 md:px-3 md:py-2 border border-cliff-white/10">
                 <div className="flex items-center gap-1 md:gap-2">
                   <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-accent-success rounded-full animate-pulse"></div>
                   <span className="text-xs text-cliff-light-gray">Live 3D</span>
                 </div>
               </div>
-
-              {/* 3D Earth Preview */}
+              {}
               <EarthPreview className="w-full h-full mobile-3d-optimized" />
-
-              {/* Floating Info Cards - Hidden on mobile for performance */}
+              {}
               <div className="hidden md:block absolute inset-0 pointer-events-none">
                 <motion.div
                   className="absolute top-1/4 left-4 bg-pure-black/90 backdrop-blur-md rounded-lg p-3 border border-cliff-white/10 pointer-events-auto"
@@ -566,7 +515,6 @@ export default function LandingPage() {
                   </div>
                   <p className="text-xs text-cliff-light-gray mt-1">NASA API Integration</p>
                 </motion.div>
-
                 <motion.div
                   className="absolute bottom-1/4 right-4 bg-pure-black/90 backdrop-blur-md rounded-lg p-3 border border-cliff-white/10 pointer-events-auto"
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -583,8 +531,7 @@ export default function LandingPage() {
             </div>
           </motion.div>
         </div>
-
-        {/* Scroll Indicator - Hidden on mobile */}
+        {}
         <motion.div
           className="absolute bottom-8 left-1/2 transform -translate-x-1/2 hidden md:block"
           initial={{ opacity: 0, y: 10 }}
@@ -596,16 +543,15 @@ export default function LandingPage() {
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             className="flex flex-col items-center space-y-2 text-cliff-light-gray"
           >
-            <span className="text-sm">KeÅŸfetmeye devam et</span>
+            <span className="text-sm">Keþfetmeye devam et</span>
             <ChevronDown className="h-5 w-5" />
           </motion.div>
         </motion.div>
       </section>
-
-      {/* Features Section - Responsive */}
+      {}
       <section id="features" className="py-16 md:py-24 lg:py-32 px-4 md:px-6 lg:px-8">
         <div className="container mx-auto">
-          {/* Section Header */}
+          {}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -614,15 +560,14 @@ export default function LandingPage() {
             className="text-center mb-12 md:mb-16 lg:mb-20"
           >
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gradient-minimal mb-4 md:mb-6">
-              GeliÅŸmiÅŸ Ã–zellikler
+              Geliþmiþ Özellikler
             </h2>
             <p className="text-base md:text-lg lg:text-xl text-cliff-light-gray max-w-3xl mx-auto">
-              CLIFF 3D Space System, uzay bilimlerinde eÄŸitim ve araÅŸtÄ±rma iÃ§in 
-              gereken tÃ¼m modern teknolojileri bir arada sunar
+              CLIFF 3D Space System, uzay bilimlerinde eðitim ve araþtýrma için 
+              gereken tüm modern teknolojileri bir arada sunar
             </p>
           </motion.div>
-
-          {/* Features Grid - Responsive & Modern */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
             {features.map((feature, index) => (
               <motion.div
@@ -634,18 +579,15 @@ export default function LandingPage() {
                 className="group"
               >
                 <Card className="relative overflow-hidden bg-gradient-to-br from-[#0a0a0a] to-[#141414] border border-cliff-white/10 hover:border-cliff-white/20 transition-all duration-300 h-full mobile-card">
-                  {/* Subtle hover effect */}
+                  {}
                   <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
                   <CardContent className="relative p-6 md:p-8">
                     <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-5 md:mb-6 group-hover:scale-105 transition-transform duration-300 shadow-lg`}>
                       <feature.icon className="h-7 w-7 md:h-8 md:w-8 text-white" />
                     </div>
-                    
                     <h3 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4 mobile-text-xl">
                       {feature.title}
                     </h3>
-                    
                     <p className="text-sm md:text-base text-cliff-light-gray/90 leading-relaxed mobile-text-sm">
                       {feature.description}
                     </p>
@@ -656,8 +598,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* CTA Section - Responsive */}
+      {}
       <section id="cta" className="py-16 md:py-24 lg:py-32 px-4 md:px-6 lg:px-8">
         <div className="container mx-auto">
           <motion.div
@@ -668,19 +609,16 @@ export default function LandingPage() {
             className="text-center"
           >
             <Card className="relative overflow-hidden bg-gradient-to-br from-[#0a0a0a] to-[#141414] border-cliff-white/20 max-w-4xl mx-auto shadow-2xl">
-              {/* Decorative gradient overlay */}
+              {}
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-              
               <CardContent className="p-8 md:p-12 lg:p-16">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gradient-minimal mb-4 md:mb-6 responsive-title">
-                  Uzay KeÅŸfine HazÄ±r mÄ±sÄ±n?
+                  Uzay Keþfine Hazýr mýsýn?
                 </h2>
-                
                 <p className="text-base md:text-lg lg:text-xl text-cliff-light-gray/90 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed">
-                  CLIFF 3D Space System ile uzayÄ±n derinliklerine dalÄ±n, 
-                  gerÃ§ek zamanlÄ± verilerle eÄŸitim alÄ±n ve AI destekli analizlerle geleceÄŸi keÅŸfedin.
+                  CLIFF 3D Space System ile uzayýn derinliklerine dalýn, 
+                  gerçek zamanlý verilerle eðitim alýn ve AI destekli analizlerle geleceði keþfedin.
                 </p>
-                
                 <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
                   <Link href="/dashboard" className="flex-1 sm:flex-initial">
                     <motion.div
@@ -695,7 +633,7 @@ export default function LandingPage() {
                         size="lg"
                         className="w-full bg-gradient-to-r from-white to-cliff-light-gray text-pure-black hover:from-cliff-light-gray hover:to-white transition-all duration-300 font-semibold text-base md:text-lg px-6 md:px-8 py-3 md:py-4 tap-target shadow-lg hover:shadow-xl"
                       >
-                        Hemen BaÅŸla
+                        Hemen Baþla
                         <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
                       </Button>
                     </motion.div>
@@ -706,8 +644,7 @@ export default function LandingPage() {
           </motion.div>
         </div>
       </section>
-
-      {/* Footer - Modern & Clean */}
+      {}
       <footer className="relative border-t border-cliff-white/10 py-8 md:py-12 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-pure-black to-[#0a0a0a]">
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
@@ -721,22 +658,20 @@ export default function LandingPage() {
                   CLIFF 3D Space System
                 </span>
                 <span className="text-xs text-cliff-light-gray">
-                  Kozmik Seviye AkÄ±llÄ± Tahmin Ã‡erÃ§evesi
+                  Kozmik Seviye Akýllý Tahmin Çerçevesi
                 </span>
               </div>
             </div>
-            
             <div className="text-xs md:text-sm text-cliff-light-gray text-center md:text-right">
-              <p className="font-medium">Â© 2025 CLIFF 3D. Pure Black Edition.</p>
+              <p className="font-medium">© 2025 CLIFF 3D. Pure Black Edition.</p>
               <p className="mt-1 text-cliff-light-gray/70">
-                EÄŸitim ve AraÅŸtÄ±rma iÃ§in NASA API Entegrasyonu
+                Eðitim ve Araþtýrma için NASA API Entegrasyonu
               </p>
             </div>
           </div>
         </div>
       </footer>
-
-      {/* Mobile Floating CTA - Shows when not in viewport */}
+      {}
       <AnimatePresence>
         {typeof window !== 'undefined' && scrollY > window.innerHeight && (
           <motion.div
@@ -770,8 +705,7 @@ export default function LandingPage() {
           </motion.div>
         )}
       </AnimatePresence>
-      
-      {/* Modern Chat Interface */}
+      {}
       <FloatingChatButton />
     </div>
   )

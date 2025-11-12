@@ -1,5 +1,4 @@
-"use client";
-
+﻿"use client";
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as THREE from 'three';
@@ -28,7 +27,6 @@ import {
   Navigation,
   Compass
 } from 'lucide-react';
-
 interface MiniMapConfig {
   size: 'small' | 'medium' | 'large';
   showOrbits: boolean;
@@ -39,7 +37,6 @@ interface MiniMapConfig {
   autoCenter: boolean;
   followTarget: boolean;
 }
-
 interface CelestialPosition {
   id: string;
   name: string;
@@ -52,28 +49,19 @@ interface CelestialPosition {
   type: string;
   isVisible: boolean;
 }
-
 interface SolarSystemMiniMapProps {
-  // Core properties
   isVisible: boolean;
   position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   config: MiniMapConfig;
   onConfigChange?: (config: Partial<MiniMapConfig>) => void;
-  
-  // 3D Scene integration
   mainCamera?: THREE.Camera;
   scene?: THREE.Scene;
-  
-  // Interaction callbacks
   onBodySelect?: (bodyId: string) => void;
   onBodyFocus?: (bodyId: string) => void;
   onCameraMove?: (position: THREE.Vector3, target: THREE.Vector3) => void;
-  
-  // Layout
   className?: string;
   zIndex?: number;
 }
-
 export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
   isVisible,
   position = 'top-right',
@@ -87,7 +75,6 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
   className = '',
   zIndex = 1000
 }) => {
-  // State
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedBody, setSelectedBody] = useState<string | null>(null);
   const [hoveredBody, setHoveredBody] = useState<string | null>(null);
@@ -95,24 +82,15 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
   const [center, setCenter] = useState({ x: 0, y: 0 });
   const [showSettings, setShowSettings] = useState(false);
   const [dragState, setDragState] = useState({ isDragging: false, lastX: 0, lastY: 0 });
-  
-  // Refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
-  
-  // Store
   const timeState = useSolarSystemStore(state => state.timeState);
   const engineState = useSolarSystemStore(state => state.engineState);
   const currentLanguage = 'tr'; // FIXME: Should come from a user preferences store
-  
-  // Calculate celestial body positions
   const celestialPositions = useMemo((): CelestialPosition[] => {
     if (!timeState) return [];
-    
     const positions: CelestialPosition[] = [];
     const currentTime = timeState.currentTime;
-    
-    // Add Sun at center
     positions.push({
       id: 'sun',
       name: 'Güneş',
@@ -125,14 +103,10 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
       type: 'star',
       isVisible: true
     });
-    
-    // Calculate planet positions
     Object.entries(SOLAR_SYSTEM_DATA).forEach(([bodyId, bodyData]) => {
       if (bodyId === 'sun') return;
-      
       const position = calculateOrbitalPosition(bodyData, currentTime);
       const distance = Math.sqrt(position.x * position.x + position.y * position.y);
-      
       positions.push({
         id: bodyId,
         name: bodyData.name,
@@ -146,19 +120,13 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
         isVisible: distance < 50 // Only show bodies within 50 AU
       });
     });
-    
-    // Add major moons
     Object.entries(SIMPLE_MOONS).forEach(([moonId, moonData]) => {
       if (!moonData.parent_id) return;
-      
       const parentPos = positions.find(p => p.id === moonData.parent_id);
       if (!parentPos) return;
-      
-      // Simple moon positioning around parent
       const timeValue = currentTime.getTime() / 1000; // Convert to seconds
       const moonAngle = (timeValue * 0.0001) % (2 * Math.PI); // Simplified rotation
       const moonDistance = 0.2; // AU from parent (simplified)
-      
       positions.push({
         id: moonId,
         name: moonData.name,
@@ -175,138 +143,91 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
         isVisible: zoom > 2 // Only show moons when zoomed in
       });
     });
-    
     return positions;
   }, [timeState]);
-
-  // Calculate orbital position (simplified for SimpleCelestialBody)
   const calculateOrbitalPosition = useCallback((body: SimpleCelestialBody, currentTime: Date): { x: number; y: number } => {
     const orbit = body.orbit;
     const a = orbit.distance_from_sun; // AU
     const period = orbit.orbital_period_days; // days
-    
-    // Convert Date to julian day number (simplified)
     const julianDay = currentTime.getTime() / (1000 * 60 * 60 * 24) + 2440587.5;
-    
-    // Simple circular orbit calculation
     const angle = ((julianDay % period) / period) * 2 * Math.PI;
-    
     return {
       x: a * Math.cos(angle),
       y: a * Math.sin(angle)
     };
   }, []);
-
-  // Calculate orbital velocity (simplified for SimpleCelestialBody)
   const calculateOrbitalVelocity = useCallback((body: SimpleCelestialBody, distance: number): number => {
-    // Simplified velocity calculation based on distance
     const circumference = 2 * Math.PI * body.orbit.distance_from_sun * ASTRONOMICAL_CONSTANTS.AU_IN_KM;
     const period = body.orbit.orbital_period_days * 24 * 3600; // Convert to seconds
-    
     return circumference / period; // km/s
   }, []);
-
-  // Get canvas dimensions based on config
   const getCanvasDimensions = () => {
     const baseSize = isExpanded ? 300 : (config.size === 'small' ? 150 : config.size === 'medium' ? 200 : 250);
     return { width: baseSize, height: baseSize };
   };
-
-  // Convert world position to screen position
   const worldToScreen = useCallback((worldPos: { x: number; y: number }, canvasSize: { width: number; height: number }) => {
     const centerX = canvasSize.width / 2;
     const centerY = canvasSize.height / 2;
     const scale = zoom * Math.min(canvasSize.width, canvasSize.height) / 100; // Scale factor
-    
     return {
       x: centerX + (worldPos.x - center.x) * scale,
       y: centerY + (worldPos.y - center.y) * scale
     };
   }, [zoom, center]);
-
-  // Convert screen position to world position
   const screenToWorld = useCallback((screenPos: { x: number; y: number }, canvasSize: { width: number; height: number }) => {
     const centerX = canvasSize.width / 2;
     const centerY = canvasSize.height / 2;
     const scale = zoom * Math.min(canvasSize.width, canvasSize.height) / 100;
-    
     return {
       x: center.x + (screenPos.x - centerX) / scale,
       y: center.y + (screenPos.y - centerY) / scale
     };
   }, [zoom, center]);
-
-  // Render mini-map
   const renderMiniMap = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    
     const { width, height } = getCanvasDimensions();
     canvas.width = width * window.devicePixelRatio;
     canvas.height = height * window.devicePixelRatio;
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-    
-    // Clear canvas
     ctx.fillStyle = '#000011';
     ctx.fillRect(0, 0, width, height);
-    
-    // Draw grid if zoomed in
     if (zoom > 1.5) {
       drawGrid(ctx, width, height);
     }
-    
-    // Draw orbital paths if enabled
     if (config.showOrbits) {
       drawOrbitalPaths(ctx, width, height);
     }
-    
-    // Draw celestial bodies
     celestialPositions.forEach(body => {
       if (!body.isVisible) return;
-      
       const screenPos = worldToScreen(body.position, { width, height });
       body.screenPosition = screenPos;
-      
-      // Skip if outside canvas
       if (screenPos.x < 0 || screenPos.x > width || screenPos.y < 0 || screenPos.y > height) {
         return;
       }
-      
       drawCelestialBody(ctx, body, screenPos);
     });
-    
-    // Draw scale bar if enabled
     if (config.showScaleBar) {
       drawScaleBar(ctx, width, height);
     }
-    
-    // Draw camera indicator if main camera is available
     if (mainCamera) {
       drawCameraIndicator(ctx, width, height);
     }
   }, [celestialPositions, config, zoom, center, mainCamera, worldToScreen, hoveredBody, selectedBody]);
-
-  // Draw grid
   const drawGrid = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
     ctx.lineWidth = 0.5;
-    
     const gridSize = 20 * zoom;
     const offsetX = (center.x * zoom) % gridSize;
     const offsetY = (center.y * zoom) % gridSize;
-    
-    // Vertical lines
     for (let x = -offsetX; x < width + gridSize; x += gridSize) {
       ctx.beginPath();
       ctx.moveTo(x, 0);
       ctx.lineTo(x, height);
       ctx.stroke();
     }
-    
-    // Horizontal lines
     for (let y = -offsetY; y < height + gridSize; y += gridSize) {
       ctx.beginPath();
       ctx.moveTo(0, y);
@@ -314,59 +235,40 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
       ctx.stroke();
     }
   };
-
-  // Draw orbital paths
   const drawOrbitalPaths = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     Object.entries(SOLAR_SYSTEM_DATA).forEach(([bodyId, bodyData]) => {
       if (bodyId === 'sun') return;
-      
       ctx.strokeStyle = `${bodyData.color}33`; // Semi-transparent
       ctx.lineWidth = 1;
       ctx.beginPath();
-      
       const a = bodyData.orbit.distance_from_sun;
-      
-      // Draw simple circular orbit
       for (let angle = 0; angle <= 2 * Math.PI; angle += 0.1) {
         const r = a;
         const x = r * Math.cos(angle);
         const y = r * Math.sin(angle);
-        
         const screenPos = worldToScreen({ x, y }, { width, height });
-        
         if (angle === 0) {
           ctx.moveTo(screenPos.x, screenPos.y);
         } else {
           ctx.lineTo(screenPos.x, screenPos.y);
         }
       }
-      
       ctx.stroke();
     });
   };
-
-  // Draw celestial body
   const drawCelestialBody = (ctx: CanvasRenderingContext2D, body: CelestialPosition, screenPos: { x: number; y: number }) => {
     const isHovered = body.id === hoveredBody;
     const isSelected = body.id === selectedBody;
     const radius = body.size * (isHovered ? 1.5 : 1) * zoom;
-    
-    // Draw glow effect for selected/hovered bodies
     if (isSelected || isHovered) {
       ctx.shadowColor = body.color;
       ctx.shadowBlur = 10;
     }
-    
-    // Draw body
     ctx.fillStyle = body.color;
     ctx.beginPath();
     ctx.arc(screenPos.x, screenPos.y, radius, 0, 2 * Math.PI);
     ctx.fill();
-    
-    // Reset shadow
     ctx.shadowBlur = 0;
-    
-    // Draw selection ring
     if (isSelected) {
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2;
@@ -374,8 +276,6 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
       ctx.arc(screenPos.x, screenPos.y, radius + 3, 0, 2 * Math.PI);
       ctx.stroke();
     }
-    
-    // Draw velocity indicator if enabled
     if (config.showVelocityIndicators && body.velocity > 0) {
       const velocityLength = Math.min(20, body.velocity / 5);
       ctx.strokeStyle = `${body.color}aa`;
@@ -385,8 +285,6 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
       ctx.lineTo(screenPos.x + velocityLength, screenPos.y);
       ctx.stroke();
     }
-    
-    // Draw label if enabled
     if (config.showLabels && (isHovered || isSelected || body.size > 4)) {
       ctx.fillStyle = '#ffffff';
       ctx.font = '10px sans-serif';
@@ -394,91 +292,63 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
       ctx.fillText(body.name, screenPos.x, screenPos.y - radius - 5);
     }
   };
-
-  // Draw scale bar
   const drawScaleBar = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     const scaleLength = 50; // pixels
     const scaleWorldLength = scaleLength / (zoom * Math.min(width, height) / 100);
-    
     ctx.strokeStyle = '#ffffff';
     ctx.fillStyle = '#ffffff';
     ctx.lineWidth = 2;
     ctx.font = '10px sans-serif';
-    
     const x = 10;
     const y = height - 20;
-    
-    // Draw scale bar
     ctx.beginPath();
     ctx.moveTo(x, y);
     ctx.lineTo(x + scaleLength, y);
     ctx.stroke();
-    
-    // Draw tick marks
     ctx.beginPath();
     ctx.moveTo(x, y - 3);
     ctx.lineTo(x, y + 3);
     ctx.moveTo(x + scaleLength, y - 3);
     ctx.lineTo(x + scaleLength, y + 3);
     ctx.stroke();
-    
-    // Draw label
     ctx.textAlign = 'left';
     const scaleText = scaleWorldLength < 1
       ? `${(scaleWorldLength * ASTRONOMICAL_CONSTANTS.AU_IN_KM / 1e6).toFixed(1)} Mkm`
       : `${scaleWorldLength.toFixed(1)} AU`;
     ctx.fillText(scaleText, x, y - 8);
   };
-
-  // Draw camera indicator
   const drawCameraIndicator = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     if (!mainCamera) return;
-    
-    // Get camera position in world coordinates (simplified)
     const cameraWorldPos = { x: mainCamera.position.x / ASTRONOMICAL_CONSTANTS.AU_IN_KM, y: mainCamera.position.z / ASTRONOMICAL_CONSTANTS.AU_IN_KM };
     const cameraScreenPos = worldToScreen(cameraWorldPos, { width, height });
-    
-    // Draw camera icon
     ctx.strokeStyle = '#00ff00';
     ctx.fillStyle = '#00ff00';
     ctx.lineWidth = 2;
-    
-    // Camera body
     ctx.beginPath();
     ctx.arc(cameraScreenPos.x, cameraScreenPos.y, 4, 0, 2 * Math.PI);
     ctx.stroke();
-    
-    // Camera direction (simplified)
     const dirLength = 10;
     ctx.beginPath();
     ctx.moveTo(cameraScreenPos.x, cameraScreenPos.y);
     ctx.lineTo(cameraScreenPos.x + dirLength, cameraScreenPos.y);
     ctx.stroke();
   };
-
-  // Handle mouse interactions
   const handleMouseMove = (event: React.MouseEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
     if (dragState.isDragging) {
       const deltaX = x - dragState.lastX;
       const deltaY = y - dragState.lastY;
-      
       setCenter(prev => ({
         x: prev.x - deltaX / zoom / 10,
         y: prev.y - deltaY / zoom / 10
       }));
-      
       setDragState(prev => ({ ...prev, lastX: x, lastY: y }));
       return;
     }
-    
-    // Find hovered body
     const { width, height } = getCanvasDimensions();
     const hoveredBodyId = celestialPositions.find(body => {
       if (!body.isVisible) return false;
@@ -486,40 +356,30 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
       const distance = Math.sqrt(Math.pow(x - screenPos.x, 2) + Math.pow(y - screenPos.y, 2));
       return distance <= body.size * 2;
     })?.id || null;
-    
     setHoveredBody(hoveredBodyId);
   };
-
   const handleMouseDown = (event: React.MouseEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
     setDragState({
       isDragging: true,
       lastX: x,
       lastY: y
     });
   };
-
   const handleMouseUp = () => {
     setDragState(prev => ({ ...prev, isDragging: false }));
   };
-
   const handleClick = (event: React.MouseEvent) => {
     if (dragState.isDragging) return;
-    
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
-    // Find clicked body
     const { width, height } = getCanvasDimensions();
     const clickedBody = celestialPositions.find(body => {
       if (!body.isVisible) return false;
@@ -527,22 +387,17 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
       const distance = Math.sqrt(Math.pow(x - screenPos.x, 2) + Math.pow(y - screenPos.y, 2));
       return distance <= body.size * 2;
     });
-    
     if (clickedBody) {
       setSelectedBody(clickedBody.id);
       onBodySelect?.(clickedBody.id);
     }
   };
-
   const handleDoubleClick = (event: React.MouseEvent) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    
-    // Find double-clicked body
     const { width, height } = getCanvasDimensions();
     const clickedBody = celestialPositions.find(body => {
       if (!body.isVisible) return false;
@@ -550,38 +405,29 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
       const distance = Math.sqrt(Math.pow(x - screenPos.x, 2) + Math.pow(y - screenPos.y, 2));
       return distance <= body.size * 2;
     });
-    
     if (clickedBody) {
       onBodyFocus?.(clickedBody.id);
     }
   };
-
-  // Handle zoom
   const handleWheel = (event: React.WheelEvent) => {
     event.preventDefault();
     const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
     setZoom(prev => Math.max(0.1, Math.min(10, prev * zoomFactor)));
   };
-
-  // Render canvas
   useEffect(() => {
     const animate = () => {
       renderMiniMap();
       animationRef.current = requestAnimationFrame(animate);
     };
-    
     if (isVisible) {
       animationRef.current = requestAnimationFrame(animate);
     }
-    
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
     };
   }, [isVisible, renderMiniMap]);
-
-  // Auto-center on target if enabled
   useEffect(() => {
     if (config.followTarget && selectedBody) {
       const targetBody = celestialPositions.find(b => b.id === selectedBody);
@@ -590,8 +436,6 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
       }
     }
   }, [config.followTarget, selectedBody, celestialPositions]);
-
-  // Get position classes
   const getPositionClasses = () => {
     switch (position) {
       case 'top-left': return 'top-4 left-4';
@@ -601,11 +445,8 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
       default: return 'top-4 right-4';
     }
   };
-
   if (!isVisible) return null;
-
   const { width, height } = getCanvasDimensions();
-
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -615,7 +456,7 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
       style={{ zIndex }}
     >
       <Card className="bg-black/90 backdrop-blur-sm border-gray-700 text-white overflow-hidden">
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between p-2 border-b border-gray-700">
           <div className="flex items-center gap-2">
             <Map className="w-4 h-4 text-cyan-400" />
@@ -640,8 +481,7 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
             </Button>
           </div>
         </div>
-
-        {/* Settings */}
+        {}
         <AnimatePresence>
           {showSettings && (
             <motion.div
@@ -693,8 +533,7 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Canvas */}
+        {}
         <div className="relative">
           <canvas
             ref={canvasRef}
@@ -709,8 +548,7 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
             onDoubleClick={handleDoubleClick}
             onWheel={handleWheel}
           />
-          
-          {/* Controls */}
+          {}
           <div className="absolute top-2 right-2 flex flex-col gap-1">
             <Button
               variant="ghost"
@@ -741,14 +579,12 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
             </Button>
           </div>
         </div>
-
-        {/* Info panel */}
+        {}
         {(hoveredBody || selectedBody) && (
           <div className="p-2 border-t border-gray-700 text-xs">
             {(() => {
               const body = celestialPositions.find(b => b.id === (hoveredBody || selectedBody));
               if (!body) return null;
-              
               return (
                 <div>
                   <div className="font-semibold text-cyan-400">{body.name}</div>
@@ -769,5 +605,4 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
     </motion.div>
   );
 };
-
 export default SolarSystemMiniMap;

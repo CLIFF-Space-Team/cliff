@@ -1,25 +1,18 @@
-// CLIFF 3D Solar System - Planet Components Index
-// All planetary components with specialized features
-
-'use client'
-
+﻿'use client'
 import { useMemo } from 'react'
 import * as THREE from 'three'
 import { BasePlanetComponent, PlanetComponentProps } from './BasePlanetComponent'
 import { EarthComponent } from './EarthComponent'
 import { SaturnComponent } from './SaturnComponent'
 import { SIMPLE_PLANETS } from '../../../types/astronomical-data'
-
-// Sun Component - Self-illuminated star
 export const SunComponent: React.FC<PlanetComponentProps> = (props) => {
   const sunData = SIMPLE_PLANETS.sun
-  
   return (
     <BasePlanetComponent 
       celestialBody={sunData} 
       {...props}
     >
-      {/* Corona effect for ultra quality */}
+      {}
       {props.qualityLevel === 'ultra' && (
         <>
           <mesh scale={1.2}>
@@ -45,11 +38,8 @@ export const SunComponent: React.FC<PlanetComponentProps> = (props) => {
     </BasePlanetComponent>
   )
 }
-
-// Mercury Component - Heavily cratered, no atmosphere
 export const MercuryComponent: React.FC<PlanetComponentProps> = (props) => {
   const mercuryData = SIMPLE_PLANETS.mercury
-  
   return (
     <BasePlanetComponent 
       celestialBody={mercuryData} 
@@ -57,17 +47,14 @@ export const MercuryComponent: React.FC<PlanetComponentProps> = (props) => {
     />
   )
 }
-
-// Venus Component - Thick atmosphere with cloud layers
 export const VenusComponent: React.FC<PlanetComponentProps> = (props) => {
   const venusData = SIMPLE_PLANETS.venus
-  
   return (
     <BasePlanetComponent 
       celestialBody={venusData} 
       {...props}
     >
-      {/* Dense atmosphere */}
+      {}
       <mesh scale={1.05}>
         <sphereGeometry args={[venusData.info.radius_km * 0.00001, 32, 32]} />
         <meshStandardMaterial 
@@ -80,17 +67,14 @@ export const VenusComponent: React.FC<PlanetComponentProps> = (props) => {
     </BasePlanetComponent>
   )
 }
-
-// Mars Component - Red planet with polar ice caps
 export const MarsComponent: React.FC<PlanetComponentProps> = (props) => {
   const marsData = SIMPLE_PLANETS.mars
-  
   return (
     <BasePlanetComponent 
       celestialBody={marsData} 
       {...props}
     >
-      {/* Polar ice caps */}
+      {}
       {props.qualityLevel !== 'low' && (
         <>
           <mesh position={[0, marsData.info.radius_km * 0.00001 * 0.9, 0]}>
@@ -103,8 +87,7 @@ export const MarsComponent: React.FC<PlanetComponentProps> = (props) => {
           </mesh>
         </>
       )}
-      
-      {/* Thin atmosphere */}
+      {}
       <mesh scale={1.02}>
         <sphereGeometry args={[marsData.info.radius_km * 0.00001, 16, 16]} />
         <meshBasicMaterial 
@@ -117,25 +100,21 @@ export const MarsComponent: React.FC<PlanetComponentProps> = (props) => {
     </BasePlanetComponent>
   )
 }
-
-// Jupiter Component - Gas giant with Great Red Spot
 export const JupiterComponent: React.FC<PlanetComponentProps> = (props) => {
   const jupiterData = SIMPLE_PLANETS.jupiter
-  
   return (
     <BasePlanetComponent 
       celestialBody={jupiterData} 
       {...props}
     >
-      {/* Great Red Spot */}
+      {}
       {props.qualityLevel !== 'low' && (
         <mesh position={[jupiterData.info.radius_km * 0.00001 * 0.9, 0, 0]}>
           <sphereGeometry args={[jupiterData.info.radius_km * 0.00001 * 0.1, 8, 8]} />
           <meshBasicMaterial color="#AA4444" transparent opacity={0.8} />
         </mesh>
       )}
-      
-      {/* Atmospheric bands effect */}
+      {}
       {props.qualityLevel === 'ultra' && (
         <mesh scale={1.01}>
           <sphereGeometry args={[jupiterData.info.radius_km * 0.00001, 64, 32]} />
@@ -150,18 +129,15 @@ export const JupiterComponent: React.FC<PlanetComponentProps> = (props) => {
     </BasePlanetComponent>
   )
 }
-
-// Uranus Component - Ice giant tilted on its side
 export const UranusComponent: React.FC<PlanetComponentProps> = (props) => {
   const uranusData = SIMPLE_PLANETS.uranus
-  
   return (
-    <group rotation={[0, 0, Math.PI / 2]}> {/* Uranus rotates on its side */}
+    <group rotation={[0, 0, Math.PI / 2]}> {}
       <BasePlanetComponent 
         celestialBody={uranusData} 
         {...props}
       >
-        {/* Faint ring system */}
+        {}
         {props.qualityLevel !== 'low' && (
           <group rotation={[Math.PI / 2, 0, 0]}>
             <mesh>
@@ -175,8 +151,7 @@ export const UranusComponent: React.FC<PlanetComponentProps> = (props) => {
             </mesh>
           </group>
         )}
-        
-        {/* Methane atmosphere glow */}
+        {}
         <mesh scale={1.03}>
           <sphereGeometry args={[uranusData.info.radius_km * 0.00001, 24, 24]} />
           <meshBasicMaterial 
@@ -190,25 +165,21 @@ export const UranusComponent: React.FC<PlanetComponentProps> = (props) => {
     </group>
   )
 }
-
-// Neptune Component - Deep blue ice giant with winds
 export const NeptuneComponent: React.FC<PlanetComponentProps> = (props) => {
   const neptuneData = SIMPLE_PLANETS.neptune
-  
   return (
     <BasePlanetComponent 
       celestialBody={neptuneData} 
       {...props}
     >
-      {/* Great Dark Spot */}
+      {}
       {props.qualityLevel !== 'low' && (
         <mesh position={[neptuneData.info.radius_km * 0.00001 * 0.8, 0, 0]}>
           <sphereGeometry args={[neptuneData.info.radius_km * 0.00001 * 0.15, 8, 8]} />
           <meshBasicMaterial color="#001144" transparent opacity={0.6} />
         </mesh>
       )}
-      
-      {/* Atmospheric glow */}
+      {}
       <mesh scale={1.05}>
         <sphereGeometry args={[neptuneData.info.radius_km * 0.00001, 32, 32]} />
         <meshBasicMaterial 
@@ -221,8 +192,6 @@ export const NeptuneComponent: React.FC<PlanetComponentProps> = (props) => {
     </BasePlanetComponent>
   )
 }
-
-// Pluto Component - Dwarf planet with heart-shaped feature (Pluto verisi yok, basit veri oluşturalım)
 export const PlutoComponent: React.FC<PlanetComponentProps> = (props) => {
   const plutoData = {
     id: 'pluto',
@@ -262,13 +231,12 @@ export const PlutoComponent: React.FC<PlanetComponentProps> = (props) => {
       '1930 yılında keşfedildi'
     ]
   }
-  
   return (
     <BasePlanetComponent 
       celestialBody={plutoData} 
       {...props}
     >
-      {/* Tombaugh Regio (heart-shaped feature) */}
+      {}
       {props.qualityLevel === 'ultra' && (
         <mesh position={[plutoData.info.radius_km * 0.00001 * 0.9, 0, 0]}>
           <sphereGeometry args={[plutoData.info.radius_km * 0.00001 * 0.2, 6, 6]} />
@@ -278,8 +246,6 @@ export const PlutoComponent: React.FC<PlanetComponentProps> = (props) => {
     </BasePlanetComponent>
   )
 }
-
-// Planet component factory function
 export function createPlanetComponent(planetId: string): React.FC<PlanetComponentProps> {
   const components = {
     sun: SunComponent,
@@ -293,11 +259,8 @@ export function createPlanetComponent(planetId: string): React.FC<PlanetComponen
     neptune: NeptuneComponent,
     pluto: PlutoComponent
   }
-  
   return components[planetId as keyof typeof components] || BasePlanetComponent
 }
-
-// All planets array for easy iteration
 export const ALL_PLANETS = [
   { id: 'sun', component: SunComponent, name: 'Sun', type: 'star' },
   { id: 'mercury', component: MercuryComponent, name: 'Mercury', type: 'planet' },
@@ -310,13 +273,10 @@ export const ALL_PLANETS = [
   { id: 'neptune', component: NeptuneComponent, name: 'Neptune', type: 'planet' },
   { id: 'pluto', component: PlutoComponent, name: 'Pluto', type: 'dwarf_planet' }
 ] as const
-
-// Solar System component that renders all planets
 interface SolarSystemProps extends Omit<PlanetComponentProps, 'planetId'> {
   planetFilter?: string[]
   centerOnSun?: boolean
 }
-
 export const SolarSystemComponent: React.FC<SolarSystemProps> = ({
   planetFilter,
   centerOnSun = true,
@@ -326,7 +286,6 @@ export const SolarSystemComponent: React.FC<SolarSystemProps> = ({
     if (!planetFilter) return ALL_PLANETS
     return ALL_PLANETS.filter(planet => planetFilter.includes(planet.id))
   }, [planetFilter])
-  
   return (
     <group>
       {planetsToRender.map(({ id, component: PlanetComp }) => (
@@ -339,13 +298,9 @@ export const SolarSystemComponent: React.FC<SolarSystemProps> = ({
     </group>
   )
 }
-
-// Export individual components
 export {
   BasePlanetComponent,
   EarthComponent,
   SaturnComponent
 }
-
-// Export types
 export type { PlanetComponentProps } from './BasePlanetComponent'

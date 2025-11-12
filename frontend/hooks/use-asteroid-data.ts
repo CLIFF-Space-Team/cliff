@@ -1,14 +1,11 @@
-'use client'
-
+﻿'use client'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { SimpleCelestialBody } from '@/types/astronomical-data'
-
 interface UseAsteroidDataOptions {
   apiUrl?: string
   refreshInterval?: number
   autoRefresh?: boolean
 }
-
 interface UseAsteroidDataReturn {
   asteroids: SimpleCelestialBody[]
   isLoading: boolean
@@ -16,8 +13,6 @@ interface UseAsteroidDataReturn {
   refreshAsteroids: () => Promise<void>
   lastRefresh: Date | null
 }
-
-// Backend'den gelen asteroid response type
 interface BackendAsteroid {
   id: string
   name: string
@@ -37,42 +32,29 @@ interface BackendAsteroid {
     }
   }
 }
-
 export function useAsteroidData({
   apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '',
   refreshInterval = 300000, // 5 dakika
   autoRefresh = false, // Auto-refresh kapalı - manuel refresh
 }: UseAsteroidDataOptions = {}): UseAsteroidDataReturn {
-  
   const [asteroids, setAsteroids] = useState<SimpleCelestialBody[]>([])
   const [isLoading, setIsLoading] = useState(false) // false olarak başlat - mock veri hemen hazır
   const [error, setError] = useState<string | null>(null)
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null)
-  
   const refreshTimer = useRef<NodeJS.Timeout | null>(null)
   const abortController = useRef<AbortController | null>(null)
-  
-  // API çağrısı devre dışı - sadece mock veri kullan
   const USE_MOCK_DATA = true
-
-  // Backend asteroid verisini SimpleCelestialBody formatına çevir
   const convertBackendAsteroid = (backendAst: BackendAsteroid): SimpleCelestialBody => {
-    // Güvenli veri kontrolü
     const safeOrbitalData = backendAst.orbital_data || {
       miss_distance: { kilometers: '5000000' },
       relative_velocity: { kilometers_per_second: '15.0', kilometers_per_hour: '54000' }
     }
-    
     const safeMissDistance = safeOrbitalData.miss_distance?.kilometers || '5000000'
     const safeVelocity = safeOrbitalData.relative_velocity?.kilometers_per_hour || '54000'
-    
     const distance_km = parseFloat(safeMissDistance) || 5000000
     const velocity_kmh = parseFloat(safeVelocity) || 54000
-    
     const diameter_str = backendAst.estimated_diameter || '1.0 km'
     const radius_km = parseFloat(diameter_str.split(' ')[0]) / 2 || 0.5
-
-    // Backend'den gelen threat_level'ı normalize et
     const normalizeThreatLevel = (level: string): "Düşük" | "Orta" | "Yüksek" => {
       if (!level) return 'Düşük'
       const lowerLevel = level.toLowerCase()
@@ -80,7 +62,6 @@ export function useAsteroidData({
       if (lowerLevel.includes('orta') || lowerLevel.includes('medium')) return 'Orta'
       return 'Düşük'
     }
-
     return {
       id: backendAst.id || `asteroid-${Math.random().toString(36).substr(2, 9)}`,
       name: backendAst.name || 'Unknown Asteroid',
@@ -122,29 +103,20 @@ export function useAsteroidData({
       }
     }
   }
-
-  // Mock veri kullan - API çağrısı devre dışı
   const fetchAsteroids = useCallback(async () => {
     try {
       const processedAsteroids: SimpleCelestialBody[] = []
-      
-      // Mock veri oluştur
       if (USE_MOCK_DATA) {
         for (let i = 0; i < 12; i++) {
           processedAsteroids.push(createMockAsteroid(i))
         }
       }
-      
       setAsteroids(processedAsteroids)
       setLastRefresh(new Date())
       setError(null) // Hataları temizle
-      
       console.log(`✅ ${processedAsteroids.length} asteroid yüklendi (${processedAsteroids.filter(a => a.is_hazardous).length} tehlikeli)`)
-      
     } catch (err) {
-      // Hata olsa bile fallback veri sağla ve hata gösterme
       console.warn('⚠️ Mock veri oluşturulurken uyarı:', err)
-      
       const fallbackAsteroids: SimpleCelestialBody[] = []
       for (let i = 0; i < 8; i++) {
         fallbackAsteroids.push(createFallbackAsteroid(`fallback-${i}`))
@@ -154,8 +126,6 @@ export function useAsteroidData({
       setLastRefresh(new Date())
     }
   }, [])
-
-  // Fallback asteroid oluşturma fonksiyonu
   const createFallbackAsteroid = (id: string): SimpleCelestialBody => {
     return {
       id: id,
@@ -191,14 +161,11 @@ export function useAsteroidData({
       }
     }
   }
-
-  // Mock asteroid oluşturma fonksiyonu
   const createMockAsteroid = (index: number): SimpleCelestialBody => {
     const isHazardous = Math.random() > 0.75
     const distance_km = Math.random() * 50000000 + 1000000 // 1M - 50M km
     const velocity_kmh = Math.random() * 50000 + 15000 // 15K - 65K km/h
     const radius_km = Math.random() * 2 + 0.2 // 0.2 - 2.2 km
-    
     return {
       id: `mock-asteroid-${index}`,
       name: `2024 ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${index + 1}`,
@@ -239,28 +206,21 @@ export function useAsteroidData({
       }
     }
   }
-
-  // Main refresh function
   const refreshAsteroids = useCallback(async () => {
     setIsLoading(true)
     setError(null)
-    
     try {
       await fetchAsteroids()
     } catch (err) {
-      // Error handled in fetchAsteroids
     } finally {
       setIsLoading(false)
     }
   }, [fetchAsteroids])
-
-  // Setup auto-refresh
   useEffect(() => {
     if (autoRefresh && refreshInterval > 0) {
       refreshTimer.current = setInterval(() => {
         refreshAsteroids()
       }, refreshInterval)
-      
       return () => {
         if (refreshTimer.current) {
           clearInterval(refreshTimer.current)
@@ -268,12 +228,8 @@ export function useAsteroidData({
       }
     }
   }, [autoRefresh, refreshInterval, refreshAsteroids])
-
-  // Initial data load
   useEffect(() => {
     refreshAsteroids()
-    
-    // Cleanup on unmount
     return () => {
       if (abortController.current) {
         abortController.current.abort()
@@ -282,9 +238,7 @@ export function useAsteroidData({
         clearInterval(refreshTimer.current)
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
   return {
     asteroids,
     isLoading,
@@ -293,5 +247,4 @@ export function useAsteroidData({
     lastRefresh,
   }
 }
-
 export default useAsteroidData

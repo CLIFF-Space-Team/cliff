@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -7,20 +6,17 @@ import { Shield, Activity, Database, Menu, X } from 'lucide-react'
 import FPSMonitor from '@/components/3d/performance/FPSMonitor'
 import { useDashboardStore } from '@/stores/useDashboardStore'
 import { cn } from '@/lib/utils'
-
 interface DashboardHeaderProps {
   className?: string
   isMobileSidebarOpen?: boolean
   setIsMobileSidebarOpen?: (open: boolean) => void
 }
-
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ 
   className,
   isMobileSidebarOpen,
   setIsMobileSidebarOpen 
 }) => {
   const { toggleMobileSidebar } = useDashboardStore()
-
   return (
     <header
       className={cn(
@@ -29,7 +25,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       )}
     >
       <div className="container mx-auto h-full flex items-center justify-between px-6">
-        {/* Left Section */}
+        {}
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -52,7 +48,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 Cosmic Level Intelligent Forecast Framework
               </p>
             </div>
-            {/* Mobile title */}
+            {}
             <div className="sm:hidden">
               <h1 className="text-base font-bold text-cliff-white">
                 CLIFF
@@ -60,8 +56,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             </div>
           </div>
         </div>
-
-        {/* Desktop Status badges - Enhanced */}
+        {}
         <div className="hidden md:flex items-center gap-3">
           <Badge 
             variant="default" 
@@ -84,8 +79,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             showDetails={false}
           />
         </div>
-
-        {/* Mobile Status - Simplified */}
+        {}
         <div className="md:hidden flex items-center gap-2">
           <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
           <FPSMonitor 

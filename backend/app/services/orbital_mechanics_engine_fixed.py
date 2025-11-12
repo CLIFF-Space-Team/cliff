@@ -1,25 +1,15 @@
-#!/usr/bin/env python3
-"""
-Fixed Orbital Mechanics Engine
-CAD API veri parsing sorunlarını çözen gelişmiş version
-"""
-
-import math
+﻿import math
 import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 from enum import Enum
-
-
 class ThreatLevel(Enum):
     MINIMAL = "minimal"
     LOW = "low"
     MODERATE = "moderate"
     HIGH = "high"  
     CRITICAL = "critical"
-
-
 @dataclass
 class CloseApproachData:
     date_julian: float
@@ -28,8 +18,6 @@ class CloseApproachData:
     distance_km: float
     velocity_kms: float
     uncertainty_km: float = 0.0
-
-
 @dataclass
 class OrbitalElements:
     semi_major_axis_au: Optional[float] = None
@@ -38,8 +26,6 @@ class OrbitalElements:
     perihelion_distance_au: Optional[float] = None
     aphelion_distance_au: Optional[float] = None
     orbital_period_years: Optional[float] = None
-
-
 @dataclass
 class RiskAssessment:
     threat_level: ThreatLevel
@@ -48,8 +34,6 @@ class RiskAssessment:
     impact_energy_megatons: Optional[float] = None
     damage_radius_km: Optional[float] = None
     recommendations: List[str] = None
-
-
 @dataclass
 class AsteroidData:
     designation: str
@@ -57,43 +41,31 @@ class AsteroidData:
     close_approach_data: List[CloseApproachData]
     orbital_elements: OrbitalElements
     estimated_diameter_km: Optional[float] = None
-
-
 class FixedOrbitalMechanicsEngine:
     """Fixed version with proper CAD API parsing"""
-    
     def __init__(self):
         self.au_to_km = 149597870.7  # 1 AU in kilometers
         self.earth_radius_km = 6371.0
-        
     def date_string_to_julian(self, date_str: str) -> float:
         """Convert date string to Julian Date - FIXED VERSION"""
         try:
             if not date_str or date_str == 'N/A':
                 return 0.0
-            
-            # Handle different date formats
             import re
-            
-            # Replace month names with numbers
             month_map = {
                 'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
                 'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08', 
                 'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
             }
-            
             date_normalized = date_str.strip()
             for month_name, month_num in month_map.items():
                 date_normalized = date_normalized.replace(month_name, month_num)
-            
-            # Try different parsing patterns
             patterns = [
                 '%Y-%m-%d %H:%M',      # 2025-10-04 04:29
                 '%Y-%m-%d %H:%M:%S',   # 2025-10-04 04:29:00
                 '%Y-%m-%d',            # 2025-10-04
                 '%Y/%m/%d %H:%M',      # 2025/10/04 04:29
             ]
-            
             parsed_date = None
             for pattern in patterns:
                 try:
@@ -101,60 +73,39 @@ class FixedOrbitalMechanicsEngine:
                     break
                 except ValueError:
                     continue
-            
             if not parsed_date:
                 print(f"[WARN] Tarih parse edilemedi: {date_str}")
-                # Fallback to current date
                 parsed_date = datetime.now()
-            
-            # Convert to Julian Date
             a = (14 - parsed_date.month) // 12
             y = parsed_date.year + 4800 - a
             m = parsed_date.month + 12 * a - 3
-            
             jdn = parsed_date.day + (153 * m + 2) // 5 + 365 * y + y // 4 - y // 100 + y // 400 - 32045
-            
-            # Add time fraction
             time_fraction = (parsed_date.hour + parsed_date.minute / 60.0 + parsed_date.second / 3600.0) / 24.0
             julian_date = jdn + time_fraction - 0.5
-            
             return julian_date
-            
         except Exception as e:
             print(f"[ERROR] Julian date conversion error: {e}")
             return 2460000.0  # Fallback Julian Date
-    
     def parse_cad_data(self, cad_response_data: Dict[str, Any]) -> List[AsteroidData]:
         """Parse CAD API response data - FIXED VERSION"""
         asteroids = []
-        
         try:
             fields = cad_response_data.get('fields', [])
             data_rows = cad_response_data.get('data', [])
-            
             if not fields or not data_rows:
                 print("[WARN] CAD response boş veya geçersiz")
                 return asteroids
-            
-            # Create field index mapping
             field_map = {field: idx for idx, field in enumerate(fields)}
             print(f"[INFO] CAD field mapping: {field_map}")
-            
             for row_idx, row in enumerate(data_rows):
                 try:
                     if len(row) < len(fields):
                         print(f"[WARN] Row {row_idx}: Eksik field ({len(row)}/{len(fields)})")
                         continue
-                    
-                    # Extract fields safely
                     designation = str(row[field_map.get('des', 0)]) if 'des' in field_map else f'Unknown_{row_idx}'
                     orbit_id = str(row[field_map.get('orbit_id', 1)]) if 'orbit_id' in field_map else str(row_idx)
-                    
-                    # Parse date (cd field) - FIXED
                     close_date_str = str(row[field_map.get('cd', 2)]) if 'cd' in field_map else None
                     close_date_jd = self.date_string_to_julian(close_date_str) if close_date_str else 0.0
-                    
-                    # Parse distances (convert string to float) - FIXED
                     try:
                         distance_au = float(str(row[field_map.get('dist', 3)])) if 'dist' in field_map else 0.0
                         distance_min_au = float(str(row[field_map.get('dist_min', 4)])) if 'dist_min' in field_map else distance_au
@@ -162,8 +113,6 @@ class FixedOrbitalMechanicsEngine:
                     except (ValueError, TypeError) as e:
                         print(f"[ERROR] Row {row_idx}: Distance parse error - {e}")
                         continue
-                    
-                    # Parse velocities (convert string to float) - FIXED
                     try:
                         v_rel_kms = float(str(row[field_map.get('v_rel', 6)])) if 'v_rel' in field_map else 0.0
                         v_inf_kms = float(str(row[field_map.get('v_inf', 7)])) if 'v_inf' in field_map else v_rel_kms
@@ -171,8 +120,6 @@ class FixedOrbitalMechanicsEngine:
                         print(f"[WARN] Row {row_idx}: Velocity parse error - {e}, using default")
                         v_rel_kms = 20.0  # Default fallback
                         v_inf_kms = 20.0
-                    
-                    # Create AsteroidData
                     asteroid = AsteroidData(
                         designation=designation,
                         orbit_id=orbit_id,
@@ -188,54 +135,33 @@ class FixedOrbitalMechanicsEngine:
                         ],
                         orbital_elements=OrbitalElements()
                     )
-                    
                     asteroids.append(asteroid)
                     print(f"[SUCCESS] Row {row_idx}: {designation} parsed successfully")
-                    
                 except Exception as e:
                     print(f"[ERROR] CAD row {row_idx} parse hatası: {e}")
                     continue
-            
             print(f"[INFO] CAD parsing tamamlandı: {len(asteroids)}/{len(data_rows)} asteroid")
             return asteroids
-            
         except Exception as e:
             print(f"[ERROR] CAD data parse genel hatası: {e}")
             return []
-    
     def calculate_orbital_elements(self, asteroid: AsteroidData) -> OrbitalElements:
         """Calculate orbital elements from close approach data"""
         try:
             if not asteroid.close_approach_data:
                 return OrbitalElements()
-            
             approach = asteroid.close_approach_data[0]
-            
-            # Semi-major axis using vis-viva equation approximation
             mu_sun = 1.327e20  # m³/s² - Standard gravitational parameter of Sun
-            
-            # Convert to SI units
             r = approach.distance_km * 1000  # meters
             v = approach.velocity_kms * 1000  # m/s
-            
-            # Vis-viva equation: v² = μ(2/r - 1/a)
-            # Solve for a: a = μr / (2μ - rv²)
             semi_major_axis_m = (mu_sun * r) / (2 * mu_sun - r * v * v)
             semi_major_axis_au = semi_major_axis_m / (self.au_to_km * 1000)
-            
             if semi_major_axis_au <= 0:
                 semi_major_axis_au = approach.distance_au * 2  # Fallback
-            
-            # Approximate eccentricity (simplified)
             eccentricity = min(0.99, abs(1.0 - approach.distance_au / semi_major_axis_au))
-            
-            # Orbital period using Kepler's third law
             orbital_period_years = math.pow(abs(semi_major_axis_au), 1.5)
-            
-            # Perihelion and Aphelion
             perihelion_au = semi_major_axis_au * (1 - eccentricity)
             aphelion_au = semi_major_axis_au * (1 + eccentricity)
-            
             return OrbitalElements(
                 semi_major_axis_au=semi_major_axis_au,
                 eccentricity=eccentricity,
@@ -244,11 +170,9 @@ class FixedOrbitalMechanicsEngine:
                 aphelion_distance_au=aphelion_au,
                 orbital_period_years=orbital_period_years
             )
-            
         except Exception as e:
             print(f"[ERROR] Orbital elements calculation error: {e}")
             return OrbitalElements()
-    
     def assess_threat_level(self, asteroid: AsteroidData, diameter_km: Optional[float] = None) -> RiskAssessment:
         """Assess asteroid threat level"""
         try:
@@ -259,15 +183,9 @@ class FixedOrbitalMechanicsEngine:
                     monitoring_priority=1,
                     recommendations=["Insufficient data for assessment"]
                 )
-            
             approach = asteroid.close_approach_data[0]
-            
-            # Distance-based threat assessment
             distance_km = approach.distance_km
             velocity_kms = approach.velocity_kms
-            
-            # Base impact probability (simplified model)
-            # Closer = higher probability
             if distance_km < 100000:  # 100,000 km
                 base_probability = 0.001  # 0.1%
                 threat_level = ThreatLevel.CRITICAL
@@ -288,30 +206,16 @@ class FixedOrbitalMechanicsEngine:
                 base_probability = 0.0000001  # 0.00001%
                 threat_level = ThreatLevel.MINIMAL
                 priority = 1
-            
-            # Adjust for velocity (higher velocity = more dangerous)
             velocity_factor = min(3.0, velocity_kms / 10.0)  # Cap at 3x
             impact_probability = base_probability * velocity_factor
-            
-            # Calculate potential impact energy if diameter is known
             impact_energy_megatons = None
             damage_radius_km = None
-            
             if diameter_km:
-                # Kinetic energy: KE = 0.5 * m * v²
-                # Assume density ~2500 kg/m³ (typical for asteroids)
                 mass_kg = (4/3 * math.pi * (diameter_km * 500) ** 3) * 2500
                 kinetic_energy_joules = 0.5 * mass_kg * (velocity_kms * 1000) ** 2
-                
-                # Convert to megatons TNT (1 megaton = 4.184 × 10^15 joules)
                 impact_energy_megatons = kinetic_energy_joules / 4.184e15
-                
-                # Rough damage radius estimate
                 damage_radius_km = 10 * (impact_energy_megatons ** 0.33)  # Simplified
-            
-            # Generate recommendations
             recommendations = []
-            
             if threat_level in [ThreatLevel.CRITICAL, ThreatLevel.HIGH]:
                 recommendations.append("Immediate continuous monitoring required")
                 recommendations.append("Calculate precise trajectory and impact probability")
@@ -323,7 +227,6 @@ class FixedOrbitalMechanicsEngine:
             else:
                 recommendations.append("Continue routine monitoring")
                 recommendations.append("Update orbital data periodically")
-            
             return RiskAssessment(
                 threat_level=threat_level,
                 impact_probability=impact_probability,
@@ -332,7 +235,6 @@ class FixedOrbitalMechanicsEngine:
                 damage_radius_km=damage_radius_km,
                 recommendations=recommendations
             )
-            
         except Exception as e:
             print(f"[ERROR] Threat assessment error: {e}")
             return RiskAssessment(
@@ -341,62 +243,42 @@ class FixedOrbitalMechanicsEngine:
                 monitoring_priority=1,
                 recommendations=["Assessment failed due to data error"]
             )
-    
     def calculate_comprehensive_analysis(self, 
                                        cad_data: Dict[str, Any], 
                                        fireball_data: Dict[str, Any],
                                        asteroid_diameter_km: Optional[float] = None) -> Dict[str, Any]:
         """Comprehensive asteroid analysis - FIXED VERSION"""
         start_time = time.time()
-        
         try:
-            # Parse CAD data with fixed parser
             asteroids = self.parse_cad_data(cad_data)
-            
             if not asteroids:
                 return {
                     'success': False,
                     'error': 'CAD verisi parse edilemedi',
                     'calculation_time_seconds': time.time() - start_time
                 }
-            
-            # Analyze each asteroid
             analyzed_asteroids = []
             for asteroid in asteroids:
-                # Calculate orbital elements
                 asteroid.orbital_elements = self.calculate_orbital_elements(asteroid)
                 asteroid.estimated_diameter_km = asteroid_diameter_km
-                
-                # Assess threat
                 risk_assessment = self.assess_threat_level(asteroid, asteroid_diameter_km)
-                
                 analyzed_asteroids.append({
                     'asteroid': asteroid,
                     'risk': risk_assessment
                 })
-            
-            # Find closest approach
             closest_asteroid = min(analyzed_asteroids, 
                                  key=lambda x: x['asteroid'].close_approach_data[0].distance_km)
-            
             closest_approach = closest_asteroid['asteroid'].close_approach_data[0]
             closest_risk = closest_asteroid['risk']
             closest_orbital = closest_asteroid['asteroid'].orbital_elements
-            
-            # Statistics
             total_approaches = len(analyzed_asteroids)
             future_approaches = sum(1 for a in analyzed_asteroids 
                                   if a['asteroid'].close_approach_data[0].date_julian > 2460000)
-            
-            # Threat level distribution
             threat_counts = {}
             for level in ThreatLevel:
                 threat_counts[level.value] = sum(1 for a in analyzed_asteroids 
                                                if a['risk'].threat_level == level)
-            
-            # Fireball context
             fireball_context = self.analyze_fireball_context(fireball_data)
-            
             return {
                 'success': True,
                 'calculation_time_seconds': time.time() - start_time,
@@ -435,7 +317,6 @@ class FixedOrbitalMechanicsEngine:
                 'fireball_context': fireball_context,
                 'recommendations': closest_risk.recommendations[:5]  # Top 5 recommendations
             }
-            
         except Exception as e:
             print(f"[ERROR] Comprehensive analysis error: {e}")
             return {
@@ -443,22 +324,16 @@ class FixedOrbitalMechanicsEngine:
                 'error': str(e),
                 'calculation_time_seconds': time.time() - start_time
             }
-    
     def analyze_fireball_context(self, fireball_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze fireball data for context"""
         try:
             if not fireball_data.get('success'):
                 return {'analysis': 'Fireball data not available'}
-            
             fb_data = fireball_data.get('data', {})
             events = fb_data.get('data', [])
-            
             if not events:
                 return {'analysis': 'No recent fireball events'}
-            
             event_count = len(events)
-            
-            # Try to extract energy data if available
             try:
                 energies = []
                 for event in events:
@@ -466,7 +341,6 @@ class FixedOrbitalMechanicsEngine:
                         energy_str = str(event[1])
                         if energy_str.replace('.', '').isdigit():
                             energies.append(float(energy_str))
-                
                 if energies:
                     avg_energy = sum(energies) / len(energies)
                     return {
@@ -474,23 +348,16 @@ class FixedOrbitalMechanicsEngine:
                         'average_energy_kilotons': avg_energy,
                         'analysis': f'{event_count} recent fireball events detected with average energy of {avg_energy:.1f} kilotons'
                     }
-                
             except Exception:
                 pass
-            
             return {
                 'recent_events_count': event_count,
                 'analysis': f'{event_count} recent fireball events detected'
             }
-            
         except Exception as e:
             print(f"[ERROR] Fireball analysis error: {e}")
             return {'analysis': 'Fireball analysis failed'}
-
-
-# Global singleton instance
 _fixed_engine_instance = None
-
 def get_fixed_orbital_mechanics_engine() -> FixedOrbitalMechanicsEngine:
     """Get fixed orbital mechanics engine singleton"""
     global _fixed_engine_instance

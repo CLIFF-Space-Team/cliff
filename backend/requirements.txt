@@ -1,124 +1,35 @@
-# 🌌 CLIFF Backend - Python Dependencies
+# 🌌 CLIFF Backend - Minimal Required Dependencies
 # 
 # Copyright (c) 2025 kynuxdev
 # CLIFF Proprietary Source Available License
-# 
-# UYARI: Bu kod TÜBİTAK, NASA veya herhangi bir yarışmada kullanılamaz.
-# Yetkisiz kullanım telif hakkı ihlalidir.
-# 
-# WARNING: This code cannot be used in TÜBİTAK, NASA, or any competitions.
-# Unauthorized use constitutes copyright infringement.
-#
+
 # FastAPI and Core Dependencies
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
+fastapi==0.115.0
+uvicorn[standard]==0.32.1
+pydantic==2.10.0
+pydantic-settings==2.7.0
 httpx==0.25.2
 aiohttp==3.12.14
 structlog==23.2.0
 python-multipart==0.0.18
-jinja2==3.1.6
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-pymongo==4.6.3
-motor==3.3.2
-redis==5.0.1
-celery==5.3.4
-pytest==7.4.3
-pytest-asyncio==0.21.1
-requests==2.32.4
 websockets==12.0
-psutil==5.9.6
-
-# AI and Machine Learning Dependencies
-google-generativeai==0.8.3
-google-cloud-aiplatform==1.70.0
-google-auth==2.35.0
-google-auth-oauthlib==1.2.1
-google-auth-httplib2==0.2.0
-google-api-python-client==2.110.0
-scikit-learn==1.5.0
-numpy==1.24.3
-scipy==1.11.4
+requests==2.32.4
 
 # Database Dependencies
+motor==3.3.2
+pymongo==4.6.3
 beanie==1.23.6
-elasticsearch==8.11.0
 
-# Background Tasks and Scheduling
-python-crontab==3.0.0
-schedule==1.2.0
-apscheduler==3.10.4
-
-# Monitoring and Logging
+# Monitoring and System
 prometheus-client==0.19.0
-sentry-sdk[fastapi]==1.38.0
-
-# Testing Dependencies
-pytest-cov==4.1.0
-pytest-mock==3.12.0
-
-# Development Dependencies
-black==24.3.0
-isort==5.12.0
-flake8==6.1.0
-mypy==1.7.1
-pre-commit==3.6.0
+psutil==5.9.6
 
 # Security and Authentication
 cryptography
-bcrypt==4.1.2
-authlib==1.6.5
 certifi
-
-# File Processing
-openpyxl==3.1.2
-python-magic==0.4.27
-aiofiles==23.2.1
-
-# Image Processing
-opencv-python==4.8.1.78
-
-# Configuration Management
-dynaconf==3.2.4
-pyyaml==6.0.1
-toml==0.10.2
-
-# Network and Communication
-python-socketio==5.14.0
-eventlet==0.40.3
-dnspython==2.8.0
 
 # Date and Time Processing
 python-dateutil==2.8.2
-pytz==2023.3
-arrow==1.3.0
 
 # Utilities
-click==8.1.7
-rich==13.7.0
-tqdm==4.66.3
 colorama==0.4.6
-
-# Azure AI Services
-azure-ai-projects
-azure-identity
-
-# NASA and Space Data Specific
-astroquery==0.4.6
-
-# Real-time Data Processing
-kafka-python==2.0.2
-
-# Memory and Performance
-memory-profiler==0.61.0
-py-spy==0.3.14
-
-# Production Dependencies
-gunicorn==22.0.0
-supervisor==4.2.5
-
-# Additional Utilities
-tenacity==8.2.3
-backoff==2.2.1
-cachetools==5.3.2

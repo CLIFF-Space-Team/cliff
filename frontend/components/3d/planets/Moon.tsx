@@ -1,20 +1,16 @@
-'use client'
-
+﻿'use client'
 import React, { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-
 interface MoonProps {
   earthPosition: THREE.Vector3;
   scale?: number;
   quality?: 'low' | 'medium' | 'high' | 'ultra';
 }
-
 export const Moon = React.memo(({ earthPosition, scale = 0.27, quality = 'high' }: MoonProps) => {
   const moonRef = useRef<THREE.Mesh>(null)
   const orbitRadius = 4; // Distance from Earth
   const orbitSpeed = 0.5; // Slower orbit around Earth
-
   useFrame(({ clock }) => {
     if (moonRef.current) {
       const angle = clock.getElapsedTime() * orbitSpeed;
@@ -24,7 +20,6 @@ export const Moon = React.memo(({ earthPosition, scale = 0.27, quality = 'high' 
       moonRef.current.rotation.y += 0.005;
     }
   });
-
   return (
     <mesh ref={moonRef} scale={scale} castShadow receiveShadow>
       <sphereGeometry args={[1, quality === 'low' ? 16 : 32, quality === 'low' ? 16 : 32]} />
@@ -36,5 +31,4 @@ export const Moon = React.memo(({ earthPosition, scale = 0.27, quality = 'high' 
     </mesh>
   );
 });
-
 Moon.displayName = 'Moon';

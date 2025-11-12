@@ -1,14 +1,10 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { USDZResponsiveWrapper } from './USDZResponsiveWrapper'
 import { USDZMobileTouchControls } from './USDZMobileTouchControls'
-
-// Screen size detection hook
 const useScreenSize = () => {
   const [screenSize, setScreenSize] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
-
   useEffect(() => {
     const updateScreenSize = () => {
       const width = window.innerWidth
@@ -16,16 +12,12 @@ const useScreenSize = () => {
       else if (width < 1024) setScreenSize('tablet')
       else setScreenSize('desktop')
     }
-
     updateScreenSize()
     window.addEventListener('resize', updateScreenSize)
     return () => window.removeEventListener('resize', updateScreenSize)
   }, [])
-
   return screenSize
 }
-
-// Navigation items
 const NAV_ITEMS = [
   { id: 'overview', label: 'Genel Bakış', icon: '🌍', active: true },
   { id: 'asteroids', label: 'Asteroidler', icon: '☄️', active: false },
@@ -33,8 +25,6 @@ const NAV_ITEMS = [
   { id: 'solar-system', label: 'Güneş Sistemi', icon: '🌞', active: false },
   { id: 'settings', label: 'Ayarlar', icon: '⚙️', active: false }
 ]
-
-// Mobile navigation component
 const MobileNavigation: React.FC<{
   items: typeof NAV_ITEMS
   activeItem: string
@@ -79,8 +69,6 @@ const MobileNavigation: React.FC<{
     </AnimatePresence>
   )
 }
-
-// Tablet sidebar component
 const TabletSidebar: React.FC<{
   items: typeof NAV_ITEMS
   activeItem: string
@@ -95,7 +83,7 @@ const TabletSidebar: React.FC<{
       transition={{ duration: 0.3 }}
     >
       <div className="flex flex-col h-full">
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between p-4 border-b border-cliff-light-gray/20">
           {!isCollapsed && (
             <motion.div
@@ -113,7 +101,6 @@ const TabletSidebar: React.FC<{
               </div>
             </motion.div>
           )}
-          
           <motion.button
             onClick={onToggle}
             className="p-2 hover:bg-cliff-light-gray/10 rounded-lg"
@@ -128,8 +115,7 @@ const TabletSidebar: React.FC<{
             </motion.span>
           </motion.button>
         </div>
-
-        {/* Navigation Items */}
+        {}
         <div className="flex-1 py-4">
           {items.map((item) => (
             <motion.button
@@ -160,8 +146,6 @@ const TabletSidebar: React.FC<{
     </motion.div>
   )
 }
-
-// Desktop sidebar component
 const DesktopSidebar: React.FC<{
   items: typeof NAV_ITEMS
   activeItem: string
@@ -169,7 +153,7 @@ const DesktopSidebar: React.FC<{
 }> = ({ items, activeItem, onItemSelect }) => {
   return (
     <div className="w-64 bg-pure-black/95 backdrop-blur-md border-r border-cliff-light-gray/20 flex flex-col">
-      {/* Header */}
+      {}
       <div className="p-6 border-b border-cliff-light-gray/20">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-cliff-blue to-cliff-purple rounded-xl flex items-center justify-center">
@@ -181,15 +165,13 @@ const DesktopSidebar: React.FC<{
           </div>
         </div>
       </div>
-
-      {/* Navigation Items */}
+      {}
       <div className="flex-1 py-6">
         <div className="px-4 mb-4">
           <h2 className="text-xs font-semibold text-cliff-light-gray uppercase tracking-wider">
             Navigation
           </h2>
         </div>
-        
         {items.map((item) => (
           <motion.button
             key={item.id}
@@ -213,8 +195,7 @@ const DesktopSidebar: React.FC<{
           </motion.button>
         ))}
       </div>
-
-      {/* Footer */}
+      {}
       <div className="p-6 border-t border-cliff-light-gray/20">
         <div className="bg-gradient-to-r from-cliff-blue/20 to-cliff-purple/20 rounded-lg p-4 border border-cliff-blue/20">
           <div className="flex items-center gap-3 mb-2">
@@ -231,8 +212,6 @@ const DesktopSidebar: React.FC<{
     </div>
   )
 }
-
-// Main responsive dashboard component
 export const USDZResponsiveDashboard: React.FC<{
   className?: string
 }> = ({ className = '' }) => {
@@ -240,8 +219,6 @@ export const USDZResponsiveDashboard: React.FC<{
   const [activeItem, setActiveItem] = useState('overview')
   const [mobileNavVisible, setMobileNavVisible] = useState(false)
   const [tabletSidebarCollapsed, setTabletSidebarCollapsed] = useState(false)
-
-  // Layout configuration based on screen size
   const layoutConfig = useMemo(() => {
     switch (screenSize) {
       case 'mobile':
@@ -264,23 +241,18 @@ export const USDZResponsiveDashboard: React.FC<{
         }
     }
   }, [screenSize, tabletSidebarCollapsed])
-
-  // Handle item selection
   const handleItemSelect = (itemId: string) => {
     setActiveItem(itemId)
     if (screenSize === 'mobile') {
       setMobileNavVisible(false)
     }
   }
-
-  // Handle mobile menu toggle
   const handleMobileMenuToggle = () => {
     setMobileNavVisible(!mobileNavVisible)
   }
-
   return (
     <div className={`min-h-screen bg-space-black relative ${className}`}>
-      {/* Desktop Sidebar */}
+      {}
       {screenSize === 'desktop' && (
         <div className="fixed left-0 top-0 bottom-0 z-40">
           <DesktopSidebar
@@ -290,8 +262,7 @@ export const USDZResponsiveDashboard: React.FC<{
           />
         </div>
       )}
-
-      {/* Tablet Sidebar */}
+      {}
       {screenSize === 'tablet' && (
         <TabletSidebar
           items={NAV_ITEMS}
@@ -301,8 +272,7 @@ export const USDZResponsiveDashboard: React.FC<{
           onToggle={() => setTabletSidebarCollapsed(!tabletSidebarCollapsed)}
         />
       )}
-
-      {/* Main Content Area */}
+      {}
       <div
         className="relative"
         style={{
@@ -310,7 +280,7 @@ export const USDZResponsiveDashboard: React.FC<{
           marginBottom: layoutConfig.contentPadding.bottom
         }}
       >
-        {/* 3D Solar System */}
+        {}
         <div className="h-screen relative">
           {screenSize === 'mobile' ? (
             <USDZMobileTouchControls className="h-full w-full">
@@ -319,8 +289,7 @@ export const USDZResponsiveDashboard: React.FC<{
           ) : (
             <USDZResponsiveWrapper />
           )}
-
-          {/* Mobile Menu Button */}
+          {}
           {screenSize === 'mobile' && (
             <motion.button
               onClick={handleMobileMenuToggle}
@@ -338,16 +307,14 @@ export const USDZResponsiveDashboard: React.FC<{
           )}
         </div>
       </div>
-
-      {/* Mobile Navigation */}
+      {}
       <MobileNavigation
         items={NAV_ITEMS}
         activeItem={activeItem}
         onItemSelect={handleItemSelect}
         isVisible={mobileNavVisible}
       />
-
-      {/* Mobile backdrop */}
+      {}
       {mobileNavVisible && screenSize === 'mobile' && (
         <motion.div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
@@ -360,5 +327,4 @@ export const USDZResponsiveDashboard: React.FC<{
     </div>
   )
 }
-
 export default USDZResponsiveDashboard

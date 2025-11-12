@@ -1,20 +1,3 @@
-"""
-🌌 CLIFF - Cosmic Level Intelligent Forecast Framework
-FastAPI Main Application
-
-Copyright (c) 2025 kynuxdev
-CLIFF Proprietary Source Available License
-
-UYARI: Bu kod TÜBİTAK, NASA veya herhangi bir yarışmada kullanılamaz.
-Yetkisiz kullanım telif hakkı ihlalidir.
-
-WARNING: This code cannot be used in TÜBİTAK, NASA, or any competitions.
-Unauthorized use constitutes copyright infringement.
-
-This is the main entry point for the CLIFF backend API.
-Handles space threat monitoring, AI integration, and real-time data processing.
-"""
-
 import asyncio
 import logging
 import os
@@ -24,35 +7,29 @@ from typing import Any, Dict
 from datetime import datetime
 import time
 
-# Fix Unicode encoding and multiprocessing buffer issues on Windows
 if sys.platform == "win32":
     import codecs
     import io
     import logging.handlers
     
-    # Configure logging to use NullHandler for multiprocessing safety
     class SafeStreamHandler(logging.StreamHandler):
         def emit(self, record):
             try:
                 super().emit(record)
             except (ValueError, OSError, AttributeError):
-                # Silently ignore buffer detach errors in multiprocessing
                 pass
     
-    # Replace default logging handlers with safe ones
     root_logger = logging.getLogger()
     for handler in root_logger.handlers[:]:
         if isinstance(handler, logging.StreamHandler):
             root_logger.removeHandler(handler)
     
-    # Add safe handler
     safe_handler = SafeStreamHandler()
     safe_handler.setFormatter(logging.Formatter(
         '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
     ))
     root_logger.addHandler(safe_handler)
     
-    # Fix stdout/stderr only if safe to do so
     try:
         if (hasattr(sys.stdout, 'buffer') and hasattr(sys.stdout.buffer, 'raw')
             and not getattr(sys.stdout, '_detached', False)):
@@ -67,8 +44,6 @@ if sys.platform == "win32":
             sys.stderr._detached = True
             
     except (AttributeError, OSError, ValueError, RuntimeError):
-        # In multiprocessing child, streams might be already detached
-        # Use NullHandler to prevent logging errors
         root_logger.handlers.clear()
         root_logger.addHandler(logging.NullHandler())
 
@@ -82,53 +57,38 @@ from fastapi.staticfiles import StaticFiles
 from prometheus_client import make_asgi_app
 import structlog
 
-# Import configuration and utilities
 from app.core.config import settings
 from app.core.database import initialize_database, disconnect_from_mongo, check_database_health
 from app.services.neo_repository import ensure_indexes as ensure_neo_indexes
 
-# Import API routers
 from app.api.v1.router import api_v1_router
 from app.websocket.manager import websocket_manager
 from app.websocket.ai_threat_websocket import initialize_ai_websocket_system
-# Import NASA services for cleanup
 from app.services.nasa_services import simplified_nasa_services, nasa_services
 from app.services.threat_scheduler import start as start_threat_scheduler, stop as stop_threat_scheduler
 
 
-# Setup structured logging
 logger = structlog.get_logger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Application lifespan manager - handles startup and shutdown events
-    """
-    # Startup
     logger.info("CLIFF Backend starting up...")
     
     try:
-        # Initialize database
         logger.info("Initializing database...")
         await initialize_database()
-        # Ensure MongoDB indexes for NEO collections
         await ensure_neo_indexes()
         
-        
-        
-        # Initialize WebSocket manager
         logger.info("Initializing WebSocket manager...")
         await websocket_manager.initialize()
         
-        # Initialize AI WebSocket system
         logger.info("Initializing AI WebSocket system...")
         await initialize_ai_websocket_system()
 
-        # Start threat scheduler
         await start_threat_scheduler()
         
-        logger.info("✅ CLIFF Backend startup complete!")
+        logger.info("CLIFF Backend startup complete!")
         
     except Exception as e:
         logger.error(f"Startup failed: {str(e)}")
@@ -136,80 +96,41 @@ async def lifespan(app: FastAPI):
     
     yield
     
-    # Shutdown
     logger.info("CLIFF Backend shutting down...")
     
     try:
-        # Close WebSocket connections
         await websocket_manager.shutdown()
         
-        # Stop scheduler then close clients
         logger.info("Stopping threat scheduler...")
         try:
             await stop_threat_scheduler()
         except Exception as e:
             logger.warning(f"Scheduler stop warning: {str(e)}")
 
-        # Close NASA HTTP client
         logger.info("Closing NASA services HTTP client...")
         try:
-            # Close NASA client
             await simplified_nasa_services.close_client()
             logger.info("NASA services client closed successfully")
         except Exception as e:
             logger.warning(f"NASA client cleanup warning: {str(e)}")
         
-        # Close DB connection
         await disconnect_from_mongo()
         
-        logger.info("✅ CLIFF Backend shutdown complete!")
+        logger.info("CLIFF Backend shutdown complete!")
         
     except Exception as e:
         logger.error(f"Shutdown error: {str(e)}")
 
 
-# Create FastAPI application
 app = FastAPI(
     title="CLIFF - Cosmic Level Intelligent Forecast Framework",
-    description="""
-    🌌 **CLIFF** is an AI-powered comprehensive space and Earth threat monitoring platform.
-    
-    ## Features
-    
-    * **🛡️ Asteroid Defense System** - Near-Earth Object tracking and impact prediction
-    * **🌍 Earth Crisis Monitor** - Natural disasters and climate events
-    * **☀️ Space Weather Station** - Solar flares and radiation monitoring
-    * **🔭 Exoplanet Explorer** - Habitable planet discovery and analysis
-    * **🤖 AI-Powered Intelligence** - Advanced threat analysis and prediction
-    * **🎮 3D Visualization** - Interactive space threat visualization
-    * **🗣️ Voice Interface** - Natural language interaction with CLIFF AI
-    * **📡 Real-time Updates** - WebSocket-powered live data streaming
-    
-    ## NASA APIs Integration
-    
-    - **NeoWs** - Near Earth Object Web Service
-    - **EONET** - Earth Observatory Natural Event Tracker  
-    - **DONKI** - Space Weather Database
-    - **EPIC** - Earth Polychromatic Imaging Camera
-    - **GIBS** - Global Imagery Browse Services
-    - **Exoplanet Archive** - NASA's Exoplanet Database
-    - **SSD/CNEOS** - Solar System Dynamics
-    
-    ## Custom AI Services
-    
-    - **Custom OpenAI** - Advanced natural language processing
-    - **Live Screen Analyzer** - Real-time visual data interpretation
-    - **Voice Synthesizer** - AI-generated audio responses
-    - **Multimodal Analyzer** - Combined text, image, and audio processing
-    """,
+    description="AI-powered comprehensive space and Earth threat monitoring platform.",
     version="1.0.0",
     docs_url="/docs" if settings.ENVIRONMENT == "development" else None,
     redoc_url="/redoc" if settings.ENVIRONMENT == "development" else None,
     lifespan=lifespan,
 )
 
-# Add middleware
-# CORS middleware - Config'den CORS_ORIGINS listesini kullan
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -219,11 +140,9 @@ app.add_middleware(
     expose_headers=["*"],
 )
 
-# Gzip compression middleware
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
-# Trusted host middleware
 if settings.ENVIRONMENT == "production":
     app.add_middleware(
         TrustedHostMiddleware,
@@ -231,10 +150,8 @@ if settings.ENVIRONMENT == "production":
     )
 
 
-# Exception handlers
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
-    """Handle HTTP exceptions"""
     logger.warning(
         "HTTP Exception occurred",
         status_code=exc.status_code,
@@ -253,7 +170,6 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 
 @app.exception_handler(Exception)
 async def general_exception_handler(request: Request, exc: Exception):
-    """Handle unexpected exceptions"""
     logger.error(
         "Unexpected exception occurred",
         error=str(exc),
@@ -270,12 +186,8 @@ async def general_exception_handler(request: Request, exc: Exception):
     )
 
 
-# Health check endpoint
 @app.get("/health", tags=["System"])
 async def health_check() -> Dict[str, Any]:
-    """
-    Health check endpoint for monitoring and load balancers
-    """
     logger.info("Health check requested")
     
     return {
@@ -288,50 +200,27 @@ async def health_check() -> Dict[str, Any]:
     }
 
 
-# Healthz alias for k8s
 @app.get("/healthz", tags=["System"])
 async def healthz() -> Dict[str, Any]:
     return await health_check()
 
 
-# Root endpoint
 @app.get("/", tags=["System"])
 async def root() -> Dict[str, Any]:
-    """
-    Root endpoint - Welcome message and API information
-    """
     return {
-        "message": "🌌 Welcome to CLIFF - Cosmic Level Intelligent Forecast Framework",
+        "message": "CLIFF - Cosmic Level Intelligent Forecast Framework",
         "description": "AI-powered space and Earth threat monitoring platform",
         "version": "1.0.0",
         "docs_url": "/docs",
         "health_url": "/health",
-        "websocket_url": "/ws",
-        "nasa_apis": [
-            "NeoWs - Near Earth Object Web Service",
-            "EONET - Earth Observatory Natural Event Tracker",
-            "DONKI - Space Weather Database",
-            "EPIC - Earth Polychromatic Imaging Camera",
-            "GIBS - Global Imagery Browse Services",
-            "Exoplanet Archive - NASA's Exoplanet Database",
-            "SSD/CNEOS - Solar System Dynamics"
-        ],
-        "ai_services": [
-            "Custom OpenAI - Advanced natural language processing",
-            "Live Screen Analyzer - Real-time visual data interpretation",
-            "Voice Synthesizer - AI-generated audio responses",
-            "Multimodal Analyzer - Combined text, image, and audio processing"
-        ]
+        "websocket_url": "/ws"
     }
 
 
-# Include API routers
 app.include_router(api_v1_router, prefix="/api/v1")
 
-# WebSocket endpoints
 @app.websocket("/ws/cliff_frontend")
 async def websocket_frontend_endpoint(websocket: WebSocket):
-    """WebSocket endpoint for CLIFF frontend"""
     client_id = "cliff_frontend"
     await websocket_manager.connect(websocket, client_id)
     try:
@@ -344,12 +233,10 @@ async def websocket_frontend_endpoint(websocket: WebSocket):
 
 @app.websocket("/ws/threats")
 async def websocket_threats_endpoint(websocket: WebSocket):
-    """WebSocket endpoint for real-time threat alerts"""
     client_id = None
     try:
         client_id = await websocket_manager.connect(websocket)
         
-        # Automatically subscribe to threat alerts
         await websocket_manager.subscribe(client_id, "threat_alerts")
         await websocket_manager.subscribe(client_id, "ai_threat_insights")
         await websocket_manager.subscribe(client_id, "ai_correlations")
@@ -372,22 +259,17 @@ async def websocket_threats_endpoint(websocket: WebSocket):
         if client_id:
             await websocket_manager.disconnect(client_id)
 
-# Serve static files
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Add Prometheus metrics endpoint
 metrics_app = make_asgi_app()
 app.mount("/metrics", metrics_app)
 
 
-# Development server
 if __name__ == "__main__":
     logger.info("Starting CLIFF Backend Development Server...")
     
-    # Completely silence uvicorn internal loggers on Windows to prevent buffer detach errors
     if sys.platform == "win32":
-        # Disable all uvicorn loggers
         import logging
         logging.getLogger("uvicorn").setLevel(logging.CRITICAL)
         logging.getLogger("uvicorn.error").setLevel(logging.CRITICAL)
@@ -396,21 +278,20 @@ if __name__ == "__main__":
         logging.getLogger("websockets").setLevel(logging.CRITICAL)
         logging.getLogger("multiprocessing").setLevel(logging.CRITICAL)
     
-    # Windows Python 3.13 logging fix
     if sys.platform == "win32":
         uvicorn.run(
             "main:app",
             host=settings.BACKEND_HOST,
             port=settings.BACKEND_PORT,
             reload=settings.BACKEND_RELOAD and settings.ENVIRONMENT == "development",
-            log_level="critical",  # Only critical errors from uvicorn
-            workers=1,  # Force single worker on Windows to avoid buffer issues
+            log_level="critical",
+            workers=1,
             loop="auto",
             http="auto",
             ws="auto",
-            access_log=False,  # Disable problematic access logging
-            use_colors=False,  # Disable colors to prevent buffer issues
-            log_config=None,  # Disable log_config to prevent formatter errors
+            access_log=False,
+            use_colors=False,
+            log_config=None,
         )
     else:
         uvicorn.run(

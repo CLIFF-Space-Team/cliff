@@ -1,16 +1,13 @@
-"use client"
-
+﻿"use client"
 import React, { useEffect, useRef, useState } from 'react'
 import { Bell } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { API_BASE_URL } from '@/config/api'
-
 export default function NotificationsBell() {
   const [count, setCount] = useState(0)
   const [open, setOpen] = useState(false)
   const [events, setEvents] = useState<string[]>([])
   const esRef = useRef<EventSource | null>(null)
-
   useEffect(() => {
     const url = `${API_BASE_URL}/api/v1/asteroids/events`
     try {
@@ -19,20 +16,18 @@ export default function NotificationsBell() {
       es.onmessage = (evt) => {
         try {
           const data = evt.data
-          // Basit filtre: kritik/yüksek içeriyorsa say
           if (typeof data === 'string' && /critical|high/i.test(data)) {
             setCount((c) => c + 1)
           }
           setEvents((prev) => [data, ...prev].slice(0, 20))
-        } catch (_e) { /* noop */ }
+        } catch (_e) {  }
       }
       es.onerror = () => {
         es.close()
       }
-    } catch (_e) { /* noop */ }
+    } catch (_e) {  }
     return () => { esRef.current?.close() }
   }, [])
-
   return (
     <div className="relative">
       <Button size="sm" variant="ghost" className="relative" onClick={() => setOpen((o) => !o)}>
@@ -58,5 +53,3 @@ export default function NotificationsBell() {
     </div>
   )
 }
-
-

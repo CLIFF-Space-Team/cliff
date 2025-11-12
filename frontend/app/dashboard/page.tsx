@@ -1,5 +1,4 @@
 'use client'
-
 import React, { Suspense } from 'react'
 import ErrorBoundary from '@/components/ui/error-boundary'
 import { useDashboardStore } from '@/stores/useDashboardStore'
@@ -14,53 +13,45 @@ import {
   DashboardSkeleton,
   FullScreenLoader,
 } from '@/components/ui/loading-states'
-
 const DashboardPage: React.FC = () => {
   return (
-    <ErrorBoundary fallback={<p>Dashboard yüklenirken bir hata oluştu.</p>}>
+    <ErrorBoundary fallback={<p>Dashboard y�klenirken bir hata olu�tu.</p>}>
       <Suspense fallback={<FullScreenLoader />}>
         <DashboardLayout />
       </Suspense>
     </ErrorBoundary>
   )
 }
-
 const DashboardLayout: React.FC = () => {
   const { isMobileSidebarOpen, toggleMobileSidebar, activeView } = useDashboardStore()
-
-  // activeView state'ine göre görünüm seçimi
   const renderMainContent = () => {
     switch (activeView) {
       case 'earth-events':
-        // Earth Events için DynamicContentPanel kullan (3D→2D transition ile)
         return (
           <div className="flex-1 p-2 md:p-4">
-            <ErrorBoundary fallback={<div className="h-full bg-pure-black rounded-xl flex items-center justify-center text-cliff-light-gray">Earth Events yüklenirken hata oluştu</div>}>
+            <ErrorBoundary fallback={<div className="h-full bg-pure-black rounded-xl flex items-center justify-center text-cliff-light-gray">Earth Events y�klenirken hata olu�tu</div>}>
               <Suspense fallback={<DashboardSkeleton />}>
                 <DynamicContentPanel />
               </Suspense>
             </ErrorBoundary>
           </div>
         )
-      
       case 'threat-analysis':
       case 'system-monitor':
       case 'chat-interface':
-        // Küçük ekranlarda tek sütun (sağ panel), büyük ekranlarda 3D + panel yan yana
         return (
           <>
-            {/* Sol taraf: 3D Güneş Sistemi (yalnızca lg ve üzeri) */}
+            {}
             <div className="hidden lg:block flex-1 p-2 md:p-4">
-              <ErrorBoundary fallback={<div className="h-full bg-pure-black rounded-xl flex items-center justify-center text-cliff-light-gray">3D Model yüklenirken hata oluştu</div>}>
+              <ErrorBoundary fallback={<div className="h-full bg-pure-black rounded-xl flex items-center justify-center text-cliff-light-gray">3D Model y�klenirken hata olu�tu</div>}>
                 <Suspense fallback={<DashboardSkeleton />}>
                   <CentralVisualization />
                 </Suspense>
               </ErrorBoundary>
             </div>
-            
-            {/* Sağ taraf: İlgili panel */}
+            {}
             <div className="w-full lg:w-96 p-2 md:p-4 lg:pl-2">
-              <ErrorBoundary fallback={<div className="h-full bg-pure-black rounded-xl flex items-center justify-center text-cliff-light-gray">Panel yüklenirken hata oluştu</div>}>
+              <ErrorBoundary fallback={<div className="h-full bg-pure-black rounded-xl flex items-center justify-center text-cliff-light-gray">Panel y�klenirken hata olu�tu</div>}>
                 <Suspense fallback={<DashboardSkeleton />}>
                   <DynamicContentPanel />
                 </Suspense>
@@ -68,12 +59,10 @@ const DashboardLayout: React.FC = () => {
             </div>
           </>
         )
-      
       default:
-        // Default: Sadece 3D Güneş Sistemi (asteroid-info vs. için)
         return (
           <div className="flex-1 p-2 md:p-4">
-            <ErrorBoundary fallback={<div className="h-full bg-pure-black rounded-xl flex items-center justify-center text-cliff-light-gray">3D Model yüklenirken hata oluştu</div>}>
+            <ErrorBoundary fallback={<div className="h-full bg-pure-black rounded-xl flex items-center justify-center text-cliff-light-gray">3D Model y�klenirken hata olu�tu</div>}>
               <Suspense fallback={<DashboardSkeleton />}>
                 <CentralVisualization />
               </Suspense>
@@ -82,7 +71,6 @@ const DashboardLayout: React.FC = () => {
         )
     }
   }
-
   return (
     <div className="h-screen w-screen bg-background flex flex-col overflow-hidden text-foreground">
       <DashboardHeader
@@ -95,34 +83,31 @@ const DashboardLayout: React.FC = () => {
           {renderMainContent()}
         </main>
       </div>
-      
-      {/* Mobile Navigation - render ediliyor */}
+      {}
       <MobileNavigation />
-      
-      {/* Mobile Navigation Overlay - Simplified */}
+      {}
       <div className="lg:hidden">
         {isMobileSidebarOpen && (
           <div className="absolute inset-0 bg-pure-black/90 backdrop-blur-sm z-30 flex items-center justify-center">
             <div className="text-center text-white p-8">
-              <h3 className="text-xl font-semibold mb-4">🌍 NASA EONET Dashboard</h3>
+              <h3 className="text-xl font-semibold mb-4">?? NASA EONET Dashboard</h3>
               <p className="text-white/70 mb-6">
                 {activeView === 'earth-events'
-                  ? 'Earth events 3D→2D transition modu aktif'
-                  : 'Earth events artık 3D Dünya üzerinde görüntüleniyor'
+                  ? 'Earth events 3D�2D transition modu aktif'
+                  : 'Earth events art�k 3D D�nya �zerinde g�r�nt�leniyor'
                 }
               </p>
               <button
                 onClick={toggleMobileSidebar}
                 className="px-6 py-3 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 rounded-lg hover:bg-emerald-500/30 transition-colors"
               >
-                {activeView === 'earth-events' ? 'Transition Moduna Dön' : '3D Görünüme Dön'}
+                {activeView === 'earth-events' ? 'Transition Moduna D�n' : '3D G�r�n�me D�n'}
               </button>
             </div>
           </div>
         )}
       </div>
-
-      {/* 🚨 Gerçek Zamanlı Tehdit Uyarıları - Tüm sayfada aktif */}
+      {}
       <RealTimeThreatAlerts
         maxAlerts={3}
         enableSound={true}
@@ -132,5 +117,4 @@ const DashboardLayout: React.FC = () => {
     </div>
   )
 }
-
 export default DashboardPage

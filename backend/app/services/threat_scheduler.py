@@ -1,30 +1,18 @@
-"""
-Threat Scheduler
-- Belirli aralıklarla NeoWs ve Sentry ingest + normalize + risk hesaplama çalıştırır
-"""
-
-from __future__ import annotations
-
+﻿from __future__ import annotations
 import asyncio
 from typing import Optional
 import structlog
-
 from app.core.config import settings
 from app.services.ingestors.neows_ingestor import ingest_neows_feed
 from app.services.ingestors.sentry_ingestor import ingest_sentry_once
 from app.services.normalizer.neo_normalizer import normalize_neos
 from app.services.risk_engine import compute_risk_levels
 from app.services.alerts import publish as publish_alert
-
-
 logger = structlog.get_logger(__name__)
-
 _task: Optional[asyncio.Task] = None
 _stop_event: Optional[asyncio.Event] = None
-
-
 async def _run_loop():
-    interval = max(300, int(settings.THREAT_REFRESH_SECONDS))  # min 5 dk
+    interval = max(300, int(settings.THREAT_REFRESH_SECONDS))
     logger.info("Threat scheduler başlatıldı", interval_seconds=interval)
     while _stop_event and not _stop_event.is_set():
         try:
@@ -40,15 +28,11 @@ async def _run_loop():
                 })
         except Exception as e:
             logger.error("Threat scheduler döngü hatası", error=str(e))
-
         try:
             await asyncio.wait_for(_stop_event.wait(), timeout=interval)
         except asyncio.TimeoutError:
             pass
-
     logger.info("Threat scheduler durduruldu")
-
-
 async def start():
     global _task, _stop_event
     if not settings.ENABLE_SCHEDULER:
@@ -58,8 +42,6 @@ async def start():
         return
     _stop_event = asyncio.Event()
     _task = asyncio.create_task(_run_loop(), name="threat-scheduler")
-
-
 async def stop():
     global _task, _stop_event
     if _stop_event:
@@ -71,5 +53,3 @@ async def stop():
             _task.cancel()
     _task = None
     _stop_event = None
-
-

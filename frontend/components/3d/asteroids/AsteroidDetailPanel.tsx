@@ -1,17 +1,14 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Loader2, RefreshCw, Sparkles, Image as ImageIcon } from 'lucide-react'
 import { SimpleCelestialBody } from '@/types/astronomical-data'
-
 interface AsteroidDetailPanelProps {
   asteroid: SimpleCelestialBody | null
   isOpen: boolean
   onClose: () => void
   onGenerateImage?: (asteroidId: string) => Promise<void>
 }
-
 interface AsteroidImageState {
   loading: boolean
   imageUrl: string | null
@@ -19,7 +16,6 @@ interface AsteroidImageState {
   generationTime?: number
   cached: boolean
 }
-
 export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
   asteroid,
   isOpen,
@@ -32,7 +28,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
     error: null,
     cached: false
   })
-
   const [selectedStyle, setSelectedStyle] = useState<string>('mystical')
   const [availableStyles] = useState<string[]>([
     'mystical',
@@ -44,7 +39,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
     'enchanted',
     'celestial'
   ])
-
   const styleDescriptions: Record<string, string> = {
     'mystical': '✨ Magical crystals with ethereal aurora',
     'ancient': '🗿 Mysterious runic symbols and ancient power',
@@ -55,24 +49,18 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
     'enchanted': '🧚 Fairy-like sparkles and glow',
     'celestial': '⭐ Divine light and heavenly radiance'
   }
-
   const generateAsteroidImage = useCallback(async () => {
     if (!asteroid) return
-
     setImageState(prev => ({ ...prev, loading: true, error: null }))
-
     try {
       const startTime = Date.now()
-      
       const distance_km = asteroid.orbital_data?.miss_distance?.kilometers 
         ? parseFloat(asteroid.orbital_data.miss_distance.kilometers) 
         : 5000000
       const distance_au = distance_km / 149597870.7
-      
       const velocity_kms = asteroid.orbital_data?.relative_velocity?.kilometers_per_second
         ? parseFloat(asteroid.orbital_data.relative_velocity.kilometers_per_second)
         : 15
-
       const response = await fetch(`http://localhost:8000/api/v1/asteroids/${asteroid.id}/generate-with-data`, {
         method: 'POST',
         headers: {
@@ -87,16 +75,12 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
           style_preference: selectedStyle
         })
       })
-
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`)
       }
-
       const result = await response.json()
-      
       if (result.success && result.image_url) {
         const generationTime = Date.now() - startTime
-        
         setImageState({
           loading: false,
           imageUrl: result.image_url,
@@ -107,7 +91,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
       } else {
         throw new Error(result.error_message || 'Image generation failed')
       }
-
     } catch (error) {
       console.error('Image generation error:', error)
       setImageState(prev => ({
@@ -117,16 +100,12 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
       }))
     }
   }, [asteroid, selectedStyle])
-
   const checkCachedImage = useCallback(async () => {
     if (!asteroid) return
-
     try {
       const response = await fetch(`http://localhost:8000/api/v1/asteroids/${asteroid.id}/image?style=${selectedStyle}`)
-      
       if (response.ok) {
         const result = await response.json()
-        
         if (result.success && result.image_url) {
           setImageState({
             loading: false,
@@ -140,7 +119,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
     } catch (error) {
       console.warn('Cache check failed:', error)
     }
-
     setImageState({
       loading: false,
       imageUrl: null,
@@ -148,7 +126,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
       cached: false
     })
   }, [asteroid, selectedStyle])
-
   useEffect(() => {
     if (asteroid && isOpen) {
       checkCachedImage()
@@ -161,21 +138,16 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
       })
     }
   }, [asteroid, isOpen, selectedStyle, checkCachedImage])
-
   if (!asteroid) return null
-
   const distance_km = asteroid.orbital_data?.miss_distance?.kilometers 
     ? parseFloat(asteroid.orbital_data.miss_distance.kilometers) 
     : 5000000
   const distance_au = distance_km / 149597870.7
-  
   const velocity_kms = asteroid.orbital_data?.relative_velocity?.kilometers_per_second
     ? parseFloat(asteroid.orbital_data.relative_velocity.kilometers_per_second)
     : 15
-  
   const threat_level_turkish = asteroid.is_hazardous ? 'YÜKSEK RİSK ⚠️' : 
                               distance_au < 0.05 ? 'ORTA RİSK' : 'DÜŞÜK RİSK'
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -187,7 +159,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
             className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
             onClick={onClose}
           />
-          
           <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
@@ -212,7 +183,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                     </div>
                   </div>
                 </div>
-                
                 <button
                   onClick={onClose}
                   className="p-2 rounded-lg bg-gray-800/50 hover:bg-gray-700/50 text-gray-400 hover:text-white transition-colors"
@@ -220,10 +190,8 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                   <X size={20} />
                 </button>
               </div>
-
               <div className="space-y-4 bg-gray-800/30 rounded-xl p-4">
                 <h3 className="text-lg font-semibold text-white mb-3">📊 Temel Bilgiler</h3>
-                
                 <div className="grid grid-cols-1 gap-3">
                   <div className="flex justify-between items-center py-2 border-b border-gray-700/50">
                     <span className="text-gray-400 flex items-center gap-2">
@@ -233,7 +201,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                       {(distance_km / 1000000).toFixed(2)} milyon km
                     </span>
                   </div>
-                  
                   <div className="flex justify-between items-center py-2 border-b border-gray-700/50">
                     <span className="text-gray-400 flex items-center gap-2">
                       🚀 <span>Hız:</span>
@@ -242,7 +209,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                       {velocity_kms.toFixed(1)} km/s
                     </span>
                   </div>
-                  
                   <div className="flex justify-between items-center py-2 border-b border-gray-700/50">
                     <span className="text-gray-400 flex items-center gap-2">
                       📏 <span>Tahmini Çap:</span>
@@ -251,7 +217,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                       {(asteroid.info.radius_km * 2).toFixed(1)} km
                     </span>
                   </div>
-                  
                   <div className="flex justify-between items-center pt-2">
                     <span className="text-gray-400 flex items-center gap-2">
                       ⚡ <span>Tehlike Seviyesi:</span>
@@ -266,13 +231,11 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                   </div>
                 </div>
               </div>
-
               <div className="space-y-4 bg-gray-800/30 rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Sparkles size={20} className="text-purple-400" />
                   <h3 className="text-lg font-semibold text-white">🎨 AI Görsel Oluşturma</h3>
                 </div>
-
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -291,7 +254,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                       ))}
                     </select>
                   </div>
-
                   <button
                     onClick={generateAsteroidImage}
                     disabled={imageState.loading}
@@ -310,7 +272,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                     )}
                   </button>
                 </div>
-
                 {imageState.imageUrl && (
                   <div className="space-y-3">
                     <div className="relative rounded-lg overflow-hidden border border-cyan-400/30">
@@ -320,14 +281,12 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                         className="w-full h-48 object-cover"
                         onError={() => setImageState(prev => ({ ...prev, error: 'Image failed to load' }))}
                       />
-                      
                       {imageState.cached && (
                         <div className="absolute top-2 right-2 px-2 py-1 bg-green-500/20 text-green-300 text-xs rounded border border-green-500/30">
                           📦 Cache'den Yüklendi
                         </div>
                       )}
                     </div>
-                    
                     {imageState.generationTime && imageState.generationTime > 0 && (
                       <div className="text-xs text-gray-400 text-center">
                         ⚡ {(imageState.generationTime / 1000).toFixed(1)}s içinde oluşturuldu
@@ -335,7 +294,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                     )}
                   </div>
                 )}
-
                 {imageState.error && (
                   <div className="p-3 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300 text-sm">
                     <div className="flex items-center gap-2 mb-1">
@@ -345,7 +303,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                     <div className="text-xs opacity-75">{imageState.error}</div>
                   </div>
                 )}
-
                 {!imageState.imageUrl && !imageState.loading && !imageState.error && (
                   <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg text-blue-300 text-sm text-center">
                     <div className="flex items-center justify-center gap-2 mb-1">
@@ -358,7 +315,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                   </div>
                 )}
               </div>
-
               <div className="text-xs text-gray-500 text-center pt-4 border-t border-gray-700/30">
                 <div className="flex items-center justify-center gap-2">
                   <span>🌌 SPACE AND NATURE ile güçlendirilmiştir</span>

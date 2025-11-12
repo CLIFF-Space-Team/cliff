@@ -1,5 +1,4 @@
-"use client"
-
+﻿"use client"
 import React, { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -18,8 +17,6 @@ import ApproachTimeline from "@/components/dashboard/approach-timeline"
 import { AsteroidTrackerSkeleton } from "@/components/ui/loading-states"
 import { useSolarSystemStore } from "@/stores/solarSystemStore"
 import { getMessage } from "@/lib/messages"
-
-// Recharts direkt import - tip sorunlarını önlemek için
 import {
   ResponsiveContainer,
   AreaChart,
@@ -33,14 +30,12 @@ import {
   PolarRadiusAxis,
   Radar
 } from "recharts"
-
 import FilterBar from "@/components/dashboard/filters/FilterBar"
 import { useThreatFilters } from "@/stores/threatFilters"
 import { searchAsteroids } from "@/lib/api/asteroids"
 import CompareDrawer from "@/components/dashboard/compare/CompareDrawer"
 import ExportMenu from "@/components/dashboard/export/ExportMenu"
 import NotificationsBell from "@/components/dashboard/notifications/NotificationsBell"
-
 interface RealNeoThreat {
   neoId: string
   name: string
@@ -54,13 +49,11 @@ interface RealNeoThreat {
   torino?: number
   palermo?: number
 }
-
 interface NeoDetail {
   asteroid: any
   risk: any
   approaches: any[]
 }
-
 interface ThreatData {
   id: string
   name: string
@@ -75,12 +68,10 @@ interface ThreatData {
   location?: { lat: number, lon: number }
   affected_regions?: string[]
 }
-
 interface ThreatPanelProps {
   className?: string
   onThreatSelect?: (threat: ThreatData) => void
 }
-
 export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
   className,
   onThreatSelect
@@ -105,8 +96,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
     header: "En Riskli NEO'lar (NASA Verisi)",
     noResults: "Sonuç bulunamadı. Filtreleri gevşetmeyi veya anahtar kelimeleri değiştirmeyi deneyin."
   })
-
-  // Arama sonuçlarını backend'den çek
   const fetchRealThreats = async () => {
     try {
       setIsLoading(true)
@@ -144,8 +133,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       setIsLoading(false)
     }
   }
-
-  // Seçili NEO detayını çek
   const fetchNeoDetail = async (neoId: string) => {
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -158,8 +145,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       setNeoDetail(null)
     }
   }
-
-  // Timeline verisi çek
   const fetchTimelineData = async (window: string) => {
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -173,71 +158,48 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       setTimelineData([])
     }
   }
-
-  // 🔢 Risk hesaplama fonksiyonları
   const calculateAsteroidRisk = (asteroid: any): number => {
     let risk = 0
-    
-    // Boyut faktörü
     const size = asteroid.estimated_diameter?.kilometers?.estimated_diameter_max || 0
     if (size > 1) risk += 30
     else if (size > 0.5) risk += 20
     else if (size > 0.1) risk += 10
     else risk += 5
-    
-    // Mesafe faktörü
     const distance = parseFloat(asteroid.close_approach_data?.[0]?.miss_distance?.lunar || 100)
     if (distance < 1) risk += 40
     else if (distance < 5) risk += 30
     else if (distance < 10) risk += 20
     else if (distance < 20) risk += 10
-    
-    // Hız faktörü
     const velocity = parseFloat(asteroid.close_approach_data?.[0]?.relative_velocity?.kilometers_per_second || 0)
     if (velocity > 30) risk += 20
     else if (velocity > 20) risk += 15
     else if (velocity > 10) risk += 10
-    
-    // Potansiyel tehlikeli asteroid
     if (asteroid.is_potentially_hazardous_asteroid) risk += 10
-    
     return Math.min(risk, 100)
   }
-
   const calculateEventRisk = (event: any): number => {
     let risk = 30 // Base risk for earth events
-    
-    // Kategori bazlı risk
     if (event.categories?.some((c: any) => c.id === 8)) risk += 20 // Wildfires
     if (event.categories?.some((c: any) => c.id === 10)) risk += 25 // Storms
     if (event.categories?.some((c: any) => c.id === 12)) risk += 30 // Volcanoes
-    
-    // Yakınlık faktörü (son 7 gün)
     const eventDate = new Date(event.geometry?.[0]?.date)
     const daysSinceEvent = (Date.now() - eventDate.getTime()) / (1000 * 60 * 60 * 24)
     if (daysSinceEvent < 1) risk += 20
     else if (daysSinceEvent < 3) risk += 15
     else if (daysSinceEvent < 7) risk += 10
-    
     return Math.min(risk, 100)
   }
-
   const calculateSpaceWeatherRisk = (weather: any): number => {
     let risk = 20 // Base risk
-    
     if (weather.messageType?.includes("WARNING")) risk += 30
     else if (weather.messageType?.includes("WATCH")) risk += 20
     else if (weather.messageType?.includes("ALERT")) risk += 25
-    
     return Math.min(risk, 100)
   }
-
-  // İlk yükleme
   useEffect(() => {
     fetchRealThreats()
     fetchTimelineData(timelineWindow)
   }, [])
-
   useEffect(() => {
     ;(async () => {
       const header = await getMessage('threat.list.header', listTexts.header)
@@ -245,73 +207,55 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       setListTexts({ header, noResults })
     })()
   }, [])
-
-  // Filtreler değiştiğinde arama yap
   useEffect(() => {
     if (activeTab === 'overview') {
       fetchRealThreats()
     }
   }, [filters, activeTab])
-
-  // Timeline window değiştiğinde yeniden çek
   useEffect(() => {
     if (activeTab === 'timeline') {
       fetchTimelineData(timelineWindow)
     }
   }, [timelineWindow, activeTab])
-
-  // Seçili NEO değiştiğinde detay çek
   useEffect(() => {
     if (selectedNeoId && activeTab === 'details') {
       fetchNeoDetail(selectedNeoId)
     }
   }, [selectedNeoId, activeTab])
-
-  // 🌐 WebSocket bağlantısı (opsiyonel)
   useEffect(() => {
     const connectWebSocket = () => {
       try {
         const wsUrl = process.env.NODE_ENV === "production"
           ? `wss://${window.location.host}/ws/threats`
           : "ws://localhost:8000/ws/threats"
-        
         wsRef.current = new WebSocket(wsUrl)
-        
         wsRef.current.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data)
             if (data.type === "new_threat") {
-              // Yeni tehdit geldiğinde listeyi güncelle
               setThreats(prev => [data.threat, ...prev].slice(0, 50))
             }
           } catch (error) {
             console.error("WebSocket mesaj hatası:", error)
           }
         }
-        
         wsRef.current.onerror = (error) => {
           console.error("WebSocket hatası:", error)
         }
-        
         wsRef.current.onclose = () => {
-          // 5 saniye sonra yeniden bağlan
           setTimeout(connectWebSocket, 5000)
         }
       } catch (error) {
         console.error("WebSocket bağlantı hatası:", error)
       }
     }
-    
     connectWebSocket()
-    
     return () => {
       if (wsRef.current) {
         wsRef.current.close()
       }
     }
   }, [])
-
-  // 🎨 UI Helper Functions
   const getThreatIcon = (type: string) => {
     switch (type) {
       case "asteroid": return <Target className="w-4 h-4" />
@@ -321,7 +265,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       default: return <AlertTriangle className="w-4 h-4" />
     }
   }
-
   const getThreatColor = (level: string) => {
     switch (level) {
       case "CRITICAL": return "text-red-400 bg-red-950/50 border-red-500/30"
@@ -331,27 +274,22 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       default: return "text-gray-400 bg-gray-950/50 border-gray-500/30"
     }
   }
-
   const formatDistance = (km?: number): string => {
     if (!km) return "N/A"
     if (km < 1000) return `${km.toFixed(0)} km`
     if (km < 1000000) return `${(km / 1000).toFixed(1)}K km`
     return `${(km / 1000000).toFixed(2)}M km`
   }
-
   const formatVelocity = (kmh?: number): string => {
     if (!kmh) return "N/A"
     return `${(kmh / 1000).toFixed(1)}K km/h`
   }
-
   const formatSize = (km?: number): string => {
     if (!km) return "N/A"
     if (km < 0.001) return `${(km * 1000000).toFixed(0)} mm`
     if (km < 1) return `${(km * 1000).toFixed(0)} m`
     return `${km.toFixed(2)} km`
   }
-
-  // Daha kompakt NEO liste öğesi render'ı
   const renderNeoListItem = (neo: RealNeoThreat, index: number) => {
     const levelColor = {
       critical: 'bg-red-500/10 border-red-500/30 text-red-200',
@@ -360,7 +298,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       low: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200',
       none: 'bg-slate-500/10 border-slate-500/30 text-slate-300'
     }[neo.riskLevel] || 'bg-slate-500/10 border-slate-500/30 text-slate-300'
-
     return (
       <motion.div
         key={neo.neoId}
@@ -382,7 +319,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
         }}
       >
         <div className="grid grid-cols-[auto,1fr,auto] items-center gap-2">
-          {/* seçim kutusu ve başlık */}
+          {}
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
@@ -402,18 +339,15 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
               <div className="text-[10px] opacity-60 leading-4">NEO ID: {neo.neoId}</div>
             </div>
           </div>
-
-          {/* boşluk */}
+          {}
           <div />
-
-          {/* risk rozeti ve skor */}
+          {}
           <div className="text-right">
             <Badge className={cn('text-[10px] mb-0.5 capitalize')}>{neo.riskLevel}</Badge>
             <div className="text-[10px] opacity-70">Skor: {neo.score.toFixed(1)}</div>
           </div>
         </div>
-
-        {/* metrikler */}
+        {}
         <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] opacity-80">
           {neo.distance_ld != null && (
             <div><span className="opacity-60">Mesafe:</span> {neo.distance_ld.toFixed(1)} LD</div>
@@ -425,13 +359,10 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
             <div><span className="opacity-60">Çap:</span> {neo.diameter_km.toFixed(2)} km</div>
           )}
         </div>
-
         <Progress value={Math.min(neo.score * 10, 100)} className="mt-2 h-0.5" />
       </motion.div>
     )
   }
-
-  // Basit sanal liste hesaplaması (bağımsız kütüphane olmadan)
   useEffect(() => {
     const computeRange = () => {
       if (!scrollContainerRef.current || !listRef.current) return
@@ -445,7 +376,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       const end = Math.min(realNeos.length, start + visible)
       if (start !== virt.start || end !== virt.end) setVirt({ start, end, item })
     }
-
     const sc = scrollContainerRef.current
     if (!sc) return
     computeRange()
@@ -456,7 +386,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       window.removeEventListener('resize', computeRange)
     }
   }, [realNeos.length, virt.item])
-
   if (isLoading) {
     return (
       <div className={cn("h-full bg-pure-black rounded-xl p-6", className)}>
@@ -464,10 +393,9 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       </div>
     )
   }
-
   return (
     <div className={cn("h-full bg-pure-black/60 backdrop-blur-md border border-cliff-light-gray/10 rounded-xl overflow-hidden", className)}>
-      {/* Header */}
+      {}
       <div className="border-b border-cliff-light-gray/10 bg-gradient-to-r from-pure-black via-almost-black to-pure-black p-3 sm:p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
@@ -476,9 +404,8 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
               <span className="hidden sm:inline">Gerçek Zamanlı </span>Tehdit Analizi
             </h2>
           </div>
-          
           <div className="flex items-center gap-2 flex-wrap justify-end">
-            {/* Modern Tab Design - Responsive */}
+            {}
             <div 
               role="tablist" 
               aria-label="Threat panel tabs" 
@@ -515,23 +442,20 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                 </button>
               ))}
             </div>
-            
-            {/* Export ve Notification - Sadece Overview'da */}
+            {}
             {activeTab === 'overview' && (
               <div className="flex items-center gap-1.5">
                 <ExportMenu filename="neos" rows={realNeos} />
                 <NotificationsBell />
               </div>
             )}
-            
-            {/* Diğer tab'larda sadece Notification */}
+            {}
             {activeTab !== 'overview' && (
               <NotificationsBell />
             )}
           </div>
         </div>
-
-        {/* Quick Stats */}
+        {}
         <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mt-2 sm:mt-3">
           {[
             { label: "Kritik", count: threats.filter(t => t.threat_level === "CRITICAL").length, color: "text-red-400" },
@@ -546,8 +470,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
           ))}
         </div>
       </div>
-
-      {/* Content */}
+      {}
       <div className="p-3 sm:p-4 h-[calc(100%-140px)] overflow-y-auto" ref={scrollContainerRef}>
         <AnimatePresence mode="wait">
           {activeTab === "overview" && (
@@ -558,12 +481,12 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
               exit={{ opacity: 0, x: 20 }}
               className="space-y-4"
             >
-              {/* Real counters from backend */}
+              {}
               <AsteroidThreatPanel />
               <ApproachTimeline window="7d" />
-              {/* Filters */}
+              {}
               <FilterBar onApply={() => fetchRealThreats()} />
-              {/* Real NEO Threats List */}
+              {}
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-cliff-white mb-2">{listTexts.header}</h3>
                 {!isLoading && realNeos.length === 0 && (
@@ -578,7 +501,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                     </div>
                   </div>
                 </div>
-                {/* Pagination */}
+                {}
                 {(total > filters.pageSize) && (
                   <div className="flex items-center justify-between mt-3 text-xs text-cliff-light-gray">
                     <div>
@@ -610,7 +533,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                     </div>
                   </div>
                 )}
-
                 {selectedIds.length > 0 && (
                   <div className="sticky bottom-2 mt-3 flex items-center justify-between bg-pure-black/60 backdrop-blur px-3 py-2 rounded-md border border-cliff-light-gray/20">
                     <div className="text-xs text-cliff-light-gray">Seçili: {selectedIds.length}</div>
@@ -621,10 +543,8 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                   </div>
                 )}
               </div>
-
             </motion.div>
           )}
-
           {activeTab === "details" && (
             <motion.div
               key="details"
@@ -638,17 +558,15 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                   Overview sekmesinden bir NEO seçin
                 </div>
               )}
-              
               {selectedNeoId && !neoDetail && (
                 <div className="p-6 text-center">
                   <Loader2 className="w-8 h-8 animate-spin text-cliff-white mx-auto mb-2" />
                   <p className="text-cliff-light-gray">NEO detayları yükleniyor...</p>
                 </div>
               )}
-
               {neoDetail && (
                 <Card className="bg-almost-black border-cliff-light-gray/20 p-6 space-y-6">
-                  {/* Başlık */}
+                  {}
                   <div className="flex items-start justify-between">
                     <div>
                       <h3 className="text-xl font-bold text-cliff-white">{neoDetail.asteroid?.name || selectedNeoId}</h3>
@@ -669,8 +587,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                       {neoDetail.risk?.risk_level || 'unknown'}
                     </Badge>
                   </div>
-
-                  {/* Asteroit Hakkında */}
+                  {}
                   <div className="p-4 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-lg border border-blue-500/20">
                     <h4 className="text-sm font-semibold text-cliff-white mb-3 flex items-center gap-2">
                       <Info className="w-4 h-4 text-blue-400" />
@@ -692,8 +609,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                       </p>
                     </div>
                   </div>
-
-                  {/* Fiziksel Özellikler */}
+                  {}
                   <div>
                     <h4 className="text-sm font-semibold text-cliff-white mb-3">Fiziksel Özellikler</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -734,12 +650,10 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                       </div>
                     </div>
                   </div>
-
-                  {/* Risk Metrikleri */}
+                  {}
                   <div>
                     <h4 className="text-sm font-semibold text-cliff-white mb-3">Risk Değerlendirmesi</h4>
-                    
-                    {/* Risk seviyesi açıklaması */}
+                    {}
                     {neoDetail.risk?.risk_level === 'none' && (
                       <div className="mb-4 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
                         <div className="flex items-center gap-2 text-green-400 mb-1">
@@ -752,7 +666,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                         </div>
                       </div>
                     )}
-                    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div className="p-4 bg-red-500/10 rounded-lg border border-red-500/30">
                         <div className="text-xs text-red-300 mb-1">Torino Skalası</div>
@@ -765,7 +678,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                             : 'Tehlike yok (olasılık çok düşük)'}
                         </div>
                       </div>
-                      
                       <div className="p-4 bg-orange-500/10 rounded-lg border border-orange-500/30">
                         <div className="text-xs text-orange-300 mb-1">Palermo Teknik Skalası</div>
                         <div className="text-3xl font-bold text-orange-400">
@@ -777,7 +689,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                             : 'Çok düşük (tipik NEO)'}
                         </div>
                       </div>
-                      
                       <div className="p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
                         <div className="text-xs text-yellow-300 mb-1">Çarpma Olasılığı</div>
                         <div className="text-2xl font-bold text-yellow-400">
@@ -791,7 +702,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                             : 'Çok düşük risk'}
                         </div>
                       </div>
-                      
                       <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/30">
                         <div className="text-xs text-purple-300 mb-1">Etki Enerjisi</div>
                         <div className="text-2xl font-bold text-purple-400">
@@ -807,15 +717,13 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                       </div>
                     </div>
                   </div>
-
-                  {/* Yaklaşmalar */}
+                  {}
                   <div>
                     <h4 className="text-sm font-semibold text-cliff-white mb-3">
                       {neoDetail.approaches && neoDetail.approaches.length > 0 
                         ? `Yakın Geçişler (${neoDetail.approaches.length})` 
                         : 'Yakın Geçişler'}
                     </h4>
-                    
                     {(!neoDetail.approaches || neoDetail.approaches.length === 0) && (
                       <div className="p-4 bg-slate-500/10 rounded-lg border border-slate-500/20">
                         <div className="text-sm text-slate-300">
@@ -828,7 +736,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                         </ul>
                       </div>
                     )}
-                    
                     {neoDetail.approaches && neoDetail.approaches.length > 0 && (
                       <div className="space-y-2 max-h-72 overflow-y-auto pr-2">
                         {neoDetail.approaches.map((ap: any, i: number) => (
@@ -870,8 +777,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                       </div>
                     )}
                   </div>
-
-                  {/* Veri Kaynakları */}
+                  {}
                   <div className="pt-4 border-t border-cliff-light-gray/10">
                     <h4 className="text-xs font-semibold text-cliff-light-gray mb-2">Veri Kaynakları</h4>
                     <div className="flex flex-wrap gap-2">
@@ -904,7 +810,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
               )}
             </motion.div>
           )}
-
           {activeTab === "timeline" && (
             <motion.div
               key="timeline"
@@ -913,7 +818,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
               exit={{ opacity: 0, x: 20 }}
               className="space-y-4"
             >
-              {/* Window seçimi */}
+              {}
               <div className="flex gap-2 justify-end">
                 {(['7d', '30d', '90d'] as const).map(w => (
                   <Button
@@ -927,8 +832,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                   </Button>
                 ))}
               </div>
-
-              {/* Grafik */}
+              {}
               <Card className="bg-almost-black border-cliff-light-gray/20 p-4">
                 <h3 className="text-sm font-semibold text-cliff-white mb-3">
                   Yaklaşan Geçişler ({timelineWindow})
@@ -957,7 +861,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                   </div>
                 )}
               </Card>
-
             </motion.div>
           )}
         </AnimatePresence>
@@ -966,5 +869,4 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
     </div>
   )
 }
-
 export default ModernThreatPanel

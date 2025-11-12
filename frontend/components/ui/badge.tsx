@@ -1,7 +1,6 @@
-import React from 'react'
+﻿import React from 'react'
 import { cn } from '@/lib/utils'
 import { VariantProps, cva } from 'class-variance-authority'
-
 const badgeVariants = cva(
   "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
   {
@@ -11,36 +10,24 @@ const badgeVariants = cva(
         secondary: "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
         destructive: "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
         outline: "text-foreground border-border",
-        
-        // Missing variants - adding these to fix TypeScript errors
         info: "border-transparent bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-md shadow-blue-500/20",
         danger: "border-transparent bg-gradient-to-r from-red-600 to-pink-600 text-white shadow-md shadow-red-500/20",
         warning: "border-transparent bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-md shadow-yellow-500/20",
-        
-        // Threat level badges
         critical: "border-transparent bg-gradient-to-r from-red-600 to-pink-600 text-white shadow-lg shadow-red-500/25 animate-pulse-subtle",
         high: "border-transparent bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-md shadow-orange-500/20",
         medium: "border-transparent bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-md shadow-yellow-500/20",
         low: "border-transparent bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md shadow-green-500/20",
-        
-        // Status badges
         active: "border-transparent bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-md shadow-blue-500/20",
         inactive: "border-transparent bg-slate-600 text-slate-200",
         pending: "border-transparent bg-gradient-to-r from-yellow-400 to-orange-400 text-white shadow-md shadow-yellow-500/20",
         error: "border-transparent bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-md shadow-red-500/20",
         success: "border-transparent bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-md shadow-green-500/20",
-        
-        // Cosmic themed badges
         cosmic: "border-transparent bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 text-white shadow-lg shadow-cyan-500/25",
         nebula: "border-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/25",
         solar: "border-transparent bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25",
-        
-        // Data source badges
         nasa: "border-transparent bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20",
         realtime: "border-transparent bg-gradient-to-r from-green-400 to-blue-500 text-white shadow-md shadow-green-500/20 animate-pulse",
         ai: "border-transparent bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md shadow-purple-500/20",
-        
-        // Size variants with glow
         glowSmall: "border-transparent bg-gradient-to-r from-cyan-400 to-blue-500 text-white shadow-lg shadow-cyan-500/50 text-[10px] px-2 py-0.5",
         glowMedium: "border-transparent bg-gradient-to-r from-cyan-400 to-blue-500 text-white shadow-xl shadow-cyan-500/50",
         glowLarge: "border-transparent bg-gradient-to-r from-cyan-400 to-blue-500 text-white shadow-2xl shadow-cyan-500/50 text-sm px-4 py-1",
@@ -67,7 +54,6 @@ const badgeVariants = cva(
     },
   }
 )
-
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof badgeVariants> {
@@ -77,7 +63,6 @@ export interface BadgeProps
   dot?: boolean
   interactive?: boolean
 }
-
 const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
   ({ 
     className, 
@@ -117,10 +102,7 @@ const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
     )
   }
 )
-
 Badge.displayName = "Badge"
-
-// Specialized Badge components for CLIFF
 const ThreatLevelBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'variant'> & {
   level: 'critical' | 'high' | 'medium' | 'low'
 }>(({ level, children, ...props }, ref) => {
@@ -130,7 +112,6 @@ const ThreatLevelBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'vari
     medium: 'MEDIUM',
     low: 'LOW'
   }[level]
-
   return (
     <Badge
       ref={ref}
@@ -143,7 +124,6 @@ const ThreatLevelBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'vari
   )
 })
 ThreatLevelBadge.displayName = "ThreatLevelBadge"
-
 const StatusBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'variant'> & {
   status: 'active' | 'inactive' | 'pending' | 'error' | 'success'
   showDot?: boolean
@@ -155,7 +135,6 @@ const StatusBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'variant'>
     error: 'Error',
     success: 'Success'
   }[status]
-
   const statusIcon = showDot ? (
     <div className={cn(
       "w-2 h-2 rounded-full",
@@ -166,7 +145,6 @@ const StatusBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'variant'>
       status === 'success' && "bg-green-400"
     )} />
   ) : null
-
   return (
     <Badge
       ref={ref}
@@ -179,7 +157,6 @@ const StatusBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'variant'>
   )
 })
 StatusBadge.displayName = "StatusBadge"
-
 const DataSourceBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'variant'> & {
   source: 'nasa' | 'realtime' | 'ai' | 'cosmic'
 }>(({ source, children, ...props }, ref) => {
@@ -189,7 +166,6 @@ const DataSourceBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'varia
     ai: 'AI',
     cosmic: 'COSMIC'
   }[source]
-
   return (
     <Badge
       ref={ref}
@@ -202,7 +178,6 @@ const DataSourceBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'varia
   )
 })
 DataSourceBadge.displayName = "DataSourceBadge"
-
 const CounterBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'variant'> & {
   count: number
   max?: number
@@ -213,7 +188,6 @@ const CounterBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'variant'
                       variant === 'warning' ? 'warning' : 
                       variant === 'success' ? 'success' : 
                       variant === 'info' ? 'info' : 'default'
-
   return (
     <Badge
       ref={ref}
@@ -227,14 +201,12 @@ const CounterBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'variant'
   )
 })
 CounterBadge.displayName = "CounterBadge"
-
 const NotificationBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'variant' | 'dot'> & {
   count?: number
   dot?: boolean
   priority?: 'low' | 'medium' | 'high' | 'critical'
 }>(({ count, dot = false, priority = 'medium', className, ...props }, ref) => {
   const priorityVariant = priority
-
   if (dot) {
     return (
       <Badge
@@ -247,9 +219,7 @@ const NotificationBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'var
       />
     )
   }
-
   if (!count || count === 0) return null
-
   return (
     <Badge
       ref={ref}
@@ -264,7 +234,6 @@ const NotificationBadge = React.forwardRef<HTMLDivElement, Omit<BadgeProps, 'var
   )
 })
 NotificationBadge.displayName = "NotificationBadge"
-
 export { 
   Badge, 
   badgeVariants,

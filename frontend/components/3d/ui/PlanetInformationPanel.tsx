@@ -1,5 +1,4 @@
-"use client";
-
+﻿"use client";
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -41,29 +40,20 @@ import {
   Thermometer,
   Gauge
 } from 'lucide-react';
-
 interface PlanetInformationPanelProps {
-  // Core properties
   panelConfig: InformationPanel;
   celestialBodyId: string;
   isVisible?: boolean;
-  
-  // Content
   educationalContent?: EducationalContent[];
   missions?: MissionData[];
   historicalEvents?: HistoricalEvent[];
   comparisons?: CelestialComparison[];
-  
-  // Callbacks
   onClose?: () => void;
   onTabChange?: (tabId: string) => void;
   onAction?: (action: string, params?: Record<string, any>) => void;
-  
-  // Layout options
   className?: string;
   zIndex?: number;
 }
-
 interface TabComponentProps {
   celestialBody: CelestialBody;
   content: PanelTabContent;
@@ -71,7 +61,6 @@ interface TabComponentProps {
   language: string;
   onAction: (action: string, params?: Record<string, any>) => void;
 }
-
 export const PlanetInformationPanel: React.FC<PlanetInformationPanelProps> = ({
   panelConfig,
   celestialBodyId,
@@ -86,78 +75,55 @@ export const PlanetInformationPanel: React.FC<PlanetInformationPanelProps> = ({
   className = '',
   zIndex = 1000
 }) => {
-  // State
   const [activeTab, setActiveTab] = useState(panelConfig.defaultTab);
   const [isExpanded, setIsExpanded] = useState(false);
   const [position, setPosition] = useState({ x: 50, y: 50 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [bookmarked, setBookmarked] = useState(false);
-  
-  // Refs
   const panelRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<HTMLDivElement>(null);
-  
-  // Store
   const { selectedObject, selectObject } = useSolarSystemStore(state => ({
     selectedObject: state.ui.selectedObject,
     selectObject: state.selectObject,
   }));
   const timeState = useSolarSystemStore(state => state.timeState);
   const currentLanguage = 'tr'; // FIXME: Should come from a user preferences store
-
-  // Get celestial body data
   const celestialBody = useMemo(() => {
     if (!selectedObject) return null;
     return SOLAR_SYSTEM_DATA[selectedObject];
   }, [selectedObject]);
-
-  // Get localized content
   const getLocalizedText = useCallback((text: LocalizedContent): string => {
     return text[currentLanguage] || text['en'] || Object.values(text)[0] || '';
   }, [currentLanguage]);
-
-  // Handle tab change
   const handleTabChange = useCallback((tabId: string) => {
     setActiveTab(tabId);
     onTabChange?.(tabId);
   }, [onTabChange]);
-
-  // Handle dragging
   useEffect(() => {
     if (!panelConfig.draggable || !isDragging) return;
-
     const handleMouseMove = (event: MouseEvent) => {
       const newX = event.clientX - dragOffset.x;
       const newY = event.clientY - dragOffset.y;
-      
-      // Clamp to viewport bounds
       const maxX = window.innerWidth - (panelRef.current?.offsetWidth || 400);
       const maxY = window.innerHeight - (panelRef.current?.offsetHeight || 600);
-      
       setPosition({
         x: Math.max(0, Math.min(newX, maxX)),
         y: Math.max(0, Math.min(newY, maxY))
       });
     };
-
     const handleMouseUp = () => {
       setIsDragging(false);
     };
-
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
   }, [isDragging, dragOffset, panelConfig.draggable]);
-
-  // Handle drag start
   const handleDragStart = (event: React.MouseEvent) => {
     if (!panelConfig.draggable) return;
-    
     const rect = panelRef.current?.getBoundingClientRect();
     if (rect) {
       setDragOffset({
@@ -167,11 +133,8 @@ export const PlanetInformationPanel: React.FC<PlanetInformationPanelProps> = ({
       setIsDragging(true);
     }
   };
-
-  // Get panel size classes
   const getPanelSizeClasses = () => {
     const baseSize = isExpanded ? 'large' : panelConfig.size;
-    
     switch (baseSize) {
       case 'small': return 'w-80 h-96';
       case 'medium': return 'w-96 h-[32rem]';
@@ -180,8 +143,6 @@ export const PlanetInformationPanel: React.FC<PlanetInformationPanelProps> = ({
       default: return 'w-96 h-[32rem]';
     }
   };
-
-  // Format numerical values
   const formatValue = useCallback((value: number, type: string): string => {
     switch (type) {
       case 'mass':
@@ -200,14 +161,11 @@ export const PlanetInformationPanel: React.FC<PlanetInformationPanelProps> = ({
         return value.toLocaleString();
     }
   }, []);
-
   const handleClose = () => {
     selectObject(null);
     if (onClose) onClose();
   };
-
   if (!isVisible || !selectedObject || !celestialBody) return null;
-
   return (
     <AnimatePresence>
       <motion.div
@@ -225,7 +183,7 @@ export const PlanetInformationPanel: React.FC<PlanetInformationPanelProps> = ({
         className={`${getPanelSizeClasses()} ${className}`}
       >
         <Card className="h-full flex flex-col bg-black/95 backdrop-blur-sm border-gray-700 text-white overflow-hidden">
-          {/* Header */}
+          {}
           <div 
             ref={dragRef}
             className={`flex items-center justify-between p-4 border-b border-gray-700 ${
@@ -244,9 +202,8 @@ export const PlanetInformationPanel: React.FC<PlanetInformationPanelProps> = ({
                 </p>
               </div>
             </div>
-            
             <div className="flex items-center gap-2">
-              {/* Bookmark */}
+              {}
               <Button
                 variant="ghost"
                 size="sm"
@@ -255,8 +212,7 @@ export const PlanetInformationPanel: React.FC<PlanetInformationPanelProps> = ({
               >
                 <Heart className={`w-4 h-4 ${bookmarked ? 'fill-red-500 text-red-500' : ''}`} />
               </Button>
-              
-              {/* Share */}
+              {}
               <Button
                 variant="ghost"
                 size="sm"
@@ -265,8 +221,7 @@ export const PlanetInformationPanel: React.FC<PlanetInformationPanelProps> = ({
               >
                 <Share className="w-4 h-4" />
               </Button>
-              
-              {/* Expand/Minimize */}
+              {}
               {panelConfig.resizable && (
                 <Button
                   variant="ghost"
@@ -277,8 +232,7 @@ export const PlanetInformationPanel: React.FC<PlanetInformationPanelProps> = ({
                   {isExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                 </Button>
               )}
-              
-              {/* Close */}
+              {}
               <Button
                 variant="ghost"
                 size="sm"
@@ -289,8 +243,7 @@ export const PlanetInformationPanel: React.FC<PlanetInformationPanelProps> = ({
               </Button>
             </div>
           </div>
-
-          {/* Tabs */}
+          {}
           <div className="flex border-b border-gray-700 bg-gray-900/50">
             {panelConfig.tabs
               .sort((a, b) => a.order - b.order)
@@ -309,8 +262,7 @@ export const PlanetInformationPanel: React.FC<PlanetInformationPanelProps> = ({
                 </button>
               ))}
           </div>
-
-          {/* Content */}
+          {}
           <div className="flex-1 overflow-hidden">
             <AnimatePresence mode="wait">
               {panelConfig.tabs
@@ -340,8 +292,6 @@ export const PlanetInformationPanel: React.FC<PlanetInformationPanelProps> = ({
     </AnimatePresence>
   );
 };
-
-// Tab content renderer component
 const TabContent: React.FC<TabComponentProps> = ({
   celestialBody,
   content,
@@ -352,7 +302,6 @@ const TabContent: React.FC<TabComponentProps> = ({
   const getLocalizedText = useCallback((text: LocalizedContent): string => {
     return text[language] || text['en'] || Object.values(text)[0] || '';
   }, [language]);
-
   const formatValue = useCallback((value: number, type: string): string => {
     switch (type) {
       case 'mass':
@@ -371,10 +320,9 @@ const TabContent: React.FC<TabComponentProps> = ({
         return value.toLocaleString();
     }
   }, []);
-
   const renderOverviewContent = () => (
     <div className="h-full overflow-y-auto p-4 space-y-6">
-      {/* Hero Stats */}
+      {}
       <div className="grid grid-cols-2 gap-4">
         <Card className="p-4 bg-gray-800/50 border-gray-600">
           <div className="flex items-center gap-2 mb-2">
@@ -400,7 +348,6 @@ const TabContent: React.FC<TabComponentProps> = ({
             </div>
           </div>
         </Card>
-
         <Card className="p-4 bg-gray-800/50 border-gray-600">
           <div className="flex items-center gap-2 mb-2">
             <RotateCw className="w-5 h-5 text-green-400" />
@@ -426,8 +373,7 @@ const TabContent: React.FC<TabComponentProps> = ({
           </div>
         </Card>
       </div>
-
-      {/* Temperature Info */}
+      {}
       {celestialBody.info.surface_temp_celsius && (
         <Card className="p-4 bg-gray-800/50 border-gray-600">
           <div className="flex items-center gap-2 mb-3">
@@ -456,8 +402,7 @@ const TabContent: React.FC<TabComponentProps> = ({
           </div>
         </Card>
       )}
-
-      {/* Atmosphere */}
+      {}
       {celestialBody.atmosphere?.hasAtmosphere && (
         <Card className="p-4 bg-gray-800/50 border-gray-600">
           <div className="flex items-center gap-2 mb-3">
@@ -469,8 +414,7 @@ const TabContent: React.FC<TabComponentProps> = ({
           </div>
         </Card>
       )}
-
-      {/* Quick Actions */}
+      {}
       <div className="flex flex-wrap gap-2">
         <Button
           variant="outline"
@@ -502,7 +446,6 @@ const TabContent: React.FC<TabComponentProps> = ({
       </div>
     </div>
   );
-
   const renderPhysicsContent = () => (
     <div className="h-full overflow-y-auto p-4 space-y-4">
       <div className="grid grid-cols-1 gap-4">
@@ -546,8 +489,6 @@ const TabContent: React.FC<TabComponentProps> = ({
       </div>
     </div>
   );
-
-  // Render content based on type
   switch (content.type) {
     case 'overview':
       return renderOverviewContent();
@@ -564,5 +505,4 @@ const TabContent: React.FC<TabComponentProps> = ({
       );
   }
 };
-
 export default PlanetInformationPanel;

@@ -1,26 +1,21 @@
-'use client'
-
+﻿'use client'
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImpactResults, ImpactLocation } from './types'
 import { AlertTriangle, Flame, Waves, Activity, Zap, Users } from 'lucide-react'
-
 interface ResultsPanelProps {
   results: ImpactResults
   location: ImpactLocation
 }
-
 const HISTORICAL_COMPARISONS = [
   { name: 'Hiroşima Bombası', megatons: 0.015 },
   { name: 'Tunguska Olayı (1908)', megatons: 15 },
   { name: 'En Büyük H-Bombası', megatons: 50 },
   { name: 'Chicxulub (Dinozorlar)', megatons: 100000000 }
 ]
-
 export function ResultsPanel({ results, location }: ResultsPanelProps) {
   const getComparison = () => {
     const energy = results.energy.megatonsTNT
-    
     for (let i = HISTORICAL_COMPARISONS.length - 1; i >= 0; i--) {
       if (energy >= HISTORICAL_COMPARISONS[i].megatons) {
         const ratio = energy / HISTORICAL_COMPARISONS[i].megatons
@@ -30,15 +25,12 @@ export function ResultsPanel({ results, location }: ResultsPanelProps) {
         }
       }
     }
-    
     return {
       event: HISTORICAL_COMPARISONS[0].name,
       ratio: (energy / HISTORICAL_COMPARISONS[0].megatons).toFixed(1)
     }
   }
-
   const comparison = getComparison()
-
   return (
     <Card className="bg-pure-black/80 backdrop-blur-md border-cliff-white/10 h-full overflow-y-auto">
       <CardHeader>
@@ -48,7 +40,7 @@ export function ResultsPanel({ results, location }: ResultsPanelProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Enerji */}
+        {}
         <div className="bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <Zap className="h-4 w-4 text-red-400" />
@@ -66,8 +58,7 @@ export function ResultsPanel({ results, location }: ResultsPanelProps) {
             </p>
           </div>
         </div>
-
-        {/* Krater */}
+        {}
         <div className="bg-pure-black/50 border border-cliff-white/10 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <Activity className="h-4 w-4 text-orange-400" />
@@ -84,8 +75,7 @@ export function ResultsPanel({ results, location }: ResultsPanelProps) {
             </div>
           </div>
         </div>
-
-        {/* Hava Dalgası */}
+        {}
         <div className="bg-pure-black/50 border border-orange-500/30 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <Waves className="h-4 w-4 text-orange-400" />
@@ -106,8 +96,7 @@ export function ResultsPanel({ results, location }: ResultsPanelProps) {
             </div>
           </div>
         </div>
-
-        {/* Termal Radyasyon */}
+        {}
         <div className="bg-pure-black/50 border border-yellow-500/30 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <Flame className="h-4 w-4 text-yellow-400" />
@@ -128,8 +117,7 @@ export function ResultsPanel({ results, location }: ResultsPanelProps) {
             </div>
           </div>
         </div>
-
-        {/* Sismik Etki */}
+        {}
         <div className="bg-pure-black/50 border border-purple-500/30 rounded-lg p-4">
           <div className="flex items-center gap-2 mb-2">
             <Activity className="h-4 w-4 text-purple-400" />
@@ -142,8 +130,7 @@ export function ResultsPanel({ results, location }: ResultsPanelProps) {
             {results.seismic.feltRadius_km.toFixed(0)} km mesafede hissedilebilir
           </p>
         </div>
-
-        {/* Tsunami (varsa) */}
+        {}
         {results.tsunami && (
           <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-2">
@@ -158,8 +145,7 @@ export function ResultsPanel({ results, location }: ResultsPanelProps) {
             </p>
           </div>
         )}
-
-        {/* Can Kaybı Tahmini */}
+        {}
         {!location.isOcean && results.casualties.estimated > 0 && (
           <div className={`border rounded-lg p-4 ${
             results.casualties.severity === 'catastrophic' ? 'bg-red-500/20 border-red-500/30' :
@@ -184,8 +170,7 @@ export function ResultsPanel({ results, location }: ResultsPanelProps) {
             </p>
           </div>
         )}
-
-        {/* Eğitici Not */}
+        {}
         <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
           <p className="text-xs text-blue-300">
             💡 <strong>Eğitici Not:</strong> Bu hesaplamalar NASA ve JPL formüllerine dayanır. 
@@ -196,4 +181,3 @@ export function ResultsPanel({ results, location }: ResultsPanelProps) {
     </Card>
   )
 }
-

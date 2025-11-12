@@ -1,11 +1,9 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-
 interface ChatInputProps {
   placeholder?: string
   maxLength?: number
@@ -15,9 +13,7 @@ interface ChatInputProps {
   onSend: (message: string, type?: 'text') => void
   onTyping?: (isTyping: boolean) => void
 }
-
 const TYPING_TIMEOUT = 1000
-
 const ChatInput: React.FC<ChatInputProps> = ({
   placeholder = "Mesajınızı yazın...",
   maxLength = 1000,
@@ -30,17 +26,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const [inputValue, setInputValue] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
-
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Character count and validation
   const characterCount = inputValue.length
   const isOverLimit = characterCount > maxLength
   const isNearLimit = characterCount > maxLength * 0.8
   const canSend = inputValue.trim().length > 0 && !isOverLimit && !disabled
-
-  // Auto-resize textarea
   const adjustTextareaHeight = useCallback(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
@@ -49,71 +40,49 @@ const ChatInput: React.FC<ChatInputProps> = ({
       textareaRef.current.style.height = `${Math.min(scrollHeight, maxHeight)}px`
     }
   }, [multiline])
-
   useEffect(() => {
     adjustTextareaHeight()
   }, [inputValue, adjustTextareaHeight])
-
-  // Typing indicator logic
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value
     setInputValue(value)
-    
-    // Typing indicator
     if (!isTyping && value.length > 0) {
       setIsTyping(true)
       onTyping?.(true)
     }
-
-    // Clear previous timeout
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current)
     }
-
-    // Set new timeout to stop typing indicator
     typingTimeoutRef.current = setTimeout(() => {
       setIsTyping(false)
       onTyping?.(false)
     }, TYPING_TIMEOUT)
   }
-
-  // Handle send message
   const handleSend = useCallback(() => {
     if (!canSend) return
-    
     const messageContent = inputValue.trim()
     onSend(messageContent, 'text')
     setInputValue('')
     setIsTyping(false)
     onTyping?.(false)
-    
-    // Focus back to input
     setTimeout(() => {
       textareaRef.current?.focus()
     }, 100)
   }, [canSend, inputValue, onSend, onTyping])
-
-  // Keyboard shortcuts
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
       if (e.shiftKey && multiline) {
-        // Allow new line with Shift+Enter
         return
       } else {
-        // Send message with Enter
         e.preventDefault()
         handleSend()
       }
     }
-
-    // Esc to clear input
     if (e.key === 'Escape') {
       setInputValue('')
       textareaRef.current?.blur()
     }
   }
-
-  // Cleanup
   useEffect(() => {
     return () => {
       if (typingTimeoutRef.current) {
@@ -121,10 +90,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
       }
     }
   }, [])
-
   return (
     <div className="relative">
-      {/* Main Input Container */}
+      {}
       <motion.div
         className={cn(
           'relative flex items-end gap-3 p-4 bg-black backdrop-blur-sm',
@@ -141,13 +109,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
         }}
         transition={{ duration: 0.2 }}
       >
-        {/* Glow effect */}
+        {}
         <div className={cn(
           'absolute inset-0 rounded-2xl bg-gradient-to-r opacity-10 blur-xl -z-10',
           isFocused ? 'from-blue-500 to-cyan-500' : 'from-purple-500 to-blue-500'
         )} />
-
-        {/* Text Input */}
+        {}
         <div className="flex-1 relative">
           <textarea
             ref={textareaRef}
@@ -172,8 +139,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               fontSize: '16px' // Prevents zoom on iOS
             }}
           />
-
-          {/* Character Count */}
+          {}
           {(characterCount > 0 || isNearLimit) && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -191,8 +157,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               {characterCount}/{maxLength}
             </motion.div>
           )}
-
-          {/* Typing Indicator */}
+          {}
           <AnimatePresence>
             {isTyping && (
               <motion.div
@@ -206,8 +171,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
             )}
           </AnimatePresence>
         </div>
-
-        {/* Send Button */}
+        {}
         {showSendButton && (
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
@@ -227,8 +191,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           </motion.div>
         )}
       </motion.div>
-
-      {/* Keyboard Shortcuts Hint */}
+      {}
       <AnimatePresence>
         {isFocused && (
           <motion.div
@@ -247,8 +210,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Error Message */}
+      {}
       <AnimatePresence>
         {isOverLimit && (
           <motion.div
@@ -264,5 +226,4 @@ const ChatInput: React.FC<ChatInputProps> = ({
     </div>
   )
 }
-
 export default ChatInput

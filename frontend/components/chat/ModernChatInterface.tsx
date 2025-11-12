@@ -1,12 +1,10 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Bot, X, Sparkles, Zap, RefreshCw, Image as ImageIcon, Download } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-
 interface Message {
   id: string
   content: string
@@ -18,13 +16,11 @@ interface Message {
   isImageGeneration?: boolean
   thread_id?: string
 }
-
 interface ModernChatInterfaceProps {
   className?: string
   isOpen?: boolean
   onClose?: () => void
 }
-
 const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
   className,
   isOpen = true,
@@ -40,22 +36,17 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
   const [azureThreadId, setAzureThreadId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [])
-
   useEffect(() => {
     scrollToBottom()
   }, [messages, scrollToBottom])
-
   useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus()
     }
   }, [isOpen])
-
-  // Görsel talep tespiti
   const detectImageRequest = useCallback((message: string): boolean => {
     const imageKeywords = [
       'görsel oluştur', 'resim yap', 'fotoğraf çek', 'görsel çiz', 'çiz',
@@ -65,12 +56,9 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
       'uzay gemisi çiz', 'mars yüzeyi', 'galaksi göster', 'nebula', 
       'robot', 'astronot', 'uzay', 'space', 'planet', 'star'
     ]
-    
     const lowerMessage = message.toLowerCase()
     return imageKeywords.some(keyword => lowerMessage.includes(keyword))
   }, [])
-
-  // Görsel oluşturma API çağrısı
   const generateImage = useCallback(async (prompt: string): Promise<{ success: boolean, image_url?: string, error?: string }> => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/image-generation/generate`, {
@@ -86,11 +74,9 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
           context: { space_related: true, educational: true }
         })
       })
-
       if (!response.ok) {
         throw new Error('Image generation API error')
       }
-
       const data = await response.json()
       return {
         success: data.success,
@@ -105,11 +91,8 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
       }
     }
   }, [])
-
   const retryLastMessage = useCallback(async () => {
     if (!lastUserMessage || isLoading) return
-
-    // Remove last error message if exists
     setMessages(prev => {
       const lastMessage = prev[prev.length - 1]
       if (lastMessage?.sender === 'ai' && lastMessage?.isError) {
@@ -117,61 +100,38 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
       }
       return prev
     })
-
     setIsLoading(true)
     setIsTyping(true)
-
     try {
       let response: Response
-      
-      if (useAzureAgent) {
-        response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/azure-agent/chat`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message: lastUserMessage,
-            thread_id: azureThreadId
-          })
+      response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            ...messages.slice(-5).map(m => ({
+              role: m.sender === 'user' ? 'user' : 'assistant',
+              content: m.content
+            })),
+            {
+              role: 'user',
+              content: lastUserMessage
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 2048
         })
-      } else {
-        response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/chat`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            messages: [
-              ...messages.slice(-5).map(m => ({
-                role: m.sender === 'user' ? 'user' : 'assistant',
-                content: m.content
-              })),
-              {
-                role: 'user',
-                content: lastUserMessage
-              }
-            ],
-            model: 'grok-4-fast-reasoning',
-            temperature: 0.7,
-            max_tokens: 2048,
-            use_fallback: true
-          })
-        })
-      }
-
+      })
       if (!response.ok) {
         throw new Error('API yanıtı başarısız')
       }
-
       const data = await response.json()
-      
       setIsTyping(false)
-
       if (useAzureAgent && data.thread_id) {
         setAzureThreadId(data.thread_id)
       }
-
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: data.content || 'Üzgünüm, bir hata oluştu.',
@@ -180,12 +140,10 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
         isError: !data.content,
         thread_id: data.thread_id
       }
-
       setMessages(prev => [...prev, aiMessage])
     } catch (error) {
       console.error('Mesaj gönderme hatası:', error)
       setIsTyping(false)
-      
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: 'Bağlantı hatası oluştu. Lütfen tekrar deneyin.',
@@ -193,40 +151,29 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
         timestamp: new Date(),
         isError: true
       }
-      
       setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
     }
   }, [lastUserMessage, messages, isLoading, useAzureAgent, azureThreadId])
-
   const sendMessage = useCallback(async () => {
     if (!inputValue.trim() || isLoading) return
-
     const userMessage: Message = {
       id: Date.now().toString(),
       content: inputValue.trim(),
       sender: 'user',
       timestamp: new Date()
     }
-
     setLastUserMessage(inputValue.trim())
     setMessages(prev => [...prev, userMessage])
     setInputValue('')
     setIsLoading(true)
-
-    // Görsel talebi kontrolü
     const hasImageRequest = detectImageRequest(userMessage.content)
-    
     if (hasImageRequest) {
       setIsGeneratingImage(true)
-      
       try {
-        // Görsel oluştur
         const imageResult = await generateImage(userMessage.content)
-        
         setIsGeneratingImage(false)
-        
         if (imageResult.success && imageResult.image_url) {
           const imageMessage: Message = {
             id: (Date.now() + 1).toString(),
@@ -236,7 +183,6 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
             image_url: imageResult.image_url,
             isImageGeneration: true
           }
-          
           setMessages(prev => [...prev, imageMessage])
         } else {
           const errorMessage: Message = {
@@ -246,12 +192,10 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
             timestamp: new Date(),
             isError: true
           }
-          
           setMessages(prev => [...prev, errorMessage])
         }
       } catch (error) {
         setIsGeneratingImage(false)
-        
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
           content: 'Görsel oluşturma sırasında bir hata oluştu.',
@@ -259,70 +203,42 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
           timestamp: new Date(),
           isError: true
         }
-        
         setMessages(prev => [...prev, errorMessage])
       }
-      
       setIsLoading(false)
       return
     }
-
-    // Azure Agent veya Normal AI chat
     setIsTyping(true)
-
     try {
       let response: Response
-      
-      if (useAzureAgent) {
-        // Azure AI Agent kullan
-        response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/azure-agent/chat`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message: userMessage.content,
-            thread_id: azureThreadId
-          })
+      response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            ...messages.slice(-5).map(m => ({
+              role: m.sender === 'user' ? 'user' : 'assistant',
+              content: m.content
+            })),
+            {
+              role: 'user',
+              content: userMessage.content
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 2048
         })
-      } else {
-        // Normal Grok AI kullan
-        response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/chat`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            messages: [
-              ...messages.slice(-5).map(m => ({
-                role: m.sender === 'user' ? 'user' : 'assistant',
-                content: m.content
-              })),
-              {
-                role: 'user',
-                content: userMessage.content
-              }
-            ],
-            model: 'grok-4-fast-reasoning',
-            temperature: 0.7,
-            max_tokens: 2048,
-            use_fallback: true
-          })
-        })
-      }
-
+      })
       if (!response.ok) {
         throw new Error('API yanıtı başarısız')
       }
-
       const data = await response.json()
-      
       setIsTyping(false)
-
       if (useAzureAgent && data.thread_id) {
         setAzureThreadId(data.thread_id)
       }
-
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: data.content || 'Üzgünüm, bir hata oluştu.',
@@ -331,12 +247,10 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
         isError: !data.content,
         thread_id: data.thread_id
       }
-
       setMessages(prev => [...prev, aiMessage])
     } catch (error) {
       console.error('Mesaj gönderme hatası:', error)
       setIsTyping(false)
-      
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: 'Bağlantı hatası oluştu. Lütfen tekrar deneyin.',
@@ -344,21 +258,17 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
         timestamp: new Date(),
         isError: true
       }
-      
       setMessages(prev => [...prev, errorMessage])
     } finally {
       setIsLoading(false)
     }
   }, [inputValue, messages, isLoading, detectImageRequest, generateImage, useAzureAgent, azureThreadId])
-
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       sendMessage()
     }
   }, [sendMessage])
-
-  // Optimized message render with memoization
   const MessageBubble = useMemo(() => React.memo(({ message }: { message: Message }) => (
     <div
       className={cn(
@@ -375,7 +285,6 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
           )}
         </div>
       )}
-      
       <div className="flex flex-col max-w-[70%]">
         <div
           className={cn(
@@ -392,8 +301,7 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
               {message.content}
             </ReactMarkdown>
           </div>
-          
-          {/* Görsel gösterimi */}
+          {}
           {message.image_url && (
             <div className="mt-3">
               <div className="relative rounded-lg overflow-hidden border border-white/20">
@@ -419,7 +327,6 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
               </div>
             </div>
           )}
-          
           <p className="text-xs mt-2 opacity-50">
             {new Date(message.timestamp).toLocaleTimeString('tr-TR', {
               hour: '2-digit',
@@ -427,8 +334,7 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
             })}
           </p>
         </div>
-        
-        {/* Retry Button for Error Messages */}
+        {}
         {message.isError && message.sender === 'ai' && (
           <button
             onClick={retryLastMessage}
@@ -447,7 +353,6 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
           </button>
         )}
       </div>
-
       {message.sender === 'user' && (
         <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
           <span className="text-white text-sm font-bold">U</span>
@@ -455,20 +360,17 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
       )}
     </div>
   )), [retryLastMessage, isLoading])
-
   if (!isOpen) return null
-
   return (
     <div className={cn('fixed inset-0 z-50 flex items-center justify-center p-4', className)}>
-      {/* Optimized Backdrop */}
+      {}
       {isOpen && (
         <div
           onClick={onClose}
           className="absolute inset-0 bg-pure-black/90"
         />
       )}
-      
-      {/* Chat Container - Pure Black Theme */}
+      {}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -484,9 +386,8 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
               'overflow-hidden'
             )}
           >
-        
         <div className="relative h-full flex flex-col">
-          {/* Header - Pure Black */}
+          {}
           <div className="flex items-center justify-between p-4 border-b border-white/10 bg-pure-black">
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -498,11 +399,11 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
                 <div className="flex items-center gap-2">
                   <h3 className="text-white font-bold text-sm">CLIFF AI</h3>
                   <span className="px-2 py-0.5 bg-white/10 text-white text-xs rounded-full font-medium">
-                    {useAzureAgent ? 'AZURE AGENT' : 'SPACE AND NATURE'}
+                    AI
                   </span>
                 </div>
                 <p className="text-xs text-white/60">
-                  {useAzureAgent ? 'Azure AI Agent219 ile güçlendirildi' : 'Grok AI ile güçlendirildi'}
+                  AI ile güçlendirildi
                 </p>
               </div>
             </div>
@@ -514,29 +415,10 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
                 <X className="w-4 h-4 text-white/80" />
               </button>
             )}
-            
-            {/* AI Model Selector */}
-            <div className="px-2">
-              <button
-                onClick={() => {
-                  setUseAzureAgent(!useAzureAgent)
-                  if (useAzureAgent) {
-                    setAzureThreadId(null)
-                  }
-                }}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs font-medium transition-colors",
-                  useAzureAgent 
-                    ? "bg-blue-500/20 text-blue-300 border border-blue-500/30" 
-                    : "bg-white/10 text-white/60 border border-white/20 hover:bg-white/20"
-                )}
-              >
-                {useAzureAgent ? '🤖 Azure Agent Aktif' : '🧠 Grok AI Aktif'}
-              </button>
-            </div>
+            {}
+            <div className="px-2" />
           </div>
-
-          {/* Messages Area */}
+          {}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-pure-black">
             {messages.length === 0 && (
               <div className="text-center py-16">
@@ -545,7 +427,7 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
                 </div>
                 <h4 className="text-white/90 font-bold text-xl mb-3">Merhaba! 👋</h4>
                 <p className="text-white/60 text-base mb-6">
-                  Ben CLIFF AI, Space and Nature Grok 4 Fast ile güçlendirilmiş uzay asistanınızım.
+                  Ben CLIFF AI, AI ile güçlendirilmiş uzay asistanınızım.
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {[
@@ -565,12 +447,10 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
                 </div>
               </div>
             )}
-
             {messages.map((message) => (
               <MessageBubble key={message.id} message={message} />
             ))}
-
-            {/* Simplified Typing/Generation Indicator */}
+            {}
             {(isTyping || isGeneratingImage) && (
               <div className="flex gap-3">
                 <div className="w-8 h-8 rounded-lg bg-pure-black border border-white/20 flex items-center justify-center">
@@ -594,11 +474,9 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
                 </div>
               </div>
             )}
-
             <div ref={messagesEndRef} />
           </div>
-
-          {/* Input Area - Pure Black */}
+          {}
           <div className="p-4 border-t border-white/10 bg-pure-black">
             <div className="flex items-center gap-3">
               <div className="relative flex-1">
@@ -650,5 +528,4 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
   </div>
   )
 }
-
 export default ModernChatInterface

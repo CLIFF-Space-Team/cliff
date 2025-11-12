@@ -1,6 +1,5 @@
-import React from 'react'
+﻿import React from 'react'
 import * as THREE from 'three'
-
 export const Sun: React.FC = () => {
   return (
     <mesh position={[0, 0, 0]}>
@@ -9,5 +8,4 @@ export const Sun: React.FC = () => {
     </mesh>
   )
 }
-
 export default Sun;

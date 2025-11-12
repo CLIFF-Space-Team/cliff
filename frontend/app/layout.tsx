@@ -8,7 +8,6 @@ import { QueryProvider } from '@/providers/query-provider'
 import { WebSocketProvider } from '@/providers/websocket-provider'
 import { LanguageProvider } from '@/providers/LanguageProvider'
 import { AccessibilityProvider } from '@/providers/AccessibilityProvider'
-
 export const metadata: Metadata = {
   title: 'CLIFF - Cosmic Level Intelligent Forecast Framework',
   description: 'Advanced AI-powered space threat monitoring and analysis system',
@@ -16,7 +15,6 @@ export const metadata: Metadata = {
     icon: '/favicon.ico',
   },
 }
-
 export default function RootLayout({
   children,
 }: {

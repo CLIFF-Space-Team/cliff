@@ -1,4 +1,4 @@
-export type { 
+﻿export type { 
   AsteroidParams, 
   ImpactLocation, 
   ImpactResults 

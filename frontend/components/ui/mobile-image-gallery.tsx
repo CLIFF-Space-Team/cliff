@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -14,7 +13,6 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-
 interface GeneratedImage {
   image_url: string
   title: string
@@ -25,41 +23,34 @@ interface GeneratedImage {
   generation_time_ms: number
   enhanced_prompt: string
 }
-
 interface MobileImageGalleryProps {
   images: GeneratedImage[]
   onDownload: (imageUrl: string, title: string) => void
 }
-
 export function MobileImageGallery({ images, onDownload }: MobileImageGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
-
   const openFullscreen = (index: number) => {
     setSelectedIndex(index)
     setIsFullscreen(true)
   }
-
   const closeFullscreen = () => {
     setIsFullscreen(false)
     setSelectedIndex(null)
   }
-
   const nextImage = () => {
     if (selectedIndex !== null) {
       setSelectedIndex((selectedIndex + 1) % images.length)
     }
   }
-
   const prevImage = () => {
     if (selectedIndex !== null) {
       setSelectedIndex((selectedIndex - 1 + images.length) % images.length)
     }
   }
-
   return (
     <>
-      {/* Mobile Grid */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
         {images.map((image, index) => (
           <motion.div
@@ -75,11 +66,9 @@ export function MobileImageGallery({ images, onDownload }: MobileImageGalleryPro
                 alt={image.title}
                 className="w-full h-full object-cover"
               />
-              
-              {/* Overlay */}
+              {}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-active:opacity-100 transition-opacity duration-200" />
-              
-              {/* Actions */}
+              {}
               <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-active:opacity-100 transition-opacity duration-200">
                 <Button
                   size="sm"
@@ -104,15 +93,13 @@ export function MobileImageGallery({ images, onDownload }: MobileImageGalleryPro
                   <Download className="w-4 h-4" />
                 </Button>
               </div>
-
-              {/* Purpose Badge */}
+              {}
               <div className="absolute bottom-2 left-2">
                 <Badge className="bg-black/70 backdrop-blur-sm border-white/20 text-white text-xs">
                   {image.purpose.charAt(0).toUpperCase() + image.purpose.slice(1)}
                 </Badge>
               </div>
-
-              {/* Enhancement Indicator */}
+              {}
               <div className="absolute bottom-2 right-2">
                 <div className="flex items-center space-x-1 bg-black/70 backdrop-blur-sm rounded-full px-2 py-1">
                   <CheckCircle className="w-3 h-3 text-green-400" />
@@ -120,8 +107,7 @@ export function MobileImageGallery({ images, onDownload }: MobileImageGalleryPro
                 </div>
               </div>
             </div>
-
-            {/* Mobile Info */}
+            {}
             <div className="mt-2 space-y-1">
               <h4 className="font-semibold text-white text-sm truncate">{image.title}</h4>
               <p className="text-xs text-slate-400 line-clamp-2">{image.description}</p>
@@ -133,8 +119,7 @@ export function MobileImageGallery({ images, onDownload }: MobileImageGalleryPro
           </motion.div>
         ))}
       </div>
-
-      {/* Desktop Grid (Hidden on mobile) */}
+      {}
       <div className="hidden md:grid grid-cols-1 md:grid-cols-2 gap-6">
         {images.map((image, index) => (
           <motion.div
@@ -196,8 +181,7 @@ export function MobileImageGallery({ images, onDownload }: MobileImageGalleryPro
           </motion.div>
         ))}
       </div>
-
-      {/* Fullscreen Modal */}
+      {}
       <AnimatePresence>
         {isFullscreen && selectedIndex !== null && (
           <motion.div
@@ -207,7 +191,7 @@ export function MobileImageGallery({ images, onDownload }: MobileImageGalleryPro
             className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={closeFullscreen}
           >
-            {/* Close Button */}
+            {}
             <Button
               variant="ghost"
               size="sm"
@@ -216,8 +200,7 @@ export function MobileImageGallery({ images, onDownload }: MobileImageGalleryPro
             >
               <X className="w-6 h-6" />
             </Button>
-
-            {/* Navigation Buttons */}
+            {}
             {images.length > 1 && (
               <>
                 <Button
@@ -244,8 +227,7 @@ export function MobileImageGallery({ images, onDownload }: MobileImageGalleryPro
                 </Button>
               </>
             )}
-
-            {/* Image */}
+            {}
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -258,8 +240,7 @@ export function MobileImageGallery({ images, onDownload }: MobileImageGalleryPro
                 alt={images[selectedIndex].title}
                 className="max-w-full max-h-[80vh] object-contain rounded-lg"
               />
-              
-              {/* Image Info */}
+              {}
               <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-sm rounded-lg p-4">
                 <h3 className="text-white font-semibold mb-1">
                   {images[selectedIndex].title}
@@ -284,8 +265,7 @@ export function MobileImageGallery({ images, onDownload }: MobileImageGalleryPro
                 </div>
               </div>
             </motion.div>
-
-            {/* Image Counter */}
+            {}
             {images.length > 1 && (
               <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-sm rounded-full px-3 py-1">
                 <span className="text-white text-sm">

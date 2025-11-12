@@ -1,12 +1,9 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useEffect, useMemo, Suspense, useCallback, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera, Stats } from '@react-three/drei'
 import { USDZProfessionalSolarSystem } from '../USDZProfessionalSolarSystem'
 import { PerformanceTracker, USDZPerformanceMetrics } from '../performance/USDZPerformanceManager'
-
-// Device capabilities interface
 interface DeviceCapabilities {
   isMobile: boolean
   isTablet: boolean  
@@ -17,11 +14,7 @@ interface DeviceCapabilities {
   availableMemory: number
   hardwareConcurrency: number
 }
-
-// Quality levels
 export type QualityLevel = 'low' | 'medium' | 'high' | 'ultra'
-
-// Performance metrics interface
 interface PerformanceMetrics {
   fps: number
   frameTime: number
@@ -30,8 +23,6 @@ interface PerformanceMetrics {
   drawCalls: number
   quality: QualityLevel
 }
-
-// Device detection hook - hydration safe
 const useDeviceCapabilities = (): DeviceCapabilities => {
   const [capabilities, setCapabilities] = useState<DeviceCapabilities>({
     isMobile: false,
@@ -43,41 +34,28 @@ const useDeviceCapabilities = (): DeviceCapabilities => {
     availableMemory: 4096,
     hardwareConcurrency: 4
   })
-
   const [isClient, setIsClient] = useState(false)
-
   useEffect(() => {
-    // Hydration safe - only run on client
     setIsClient(true)
-    
     const detectCapabilities = () => {
       if (typeof window === 'undefined') return
-
       const userAgent = navigator.userAgent.toLowerCase()
       const isMobile = /mobile|android|iphone|ipod|blackberry|windows phone/.test(userAgent)
       const isTablet = /tablet|ipad/.test(userAgent) && !isMobile
       const isDesktop = !isMobile && !isTablet
-
-      // WebGL detection
       const canvas = document.createElement('canvas')
       const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
       const supportsWebGL2 = !!gl
-
       let maxTextureSize = 2048
       if (gl) {
         maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE)
         canvas.remove()
       }
-
-      // Device metrics
       const devicePixelRatio = window.devicePixelRatio || 1
       const hardwareConcurrency = navigator.hardwareConcurrency || 4
-      
-      // Estimate available memory (rough approximation)
       const availableMemory = (navigator as any).deviceMemory ? 
         (navigator as any).deviceMemory * 1024 : 
         (isMobile ? 2048 : isTablet ? 4096 : 8192)
-
       setCapabilities({
         isMobile,
         isTablet,
@@ -89,14 +67,10 @@ const useDeviceCapabilities = (): DeviceCapabilities => {
         hardwareConcurrency
       })
     }
-
     detectCapabilities()
   }, [])
-
   return capabilities
 }
-
-// Quality determination based on device capabilities
 const determineOptimalQuality = (capabilities: DeviceCapabilities): QualityLevel => {
   const {
     isMobile,
@@ -106,40 +80,27 @@ const determineOptimalQuality = (capabilities: DeviceCapabilities): QualityLevel
     hardwareConcurrency,
     devicePixelRatio
   } = capabilities
-
-  // Performance scoring
   let score = 0
-
-  // Device type scoring
   if (isMobile) score += 1
   else if (isTablet) score += 2
   else score += 3
-
-  // Hardware scoring
   if (maxTextureSize >= 8192) score += 3
   else if (maxTextureSize >= 4096) score += 2
   else score += 1
-
   if (availableMemory >= 8192) score += 3
   else if (availableMemory >= 4096) score += 2
   else score += 1
-
   if (hardwareConcurrency >= 8) score += 3
   else if (hardwareConcurrency >= 4) score += 2
   else score += 1
-
   if (devicePixelRatio <= 1) score += 3
   else if (devicePixelRatio <= 2) score += 2
   else score += 1
-
-  // Quality determination
   if (score >= 12) return 'ultra'
   else if (score >= 10) return 'high'
   else if (score >= 7) return 'medium'
   else return 'low'
 }
-
-// Canvas içinde çalışacak bileşen - R3F hook'larını içerir
 const CanvasContent: React.FC<{
   currentQuality: QualityLevel
   onMetricsUpdate: (metrics: USDZPerformanceMetrics) => void
@@ -147,13 +108,12 @@ const CanvasContent: React.FC<{
 }> = ({ currentQuality, onMetricsUpdate, capabilities }) => {
   return (
     <>
-      {/* Performance tracker - Canvas içinde çalışır */}
+      {}
       <PerformanceTracker 
         onMetricsUpdate={onMetricsUpdate}
         quality={currentQuality}
       />
-
-      {/* Camera setup */}
+      {}
       <PerspectiveCamera
         makeDefault
         position={[0, 0, 100]}
@@ -161,8 +121,7 @@ const CanvasContent: React.FC<{
         near={0.1}
         far={10000}
       />
-
-      {/* Controls */}
+      {}
       <OrbitControls
         enablePan={true}
         enableZoom={true}
@@ -173,29 +132,24 @@ const CanvasContent: React.FC<{
         enableDamping={true}
         target={[0, 0, 0]}
       />
-
-      {/* Lighting */}
+      {}
       <ambientLight intensity={0.2} />
       <directionalLight 
         position={[100, 100, 100]} 
         intensity={1}
         castShadow={currentQuality !== 'low'}
       />
-
-      {/* Main Solar System */}
+      {}
       <Suspense fallback={null}>
         <USDZProfessionalSolarSystem 
           quality={currentQuality}
         />
       </Suspense>
-
-      {/* Development stats */}
+      {}
       {process.env.NODE_ENV === 'development' && !capabilities.isMobile && <Stats />}
     </>
   )
 }
-
-// Main responsive wrapper component
 export const USDZResponsiveWrapper: React.FC<{
   className?: string
 }> = ({ className = '' }) => {
@@ -205,16 +159,10 @@ export const USDZResponsiveWrapper: React.FC<{
   const capabilities = useDeviceCapabilities()
   const [currentQuality, setCurrentQuality] = useState<QualityLevel>('medium')
   const [performanceMetrics, setPerformanceMetrics] = useState<USDZPerformanceMetrics | null>(null)
-  
-  // Ref to prevent render phase updates
   const metricsUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Client-only render for hydration safety
   useEffect(() => {
     setIsClient(true)
   }, [])
-
-  // Determine optimal quality on capabilities change - avoid render loop
   useEffect(() => {
     if (isClient) {
       const optimalQuality = determineOptimalQuality(capabilities)
@@ -222,11 +170,8 @@ export const USDZResponsiveWrapper: React.FC<{
       console.log('🎯 Optimal quality determined:', optimalQuality, capabilities)
     }
   }, [capabilities, isClient])
-
-  // Canvas configuration based on device capabilities
   const canvasConfig = useMemo(() => {
     if (!isClient) return {}
-
     const baseConfig = {
       dpr: Math.min(capabilities.devicePixelRatio, capabilities.isMobile ? 1.5 : 2),
       antialias: !capabilities.isMobile,
@@ -235,8 +180,6 @@ export const USDZResponsiveWrapper: React.FC<{
       stencil: false,
       depth: true,
     }
-
-    // Adjust for device type
     if (capabilities.isMobile) {
       return {
         ...baseConfig,
@@ -245,36 +188,24 @@ export const USDZResponsiveWrapper: React.FC<{
         powerPreference: 'default' as WebGLPowerPreference,
       }
     }
-
     return baseConfig
   }, [capabilities, isClient])
-
-  // Error boundary
   const handleError = (error: Error) => {
     console.error('🚨 USDZ Wrapper Error:', error)
     setError(error.message)
   }
-
-  // Loading completion
   const handleLoadingComplete = useCallback(() => {
     setIsLoading(false)
     console.log('✅ USDZ System loaded successfully')
   }, [])
-
-  // Performance metrics update - render-safe callback
   const handlePerformanceUpdate = useCallback((metrics: USDZPerformanceMetrics) => {
-    // Clear any existing timeout
     if (metricsUpdateTimeoutRef.current) {
       clearTimeout(metricsUpdateTimeoutRef.current)
     }
-    
-    // Schedule state update outside render phase
     metricsUpdateTimeoutRef.current = setTimeout(() => {
       setPerformanceMetrics(metrics)
     }, 0)
   }, [])
-
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (metricsUpdateTimeoutRef.current) {
@@ -282,8 +213,6 @@ export const USDZResponsiveWrapper: React.FC<{
       }
     }
   }, [])
-
-  // Server-side render placeholder
   if (!isClient) {
     return (
       <div className={`relative w-full h-full bg-space-black ${className}`}>
@@ -297,7 +226,6 @@ export const USDZResponsiveWrapper: React.FC<{
       </div>
     )
   }
-
   if (error) {
     return (
       <div className={`flex items-center justify-center min-h-screen bg-space-black ${className}`}>
@@ -322,7 +250,6 @@ export const USDZResponsiveWrapper: React.FC<{
       </div>
     )
   }
-
   return (
     <div className={`relative w-full h-full ${className}`}>
       {isLoading && (
@@ -342,7 +269,6 @@ export const USDZResponsiveWrapper: React.FC<{
           </div>
         </div>
       )}
-
       <Canvas
         {...canvasConfig}
         className="w-full h-full"
@@ -360,8 +286,7 @@ export const USDZResponsiveWrapper: React.FC<{
           capabilities={capabilities}
         />
       </Canvas>
-
-      {/* Performance overlay - sadece development modda */}
+      {}
       {process.env.NODE_ENV === 'development' && performanceMetrics && (
         <div className="absolute top-4 right-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 text-xs text-white z-20">
           <div className="space-y-1">
@@ -377,5 +302,4 @@ export const USDZResponsiveWrapper: React.FC<{
     </div>
   )
 }
-
 export default USDZResponsiveWrapper

@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImpactResults, ImpactLocation } from './types'
@@ -13,7 +12,6 @@ import jsPDF from 'jspdf'
 import { MemeGenerator } from './MemeGenerator'
 import { SlideReport } from './SlideReport/SlideReport'
 import { MemeComposer } from './3D/MemeComposer'
-
 interface ProfessionalResultsPanelProps {
   results: ImpactResults
   location: ImpactLocation
@@ -24,7 +22,6 @@ interface ProfessionalResultsPanelProps {
     density: number
   }
 }
-
 export function ProfessionalResultsPanel({ 
   results, 
   location,
@@ -40,21 +37,17 @@ export function ProfessionalResultsPanel({
   const [impactImage, setImpactImage] = useState<string>()
   const [isGeneratingImage, setIsGeneratingImage] = useState(false)
   const reportRef = useRef<HTMLDivElement>(null)
-  
   const toggleSection = (section: string) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }))
   }
-  
   const handleDownloadPNG = async () => {
     if (!reportRef.current) return
-    
     try {
       const canvas = await html2canvas(reportRef.current, {
         backgroundColor: '#000000',
         scale: 2,
         logging: false,
       })
-      
       const link = document.createElement('a')
       link.download = `asteroid-impact-report-${location.cityName || 'location'}-${Date.now()}.png`
       link.href = canvas.toDataURL('image/png')
@@ -63,46 +56,37 @@ export function ProfessionalResultsPanel({
       console.error('PNG indirme hatası:', error)
     }
   }
-  
   const handleDownloadPDF = async () => {
     if (!reportRef.current) return
-    
     try {
       const canvas = await html2canvas(reportRef.current, {
         backgroundColor: '#000000',
         scale: 2,
         logging: false,
       })
-      
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4',
       })
-      
       const imgWidth = 210
       const imgHeight = (canvas.height * imgWidth) / canvas.width
-      
       let heightLeft = imgHeight
       let position = 0
-      
       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
       heightLeft -= 297
-      
       while (heightLeft > 0) {
         position = heightLeft - imgHeight
         pdf.addPage()
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight)
         heightLeft -= 297
       }
-      
       pdf.save(`asteroid-impact-report-${location.cityName || 'location'}-${Date.now()}.pdf`)
     } catch (error) {
       console.error('PDF indirme hatası:', error)
     }
   }
-
   const handleOpenSlideReport = async () => {
     if (!impactImage && !isGeneratingImage) {
       setIsGeneratingImage(true)
@@ -130,21 +114,18 @@ export function ProfessionalResultsPanel({
     }
     setShowSlideReport(true)
   }
-  
   const formatScientific = (num: number) => {
     if (num === null || num === undefined || isNaN(num) || !isFinite(num)) {
       return '0.00e+0'
     }
     return num.toExponential(2)
   }
-  
   const formatNumber = (num: number, decimals: number = 2) => {
     if (num === null || num === undefined || isNaN(num) || !isFinite(num)) {
       return '0.00'
     }
     return num.toFixed(decimals)
   }
-  
   return (
     <>
       <MemeGenerator
@@ -217,9 +198,8 @@ export function ProfessionalResultsPanel({
           NASA/JPL Impact Physics • Collins et al. (2005) • Holsapple & Housen (2007)
         </p>
       </CardHeader>
-      
       <CardContent className="space-y-3 p-4 overflow-y-auto flex-1" ref={reportRef}>
-        {/* Genel Özet */}
+        {}
         <div className="bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 rounded-lg p-4">
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-6 w-6 text-red-400 flex-shrink-0 mt-1" />
@@ -231,7 +211,6 @@ export function ProfessionalResultsPanel({
                 Bu etki <strong className="text-red-400">{results.comparison.realWorldEvent}</strong> olayının{' '}
                 <strong className="text-yellow-400">{formatNumber(results.comparison.multiplier, 1)}x</strong> gücündedir.
               </p>
-              
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-black/30 rounded px-2 py-1.5">
                   <p className="text-[10px] text-cliff-light-gray">Enerji (Megaton TNT)</p>
@@ -249,8 +228,7 @@ export function ProfessionalResultsPanel({
             </div>
           </div>
         </div>
-
-        {/* Atmosferik Giriş Analizi */}
+        {}
         <div className="border border-blue-500/30 rounded-lg overflow-hidden">
           <button
             onClick={() => toggleSection('atmospheric')}
@@ -262,7 +240,6 @@ export function ProfessionalResultsPanel({
             </div>
             {expandedSections.atmospheric ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </button>
-          
           {expandedSections.atmospheric && (
             <div className="p-3 space-y-2">
               <div className="grid grid-cols-2 gap-2">
@@ -283,7 +260,6 @@ export function ProfessionalResultsPanel({
                   <p className="text-sm font-bold text-white">{asteroidParams.density} kg/m³</p>
                 </div>
               </div>
-              
               {results.atmospheric.occurredInAtmosphere && (
                 <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-2 mt-2">
                   <p className="text-xs text-yellow-300 font-semibold mb-1">⚠️ Atmosferik Parçalanma</p>
@@ -298,15 +274,13 @@ export function ProfessionalResultsPanel({
                   </p>
                 </div>
               )}
-              
               <div className="text-[10px] text-blue-300 bg-blue-500/5 rounded p-2">
                 📚 <strong>Referans:</strong> Chyba et al. (1993), Hills & Goda (1993) - Atmospheric Entry Physics
               </div>
             </div>
           )}
         </div>
-
-        {/* Krater Analizi */}
+        {}
         <div className="border border-orange-500/30 rounded-lg overflow-hidden">
           <button
             onClick={() => toggleSection('crater')}
@@ -320,7 +294,6 @@ export function ProfessionalResultsPanel({
             </div>
             {expandedSections.crater ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </button>
-          
           {expandedSections.crater && (
             <div className="p-3 space-y-2">
               <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 rounded p-3 border border-orange-500/30">
@@ -350,14 +323,12 @@ export function ProfessionalResultsPanel({
                     </p>
                   </div>
                 </div>
-                
                 <div className="pt-2 border-t border-white/10">
                   <p className="text-xs text-cliff-white">
                     <strong>Hacim:</strong> {formatNumber(results.crater.volume_km3, 2)} km³
                   </p>
                 </div>
               </div>
-              
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-pure-black/50 rounded p-2">
                   <p className="text-[10px] text-cliff-light-gray">Kenar Yüksekliği</p>
@@ -376,7 +347,6 @@ export function ProfessionalResultsPanel({
                   <p className="text-sm font-bold text-white">{formatNumber(results.crater.ejectaBlanketRange_m / 1000, 1)} km</p>
                 </div>
               </div>
-              
               {results.crater.hasCentralPeak && (
                 <div className="bg-purple-500/10 border border-purple-500/30 rounded p-2">
                   <p className="text-xs text-purple-300 font-semibold mb-1">🏔️ Merkez Tepe (Complex Crater)</p>
@@ -388,21 +358,18 @@ export function ProfessionalResultsPanel({
                   </p>
                 </div>
               )}
-              
               <div className="text-[10px] text-orange-300 bg-orange-500/5 rounded p-2">
                 📚 <strong>Referans:</strong> Holsapple & Housen (2007) - Crater Scaling Laws • Melosh (1989)
               </div>
             </div>
           )}
         </div>
-
-        {/* Ejecta ve Malzeme Analizi */}
+        {}
         <div className="bg-pure-black/50 border border-brown-500/30 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="h-4 w-4 text-brown-400" />
             <h4 className="text-sm font-semibold text-brown-400">Fırlatılan Malzeme (Ejecta)</h4>
           </div>
-          
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-black/30 rounded p-2">
               <p className="text-[10px] text-cliff-light-gray">Toplam Kütle</p>
@@ -421,21 +388,18 @@ export function ProfessionalResultsPanel({
               <p className="text-xs font-mono text-orange-300">{formatScientific(results.ejecta.meltVolume_m3)} m³</p>
             </div>
           </div>
-          
           <div className="mt-2 bg-red-500/10 border border-red-500/30 rounded p-2">
             <p className="text-[10px] text-red-300">
               🔥 <strong>Buharlaşan Malzeme:</strong> {formatScientific(results.ejecta.vaporizedMass_kg)} kg
             </p>
           </div>
         </div>
-
-        {/* Hava Dalgası */}
+        {}
         <div className="bg-pure-black/50 border border-orange-500/30 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
             <Wind className="h-4 w-4 text-orange-400" />
             <h4 className="text-sm font-semibold text-orange-400">Hava Dalgası (Overpressure)</h4>
           </div>
-          
           <div className="space-y-1.5">
             <div className="flex justify-between items-center bg-red-500/20 rounded px-2 py-1.5">
               <span className="text-xs text-cliff-white">20 psi - Tüm yapılar yıkılır</span>
@@ -454,19 +418,16 @@ export function ProfessionalResultsPanel({
               <span className="text-sm font-bold text-green-400">{formatNumber(results.airBlast.radius_1psi_km, 2)} km</span>
             </div>
           </div>
-          
           <div className="mt-2 text-[10px] text-orange-300 bg-orange-500/5 rounded p-2">
             📚 <strong>Referans:</strong> Kinney & Graham (1985) - Explosive Shocks in Air
           </div>
         </div>
-
-        {/* Termal Radyasyon */}
+        {}
         <div className="bg-pure-black/50 border border-yellow-500/30 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
             <Flame className="h-4 w-4 text-yellow-400" />
             <h4 className="text-sm font-semibold text-yellow-400">Termal Radyasyon</h4>
           </div>
-          
           <div className="bg-gradient-to-r from-red-500/20 to-orange-500/20 rounded p-2 mb-2">
             <p className="text-xs text-cliff-light-gray mb-1">Ateş Topu Parametreleri</p>
             <div className="grid grid-cols-2 gap-2">
@@ -484,7 +445,6 @@ export function ProfessionalResultsPanel({
               </div>
             </div>
           </div>
-          
           <div className="space-y-1.5">
             <div className="flex justify-between items-center bg-red-500/20 rounded px-2 py-1">
               <span className="text-xs text-cliff-white">3. derece yanık</span>
@@ -503,19 +463,16 @@ export function ProfessionalResultsPanel({
               <span className="text-sm font-bold text-green-400">{formatNumber(results.thermal.ignitesWood_km, 2)} km</span>
             </div>
           </div>
-          
           <div className="mt-2 text-[10px] text-yellow-300 bg-yellow-500/5 rounded p-2">
             📚 <strong>Referans:</strong> Glasstone & Dolan (1977) - Thermal Radiation Effects
           </div>
         </div>
-
-        {/* Sismik Etki */}
+        {}
         <div className="bg-pure-black/50 border border-purple-500/30 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
             <Activity className="h-4 w-4 text-purple-400" />
             <h4 className="text-sm font-semibold text-purple-400">Sismik Etki</h4>
           </div>
-          
           <div className="grid grid-cols-2 gap-2">
             <div className="bg-purple-500/20 rounded p-2">
               <p className="text-xs text-cliff-light-gray">Richter Büyüklüğü</p>
@@ -534,13 +491,11 @@ export function ProfessionalResultsPanel({
               <p className="text-xs font-mono text-purple-200">{formatScientific(results.seismic.seismicEnergy_joules)} J</p>
             </div>
           </div>
-          
           <div className="mt-2 text-[10px] text-purple-300 bg-purple-500/5 rounded p-2">
             📚 <strong>Referans:</strong> Schultz & Gault (1975) • Ivanov (2005) - Seismic Effects
           </div>
         </div>
-
-        {/* Tsunami (varsa) */}
+        {}
         {results.tsunami && (
           <div className="bg-blue-500/20 border border-blue-500/30 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-2">
@@ -563,8 +518,7 @@ export function ProfessionalResultsPanel({
             </div>
           </div>
         )}
-
-        {/* Nüfus Etkisi */}
+        {}
         {!location.isOcean && results.casualties.estimated > 0 && (
           <div className={`border rounded-lg p-3 ${
             results.casualties.severity === 'catastrophic' ? 'bg-red-500/20 border-red-500/30' :
@@ -589,8 +543,7 @@ export function ProfessionalResultsPanel({
             </p>
           </div>
         )}
-
-        {/* Bilimsel Notlar */}
+        {}
         <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
           <p className="text-xs text-blue-300 leading-relaxed">
             <strong>🔬 Metodoloji:</strong> Bu hesaplamalar NASA Ames Research Center ve JPL'in geliştirdiği
@@ -608,4 +561,3 @@ export function ProfessionalResultsPanel({
     </>
   )
 }
-

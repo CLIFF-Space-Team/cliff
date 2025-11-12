@@ -1,6 +1,5 @@
-import React from 'react';
+﻿import React from 'react';
 import { useSolarSystemStore, solarSystemSelectors } from '@/stores/solarSystemStore';
-
 interface SearchAndFilterPanelProps {
   isVisible?: boolean;
   position?: string;
@@ -9,7 +8,6 @@ interface SearchAndFilterPanelProps {
   onResultSelect?: (result: any) => void;
   onFilterChange?: (filters: any) => void;
 }
-
 const SearchAndFilterPanel: React.FC<SearchAndFilterPanelProps> = ({
   isVisible = true,
   position = 'left',
@@ -22,20 +20,16 @@ const SearchAndFilterPanel: React.FC<SearchAndFilterPanelProps> = ({
   const activeFilters = useSolarSystemStore(solarSystemSelectors.activeFilters);
   const setSearchQuery = useSolarSystemStore(state => state.setSearchQuery);
   const setActiveFilters = useSolarSystemStore(state => state.setActiveFilters);
-
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
   };
-
   const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = event.target;
     const newFilters = { ...activeFilters, [name]: checked };
     setActiveFilters(newFilters);
     onFilterChange?.(newFilters);
   };
-
   if (!isVisible) return null;
-
   return (
     <div className={`absolute ${position === 'left' ? 'top-4 left-4' : 'top-4 right-4'} bg-gray-800 bg-opacity-75 p-4 rounded-lg text-white ${size === 'small' ? 'w-48' : size === 'large' ? 'w-80' : 'w-64'}`}>
       <div className="flex justify-between items-center mb-2">
@@ -96,5 +90,4 @@ const SearchAndFilterPanel: React.FC<SearchAndFilterPanelProps> = ({
     </div>
   );
 };
-
 export default SearchAndFilterPanel;

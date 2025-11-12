@@ -1,5 +1,4 @@
-from app.models.celestial_body import CelestialBody
-
+﻿from app.models.celestial_body import CelestialBody
 SOLAR_SYSTEM_DATA = [
     {
         "name": "Mercury", "type": "Planet", "mass": "0.330 x 10^24 kg", 
@@ -54,6 +53,5 @@ SOLAR_SYSTEM_DATA = [
         "radius": "473 km", "orbital_period": "1682 days", "parent_body": "Sun"
     }
 ]
-
 def get_all_celestial_bodies():
     return [CelestialBody(**data) for data in SOLAR_SYSTEM_DATA]

@@ -1,22 +1,12 @@
-'use client'
-
+﻿'use client'
 import * as THREE from 'three'
-
 export interface AsteroidMaterialOptions {
   hazardous?: boolean
   quality?: 'low' | 'medium' | 'high' | 'ultra'
 }
-
-/**
- * createAsteroidPBRMaterial
- * - Taş benzeri PBR görünümlü malzeme
- * - Dokular yoksa procedural canvas ile üretir
- */
 export function createAsteroidPBRMaterial(opts: AsteroidMaterialOptions = {}) {
   const { hazardous = false, quality = 'high' } = opts
   const size = quality === 'ultra' ? 1024 : quality === 'high' ? 512 : 256
-
-  // Diffuse procedural texture
   const diffuse = document.createElement('canvas')
   diffuse.width = size
   diffuse.height = size
@@ -42,8 +32,6 @@ export function createAsteroidPBRMaterial(opts: AsteroidMaterialOptions = {}) {
   const map = new THREE.CanvasTexture(diffuse)
   map.wrapS = THREE.RepeatWrapping
   map.wrapT = THREE.RepeatWrapping
-
-  // Normal procedural texture (very subtle)
   const normalCanvas = document.createElement('canvas')
   normalCanvas.width = size
   normalCanvas.height = size
@@ -62,7 +50,6 @@ export function createAsteroidPBRMaterial(opts: AsteroidMaterialOptions = {}) {
   }
   nctx.putImageData(nimg, 0, 0)
   const normalMap = new THREE.CanvasTexture(normalCanvas)
-
   const material = new THREE.MeshStandardMaterial({
     color: hazardous ? new THREE.Color('#7b4a35') : new THREE.Color('#8c8c92'),
     metalness: 0.08,
@@ -73,7 +60,4 @@ export function createAsteroidPBRMaterial(opts: AsteroidMaterialOptions = {}) {
   })
   return material
 }
-
 export default {}
-
-

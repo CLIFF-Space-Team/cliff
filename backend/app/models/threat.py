@@ -1,12 +1,7 @@
-from beanie import Document
+﻿from beanie import Document
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-
-# =============================================================================
-# BASITLEŞTIRILMIŞ THREAT MODELS - 3 SEVİYELİ SİSTEM
-# =============================================================================
-
 class SimpleThreatResponse(BaseModel):
     """Basit tehdit yanıtı - 3 seviyeli sistem"""
     threat_level: str = Field(..., description="Tehdit seviyesi: Düşük, Orta, Yüksek")
@@ -14,8 +9,6 @@ class SimpleThreatResponse(BaseModel):
     description: str = Field(..., description="Durum açıklaması")
     confidence: float = Field(..., description="Güvenilirlik (0-1)")
     last_updated: datetime = Field(..., description="Son güncelleme")
-
-
 class SimpleAlert(BaseModel):
     """Basit uyarı modeli"""
     id: str = Field(..., description="Uyarı ID")
@@ -25,8 +18,6 @@ class SimpleAlert(BaseModel):
     type: str = Field(..., description="Uyarı türü: asteroid, earth_event, space_weather")
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Oluşturulma zamanı")
     expires_at: Optional[datetime] = Field(None, description="Geçerlilik süresi")
-
-
 class ThreatStatistics(BaseModel):
     """Tehdit istatistikleri"""
     total_asteroids: int = Field(default=0, description="Toplam asteroit sayısı")
@@ -34,30 +25,17 @@ class ThreatStatistics(BaseModel):
     active_earth_events: int = Field(default=0, description="Aktif doğal olay sayısı")
     space_weather_events: int = Field(default=0, description="Uzay hava olayı sayısı")
     threat_distribution: Dict[str, int] = Field(default_factory=dict, description="Tehdit dağılımı")
-
-
 class SimplifiedThreatAssessment(Document):
     """Basitleştirilmiş tehdit değerlendirmesi - MongoDB"""
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Değerlendirme zamanı")
     overall_level: str = Field(..., description="Genel seviye: Düşük, Orta, Yüksek")
     confidence: float = Field(default=0.8, description="Güvenilirlik")
-    
-    # Basit istatistikler
     statistics: ThreatStatistics = Field(..., description="İstatistikler")
-    
-    # Kısa öneriler listesi
     recommendations: List[str] = Field(default_factory=list, description="Öneriler")
-    
-    # Veri kaynakları
     data_sources: List[str] = Field(default_factory=list, description="Kullanılan veri kaynakları")
-    
-    # Sonraki değerlendirme zamanı
     next_assessment: datetime = Field(..., description="Sonraki değerlendirme")
-    
     class Settings:
         name = "simplified_threat_assessments"
-
-
 class SimpleAlertDocument(Document):
     """Basit uyarı dokümanı - MongoDB"""
     alert_id: str = Field(..., description="Uyarı ID")
@@ -65,23 +43,12 @@ class SimpleAlertDocument(Document):
     title: str = Field(..., description="Başlık")
     message: str = Field(..., description="Mesaj")
     alert_type: str = Field(..., description="Tür")
-    
-    # Zaman bilgileri
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Oluşturulma")
     expires_at: Optional[datetime] = Field(None, description="Geçerlilik")
     acknowledged: bool = Field(default=False, description="Okundu mu?")
-    
-    # Ek bilgiler
     source_data: Optional[Dict[str, Any]] = Field(None, description="Kaynak veri")
-    
     class Settings:
         name = "simple_alerts"
-
-
-# =============================================================================
-# GERIYE DÖNÜK UYUMLULUK İÇİN ESKİ MODELLER - BASITLEŞTIRILMIŞ
-# =============================================================================
-
 class ThreatLevelResponse(BaseModel):
     """Geriye dönük uyumluluk için - basitleştirilmiş"""
     overall_threat_level: str = Field(..., description="Genel tehdit seviyesi")
@@ -90,8 +57,6 @@ class ThreatLevelResponse(BaseModel):
     last_updated: datetime = Field(default_factory=datetime.utcnow, description="Son güncelleme")
     data_sources: List[str] = Field(default_factory=list, description="Veri kaynakları")
     confidence_score: float = Field(default=0.8, description="Güvenilirlik")
-
-
 class ThreatDetail(BaseModel):
     """Basitleştirilmiş tehdit detayı"""
     threat_id: str = Field(..., description="Tehdit ID")
@@ -105,8 +70,6 @@ class ThreatDetail(BaseModel):
     data_source: str = Field(default="CLIFF", description="Veri kaynağı")
     coordinates: Optional[Dict[str, float]] = Field(None, description="Koordinatlar")
     ai_analysis: Optional[Dict[str, Any]] = Field(None, description="AI analizi")
-
-
 class ComprehensiveAssessment(Document):
     """Basitleştirilmiş kapsamlı değerlendirme"""
     timestamp: datetime = Field(default_factory=datetime.utcnow)
@@ -116,11 +79,8 @@ class ComprehensiveAssessment(Document):
     geographic_hotspots: List[Dict[str, Any]] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     next_assessment: datetime = Field(...)
-
     class Settings:
         name = "comprehensive_assessments"
-
-
 class ThreatAlert(Document):
     """Basitleştirilmiş tehdit uyarısı"""
     alert_id: str = Field(...)
@@ -129,15 +89,8 @@ class ThreatAlert(Document):
     threat_details: ThreatDetail = Field(...)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     expires_at: Optional[datetime] = Field(None)
-
     class Settings:
         name = "threat_alerts"
-
-
-# =============================================================================
-# YENİ BASIT API RESPONSE MODELLER
-# =============================================================================
-
 class CurrentThreatResponse(BaseModel):
     """Güncel tehdit durumu yanıtı"""
     threat_level: str = Field(..., description="Düşük, Orta, Yüksek")
@@ -147,8 +100,6 @@ class CurrentThreatResponse(BaseModel):
     recommendations: List[str] = Field(..., description="Öneriler")
     last_updated: str = Field(..., description="Son güncelleme (ISO format)")
     confidence: float = Field(..., description="Güvenilirlik")
-
-
 class ThreatSummaryResponse(BaseModel):
     """Tehdit özeti yanıtı"""
     overall_status: str = Field(..., description="normal, watch, elevated")
@@ -156,8 +107,6 @@ class ThreatSummaryResponse(BaseModel):
     medium_priority_threats: List[Dict[str, Any]] = Field(..., description="Orta öncelik")
     statistics: Dict[str, Any] = Field(..., description="İstatistikler")
     last_updated: str = Field(..., description="Son güncelleme")
-
-
 class AsteroidThreatResponse(BaseModel):
     """Asteroit tehdit yanıtı"""
     asteroids: List[Dict[str, Any]] = Field(..., description="Asteroit listesi")
@@ -165,8 +114,6 @@ class AsteroidThreatResponse(BaseModel):
     hazardous_count: int = Field(..., description="Tehlikeli sayı")
     threat_distribution: Dict[str, int] = Field(..., description="Tehdit dağılımı")
     last_updated: str = Field(..., description="Son güncelleme")
-
-
 class EarthEventResponse(BaseModel):
     """Doğal olay yanıtı"""
     events: List[Dict[str, Any]] = Field(..., description="Olay listesi")
@@ -174,8 +121,6 @@ class EarthEventResponse(BaseModel):
     severity_distribution: Dict[str, int] = Field(..., description="Önem dağılımı")
     category_distribution: Dict[str, int] = Field(..., description="Kategori dağılımı")
     last_updated: str = Field(..., description="Son güncelleme")
-
-
 class SpaceWeatherResponse(BaseModel):
     """Uzay hava durumu yanıtı"""
     events: List[Dict[str, Any]] = Field(..., description="Olay listesi")
@@ -184,12 +129,6 @@ class SpaceWeatherResponse(BaseModel):
     recent_high_activity: int = Field(..., description="Son yüksek aktivite")
     current_condition: str = Field(..., description="Mevcut durum")
     last_updated: str = Field(..., description="Son güncelleme")
-
-
-# =============================================================================
-# UTILITY FUNCTIONS
-# =============================================================================
-
 def convert_old_severity_to_new(old_severity: str) -> str:
     """Eski seviye sistemini yeniye çevir"""
     mapping = {
@@ -202,8 +141,6 @@ def convert_old_severity_to_new(old_severity: str) -> str:
         "CRITICAL": "Yüksek"
     }
     return mapping.get(old_severity.upper(), "Düşük")
-
-
 def get_threat_color(level: str) -> str:
     """Tehdit seviyesine göre renk"""
     colors = {
@@ -212,8 +149,6 @@ def get_threat_color(level: str) -> str:
         "Yüksek": "#ef4444"    # Kırmızı
     }
     return colors.get(level, "#22c55e")
-
-
 def calculate_simple_risk_score(level: str, threat_count: int = 0) -> float:
     """Basit risk skoru hesaplama"""
     base_scores = {
@@ -222,6 +157,5 @@ def calculate_simple_risk_score(level: str, threat_count: int = 0) -> float:
         "Yüksek": 75.0
     }
     base = base_scores.get(level, 25.0)
-    # Tehdit sayısına göre küçük artış
     adjustment = min(threat_count * 2.0, 20.0)
     return min(base + adjustment, 100.0)

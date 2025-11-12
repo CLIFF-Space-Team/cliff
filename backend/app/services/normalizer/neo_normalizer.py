@@ -1,21 +1,10 @@
-"""
-NEO Normalizer
-- Sentry ve NeoWs kayıtlarını tekil NEO kimliklerine eşler
-"""
-
-from __future__ import annotations
-
+﻿from __future__ import annotations
 from typing import Dict
 import re
 import structlog
 from motor.motor_asyncio import AsyncIOMotorCollection
-
 from app.core.database import get_collection
-
-
 logger = structlog.get_logger(__name__)
-
-
 def _norm_name(name: str) -> str:
     if not name:
         return ""
@@ -23,28 +12,20 @@ def _norm_name(name: str) -> str:
     s = re.sub(r"[()]+", "", s)
     s = re.sub(r"\s+", " ", s)
     return s
-
-
 async def normalize_neos() -> Dict[str, int]:
     """Sentry risk kayıtlarını mevcut NeoWs kimlikleriyle eşler.
-
     Strateji:
       - asteroids koleksiyonunda neows_id atanmış kayıtların isim haritasını kur
       - risk_assessments('sentry') kayıtlarında neo_id'yi bu haritaya göre neows_id'ye çevir
     """
-
     asteroids: AsyncIOMotorCollection = get_collection("asteroids")
     risks: AsyncIOMotorCollection = get_collection("risk_assessments")
-
-    # 1) İsim -> neows_id haritası
     name_to_neows: Dict[str, str] = {}
     async for doc in asteroids.find({"neows_id": {"$exists": True, "$ne": None}}):
         name = _norm_name(doc.get("name") or doc.get("neo_id"))
         neows_id = str(doc.get("neows_id"))
         if name and neows_id:
             name_to_neows[name] = neows_id
-
-    # 2) Sentry risk kayıtları için eşleme
     updated = 0
     cursor = risks.find({"source": "sentry"})
     async for r in cursor:
@@ -54,8 +35,5 @@ async def normalize_neos() -> Dict[str, int]:
         if target_neows and neo_id != target_neows:
             await risks.update_one({"_id": r["_id"]}, {"$set": {"neo_id": target_neows}})
             updated += 1
-
     logger.info("NEO normalize tamamlandı", updated=updated, known=len(name_to_neows))
     return {"updated": updated, "known": len(name_to_neows)}
-
-

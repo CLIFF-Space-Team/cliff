@@ -1,8 +1,6 @@
-"use client"
-
+﻿"use client"
 import * as React from "react"
 import { cn } from "@/lib/utils"
-
 interface SliderProps {
   value: number[]
   onValueChange: (value: number[]) => void
@@ -11,13 +9,11 @@ interface SliderProps {
   step?: number
   className?: string
 }
-
 const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
   ({ className, value, onValueChange, min = 0, max = 1, step = 0.1, ...props }, ref) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       onValueChange([parseFloat(e.target.value)])
     }
-
     return (
       <div className={cn("relative flex w-full touch-none select-none items-center", className)}>
         <input
@@ -56,7 +52,5 @@ const Slider = React.forwardRef<HTMLInputElement, SliderProps>(
     )
   }
 )
-
 Slider.displayName = "Slider"
-
 export { Slider }

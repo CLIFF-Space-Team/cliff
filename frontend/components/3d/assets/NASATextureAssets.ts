@@ -1,7 +1,4 @@
-// CLIFF 3D Solar System - NASA Texture Assets Manager
-// High-quality texture management system using NASA/JPL resources
-
-export interface NASATextureAsset {
+﻿export interface NASATextureAsset {
   id: string
   name: string
   description: string
@@ -9,31 +6,21 @@ export interface NASATextureAsset {
   datasetId?: string
   captureDate?: string
   instrument?: string
-  
-  // Texture variants by resolution
   variants: {
     ultra: string    // 8K+ resolution
     high: string     // 4K resolution  
     medium: string   // 2K resolution
     low: string      // 1K resolution
   }
-  
-  // Texture metadata
   originalResolution: { width: number; height: number }
   fileSize: { [key: string]: number } // Size in MB for each variant
   colorSpace: 'sRGB' | 'Linear' | 'Rec2020'
   bitDepth: 8 | 16 | 32
   hasAlpha: boolean
-  
-  // Usage licensing
   license: 'public_domain' | 'creative_commons' | 'nasa_media_usage'
   attribution?: string
-  
-  // Quality indicators
   authenticity: 'real_data' | 'enhanced_real' | 'artistic_interpretation' | 'procedural'
   lastUpdated: string
-  
-  // Related textures
   companions?: {
     normal?: string
     specular?: string
@@ -42,7 +29,6 @@ export interface NASATextureAsset {
     emission?: string
   }
 }
-
 export interface PlanetaryTextureSet {
   planetId: string
   primarySurface: NASATextureAsset
@@ -53,8 +39,6 @@ export interface PlanetaryTextureSet {
   seasonalVariants?: { [season: string]: NASATextureAsset[] }
   specialFeatures?: { [feature: string]: NASATextureAsset }
 }
-
-// NASA-sourced texture catalog
 export const NASA_TEXTURE_CATALOG: Record<string, PlanetaryTextureSet> = {
   sun: {
     planetId: 'sun',
@@ -85,7 +69,6 @@ export const NASA_TEXTURE_CATALOG: Record<string, PlanetaryTextureSet> = {
       }
     }
   },
-  
   mercury: {
     planetId: 'mercury',
     primarySurface: {
@@ -116,7 +99,6 @@ export const NASA_TEXTURE_CATALOG: Record<string, PlanetaryTextureSet> = {
       }
     }
   },
-  
   venus: {
     planetId: 'venus',
     primarySurface: {
@@ -143,7 +125,6 @@ export const NASA_TEXTURE_CATALOG: Record<string, PlanetaryTextureSet> = {
       lastUpdated: '2023-12-08'
     }
   },
-  
   earth: {
     planetId: 'earth',
     primarySurface: {
@@ -218,7 +199,6 @@ export const NASA_TEXTURE_CATALOG: Record<string, PlanetaryTextureSet> = {
       lastUpdated: '2023-12-31'
     }]
   },
-  
   mars: {
     planetId: 'mars',
     primarySurface: {
@@ -246,7 +226,6 @@ export const NASA_TEXTURE_CATALOG: Record<string, PlanetaryTextureSet> = {
       lastUpdated: '2023-07-15'
     }
   },
-  
   jupiter: {
     planetId: 'jupiter',
     primarySurface: {
@@ -274,7 +253,6 @@ export const NASA_TEXTURE_CATALOG: Record<string, PlanetaryTextureSet> = {
       lastUpdated: '2023-11-15'
     }
   },
-  
   saturn: {
     planetId: 'saturn',
     primarySurface: {
@@ -303,55 +281,40 @@ export const NASA_TEXTURE_CATALOG: Record<string, PlanetaryTextureSet> = {
     }
   }
 }
-
 export class NASATextureAssetManager {
   private static instance: NASATextureAssetManager
   private catalog: Record<string, PlanetaryTextureSet>
   private loadedAssets: Map<string, NASATextureAsset>
   private downloadQueue: Map<string, Promise<void>>
-  
-  // Asset validation and verification
   private verificationCache: Map<string, boolean>
   private downloadMetrics: Map<string, {
     downloadTime: number
     downloadSize: number
     lastAccessed: number
   }>
-  
   private constructor() {
     this.catalog = { ...NASA_TEXTURE_CATALOG }
     this.loadedAssets = new Map()
     this.downloadQueue = new Map()
     this.verificationCache = new Map()
     this.downloadMetrics = new Map()
-    
     this.initializeAssetVerification()
   }
-  
   public static getInstance(): NASATextureAssetManager {
     if (!NASATextureAssetManager.instance) {
       NASATextureAssetManager.instance = new NASATextureAssetManager()
     }
     return NASATextureAssetManager.instance
   }
-  
-  /**
-   * Initialize asset verification system
-   */
   private initializeAssetVerification(): void {
-    // In a production environment, this would verify asset integrity
     console.log('🔍 Initializing NASA texture asset verification...')
-    
-    // Simulate asset verification for demo
     Object.values(this.catalog).forEach(planetSet => {
       this.verificationCache.set(planetSet.primarySurface.id, true)
-      
       if (planetSet.atmosphereTextures) {
         planetSet.atmosphereTextures.forEach(asset => {
           this.verificationCache.set(asset.id, true)
         })
       }
-      
       if (planetSet.specialFeatures) {
         Object.values(planetSet.specialFeatures).forEach(asset => {
           this.verificationCache.set(asset.id, true)
@@ -359,52 +322,34 @@ export class NASATextureAssetManager {
       }
     })
   }
-  
-  /**
-   * Get texture set for a planet
-   */
   public getPlanetTextureSet(planetId: string): PlanetaryTextureSet | undefined {
     return this.catalog[planetId]
   }
-  
-  /**
-   * Get specific texture asset
-   */
   public getTextureAsset(assetId: string): NASATextureAsset | undefined {
-    // Search through catalog
     for (const planetSet of Object.values(this.catalog)) {
       if (planetSet.primarySurface.id === assetId) {
         return planetSet.primarySurface
       }
-      
       if (planetSet.atmosphereTextures) {
         const found = planetSet.atmosphereTextures.find(asset => asset.id === assetId)
         if (found) return found
       }
-      
       if (planetSet.cloudTextures) {
         const found = planetSet.cloudTextures.find(asset => asset.id === assetId)
         if (found) return found
       }
-      
       if (planetSet.nightTextures) {
         const found = planetSet.nightTextures.find(asset => asset.id === assetId)
         if (found) return found
       }
-      
       if (planetSet.specialFeatures) {
         for (const feature of Object.values(planetSet.specialFeatures)) {
           if (feature.id === assetId) return feature
         }
       }
     }
-    
     return undefined
   }
-  
-  /**
-   * Get texture URL for specific quality level
-   */
   public getTextureURL(
     assetId: string, 
     quality: 'ultra' | 'high' | 'medium' | 'low' = 'high'
@@ -414,49 +359,28 @@ export class NASATextureAssetManager {
       console.warn(`Texture asset not found: ${assetId}`)
       return null
     }
-    
     return asset.variants[quality] || asset.variants.high || asset.variants.medium
   }
-  
-  /**
-   * Verify asset integrity and availability
-   */
   public async verifyAsset(assetId: string): Promise<boolean> {
     if (this.verificationCache.has(assetId)) {
       return this.verificationCache.get(assetId)!
     }
-    
     const asset = this.getTextureAsset(assetId)
     if (!asset) return false
-    
     try {
-      // In production, this would check file existence and integrity
-      // For demo purposes, we'll simulate this
       const verified = await this.simulateAssetVerification(asset)
       this.verificationCache.set(assetId, verified)
       return verified
-      
     } catch (error) {
       console.error(`Failed to verify asset ${assetId}:`, error)
       this.verificationCache.set(assetId, false)
       return false
     }
   }
-  
-  /**
-   * Simulate asset verification (for demo)
-   */
   private async simulateAssetVerification(asset: NASATextureAsset): Promise<boolean> {
-    // Simulate network check delay
     await new Promise(resolve => setTimeout(resolve, 100))
-    
-    // For demo, assume 95% availability
     return Math.random() > 0.05
   }
-  
-  /**
-   * Get asset metadata and statistics
-   */
   public getAssetMetadata(assetId: string): {
     asset: NASATextureAsset | undefined
     verified: boolean
@@ -469,44 +393,30 @@ export class NASATextureAssetManager {
     const asset = this.getTextureAsset(assetId)
     const verified = this.verificationCache.get(assetId) || false
     const metrics = this.downloadMetrics.get(assetId)
-    
     return {
       asset,
       verified,
       downloadMetrics: metrics
     }
   }
-  
-  /**
-   * Get all available texture assets for a planet
-   */
   public getAllPlanetAssets(planetId: string): NASATextureAsset[] {
     const planetSet = this.catalog[planetId]
     if (!planetSet) return []
-    
     const assets: NASATextureAsset[] = [planetSet.primarySurface]
-    
     if (planetSet.atmosphereTextures) assets.push(...planetSet.atmosphereTextures)
     if (planetSet.cloudTextures) assets.push(...planetSet.cloudTextures)
     if (planetSet.nightTextures) assets.push(...planetSet.nightTextures)
     if (planetSet.polarTextures) assets.push(...planetSet.polarTextures)
-    
     if (planetSet.seasonalVariants) {
       Object.values(planetSet.seasonalVariants).forEach(variants => {
         assets.push(...variants)
       })
     }
-    
     if (planetSet.specialFeatures) {
       assets.push(...Object.values(planetSet.specialFeatures))
     }
-    
     return assets
   }
-  
-  /**
-   * Get texture recommendations based on quality level and bandwidth
-   */
   public getRecommendedTextures(
     planetId: string,
     targetQuality: 'ultra' | 'high' | 'medium' | 'low',
@@ -520,10 +430,8 @@ export class NASATextureAssetManager {
     if (!planetSet) {
       return { primary: { assetId: '', url: '' }, companions: [], totalSize: 0 }
     }
-    
     const primary = planetSet.primarySurface
     let totalSize = primary.fileSize[targetQuality] || 0
-    
     const recommendations = {
       primary: {
         assetId: primary.id,
@@ -532,17 +440,13 @@ export class NASATextureAssetManager {
       companions: [] as { type: string; assetId: string; url: string }[],
       totalSize
     }
-    
-    // Add companions if within bandwidth budget
     const companions = [
       { type: 'atmosphere', assets: planetSet.atmosphereTextures },
       { type: 'clouds', assets: planetSet.cloudTextures },
       { type: 'night_lights', assets: planetSet.nightTextures }
     ]
-    
     for (const companion of companions) {
       if (!companion.assets) continue
-      
       for (const asset of companion.assets) {
         const assetSize = asset.fileSize[targetQuality] || 0
         if (totalSize + assetSize <= bandwidthLimitMB) {
@@ -555,14 +459,9 @@ export class NASATextureAssetManager {
         }
       }
     }
-    
     recommendations.totalSize = totalSize
     return recommendations
   }
-  
-  /**
-   * Register texture download metrics
-   */
   public recordDownloadMetrics(assetId: string, downloadTime: number, downloadSize: number): void {
     this.downloadMetrics.set(assetId, {
       downloadTime,
@@ -570,10 +469,6 @@ export class NASATextureAssetManager {
       lastAccessed: Date.now()
     })
   }
-  
-  /**
-   * Get catalog statistics
-   */
   public getCatalogStats(): {
     totalAssets: number
     totalPlanets: number
@@ -587,23 +482,18 @@ export class NASATextureAssetManager {
     let verifiedAssets = 0
     const sourceBreakdown: Record<string, number> = {}
     const authenticityBreakdown: Record<string, number> = {}
-    
     Object.values(this.catalog).forEach(planetSet => {
       const allAssets = this.getAllPlanetAssets(planetSet.planetId)
       totalAssets += allAssets.length
-      
       allAssets.forEach(asset => {
         totalDataSize += asset.fileSize.ultra || 0
-        
         if (this.verificationCache.get(asset.id)) {
           verifiedAssets++
         }
-        
         sourceBreakdown[asset.source] = (sourceBreakdown[asset.source] || 0) + 1
         authenticityBreakdown[asset.authenticity] = (authenticityBreakdown[asset.authenticity] || 0) + 1
       })
     })
-    
     return {
       totalAssets,
       totalPlanets: Object.keys(this.catalog).length,
@@ -613,26 +503,16 @@ export class NASATextureAssetManager {
       authenticityBreakdown
     }
   }
-  
-  /**
-   * Update catalog with new assets
-   */
   public updateCatalog(updates: Partial<Record<string, PlanetaryTextureSet>>): void {
     Object.assign(this.catalog, updates)
     console.log('📦 NASA Texture Catalog updated')
   }
-  
-  /**
-   * Dispose resources
-   */
   public dispose(): void {
     this.loadedAssets.clear()
     this.downloadQueue.clear()
     this.verificationCache.clear()
     this.downloadMetrics.clear()
-    
     console.log('🗑️ NASATextureAssetManager disposed')
   }
 }
-
 export default NASATextureAssetManager

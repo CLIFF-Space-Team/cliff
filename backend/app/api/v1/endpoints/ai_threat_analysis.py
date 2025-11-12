@@ -1,17 +1,10 @@
-"""
-🤖 AI-Powered Threat Analysis API Endpoints
-Yeni nesil AI destekli tehdit analiz sistemi API'leri
-"""
-
-import asyncio
+﻿import asyncio
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Union
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, Path, Body
 from fastapi.responses import StreamingResponse
 import structlog
 import json
-
-# Real AI Services imports
 from app.services.real_ai_threat_processor import (
     get_real_master_threat_orchestrator as get_master_threat_orchestrator,
 )
@@ -26,20 +19,9 @@ from app.services.simple_threat_processor import (
     OrchestrationPhase,
     DataSource
 )
-# User-Friendly AI Explainer
 from app.services.user_friendly_ai_explainer import get_user_friendly_explainer
-
-# Setup logging
 logger = structlog.get_logger(__name__)
-
-# Create router
 router = APIRouter()
-
-
-# =============================================================================
-# COMPREHENSIVE AI ANALYSIS ENDPOINTS
-# =============================================================================
-
 @router.post("/analysis/comprehensive")
 async def start_comprehensive_threat_analysis(
     background_tasks: BackgroundTasks,
@@ -55,8 +37,6 @@ async def start_comprehensive_threat_analysis(
     """
     try:
         logger.info("Comprehensive AI threat analysis başlatılıyor...")
-        
-        # Data sources validation
         valid_sources = []
         if sources:
             for source in sources:
@@ -64,8 +44,6 @@ async def start_comprehensive_threat_analysis(
                     valid_sources.append(DataSource(source))
                 except ValueError:
                     logger.warning(f"Invalid data source: {source}")
-        
-        # Start analysis in background
         analysis_task = asyncio.create_task(
             orchestrator.execute_comprehensive_analysis(
                 sources=valid_sources if valid_sources else None,
@@ -74,14 +52,9 @@ async def start_comprehensive_threat_analysis(
                 session_id=session_id
             )
         )
-        
-        # Don't await the task, let it run in background
         background_tasks.add_task(_handle_analysis_completion, analysis_task)
-        
-        # Generate session ID if not provided
         if not session_id:
             session_id = f"analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
         return {
             "status": "started",
             "session_id": session_id,
@@ -97,15 +70,12 @@ async def start_comprehensive_threat_analysis(
             "results_endpoint": f"/api/v1/ai-analysis/results/{session_id}",
             "initiated_at": datetime.now().isoformat()
         }
-        
     except Exception as e:
         logger.error(f"Comprehensive analysis start error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"AI threat analysis başlatılamadı: {str(e)}"
         )
-
-
 @router.get("/analysis/status/{session_id}")
 async def get_analysis_status(
     session_id: str = Path(..., description="Analysis session ID"),
@@ -116,19 +86,16 @@ async def get_analysis_status(
     """
     try:
         status = await orchestrator.get_orchestration_status(session_id)
-        
         if not status:
             raise HTTPException(
                 status_code=404,
                 detail=f"Session {session_id} bulunamadı"
             )
-        
         return {
             "session_id": session_id,
             "status": status,
             "checked_at": datetime.now().isoformat()
         }
-        
     except HTTPException:
         raise
     except Exception as e:
@@ -137,8 +104,6 @@ async def get_analysis_status(
             status_code=500,
             detail=f"Status sorgulanamadı: {str(e)}"
         )
-
-
 @router.get("/analysis/results/{session_id}")
 async def get_analysis_results(
     session_id: str = Path(..., description="Analysis session ID"),
@@ -151,13 +116,11 @@ async def get_analysis_results(
     """
     try:
         status = await orchestrator.get_orchestration_status(session_id)
-        
         if not status:
             raise HTTPException(
                 status_code=404,
                 detail=f"Session {session_id} bulunamadı"
             )
-        
         if status.get('status') != 'completed':
             return {
                 "session_id": session_id,
@@ -166,17 +129,13 @@ async def get_analysis_results(
                 "message": "Analiz henüz tamamlanmadı",
                 "progress": status.get('progress_percentage', 0)
             }
-        
-        # Get detailed results from orchestrator
         try:
             results = await orchestrator.get_analysis_results(session_id)
             logger.info(f"Retrieved results for session {session_id}: {bool(results)}")
         except Exception as e:
             logger.error(f"Failed to get results for session {session_id}: {str(e)}")
             results = None
-        
         if not results:
-            # Try to get results from status if available
             status_results = status.get("results", {})
             if status_results:
                 results = status_results
@@ -189,22 +148,16 @@ async def get_analysis_results(
                     "note": "Sonuçlar birkaç saniye içinde hazır olacak",
                     "retrieved_at": datetime.now().isoformat()
                 }
-        
         if format == "summary":
-            # User-friendly açıklama oluştur
             explainer = get_user_friendly_explainer()
             friendly_explanation = explainer.explain_threat_analysis(results)
-            
             return {
                 "session_id": session_id,
                 "status": "completed",
                 "summary": results.get("summary", {}),
                 "key_insights": results.get("key_insights", []),
                 "immediate_actions": results.get("immediate_actions", []),
-                
-                # Kullanıcı dostu açıklamalar
                 "user_friendly": friendly_explanation,
-                
                 "retrieved_at": datetime.now().isoformat()
             }
         elif format == "detailed":
@@ -231,7 +184,6 @@ async def get_analysis_results(
                 },
                 "retrieved_at": datetime.now().isoformat()
             }
-        
     except HTTPException:
         raise
     except Exception as e:
@@ -240,8 +192,6 @@ async def get_analysis_results(
             status_code=500,
             detail=f"Sonuçlar alınamadı: {str(e)}"
         )
-
-
 @router.get("/analysis/stream/{session_id}")
 async def stream_analysis_progress(
     session_id: str = Path(..., description="Analysis session ID"),
@@ -255,22 +205,16 @@ async def stream_analysis_progress(
         try:
             while True:
                 status = await orchestrator.get_orchestration_status(session_id)
-                
                 if not status:
                     yield f"data: {json.dumps({'error': 'Session not found'})}\n\n"
                     break
-                
                 yield f"data: {json.dumps(status)}\n\n"
-                
                 if status.get('status') in ['completed', 'failed', 'timeout']:
                     yield f"data: {json.dumps({'final': True})}\n\n"
                     break
-                
                 await asyncio.sleep(2)  # Update every 2 seconds
-                
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
-    
     return StreamingResponse(
         generate_progress(),
         media_type="text/plain",
@@ -279,12 +223,6 @@ async def stream_analysis_progress(
             "Connection": "keep-alive",
         }
     )
-
-
-# =============================================================================
-# INDIVIDUAL AI SERVICES ENDPOINTS
-# =============================================================================
-
 @router.post("/services/threat-processor/analyze")
 async def analyze_threat_with_ai(
     threat_data: Dict[str, Any] = Body(..., description="Threat data to analyze"),
@@ -295,9 +233,7 @@ async def analyze_threat_with_ai(
     """
     try:
         logger.info("Intelligent threat analysis başlatılıyor...")
-        
         result = await processor.analyze_threat(threat_data)
-        
         return {
             "status": "success",
             "analysis_result": {
@@ -313,15 +249,12 @@ async def analyze_threat_with_ai(
             "processing_time": result.processing_time_seconds,
             "analyzed_at": datetime.now().isoformat()
         }
-        
     except Exception as e:
         logger.error(f"Threat analysis error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Threat analysis failed: {str(e)}"
         )
-
-
 @router.post("/services/priority-engine/calculate")
 async def calculate_threat_priority(
     threat_data: Dict[str, Any] = Body(..., description="Threat data for priority calculation"),
@@ -332,9 +265,7 @@ async def calculate_threat_priority(
     """
     try:
         logger.info("Priority calculation başlatılıyor...")
-        
         result = await priority_engine.calculate_priority(threat_data)
-        
         return {
             "status": "success",
             "priority_result": {
@@ -350,15 +281,12 @@ async def calculate_threat_priority(
             "processing_time": result.processing_time_seconds,
             "calculated_at": datetime.now().isoformat()
         }
-        
     except Exception as e:
         logger.error(f"Priority calculation error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Priority calculation failed: {str(e)}"
         )
-
-
 @router.post("/services/risk-calculator/assess")
 async def assess_threat_risk(
     threat_data: Dict[str, Any] = Body(..., description="Threat data for risk assessment"),
@@ -369,9 +297,7 @@ async def assess_threat_risk(
     """
     try:
         logger.info("Risk assessment başlatılıyor...")
-        
         result = await risk_calculator.assess_risk(threat_data)
-        
         return {
             "status": "success",
             "risk_assessment": {
@@ -389,15 +315,12 @@ async def assess_threat_risk(
             "processing_time": result.processing_time_seconds,
             "assessed_at": datetime.now().isoformat()
         }
-        
     except Exception as e:
         logger.error(f"Risk assessment error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Risk assessment failed: {str(e)}"
         )
-
-
 @router.post("/services/correlation-engine/analyze")
 async def analyze_threat_correlations(
     threats_data: List[Dict[str, Any]] = Body(..., description="List of threats to correlate"),
@@ -408,9 +331,7 @@ async def analyze_threat_correlations(
     """
     try:
         logger.info(f"Correlation analysis başlatılıyor ({len(threats_data)} threats)...")
-        
         result = await correlation_engine.analyze_threat_correlations(threats_data)
-        
         return {
             "status": "success",
             "correlation_analysis": {
@@ -436,19 +357,12 @@ async def analyze_threat_correlations(
             ],
             "analyzed_at": datetime.now().isoformat()
         }
-        
     except Exception as e:
         logger.error(f"Correlation analysis error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Correlation analysis failed: {str(e)}"
         )
-
-
-# =============================================================================
-# DATA INTEGRATION ENDPOINTS
-# =============================================================================
-
 @router.get("/data-sources/health")
 async def get_data_sources_health(
     data_integrator = Depends(get_multi_source_data_integrator)
@@ -459,21 +373,17 @@ async def get_data_sources_health(
     try:
         async with data_integrator as integrator:
             health_status = await integrator.get_source_health_status()
-        
         return {
             "status": "success",
             "data_sources_health": health_status,
             "checked_at": datetime.now().isoformat()
         }
-        
     except Exception as e:
         logger.error(f"Data sources health check error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Data sources health check failed: {str(e)}"
         )
-
-
 @router.get("/data-sources/supported")
 async def get_supported_data_sources(
     data_integrator = Depends(get_multi_source_data_integrator)
@@ -483,7 +393,6 @@ async def get_supported_data_sources(
     """
     try:
         supported_sources = data_integrator.get_supported_sources()
-        
         source_details = {
             "nasa_neo": "NASA Near Earth Objects API",
             "nasa_eonet": "NASA Earth Observatory Natural Event Tracker",
@@ -493,7 +402,6 @@ async def get_supported_data_sources(
             "noaa_swpc": "NOAA Space Weather Prediction Center",
             "celestrak": "Satellite Tracking Data"
         }
-        
         return {
             "status": "success",
             "supported_sources": supported_sources,
@@ -504,15 +412,12 @@ async def get_supported_data_sources(
             "total_sources": len(supported_sources),
             "retrieved_at": datetime.now().isoformat()
         }
-        
     except Exception as e:
         logger.error(f"Supported sources error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Supported sources retrieval failed: {str(e)}"
         )
-
-
 @router.post("/data-sources/fetch")
 async def fetch_raw_threat_data(
     sources: Optional[List[str]] = Body(None, description="Specific sources to fetch"),
@@ -524,8 +429,6 @@ async def fetch_raw_threat_data(
     """
     try:
         logger.info(f"Raw data fetching başlatılıyor ({sources or 'all sources'})...")
-        
-        # Convert sources to DataSource enum
         data_sources = []
         if sources:
             for source in sources:
@@ -533,16 +436,12 @@ async def fetch_raw_threat_data(
                     data_sources.append(DataSource(source))
                 except ValueError:
                     logger.warning(f"Invalid source: {source}")
-        
         async with data_integrator as integrator:
             normalized_threats = await integrator.fetch_all_threat_data(
                 sources=data_sources if data_sources else None,
                 lookback_days=lookback_days
             )
-        
-        # Convert to serializable format
         threats_data = [threat.to_dict() for threat in normalized_threats]
-        
         return {
             "status": "success",
             "raw_data_fetched": len(normalized_threats),
@@ -552,19 +451,12 @@ async def fetch_raw_threat_data(
             "lookback_days": lookback_days,
             "fetched_at": datetime.now().isoformat()
         }
-        
     except Exception as e:
         logger.error(f"Data fetching error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Data fetching failed: {str(e)}"
         )
-
-
-# =============================================================================
-# SYSTEM MONITORING ENDPOINTS
-# =============================================================================
-
 @router.get("/system/health")
 async def get_ai_system_health(
     orchestrator = Depends(get_master_threat_orchestrator)
@@ -574,21 +466,17 @@ async def get_ai_system_health(
     """
     try:
         health_status = await orchestrator.get_system_health()
-        
         return {
             "status": "success",
             "system_health": health_status,
             "checked_at": datetime.now().isoformat()
         }
-        
     except Exception as e:
         logger.error(f"System health check error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"System health check failed: {str(e)}"
         )
-
-
 @router.post("/system/cleanup")
 async def cleanup_old_sessions(
     max_age_hours: int = Body(24, ge=1, le=168, description="Maximum age in hours"),
@@ -599,25 +487,17 @@ async def cleanup_old_sessions(
     """
     try:
         await orchestrator.cleanup_old_sessions(max_age_hours=max_age_hours)
-        
         return {
             "status": "success",
             "message": f"Sessions older than {max_age_hours} hours cleaned up",
             "cleaned_at": datetime.now().isoformat()
         }
-        
     except Exception as e:
         logger.error(f"Session cleanup error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Session cleanup failed: {str(e)}"
         )
-
-
-# =============================================================================
-# QUICK ANALYSIS ENDPOINTS
-# =============================================================================
-
 @router.post("/quick-analysis")
 async def quick_threat_analysis(
     threat_data: Dict[str, Any] = Body(..., description="Single threat data"),
@@ -629,10 +509,6 @@ async def quick_threat_analysis(
     """
     try:
         logger.info(f"Quick analysis başlatılıyor (type: {analysis_type})...")
-        
-        # This would implement a lightweight analysis
-        # For now, returning a structured response
-        
         analysis_result = {
             "threat_id": threat_data.get("threat_id", "unknown"),
             "analysis_type": analysis_type,
@@ -646,40 +522,24 @@ async def quick_threat_analysis(
             },
             "analyzed_at": datetime.now().isoformat()
         }
-        
         return {
             "status": "success",
             "quick_analysis": analysis_result,
             "processing_time_ms": 150  # Simulated quick processing
         }
-        
     except Exception as e:
         logger.error(f"Quick analysis error: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Quick analysis failed: {str(e)}"
         )
-
-
-# =============================================================================
-# UTILITY FUNCTIONS
-# =============================================================================
-
 async def _handle_analysis_completion(analysis_task):
     """Handle completion of analysis task"""
     try:
         result = await analysis_task
         logger.info(f"Analysis completed: {result.session_id}")
-        # Here you could send notifications, update webhooks, etc.
-        
     except Exception as e:
         logger.error(f"Analysis completion handler error: {str(e)}")
-
-
-# =============================================================================
-# BATCH OPERATIONS
-# =============================================================================
-
 @router.post("/batch/analyze-multiple")
 async def analyze_multiple_threats(
     background_tasks: BackgroundTasks,
@@ -695,19 +555,14 @@ async def analyze_multiple_threats(
                 status_code=400,
                 detail="Maximum 100 threats can be analyzed in a batch"
             )
-        
         session_id = f"batch_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        
         logger.info(f"Batch analysis başlatılıyor ({len(threats_data)} threats)...")
-        
-        # Start batch processing in background
         background_tasks.add_task(
             _process_batch_analysis,
             threats_data,
             session_id,
             orchestrator
         )
-        
         return {
             "status": "started",
             "session_id": session_id,
@@ -717,7 +572,6 @@ async def analyze_multiple_threats(
             "status_endpoint": f"/api/v1/ai-analysis/status/{session_id}",
             "initiated_at": datetime.now().isoformat()
         }
-        
     except HTTPException:
         raise
     except Exception as e:
@@ -726,27 +580,14 @@ async def analyze_multiple_threats(
             status_code=500,
             detail=f"Batch analysis failed: {str(e)}"
         )
-
-
 async def _process_batch_analysis(threats_data, session_id, orchestrator):
     """Process batch analysis in background"""
     try:
         logger.info(f"Processing batch analysis: {session_id}")
-        
-        # This would implement actual batch processing
-        # For now, simulate processing
         await asyncio.sleep(len(threats_data) * 0.5)  # Simulate processing time
-        
         logger.info(f"Batch analysis completed: {session_id}")
-        
     except Exception as e:
         logger.error(f"Batch processing error: {str(e)}")
-
-
-# =============================================================================
-# ALTERNATIVE ENDPOINT PATHS FOR COMPATIBILITY
-# =============================================================================
-
 @router.get("/results/{session_id}")
 async def get_analysis_results_direct(
     session_id: str = Path(..., description="Analysis session ID"),
@@ -758,10 +599,7 @@ async def get_analysis_results_direct(
     📋 Analiz sonuçlarını al - Direkt path (uyumluluk için)
     Alternative path: /results/{session_id} instead of /analysis/results/{session_id}
     """
-    # This is just a wrapper that calls the main results function
     return await get_analysis_results(session_id, format, top_threats, orchestrator)
-
-
 @router.get("/status/{session_id}")
 async def get_analysis_status_direct(
     session_id: str = Path(..., description="Analysis session ID"),
@@ -771,9 +609,5 @@ async def get_analysis_status_direct(
     📊 Analiz durumunu sorgula - Direkt path (uyumluluk için)
     Alternative path: /status/{session_id} instead of /analysis/status/{session_id}
     """
-    # This is just a wrapper that calls the main status function
     return await get_analysis_status(session_id, orchestrator)
-
-
-# Export router
 __all__ = ["router"]

@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -18,7 +17,6 @@ import {
   Share2
 } from 'lucide-react'
 import { useEarthEventsStore } from '@/stores/earthEventsStore'
-
 interface MediaItem {
   id: string
   type: 'image' | 'video'
@@ -28,35 +26,24 @@ interface MediaItem {
   credit?: string
   date?: string
 }
-
 interface MediaPanelProps {
   event?: any
 }
-
 export default function MediaPanel({ event }: MediaPanelProps) {
   const { selectedEvent } = useEarthEventsStore()
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0)
   const [mediaLoaded, setMediaLoaded] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
-
-  // Use selectedEvent from store if no event prop provided
   const activeEvent = event || selectedEvent
-
-  // Generate mock media items for the event
   const mediaItems: MediaItem[] = activeEvent ? generateMediaForEvent(activeEvent) : []
-
   useEffect(() => {
     setCurrentMediaIndex(0)
     setMediaLoaded(false)
     setIsPlaying(false)
   }, [activeEvent?.id])
-
   function generateMediaForEvent(event: any): MediaItem[] {
     const eventCategory = event.categories?.[0]?.title || 'Unknown'
-    
-    // Generate realistic media items based on event type
     const items: MediaItem[] = []
-    
     switch (eventCategory) {
       case 'Wildfires':
         items.push(
@@ -80,7 +67,6 @@ export default function MediaPanel({ event }: MediaPanelProps) {
           }
         )
         break
-        
       case 'Volcanoes':
         items.push(
           {
@@ -103,7 +89,6 @@ export default function MediaPanel({ event }: MediaPanelProps) {
           }
         )
         break
-        
       case 'Severe Storms':
         items.push(
           {
@@ -126,7 +111,6 @@ export default function MediaPanel({ event }: MediaPanelProps) {
           }
         )
         break
-        
       default:
         items.push(
           {
@@ -141,10 +125,8 @@ export default function MediaPanel({ event }: MediaPanelProps) {
         )
         break
     }
-    
     return items
   }
-
   function getCategoryColor(category: string): string {
     const colors: { [key: string]: string } = {
       'Wildfires': '#FF6B35',
@@ -156,21 +138,18 @@ export default function MediaPanel({ event }: MediaPanelProps) {
     }
     return colors[category] || '#FFA726'
   }
-
   function nextMedia() {
     if (mediaItems.length > 1) {
       setCurrentMediaIndex((prev) => (prev + 1) % mediaItems.length)
       setMediaLoaded(false)
     }
   }
-
   function prevMedia() {
     if (mediaItems.length > 1) {
       setCurrentMediaIndex((prev) => (prev - 1 + mediaItems.length) % mediaItems.length)
       setMediaLoaded(false)
     }
   }
-
   if (!activeEvent) {
     return (
       <div className="w-full h-full bg-black/80 backdrop-blur-md rounded-lg border border-white/20 flex items-center justify-center">
@@ -182,17 +161,15 @@ export default function MediaPanel({ event }: MediaPanelProps) {
       </div>
     )
   }
-
   const currentMedia = mediaItems[currentMediaIndex]
   const eventCategory = activeEvent.categories?.[0]?.title || 'Unknown'
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="w-full h-full bg-black/80 backdrop-blur-md rounded-lg border border-blue-500/30 overflow-hidden flex flex-col"
     >
-      {/* Header */}
+      {}
       <div className="p-4 border-b border-white/10 flex-shrink-0">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-lg flex items-center justify-center">
@@ -211,11 +188,9 @@ export default function MediaPanel({ event }: MediaPanelProps) {
             </div>
           </div>
         </div>
-        
-        {/* AI sekmesi kaldırıldı; yalnızca Satellite Data gösterilir */}
+        {}
       </div>
-
-      {/* Content */}
+      {}
       <div className="flex-1 p-4 flex flex-col">
         <AnimatePresence mode="wait">
           <motion.div
@@ -228,7 +203,7 @@ export default function MediaPanel({ event }: MediaPanelProps) {
           >
             {mediaItems.length > 0 ? (
               <>
-                {/* Media Display */}
+                {}
                 <div className="flex-1 bg-black/40 rounded-lg border border-white/10 relative overflow-hidden mb-4">
                   <AnimatePresence mode="wait">
                     <motion.div
@@ -277,8 +252,7 @@ export default function MediaPanel({ event }: MediaPanelProps) {
                       )}
                     </motion.div>
                   </AnimatePresence>
-
-                  {/* Navigation Controls */}
+                  {}
                   {mediaItems.length > 1 && (
                     <>
                       <button
@@ -295,16 +269,14 @@ export default function MediaPanel({ event }: MediaPanelProps) {
                       </button>
                     </>
                   )}
-
-                  {/* Media Counter */}
+                  {}
                   {mediaItems.length > 1 && (
                     <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1 text-xs text-white/80">
                       {currentMediaIndex + 1} / {mediaItems.length}
                     </div>
                   )}
                 </div>
-
-                {/* Media Info */}
+                {}
                 {currentMedia && (
                   <div className="bg-white/5 rounded-lg p-3 border border-white/10">
                     <div className="flex items-start justify-between gap-3 mb-2">
@@ -321,11 +293,9 @@ export default function MediaPanel({ event }: MediaPanelProps) {
                         </button>
                       </div>
                     </div>
-                    
                     {currentMedia.description && (
                       <p className="text-white/60 text-xs mb-2">{currentMedia.description}</p>
                     )}
-                    
                     <div className="flex items-center justify-between text-xs text-white/50">
                       <span>{currentMedia.credit}</span>
                       {currentMedia.date && (
@@ -347,8 +317,7 @@ export default function MediaPanel({ event }: MediaPanelProps) {
           </motion.div>
         </AnimatePresence>
       </div>
-
-      {/* Event Details Footer */}
+      {}
       <div className="p-3 border-t border-white/10 bg-white/5 flex-shrink-0">
         <div className="grid grid-cols-2 gap-3 text-xs">
           <div className="flex items-center gap-2">

@@ -1,11 +1,8 @@
-'use client'
-
+﻿'use client'
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Loader2, Zap, Globe, Satellite, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-// Base Spinner Component
 export function Spinner({ 
   size = 'md',
   className,
@@ -21,7 +18,6 @@ export function Spinner({
     lg: 'h-8 w-8',
     xl: 'h-12 w-12'
   }
-
   const colorClasses = {
     primary: 'text-primary',
     secondary: 'text-secondary',
@@ -29,7 +25,6 @@ export function Spinner({
     warning: 'text-warning',
     success: 'text-success'
   }
-
   return (
     <Loader2 
       className={cn(
@@ -41,8 +36,6 @@ export function Spinner({
     />
   )
 }
-
-// CLIFF-themed Loading Spinner
 export function CLIFFSpinner({ 
   size = 'md',
   className 
@@ -56,24 +49,21 @@ export function CLIFFSpinner({
     lg: 'h-16 w-16', 
     xl: 'h-24 w-24'
   }
-
   return (
     <div className={cn('relative', sizeClasses[size], className)}>
-      {/* Outer ring */}
+      {}
       <motion.div
         className="absolute inset-0 border-2 border-primary/30 border-t-primary rounded-full"
         animate={{ rotate: 360 }}
         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
       />
-      
-      {/* Inner ring */}
+      {}
       <motion.div
         className="absolute inset-2 border-2 border-secondary/30 border-b-secondary rounded-full"
         animate={{ rotate: -360 }}
         transition={{ duration: 0.75, repeat: Infinity, ease: 'linear' }}
       />
-      
-      {/* Center icon */}
+      {}
       <div className="absolute inset-0 flex items-center justify-center">
         <motion.div
           animate={{ scale: [0.8, 1.1, 0.8] }}
@@ -85,8 +75,6 @@ export function CLIFFSpinner({
     </div>
   )
 }
-
-// Skeleton Loading Components
 export function SkeletonLine({ 
   width = 'full',
   height = 'md',
@@ -102,13 +90,11 @@ export function SkeletonLine({
     '1/2': 'w-1/2', 
     '1/4': 'w-1/4'
   }
-
   const heightClasses = {
     sm: 'h-3',
     md: 'h-4',
     lg: 'h-6'
   }
-
   return (
     <div 
       className={cn(
@@ -120,7 +106,6 @@ export function SkeletonLine({
     />
   )
 }
-
 export function SkeletonCard({ className }: { className?: string }) {
   return (
     <div className={cn('p-4 border border-border rounded-lg bg-card', className)}>
@@ -141,7 +126,6 @@ export function SkeletonCard({ className }: { className?: string }) {
     </div>
   )
 }
-
 export function SkeletonTable({ 
   rows = 5,
   columns = 4,
@@ -153,14 +137,13 @@ export function SkeletonTable({
 }) {
   return (
     <div className={cn('space-y-3', className)}>
-      {/* Table Header */}
+      {}
       <div className="grid gap-4" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
         {Array.from({ length: columns }).map((_, i) => (
           <SkeletonLine key={i} width="3/4" height="lg" />
         ))}
       </div>
-      
-      {/* Table Rows */}
+      {}
       {Array.from({ length: rows }).map((_, rowIndex) => (
         <div key={rowIndex} className="grid gap-4" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
           {Array.from({ length: columns }).map((_, colIndex) => (
@@ -171,8 +154,6 @@ export function SkeletonTable({
     </div>
   )
 }
-
-// Progressive Loading Component
 export function ProgressiveLoader({ 
   progress = 0,
   message = 'Yükleniyor...',
@@ -188,13 +169,12 @@ export function ProgressiveLoader({
 }) {
   return (
     <div className={cn('space-y-4', className)}>
-      {/* Progress Bar */}
+      {}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-sm text-foreground">{message}</span>
           <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
         </div>
-        
         <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
           <motion.div 
             className="h-full bg-gradient-to-r from-primary to-secondary"
@@ -204,8 +184,7 @@ export function ProgressiveLoader({
           />
         </div>
       </div>
-
-      {/* Steps */}
+      {}
       {steps.length > 0 && (
         <div className="space-y-2">
           {steps.map((step, index) => (
@@ -231,12 +210,10 @@ export function ProgressiveLoader({
     </div>
   )
 }
-
-// CLIFF Dashboard Loading States
 export function DashboardSkeleton() {
   return (
     <div className="space-y-6 p-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <div className="space-y-2">
           <SkeletonLine width="1/4" height="lg" />
@@ -247,8 +224,7 @@ export function DashboardSkeleton() {
           <SkeletonLine width="20" height="lg" />
         </div>
       </div>
-
-      {/* Grid Layout */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {Array.from({ length: 6 }).map((_, i) => (
           <SkeletonCard key={i} />
@@ -257,15 +233,13 @@ export function DashboardSkeleton() {
     </div>
   )
 }
-
 export function SpaceVisualizationSkeleton() {
   return (
     <div className="relative w-full h-full bg-background rounded-lg overflow-hidden">
-      {/* 3D Scene Skeleton */}
+      {}
       <div className="absolute inset-0 bg-card-deep">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10" />
-        
-        {/* Mock planets */}
+        {}
         {Array.from({ length: 5 }).map((_, i) => (
           <motion.div
             key={i}
@@ -281,8 +255,7 @@ export function SpaceVisualizationSkeleton() {
           />
         ))}
       </div>
-
-      {/* Loading Overlay */}
+      {}
       <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center">
         <div className="text-center space-y-4">
           <CLIFFSpinner size="lg" />
@@ -295,11 +268,10 @@ export function SpaceVisualizationSkeleton() {
     </div>
   )
 }
-
 export function AsteroidTrackerSkeleton() {
   return (
     <div className="space-y-4">
-      {/* Stats Grid */}
+      {}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="p-3 border border-border rounded-lg bg-card">
@@ -313,8 +285,7 @@ export function AsteroidTrackerSkeleton() {
           </div>
         ))}
       </div>
-
-      {/* Asteroid List */}
+      {}
       <div className="space-y-3">
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="p-4 border border-border rounded-lg bg-card">
@@ -323,7 +294,6 @@ export function AsteroidTrackerSkeleton() {
                 <SkeletonLine width="1/4" height="lg" />
                 <div className="h-5 w-12 bg-muted/50 rounded animate-pulse" />
               </div>
-              
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {Array.from({ length: 4 }).map((_, j) => (
                   <div key={j} className="space-y-1">
@@ -339,8 +309,6 @@ export function AsteroidTrackerSkeleton() {
     </div>
   )
 }
-
-// Full Screen Loading
 export function FullScreenLoader({ 
   message = 'CLIFF Sistem Başlatılıyor...',
   subtitle = 'Uzay verisi senkronize ediliyor',
@@ -357,7 +325,7 @@ export function FullScreenLoader({
       'fixed inset-0 bg-background/90 backdrop-blur-lg flex items-center justify-center z-50',
       className
     )}>
-      {/* Animated Background */}
+      {}
       <div className="absolute inset-0 overflow-hidden">
         {Array.from({ length: 100 }).map((_, i) => (
           <motion.div
@@ -379,8 +347,7 @@ export function FullScreenLoader({
           />
         ))}
       </div>
-
-      {/* Main Content */}
+      {}
       <div className="relative text-center space-y-8 max-w-md">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -389,7 +356,6 @@ export function FullScreenLoader({
           className="space-y-4"
         >
           <CLIFFSpinner size="xl" />
-          
           <div className="space-y-2">
             <h1 className="text-2xl font-bold text-foreground">
               {message}
@@ -399,7 +365,6 @@ export function FullScreenLoader({
             </p>
           </div>
         </motion.div>
-
         {progress !== undefined && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -409,8 +374,7 @@ export function FullScreenLoader({
             <ProgressiveLoader progress={progress} message="" />
           </motion.div>
         )}
-
-        {/* System Status */}
+        {}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -435,8 +399,6 @@ export function FullScreenLoader({
     </div>
   )
 }
-
-// SPACE AND NATURE themed loading component - FPS optimized
 export function SpaceAndNatureLoader({ 
   message = 'SPACE AND NATURE yükleniyor...',
   subtitle = 'Kozmik veriler senkronize ediliyor',
@@ -451,7 +413,7 @@ export function SpaceAndNatureLoader({
       'fixed inset-0 pure-black-gradient backdrop-blur-lg flex items-center justify-center z-50',
       className
     )}>
-      {/* Optimized star field background - Mobile friendly */}
+      {}
       <div className="absolute inset-0 overflow-hidden">
         {Array.from({ length: 50 }).map((_, i) => (
           <motion.div
@@ -476,18 +438,16 @@ export function SpaceAndNatureLoader({
           />
         ))}
       </div>
-
-      {/* Central loading animation */}
+      {}
       <div className="relative text-center space-y-8 max-w-md z-10">
-        
-        {/* Main logo animation */}
+        {}
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
           className="relative"
         >
-          {/* Outer orbital ring */}
+          {}
           <motion.div
             className="absolute inset-0 w-24 h-24 mx-auto border-2 border-white/20 rounded-full"
             animate={{ rotate: 360 }}
@@ -497,8 +457,7 @@ export function SpaceAndNatureLoader({
               transform: 'translateZ(0)'
             }}
           />
-          
-          {/* Middle ring with planets */}
+          {}
           <motion.div
             className="absolute inset-2 w-20 h-20 mx-auto border border-green-400/30 rounded-full"
             animate={{ rotate: -360 }}
@@ -508,7 +467,7 @@ export function SpaceAndNatureLoader({
               transform: 'translateZ(0)'
             }}
           >
-            {/* Small planet dots */}
+            {}
             {Array.from({ length: 3 }).map((_, i) => (
               <motion.div
                 key={i}
@@ -523,8 +482,7 @@ export function SpaceAndNatureLoader({
               />
             ))}
           </motion.div>
-          
-          {/* Center Earth-like sphere */}
+          {}
           <motion.div
             className="relative w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-green-600 shadow-lg"
             animate={{ 
@@ -545,14 +503,13 @@ export function SpaceAndNatureLoader({
               transform: 'translateZ(0)'
             }}
           >
-            {/* Earth surface patterns */}
+            {}
             <div className="absolute inset-2 rounded-full bg-gradient-to-br from-green-300/40 to-blue-400/40" />
             <div className="absolute top-2 left-3 w-3 h-2 bg-green-300 rounded-full opacity-60" />
             <div className="absolute bottom-3 right-2 w-2 h-3 bg-green-400 rounded-full opacity-50" />
           </motion.div>
         </motion.div>
-
-        {/* Text content */}
+        {}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -571,15 +528,14 @@ export function SpaceAndNatureLoader({
             </p>
           </div>
         </motion.div>
-
-        {/* Progress indicators */}
+        {}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
           className="space-y-4"
         >
-          {/* Loading dots */}
+          {}
           <div className="flex justify-center space-x-2">
             {Array.from({ length: 3 }).map((_, i) => (
               <motion.div
@@ -602,8 +558,7 @@ export function SpaceAndNatureLoader({
               />
             ))}
           </div>
-
-          {/* System status */}
+          {}
           <div className="space-y-2 text-sm text-white/70">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -623,7 +578,6 @@ export function SpaceAndNatureLoader({
               </motion.div>
               Doğal Sistemler: Aktif
             </motion.div>
-            
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -632,7 +586,6 @@ export function SpaceAndNatureLoader({
             >
               ⚡ Uzay Verileri: Senkronize
             </motion.div>
-            
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -647,7 +600,6 @@ export function SpaceAndNatureLoader({
     </div>
   )
 }
-
 export default {
   Spinner,
   CLIFFSpinner,

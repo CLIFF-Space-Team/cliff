@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Globe, Shield, Database, Monitor } from 'lucide-react'
@@ -13,8 +12,6 @@ import { ViewType } from '@/types/dashboard-layout'
 import ErrorBoundary from '@/components/ui/error-boundary'
 import { DashboardSkeleton } from '@/components/ui/loading-states'
 import { cn } from '@/lib/utils'
-
-// Lazy import'lar
 const EarthEventsView = React.lazy(() =>
   import("@/components/dashboard/earth-events-view").then(mod => ({ default: mod.default }))
 )
@@ -33,7 +30,6 @@ const ChatInterfaceView = React.lazy(() =>
 const ThreatVisualization3DView = React.lazy(() =>
   import("@/components/dashboard/modern-threat-panel").then(mod => ({ default: mod.ModernThreatPanel }))
 )
-
 const viewComponents: Record<ViewType, React.LazyExoticComponent<React.FC<any>>> = {
   'earth-events': EarthEventsView,
   'asteroid-info': AsteroidInfoView,
@@ -42,16 +38,12 @@ const viewComponents: Record<ViewType, React.LazyExoticComponent<React.FC<any>>>
   'system-monitor': SystemMonitorView,
   'chat-interface': ChatInterfaceView,
 }
-
 interface DynamicContentPanelProps {
   className?: string
 }
-
 export const DynamicContentPanel: React.FC<DynamicContentPanelProps> = ({ className }) => {
   const activeView = useDashboardStore((state) => state.activeView)
   const CurrentView = viewComponents[activeView]
-
-  // Fallback için güvenlik kontrolü
   if (!CurrentView) {
     return (
       <div className={cn("h-full w-full bg-pure-black flex items-center justify-center", className)}>
@@ -62,7 +54,6 @@ export const DynamicContentPanel: React.FC<DynamicContentPanelProps> = ({ classN
       </div>
     )
   }
-
   return (
     <div className={cn("h-full w-full bg-pure-black", className)}>
       <AnimatePresence mode="wait">
@@ -84,10 +75,7 @@ export const DynamicContentPanel: React.FC<DynamicContentPanelProps> = ({ classN
     </div>
   )
 }
-
-// Enhanced Engine Status Indicator Component
 function EngineStatusIndicator() {
-  // Browser-only hooks - avoid SSR issues
   if (typeof window === "undefined") {
     return (
       <div className="space-y-4">
@@ -103,11 +91,9 @@ function EngineStatusIndicator() {
       </div>
     )
   }
-
   const engineState = useEngineState()
   const performanceMetrics = usePerformanceMetrics()
   const timeState = useTimeState()
-
   return (
     <div className="space-y-3 md:space-y-4">
       <div className="flex justify-between items-center">
@@ -120,7 +106,6 @@ function EngineStatusIndicator() {
           {engineState.isInitialized ? 'Aktif' : 'Başlatılıyor'}
         </Badge>
       </div>
-      
       {performanceMetrics && (
         <>
           <div className="flex justify-between items-center">
@@ -131,7 +116,6 @@ function EngineStatusIndicator() {
           </div>
         </>
       )}
-      
       {timeState && (
         <div className="flex justify-between items-center">
           <span className="text-cliff-light-gray text-sm">Zaman Ölçeği</span>
@@ -140,15 +124,12 @@ function EngineStatusIndicator() {
           </Badge>
         </div>
       )}
-      
       <div className="text-xs text-cliff-light-gray pt-2 border-t border-cliff-light-gray/10">
         Gelişmiş yörünge mekaniği ile NASA doğrulamalı astronomik veri
       </div>
     </div>
   )
 }
-
-// System Stats Display Component
 function SystemStatsDisplay() {
   return (
     <div className="space-y-3 md:space-y-4">

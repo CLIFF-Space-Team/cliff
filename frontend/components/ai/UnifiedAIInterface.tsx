@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -21,7 +20,6 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useChat } from '@/hooks/use-chat'
 import { useWebSocketContext } from '@/providers/websocket-provider'
-
 interface UnifiedAIInterfaceProps {
   className?: string
   maxHeight?: string
@@ -31,7 +29,6 @@ interface UnifiedAIInterfaceProps {
   onMessageSent?: (message: any) => void
   onMessageReceived?: (message: any) => void
 }
-
 interface Message {
   id: string
   content: string
@@ -39,7 +36,6 @@ interface Message {
   timestamp: Date
   type: 'text'
 }
-
 const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
   className,
   maxHeight = '600px',
@@ -49,30 +45,21 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
   onMessageSent,
   onMessageReceived
 }) => {
-  // UI State
   const [inputText, setInputText] = useState('')
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(true)
-  
-  // Refs
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
-
-  // Create refs to hold the latest callbacks to prevent infinite loops
   const onMessageSentRef = useRef(onMessageSent);
   useEffect(() => {
     onMessageSentRef.current = onMessageSent;
   });
-
   const onMessageReceivedRef = useRef(onMessageReceived);
   useEffect(() => {
     onMessageReceivedRef.current = onMessageReceived;
   });
-
-  // Hooks
   const { isConnected: wsConnected } = useWebSocketContext()
-  
   const {
     state: chatState,
     sendMessage: chatSendMessage,
@@ -84,26 +71,19 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
     enableVoice: false,
     enableWebSocket: true
   })
-
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
     }
   }, [chatState.messages])
-
-  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
     }
   }, [inputText])
-
-  // Handle text message sending
   const handleTextSubmit = useCallback(async () => {
     if (!inputText.trim() || chatLoading) return
-
     const userMessage = {
       id: `text-message-${Date.now()}`,
       content: inputText.trim(),
@@ -111,9 +91,7 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
       timestamp: new Date(),
       type: 'text' as const
     }
-
     onMessageSentRef.current?.(userMessage)
-
     try {
       await chatSendMessage(inputText.trim(), 'text')
       setInputText('')
@@ -121,30 +99,21 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
       console.error('Message send error:', error)
     }
   }, [inputText, chatLoading, chatSendMessage])
-
-  // Handle keyboard shortcuts
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleTextSubmit()
     }
   }, [handleTextSubmit])
-
-  // Clear conversation
   const handleClearConversation = useCallback(() => {
     chatClearMessages()
   }, [chatClearMessages])
-
-  // Connection status
   const getConnectionStatus = () => {
     if (!wsConnected) return { text: 'Bağlantı Yok', color: 'text-accent-danger', icon: WifiOff }
     if (chatLoading) return { text: 'İşleniyor', color: 'text-accent-info', icon: Zap }
     return { text: 'Bağlı', color: 'text-accent-success', icon: Wifi }
   }
-
   const connectionStatus = getConnectionStatus()
-
-  // Message component
   const MessageBubble = ({ message }: { message: any }) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -159,7 +128,6 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
           <Bot className="h-4 w-4 text-purple-400" />
         </div>
       )}
-      
       <div className={cn(
         "max-w-[75%] rounded-2xl px-4 py-3 relative",
         message.sender === 'user'
@@ -169,7 +137,6 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
         <p className="text-sm leading-relaxed whitespace-pre-wrap">
           {message.content}
         </p>
-        
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-700">
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500">
@@ -181,7 +148,6 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
           </div>
         </div>
       </div>
-      
       {message.sender === 'user' && (
         <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center flex-shrink-0 mt-1">
           <User className="h-4 w-4 text-white" />
@@ -189,15 +155,13 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
       )}
     </motion.div>
   )
-
   return (
     <div className="mx-4 md:mx-8 lg:mx-16 xl:mx-24 2xl:mx-32 my-4">
       <div className={cn(
         "flex flex-col bg-black border-0 rounded-xl overflow-hidden shadow-2xl",
         className
       )} style={{ maxHeight }}>
-      
-        {/* Header */}
+        {}
         {showHeader && (
           <div className="flex items-center justify-between p-4 border-b border-gray-800 bg-black">
             <div className="flex items-center gap-3">
@@ -206,7 +170,6 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
                   <MessageSquare className="h-5 w-5 text-white" />
                 </div>
               </div>
-              
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-semibold text-white">CLIFF AI</h3>
@@ -227,7 +190,6 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
                 </div>
               </div>
             </div>
-
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
@@ -240,7 +202,6 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
               >
                 <Settings className="h-4 w-4" />
               </Button>
-
               <Button
                 variant="ghost"
                 size="sm"
@@ -256,8 +217,7 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
             </div>
           </div>
         )}
-
-        {/* Settings Panel */}
+        {}
         <AnimatePresence>
           {isSettingsOpen && (
             <motion.div
@@ -267,13 +227,12 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
               className="p-4 border-b border-gray-800 bg-black space-y-4"
             >
               <div className="grid grid-cols-1 gap-4">
-                {/* Interface Settings */}
+                {}
                 <div className="space-y-3">
                   <h4 className="text-sm font-semibold text-white flex items-center gap-2">
                     <Settings className="h-4 w-4 text-blue-400" />
                     Arayüz
                   </h4>
-                  
                   <div className="flex gap-2 pt-2">
                     <Button
                       variant="ghost"
@@ -290,8 +249,7 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
-
-      {/* Main Content */}
+      {}
       <AnimatePresence>
         {isExpanded && (
           <motion.div
@@ -300,7 +258,7 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
             exit={{ opacity: 0, height: 0 }}
             className="flex flex-col flex-1 min-h-0"
           >
-              {/* Messages Area */}
+              {}
               <div
                 ref={messagesContainerRef}
                 className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar bg-black"
@@ -326,8 +284,7 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
                     <div ref={messagesEndRef} />
                   </>
                 )}
-
-                {/* Typing indicator */}
+                {}
                 {chatLoading && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -347,11 +304,10 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
                   </motion.div>
                 )}
               </div>
-
-              {/* Input Area */}
+              {}
               <div className="p-4 border-t border-gray-800 bg-black">
                 <div className="flex items-end gap-3">
-                  {/* Text Input */}
+                  {}
                   <div className="flex-1 relative">
                     <textarea
                       ref={textareaRef}
@@ -363,8 +319,7 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
                       rows={1}
                     />
                   </div>
-
-                  {/* Send Button */}
+                  {}
                   <Button
                     variant="default"
                     size="lg"
@@ -375,8 +330,7 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
                     <Send className="h-5 w-5" />
                   </Button>
                 </div>
-
-                {/* Error Display */}
+                {}
                 {chatError && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
@@ -396,5 +350,4 @@ const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
     </div>
   )
 }
-
 export default UnifiedAIInterface

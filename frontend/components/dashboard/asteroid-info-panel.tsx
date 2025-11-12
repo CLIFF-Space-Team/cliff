@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useMemo, useEffect, useCallback, memo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from '@/components/ui'
 import { ThreatLevelBadge, DataSourceBadge } from '@/components/ui/specialized-cards'
@@ -22,14 +21,12 @@ import {
   Calendar
 } from 'lucide-react'
 import { cn, formatRelativeTime } from '@/lib/utils'
-
 interface AsteroidInfoPanelProps {
   className?: string
   maxItems?: number
   showFilters?: boolean
   autoRefresh?: boolean
 }
-
 const AsteroidInfoItem = memo(function AsteroidInfoItem({
   asteroid,
   onViewDetails,
@@ -42,17 +39,14 @@ const AsteroidInfoItem = memo(function AsteroidInfoItem({
   const handleViewDetails = useCallback(() => {
     onViewDetails(asteroid)
   }, [asteroid, onViewDetails])
-
   const getThreatLevel = (asteroid: any) => {
     const distance = parseFloat(asteroid.orbital_data?.miss_distance?.kilometers || '999999999')
     const diameter = asteroid.info?.radius_km ? asteroid.info.radius_km * 2 : 0
-    
     if (distance < 1000000 && diameter > 0.5) return 'kritik'
     if (distance < 5000000 && diameter > 0.3) return 'yüksek'
     if (distance < 20000000) return 'orta'
     return 'düşük'
   }
-
   const formatDistance = (km: string) => {
     const distance = parseFloat(km)
     if (distance > 1000000) {
@@ -60,21 +54,17 @@ const AsteroidInfoItem = memo(function AsteroidInfoItem({
     }
     return `${distance.toLocaleString('tr-TR')} km`
   }
-
   const formatSpeed = (kmh: string) => {
     const speed = parseFloat(kmh)
     return `${speed.toFixed(1)} km/s`
   }
-
   const formatDiameter = (asteroid: any) => {
     const radius = asteroid.info?.radius_km || 0
     const diameter = radius * 2
     return `~${diameter.toFixed(2)} km`
   }
-
   const closeApproach = asteroid.orbital_data
   const isHazardous = asteroid.is_hazardous
-
   return (
     <div
       className={cn(
@@ -96,7 +86,6 @@ const AsteroidInfoItem = memo(function AsteroidInfoItem({
             <Target className={cn("h-4 w-4", isHazardous ? "text-red-400" : "text-blue-400")} />
           </div>
         </div>
-
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-3">
             <div>
@@ -112,13 +101,11 @@ const AsteroidInfoItem = memo(function AsteroidInfoItem({
                 )}
               </div>
             </div>
-
             <div className="flex flex-col items-end gap-1">
               <ThreatLevelBadge level={getThreatLevel(asteroid)} />
               <DataSourceBadge source="nasa" />
             </div>
           </div>
-
           {closeApproach && (
             <div className="grid grid-cols-2 gap-3 mb-3 text-xs">
               <div className="space-y-2">
@@ -130,7 +117,6 @@ const AsteroidInfoItem = memo(function AsteroidInfoItem({
                   {formatDistance(closeApproach.miss_distance?.kilometers || '0')}
                 </p>
               </div>
-
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Zap className="h-3 w-3 text-cliff-light-gray" />
@@ -140,7 +126,6 @@ const AsteroidInfoItem = memo(function AsteroidInfoItem({
                   {formatSpeed(closeApproach.velocity?.kilometers_per_hour || '0')}
                 </p>
               </div>
-
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Ruler className="h-3 w-3 text-cliff-light-gray" />
@@ -150,7 +135,6 @@ const AsteroidInfoItem = memo(function AsteroidInfoItem({
                   {formatDiameter(asteroid)}
                 </p>
               </div>
-
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-3 w-3 text-cliff-light-gray" />
@@ -162,13 +146,11 @@ const AsteroidInfoItem = memo(function AsteroidInfoItem({
               </div>
             </div>
           )}
-
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs text-cliff-light-gray">
               <Globe className="h-3 w-3" />
               <span>Yörünge Sınıfı: {closeApproach?.orbiting_body || 'Earth'}</span>
             </div>
-
             <Button
               variant="ghost"
               size="sm"
@@ -179,7 +161,6 @@ const AsteroidInfoItem = memo(function AsteroidInfoItem({
             </Button>
           </div>
         </div>
-
         <div className="flex-shrink-0">
           <ArrowRight className="h-4 w-4 text-cliff-light-gray/40" />
         </div>
@@ -187,7 +168,6 @@ const AsteroidInfoItem = memo(function AsteroidInfoItem({
     </div>
   )
 })
-
 const AsteroidFilterControls = memo(function AsteroidFilterControls({
   filter,
   sortBy,
@@ -209,18 +189,15 @@ const AsteroidFilterControls = memo(function AsteroidFilterControls({
     { key: 'week', label: 'Bu Hafta' },
     { key: 'month', label: 'Bu Ay' },
   ]
-
   const sortOptions = [
     { key: 'distance', label: 'Mesafe' },
     { key: 'size', label: 'Boyut' },
     { key: 'speed', label: 'Hız' },
     { key: 'date', label: 'Tarih' },
   ]
-
   return (
     <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-cliff-light-gray/30">
       <Filter className="h-4 w-4 text-cliff-light-gray" />
-      
       <div className="flex gap-2">
         {filterOptions.map((option) => (
           <Button
@@ -233,9 +210,7 @@ const AsteroidFilterControls = memo(function AsteroidFilterControls({
           </Button>
         ))}
       </div>
-
       <div className="w-px h-4 bg-cliff-light-gray/30" />
-
       <div className="flex gap-2">
         {sortOptions.map((option) => (
           <Button
@@ -248,9 +223,7 @@ const AsteroidFilterControls = memo(function AsteroidFilterControls({
           </Button>
         ))}
       </div>
-
       <div className="w-px h-4 bg-cliff-light-gray/30" />
-
       <Button
         variant={hazardousOnly ? 'destructive' : 'outline'}
         size="sm"
@@ -261,7 +234,6 @@ const AsteroidFilterControls = memo(function AsteroidFilterControls({
     </div>
   )
 })
-
 const AsteroidInfoPanel: React.FC<AsteroidInfoPanelProps> = ({
   className,
   maxItems = 50,
@@ -273,18 +245,13 @@ const AsteroidInfoPanel: React.FC<AsteroidInfoPanelProps> = ({
   const [hazardousOnly, setHazardousOnly] = useState(false)
   const [expanded, setExpanded] = useState(true)
   const [selectedAsteroid, setSelectedAsteroid] = useState<any>(null)
-
   const { asteroids, isLoading, error, lastRefresh } = useAsteroidData()
-
   const processedAsteroids = useMemo(() => {
     if (!asteroids) return []
-
     let filtered = [...asteroids]
-
     if (hazardousOnly) {
       filtered = filtered.filter(asteroid => asteroid.is_hazardous)
     }
-
     const now = new Date()
     if (filter === 'today') {
       filtered = filtered.filter(asteroid => {
@@ -304,7 +271,6 @@ const AsteroidInfoPanel: React.FC<AsteroidInfoPanelProps> = ({
         return approachDate >= now && approachDate <= monthFromNow
       })
     }
-
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'distance':
@@ -327,46 +293,36 @@ const AsteroidInfoPanel: React.FC<AsteroidInfoPanelProps> = ({
           return 0
       }
     })
-
     return filtered.slice(0, maxItems)
   }, [asteroids, filter, sortBy, hazardousOnly, maxItems])
-
   const asteroidStats = useMemo(() => {
     if (!asteroids) return { total: 0, hazardous: 0, approaching: 0 }
-    
     const hazardous = asteroids.filter(a => a.is_hazardous).length
     const approaching = asteroids.filter(a => {
       const distance = parseFloat(a.orbital_data?.miss_distance?.kilometers || '999999999')
       return distance < 10000000
     }).length
-
     return {
       total: asteroids.length,
       hazardous,
       approaching
     }
   }, [asteroids])
-
   const handleViewDetails = useCallback((asteroid: any) => {
     setSelectedAsteroid(asteroid)
   }, [])
-
   const handleFilterChange = useCallback((newFilter: string) => {
     setFilter(newFilter as any)
   }, [])
-
   const handleSortChange = useCallback((newSort: string) => {
     setSortBy(newSort as any)
   }, [])
-
   const handleHazardousToggle = useCallback(() => {
     setHazardousOnly(prev => !prev)
   }, [])
-
   const toggleExpanded = useCallback(() => {
     setExpanded(prev => !prev)
   }, [])
-
   return (
     <div className={cn("space-y-4", className)}>
       {selectedAsteroid && (
@@ -374,7 +330,6 @@ const AsteroidInfoPanel: React.FC<AsteroidInfoPanelProps> = ({
           <p className="text-white">Asteroid Seçili: {selectedAsteroid.name}</p>
         </div>
       )}
-      
       <Card className="relative bg-black/40 border-blue-500/30">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -385,7 +340,6 @@ const AsteroidInfoPanel: React.FC<AsteroidInfoPanelProps> = ({
                   <div className="absolute -inset-1 bg-blue-400/30 rounded-full animate-ping" />
                 )}
               </div>
-              
               <CardTitle className="flex items-center gap-2">
                 Asteroid Listesi
                 <Badge variant="default" className="bg-blue-500/20 text-blue-300 border-blue-500/30">
@@ -393,7 +347,6 @@ const AsteroidInfoPanel: React.FC<AsteroidInfoPanelProps> = ({
                   {asteroidStats.total} NEO
                 </Badge>
               </CardTitle>
-
               <button
                 onClick={toggleExpanded}
                 className="p-1 rounded-full hover:bg-white/10 transition-colors"
@@ -405,7 +358,6 @@ const AsteroidInfoPanel: React.FC<AsteroidInfoPanelProps> = ({
                 )}
               </button>
             </div>
-
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 bg-red-400 rounded-full" />
@@ -423,7 +375,6 @@ const AsteroidInfoPanel: React.FC<AsteroidInfoPanelProps> = ({
               )}
             </div>
           </div>
-
           {showFilters && expanded && (
             <AsteroidFilterControls
               filter={filter}
@@ -435,7 +386,6 @@ const AsteroidInfoPanel: React.FC<AsteroidInfoPanelProps> = ({
             />
           )}
         </CardHeader>
-
         {expanded && (
           <CardContent className="max-h-96 overflow-y-auto custom-scrollbar">
             {error ? (
@@ -476,5 +426,4 @@ const AsteroidInfoPanel: React.FC<AsteroidInfoPanelProps> = ({
     </div>
   )
 }
-
 export default AsteroidInfoPanel

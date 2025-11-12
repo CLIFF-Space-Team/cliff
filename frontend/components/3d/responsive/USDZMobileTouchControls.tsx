@@ -1,10 +1,6 @@
-'use client'
-
+﻿'use client'
 import React, { useRef, useState, useCallback, useEffect } from 'react'
 import { motion, PanInfo } from 'framer-motion'
-// ?? CRITICAL FIX: Removed direct Three.js import for SSR safety
-
-// Touch gesture types
 interface TouchGesture {
   type: 'pan' | 'pinch' | 'rotate' | 'tap' | 'double-tap'
   startPosition: { x: number; y: number }
@@ -14,16 +10,12 @@ interface TouchGesture {
   rotation?: number
   timestamp: number
 }
-
-// Camera control interface
 interface CameraControls {
   position: THREE.Vector3
   rotation: THREE.Euler
   zoom: number
   target: THREE.Vector3
 }
-
-// Props interface
 interface USDZMobileTouchControlsProps {
   onCameraChange?: (controls: CameraControls) => void
   sensitivity?: {
@@ -40,7 +32,6 @@ interface USDZMobileTouchControlsProps {
   className?: string
   children?: React.ReactNode
 }
-
 export const USDZMobileTouchControls: React.FC<USDZMobileTouchControlsProps> = ({
   onCameraChange,
   sensitivity = { pan: 1, pinch: 1, rotate: 1 },
@@ -52,28 +43,21 @@ export const USDZMobileTouchControls: React.FC<USDZMobileTouchControlsProps> = (
   const [isActive, setIsActive] = useState(false)
   const [gesture, setGesture] = useState<TouchGesture | null>(null)
   const [initialPinchDistance, setInitialPinchDistance] = useState(0)
-
-  // Camera state
   const [cameraControls, setCameraControls] = useState<CameraControls>({
     position: new THREE.Vector3(10, 5, 10),
     rotation: new THREE.Euler(0, 0, 0),
     zoom: 1,
     target: new THREE.Vector3(0, 0, 0)
   })
-
-  // Calculate distance between two touches (React.Touch compatible)
   const calculateDistance = useCallback((touch1: React.Touch, touch2: React.Touch): number => {
     const dx = touch1.clientX - touch2.clientX
     const dy = touch1.clientY - touch2.clientY
     return Math.sqrt(dx * dx + dy * dy)
   }, [])
-
-  // Handle touch start
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     e.preventDefault()
     const touches = Array.from(e.touches)
     const now = Date.now()
-
     if (touches.length === 1) {
       const touch = touches[0]
       const newGesture: TouchGesture = {
@@ -83,14 +67,12 @@ export const USDZMobileTouchControls: React.FC<USDZMobileTouchControlsProps> = (
         deltaPosition: { x: 0, y: 0 },
         timestamp: now
       }
-
       setIsActive(true)
       setGesture(newGesture)
     } else if (touches.length === 2) {
       const [touch1, touch2] = touches
       const distance = calculateDistance(touch1, touch2)
       setInitialPinchDistance(distance)
-
       const newGesture: TouchGesture = {
         type: 'pinch',
         startPosition: { 
@@ -105,51 +87,38 @@ export const USDZMobileTouchControls: React.FC<USDZMobileTouchControlsProps> = (
         scale: 1,
         timestamp: now
       }
-
       setIsActive(true)
       setGesture(newGesture)
     }
   }, [calculateDistance])
-
-  // Handle touch move
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     e.preventDefault()
     if (!isActive || !gesture) return
-
     const touches = Array.from(e.touches)
-
     if (touches.length === 1 && gesture.type === 'pan') {
       const touch = touches[0]
       const deltaX = touch.clientX - gesture.startPosition.x
       const deltaY = touch.clientY - gesture.startPosition.y
-
-      // Update camera rotation based on pan
       const sensitivity_factor = sensitivity.pan * 0.01
       const newRotationY = cameraControls.rotation.y - deltaX * sensitivity_factor
       const newRotationX = Math.max(
         bounds.minPolar,
         Math.min(bounds.maxPolar, cameraControls.rotation.x - deltaY * sensitivity_factor)
       )
-
       setCameraControls(prev => ({
         ...prev,
         rotation: new THREE.Euler(newRotationX, newRotationY, prev.rotation.z)
       }))
-
     } else if (touches.length === 2 && gesture.type === 'pinch') {
       const [touch1, touch2] = touches
       const distance = calculateDistance(touch1, touch2)
-      
       if (initialPinchDistance > 0) {
         const scale = distance / initialPinchDistance
-        
-        // Update camera zoom based on pinch
         const zoomDelta = (scale - 1) * sensitivity.pinch * 0.5
         const newZoom = Math.max(
           bounds.minZoom,
           Math.min(bounds.maxZoom, cameraControls.zoom + zoomDelta)
         )
-
         setCameraControls(prev => ({
           ...prev,
           zoom: newZoom
@@ -165,21 +134,15 @@ export const USDZMobileTouchControls: React.FC<USDZMobileTouchControlsProps> = (
     calculateDistance,
     initialPinchDistance
   ])
-
-  // Handle touch end
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     e.preventDefault()
     setIsActive(false)
     setGesture(null)
     setInitialPinchDistance(0)
   }, [])
-
-  // Notify parent of camera changes
   useEffect(() => {
     onCameraChange?.(cameraControls)
   }, [cameraControls, onCameraChange])
-
-  // Reset camera function
   const resetCamera = useCallback(() => {
     setCameraControls({
       position: new THREE.Vector3(10, 5, 10),
@@ -188,7 +151,6 @@ export const USDZMobileTouchControls: React.FC<USDZMobileTouchControlsProps> = (
       target: new THREE.Vector3(0, 0, 0)
     })
   }, [])
-
   return (
     <motion.div
       ref={containerRef}
@@ -204,8 +166,7 @@ export const USDZMobileTouchControls: React.FC<USDZMobileTouchControlsProps> = (
       }}
     >
       {children}
-
-      {/* Visual feedback for gestures */}
+      {}
       {isActive && gesture && (
         <motion.div
           className="absolute pointer-events-none z-50"
@@ -223,8 +184,7 @@ export const USDZMobileTouchControls: React.FC<USDZMobileTouchControlsProps> = (
           </div>
         </motion.div>
       )}
-
-      {/* Reset button */}
+      {}
       <motion.button
         className="absolute top-4 right-4 z-40 p-2 bg-pure-black/80 backdrop-blur-md rounded-full border border-cliff-light-gray/20"
         onClick={resetCamera}
@@ -233,8 +193,7 @@ export const USDZMobileTouchControls: React.FC<USDZMobileTouchControlsProps> = (
       >
         <span className="text-sm">🎯</span>
       </motion.button>
-
-      {/* Touch Instructions */}
+      {}
       <motion.div
         className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-20"
         initial={{ opacity: 1 }}
@@ -250,5 +209,4 @@ export const USDZMobileTouchControls: React.FC<USDZMobileTouchControlsProps> = (
     </motion.div>
   )
 }
-
 export default USDZMobileTouchControls

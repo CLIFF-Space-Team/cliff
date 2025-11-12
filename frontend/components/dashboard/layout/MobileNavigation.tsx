@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -8,85 +7,70 @@ import { Shield, Globe, Monitor, MessageSquare, X, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useDashboardStore } from '@/stores/useDashboardStore'
 import { ViewType } from '@/types/dashboard-layout'
-
-// Optimized animation variants
 const backdropVariants = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
   exit: { opacity: 0 },
   transition: { duration: 0.2, ease: 'easeOut' }
 }
-
 const sidebarVariants = {
   initial: { x: '-100%' },
   animate: { x: 0 },
   exit: { x: '-100%' },
   transition: { type: 'tween', duration: 0.3, ease: 'easeOut' }
 }
-
 const buttonTapVariants = {
   tap: { 
     scale: 0.95,
     transition: { duration: 0.1, ease: 'easeOut' }
   }
 }
-
 const bottomNavButtonVariants = {
   tap: { 
     scale: 0.9,
     transition: { duration: 0.1, ease: 'easeOut' }
   }
 }
-
 export const MobileNavigation = React.memo(function MobileNavigation() {
   const { activeView, setView, isMobileSidebarOpen, toggleMobileSidebar } = useDashboardStore()
-  
-  // Navigation items - memoized
   const navigationItems = useMemo(() => [
     { id: 'earth-events', label: 'Dünya Olayları', icon: Globe, color: 'accent-success', shortLabel: 'Dünya' },
     { id: 'threat-analysis', label: 'Tehdit Analizi', icon: Shield, color: 'accent-danger', shortLabel: 'Tehdit' },
     { id: 'system-monitor', label: 'Sistem İzleme', icon: Monitor, color: 'accent-info', shortLabel: 'Sistem' },
     { id: 'chat-interface', label: 'AI Live', icon: MessageSquare, color: 'accent-ai', shortLabel: 'AI' },
   ], [])
-
-  // Optimized click handlers
   const handleViewChange = useCallback((viewId: string) => {
     setView(viewId as ViewType)
   }, [setView])
-
   const handleSidebarViewChange = useCallback((viewId: string) => {
     setView(viewId as ViewType)
     toggleMobileSidebar()
   }, [setView, toggleMobileSidebar])
-
   const handleBackdropClick = useCallback(() => {
     toggleMobileSidebar()
   }, [toggleMobileSidebar])
-
   const handleCloseClick = useCallback(() => {
     toggleMobileSidebar()
   }, [toggleMobileSidebar])
-
   return (
     <>
-      {/* Mobile Navigation Sidebar - Overlay */}
+      {}
       <AnimatePresence mode="wait">
         {isMobileSidebarOpen && (
           <>
-            {/* Mobile backdrop - optimized */}
+            {}
             <motion.div
               {...backdropVariants}
               className="fixed inset-0 bg-pure-black/50 backdrop-blur-sm z-40 lg:hidden gpu-accelerated"
               onClick={handleBackdropClick}
             />
-            
-            {/* Mobile sidebar - optimized */}
+            {}
             <motion.div
               {...sidebarVariants}
               className="fixed top-0 left-0 bottom-0 w-80 max-w-[80vw] bg-pure-black border-r border-cliff-light-gray/30 z-50 lg:hidden overflow-y-auto safe-area-top gpu-accelerated"
             >
               <div className="p-4 space-y-6">
-                {/* Mobile header */}
+                {}
                 <div className="flex items-center justify-between pb-4 border-b border-cliff-light-gray/30">
                   <div className="flex items-center gap-2">
                     <Shield className="h-6 w-6 text-cliff-white" />
@@ -101,8 +85,7 @@ export const MobileNavigation = React.memo(function MobileNavigation() {
                     <X className="h-5 w-5" />
                   </Button>
                 </div>
-
-                {/* Mobile Navigation */}
+                {}
                 <div className="space-y-2">
                   <h3 className="text-sm font-semibold text-cliff-light-gray mb-4 uppercase tracking-wider">
                     Navigasyon
@@ -145,8 +128,7 @@ export const MobileNavigation = React.memo(function MobileNavigation() {
                     )
                   })}
                 </div>
-
-                {/* Mobile Quick Stats */}
+                {}
                 <div className="space-y-3 pt-4 border-t border-cliff-light-gray/30">
                   <h3 className="text-sm font-semibold text-cliff-light-gray uppercase tracking-wider">
                     Anlık Durum
@@ -178,8 +160,7 @@ export const MobileNavigation = React.memo(function MobileNavigation() {
           </>
         )}
       </AnimatePresence>
-
-      {/* Mobile Bottom Navigation - Simplified */}
+      {}
       <div className="fixed bottom-0 left-0 right-0 bg-pure-black backdrop-blur-20 border-t border-cliff-light-gray/30 lg:hidden z-30 safe-area-bottom mobile-nav gpu-accelerated">
         <div className="flex justify-around items-center py-2">
           {navigationItems.map((item) => {

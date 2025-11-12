@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useMemo, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Badge, StatusBadge, DataSourceBadge, MetricCard } from '@/components/ui'
@@ -27,7 +26,6 @@ import {
   CloudRain
 } from 'lucide-react'
 import { cn, formatDate, formatRelativeTime } from '@/lib/utils'
-
 interface SpaceWeatherEvent {
   id: string
   event_type: 'solar_flare' | 'cme' | 'geomagnetic_storm' | 'radiation_storm' | 'radio_blackout'
@@ -47,7 +45,6 @@ interface SpaceWeatherEvent {
   instruments: string[]
   active: boolean
 }
-
 interface SolarActivity {
   sunspot_number: number
   solar_flux: number
@@ -58,14 +55,12 @@ interface SolarActivity {
   dst_index: number
   last_updated: string
 }
-
 interface SpaceWeatherStationProps {
   className?: string
   showDetails?: boolean
   autoRefresh?: boolean
   refreshInterval?: number
 }
-
 const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
   className,
   showDetails = true,
@@ -77,14 +72,10 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
   const [selectedEvent, setSelectedEvent] = useState<SpaceWeatherEvent | null>(null)
   const [view, setView] = useState<'overview' | 'events' | 'solar' | 'alerts'>('overview')
   const [isRefreshing, setIsRefreshing] = useState(false)
-
   const { comprehensiveAssessment, isLoading } = useThreatData()
   const { isConnected, lastMessage } = useWebSocket()
-
-  // Process space weather data
   useEffect(() => {
     if (comprehensiveAssessment?.active_threats) {
-      // Filter space weather related threats
       const spaceWeatherThreats = comprehensiveAssessment.active_threats.filter(
         threat => threat.threat_type.toLowerCase().includes('space') ||
                   threat.threat_type.toLowerCase().includes('solar') ||
@@ -92,7 +83,6 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
                   threat.title.toLowerCase().includes('flare') ||
                   threat.title.toLowerCase().includes('storm')
       )
-
       const events: SpaceWeatherEvent[] = spaceWeatherThreats.map((threat, index) => ({
         id: threat.threat_id || Date.now().toString() + index,
         event_type: determineEventType(threat.threat_type),
@@ -108,10 +98,7 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
         dst_index: Math.floor(Math.random() * 100) - 50,
         magnitude: threat.impact_probability ? threat.impact_probability * 10 : undefined
       }))
-
       setSpaceWeatherEvents(events)
-
-      // Set solar activity from generated data
       if (events.length > 0) {
         setSolarActivity({
           sunspot_number: Math.floor(Math.random() * 200) + 50,
@@ -123,7 +110,6 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
         })
       }
     } else {
-      // Generate mock space weather data if no real data available
       const mockEvents: SpaceWeatherEvent[] = [
         {
           id: 'sw-1',
@@ -150,7 +136,6 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
           kp_index: 3
         }
       ]
-
       setSpaceWeatherEvents(mockEvents)
       setSolarActivity({
         sunspot_number: 85,
@@ -162,7 +147,6 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
       })
     }
   }, [comprehensiveAssessment])
-
   const determineEventType = (threatType: string): any => {
     const type = threatType.toLowerCase()
     if (type.includes('flare')) return 'solar_flare'
@@ -172,13 +156,10 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
     if (type.includes('radio')) return 'radio_blackout'
     return 'solar_flare'
   }
-
-  // Handle WebSocket space weather updates
   useEffect(() => {
     if (lastMessage) {
       try {
         const data = JSON.parse(lastMessage.data)
-        
         if (data.type === 'space_weather_update') {
           const event: SpaceWeatherEvent = {
             id: Date.now().toString(),
@@ -191,7 +172,6 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
             active: true,
             affected_systems: data.affected_systems || []
           }
-
           setSpaceWeatherEvents(prev => [event, ...prev.slice(0, 19)])
         }
       } catch (error) {
@@ -199,7 +179,6 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
       }
     }
   }, [lastMessage])
-
   const mapThreatLevelToSeverity = (level: string): any => {
     const mapping = {
       'critical': 'extreme',
@@ -209,29 +188,23 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
     }
     return mapping[level as keyof typeof mapping] || 'minor'
   }
-
   const activeEvents = useMemo(() => {
     return spaceWeatherEvents.filter(event => event.active)
   }, [spaceWeatherEvents])
-
   const eventStats = useMemo(() => {
     const total = spaceWeatherEvents.length
     const active = activeEvents.length
     const severe = spaceWeatherEvents.filter(e => e.severity === 'severe' || e.severity === 'extreme').length
     const solarFlares = spaceWeatherEvents.filter(e => e.event_type === 'solar_flare').length
-
     return { total, active, severe, solarFlares }
   }, [spaceWeatherEvents, activeEvents])
-
   const getCurrentConditions = () => {
     if (!solarActivity) return 'Unknown'
-    
     if (solarActivity.planetary_k_index >= 6) return 'Fırtına'
     if (solarActivity.planetary_k_index >= 4) return 'Aktif'
     if (solarActivity.planetary_k_index >= 3) return 'Kararsız'
     return 'Sakin'
   }
-
   const getConditionColor = (condition: string) => {
     switch (condition) {
       case 'Fırtına': return 'text-red-400'
@@ -241,7 +214,6 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
       default: return 'text-slate-400'
     }
   }
-
   const getSeverityIcon = (event: SpaceWeatherEvent) => {
     switch (event.event_type) {
       case 'solar_flare':
@@ -258,7 +230,6 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
         return <Activity className="h-4 w-4" />
     }
   }
-
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'extreme': return 'border-red-600 bg-red-950/30'
@@ -269,13 +240,11 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
       default: return 'border-slate-500 bg-slate-950/20'
     }
   }
-
   const refreshData = async () => {
     setIsRefreshing(true)
     await new Promise(resolve => setTimeout(resolve, 1000))
     setIsRefreshing(false)
   }
-
   if (isLoading) {
     return (
       <Card variant="default" className={cn("animate-pulse", className)}>
@@ -292,7 +261,6 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
       </Card>
     )
   }
-
   return (
     <Card variant="default" className={cn("relative overflow-hidden", className)}>
       <CardHeader>
@@ -302,7 +270,6 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
             Uzay Hava İstasyonu
             <DataSourceBadge source="noaa" />
           </CardTitle>
-
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -314,8 +281,7 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
             </Button>
           </div>
         </div>
-
-        {/* Current Conditions */}
+        {}
         {solarActivity && (
           <div className="mt-4 p-4 rounded-lg bg-pure-black border border-cliff-light-gray/30">
             <div className="flex items-center justify-between mb-3">
@@ -324,7 +290,6 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
                 {getCurrentConditions()}
               </div>
             </div>
-
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-400">
@@ -332,21 +297,18 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
                 </div>
                 <div className="text-xs text-cliff-light-gray">K-Endeksi</div>
               </div>
-              
               <div className="text-center">
                 <div className="text-2xl font-bold text-orange-400">
                   {solarActivity.dst_index}
                 </div>
                 <div className="text-xs text-cliff-light-gray">Dst (nT)</div>
               </div>
-              
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-400">
                   {solarActivity.sunspot_number}
                 </div>
                 <div className="text-xs text-cliff-light-gray">Güneş Lekeleri</div>
               </div>
-              
               <div className="text-center">
                 <div className="text-2xl font-bold text-purple-400">
                   {solarActivity.solar_flux}
@@ -356,8 +318,7 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
             </div>
           </div>
         )}
-
-        {/* View Selection */}
+        {}
         <div className="flex gap-2 mt-4">
           {['overview', 'events', 'solar', 'alerts'].map((v) => (
             <Button
@@ -374,11 +335,10 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
           ))}
         </div>
       </CardHeader>
-
       <CardContent>
         {view === 'overview' && (
           <div className="space-y-6">
-            {/* Statistics */}
+            {}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <MetricCard
                 title="Güneş Aktivitesi"
@@ -411,15 +371,13 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
                 className="border-blue-500/20"
               />
             </div>
-
-            {/* Recent Events */}
+            {}
             {activeEvents.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-lg font-semibold text-cliff-white flex items-center gap-2">
                   <Activity className="h-4 w-4" />
                   Aktif Olaylar
                 </h3>
-                
                 <div className="space-y-2">
                   {activeEvents.slice(0, 3).map((event) => (
                     <div
@@ -440,17 +398,14 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
                             {event.severity.toUpperCase()}
                           </Badge>
                         </div>
-                        
                         <div className="text-xs text-cliff-light-gray">
                           <Clock className="h-3 w-3 inline mr-1" />
                           {formatRelativeTime(new Date(event.start_time))}
                         </div>
                       </div>
-                      
                       <p className="text-sm text-cliff-light-gray mt-2">
                         {event.description}
                       </p>
-                      
                       {event.affected_systems.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {event.affected_systems.slice(0, 3).map((system, idx) => (
@@ -467,7 +422,6 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
             )}
           </div>
         )}
-
         {view === 'events' && (
           <div className="space-y-3">
             {spaceWeatherEvents.length === 0 ? (
@@ -502,17 +456,14 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
                           </Badge>
                         )}
                       </div>
-                      
                       <p className="text-sm text-cliff-light-gray mb-3">
                         {event.description}
                       </p>
-                      
                       <div className="flex items-center gap-4 text-xs text-cliff-light-gray">
                           <span>Başladı: {formatDate(new Date(event.start_time))}</span>
                           {event.magnitude && <span>Büyüklük: {event.magnitude}</span>}
                           <span>Kaynak: {event.source}</span>
                         </div>
-                      
                       {event.affected_systems.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {event.affected_systems.map((system, idx) => (
@@ -523,7 +474,6 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
                         </div>
                       )}
                     </div>
-                    
                     <Button variant="ghost" size="sm">
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -533,7 +483,6 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
             )}
           </div>
         )}
-
         {(view === 'solar' || view === 'alerts') && (
           <div className="text-center py-8">
             <Sun className="h-12 w-12 text-cliff-light-gray/40 mx-auto mb-4" />
@@ -544,8 +493,7 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
           </div>
         )}
       </CardContent>
-
-      {/* Cosmic background effects */}
+      {}
       <div className="absolute inset-0 opacity-5 pointer-events-none overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-radial from-yellow-400 to-transparent animate-pulse-slow" />
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-radial from-orange-400 to-transparent animate-pulse-slow delay-1000" />
@@ -554,5 +502,4 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
     </Card>
   )
 }
-
 export default SpaceWeatherStation

@@ -1,23 +1,18 @@
-export class ImpactPhysics {
+﻿export class ImpactPhysics {
   private readonly SOUND_SPEED = 343
   private readonly EARTH_RADIUS = 6371
   private readonly GRAVITY = 9.8
-  
   calculateImpactTimeline(
     diameter_m: number,
     velocity_kms: number,
     distance_km: number
   ) {
-    // Animasyon için normalize edilmiş timeline (0-1 arası)
-    // Gerçek fizik yerine görsel açıdan anlamlı zamanlamalar
-    
     const approachPhase = 0.35      // %35 - Yaklaşma (en uzun faz)
     const atmospherePhase = 0.10    // %10 - Atmosfere giriş
     const impactPhase = 0.03        // %3 - Çarpma anı
     const fireballPhase = 0.15      // %15 - Fireball
     const shockPhase = 0.30         // %30 - Şok dalgası yayılımı
     const debrisPhase = 0.20        // %20 - Debris evresi
-    
     return {
       phases: {
         approach: {
@@ -78,7 +73,6 @@ export class ImpactPhysics {
       }
     }
   }
-  
   normalizeToAnimationProgress(
     realTime: number,
     totalDuration: number,
@@ -87,6 +81,4 @@ export class ImpactPhysics {
     return (realTime / totalDuration) * (totalDuration / targetDuration)
   }
 }
-
 export const impactPhysics = new ImpactPhysics()
-

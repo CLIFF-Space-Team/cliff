@@ -1,10 +1,8 @@
-'use client'
-
+﻿'use client'
 import React from 'react'
 import { Play, Pause, RotateCcw, Gauge } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
-
 interface SimulationControlsProps {
   isPlaying: boolean
   onPlayPause: () => void
@@ -13,7 +11,6 @@ interface SimulationControlsProps {
   onSpeedChange: (speed: number) => void
   progress: number
 }
-
 export function SimulationControls({
   isPlaying,
   onPlayPause,
@@ -25,7 +22,7 @@ export function SimulationControls({
   return (
     <div className="absolute top-20 right-4 z-20 w-80">
       <div className="bg-pure-black/95 backdrop-blur-xl rounded-xl border border-cliff-white/20 p-3 shadow-2xl">
-        {/* Kontrol Butonları */}
+        {}
         <div className="flex items-center gap-2 mb-3">
           <Button
             onClick={onPlayPause}
@@ -44,7 +41,6 @@ export function SimulationControls({
               </>
             )}
           </Button>
-          
           <Button
             onClick={onRestart}
             size="sm"
@@ -55,8 +51,7 @@ export function SimulationControls({
             Baştan
           </Button>
         </div>
-        
-        {/* Hız Kontrolü */}
+        {}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1">
@@ -65,7 +60,6 @@ export function SimulationControls({
             </div>
             <span className="text-xs font-mono text-cliff-white">{speed.toFixed(1)}x</span>
           </div>
-          
           <Slider
             value={[speed]}
             onValueChange={([value]) => onSpeedChange(value)}
@@ -74,7 +68,6 @@ export function SimulationControls({
             step={0.25}
             className="cursor-pointer"
           />
-          
           <div className="flex justify-between text-[10px] text-cliff-light-gray">
             <span>0.25x</span>
             <span>1x</span>
@@ -85,4 +78,3 @@ export function SimulationControls({
     </div>
   )
 }
-

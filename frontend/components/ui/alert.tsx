@@ -1,8 +1,7 @@
-import React from 'react'
+﻿import React from 'react'
 import { cn } from '@/lib/utils'
 import { VariantProps, cva } from 'class-variance-authority'
 import { X, AlertTriangle, CheckCircle, Info, Zap, Satellite, Globe } from 'lucide-react'
-
 const alertVariants = cva(
   "relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
   {
@@ -13,8 +12,6 @@ const alertVariants = cva(
         warning: "border-yellow-500/50 text-yellow-600 dark:text-yellow-400 bg-yellow-500/10 [&>svg]:text-yellow-600 dark:[&>svg]:text-yellow-400",
         success: "border-green-500/50 text-green-600 dark:text-green-400 bg-green-500/10 [&>svg]:text-green-600 dark:[&>svg]:text-green-400",
         info: "border-blue-500/50 text-blue-600 dark:text-blue-400 bg-blue-500/10 [&>svg]:text-blue-600 dark:[&>svg]:text-blue-400",
-        
-        // CLIFF specific variants
         critical: "border-red-500/50 text-red-100 bg-gradient-to-r from-red-900/80 to-pink-900/80 backdrop-blur-md shadow-lg shadow-red-500/25 animate-pulse-subtle [&>svg]:text-red-400",
         threat: "border-orange-500/50 text-orange-100 bg-gradient-to-r from-orange-900/80 to-red-900/80 backdrop-blur-md shadow-lg shadow-orange-500/25 [&>svg]:text-orange-400",
         asteroid: "border-yellow-500/50 text-yellow-100 bg-gradient-to-r from-yellow-900/80 to-orange-900/80 backdrop-blur-md shadow-lg shadow-yellow-500/25 [&>svg]:text-yellow-400",
@@ -43,7 +40,6 @@ const alertVariants = cva(
     },
   }
 )
-
 export interface AlertProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof alertVariants> {
@@ -55,7 +51,6 @@ export interface AlertProps
   timestamp?: Date
   priority?: 'low' | 'medium' | 'high' | 'critical'
 }
-
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
   ({ 
     className, 
@@ -84,9 +79,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
       solar: <Zap className="h-4 w-4" />,
       cosmic: <Satellite className="h-4 w-4" />,
     }
-
     const alertIcon = icon || (variant && defaultIcons[variant as keyof typeof defaultIcons])
-
     return (
       <div
         ref={ref}
@@ -114,7 +107,6 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
             {children}
           </AlertDescription>
         </div>
-        
         {dismissible && onDismiss && (
           <button
             onClick={onDismiss}
@@ -124,8 +116,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
             <X className="h-4 w-4" />
           </button>
         )}
-        
-        {/* Cosmic background effects */}
+        {}
         {(variant === 'critical' || variant === 'cosmic' || variant === 'space') && (
           <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden rounded-lg">
             <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-radial from-current to-transparent animate-pulse-slow" />
@@ -136,9 +127,7 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(
     )
   }
 )
-
 Alert.displayName = "Alert"
-
 const AlertTitle = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLHeadingElement>
@@ -150,7 +139,6 @@ const AlertTitle = React.forwardRef<
   />
 ))
 AlertTitle.displayName = "AlertTitle"
-
 const AlertDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
@@ -162,8 +150,6 @@ const AlertDescription = React.forwardRef<
   />
 ))
 AlertDescription.displayName = "AlertDescription"
-
-// Specialized Alert components for CLIFF
 const ThreatAlert = React.forwardRef<HTMLDivElement, Omit<AlertProps, 'variant'> & {
   threatLevel: 'critical' | 'high' | 'medium' | 'low'
   threatType: string
@@ -176,9 +162,7 @@ const ThreatAlert = React.forwardRef<HTMLDivElement, Omit<AlertProps, 'variant'>
     medium: 'warning',
     low: 'info'
   } as const
-
   const threatTitle = title || `${threatLevel.toUpperCase()} SEVİYE TEHDİT TESPİT EDİLDİ`
-
   return (
     <Alert
       ref={ref}
@@ -213,7 +197,6 @@ const ThreatAlert = React.forwardRef<HTMLDivElement, Omit<AlertProps, 'variant'>
   )
 })
 ThreatAlert.displayName = "ThreatAlert"
-
 const SystemAlert = React.forwardRef<HTMLDivElement, Omit<AlertProps, 'variant'> & {
   system: string
   status: 'online' | 'offline' | 'error' | 'maintenance'
@@ -225,9 +208,7 @@ const SystemAlert = React.forwardRef<HTMLDivElement, Omit<AlertProps, 'variant'>
     error: 'destructive',
     maintenance: 'info'
   } as const
-
   const systemTitle = title || `${system} Sistemi ${status.toUpperCase()}`
-
   return (
     <Alert
       ref={ref}
@@ -248,7 +229,6 @@ const SystemAlert = React.forwardRef<HTMLDivElement, Omit<AlertProps, 'variant'>
   )
 })
 SystemAlert.displayName = "SystemAlert"
-
 const DataAlert = React.forwardRef<HTMLDivElement, Omit<AlertProps, 'variant'> & {
   dataSource: string
   updateType: 'new' | 'updated' | 'anomaly' | 'lost'
@@ -260,9 +240,7 @@ const DataAlert = React.forwardRef<HTMLDivElement, Omit<AlertProps, 'variant'> &
     anomaly: 'warning',
     lost: 'destructive'
   } as const
-
   const dataTitle = title || `${dataSource} Verisi ${updateType.toUpperCase()}`
-
   return (
     <Alert
       ref={ref}
@@ -283,7 +261,6 @@ const DataAlert = React.forwardRef<HTMLDivElement, Omit<AlertProps, 'variant'> &
   )
 })
 DataAlert.displayName = "DataAlert"
-
 const CosmicEventAlert = React.forwardRef<HTMLDivElement, Omit<AlertProps, 'variant'> & {
   eventType: 'solar_flare' | 'asteroid' | 'satellite' | 'space_weather' | 'earth_event'
   severity: 'low' | 'moderate' | 'high' | 'extreme'
@@ -297,9 +274,7 @@ const CosmicEventAlert = React.forwardRef<HTMLDivElement, Omit<AlertProps, 'vari
     space_weather: 'cosmic',
     earth_event: 'earth'
   } as const
-
   const eventTitle = title || `${eventType.replace('_', ' ').toUpperCase()} OLAY - ${severity.toUpperCase()}`
-
   return (
     <Alert
       ref={ref}
@@ -326,7 +301,6 @@ const CosmicEventAlert = React.forwardRef<HTMLDivElement, Omit<AlertProps, 'vari
   )
 })
 CosmicEventAlert.displayName = "CosmicEventAlert"
-
 export { 
   Alert, 
   AlertTitle, 

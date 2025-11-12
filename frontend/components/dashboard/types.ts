@@ -1,9 +1,4 @@
-/**
- * Dashboard Component Types
- */
-
-// Threat Alert Types
-export interface ThreatAlert {
+﻿export interface ThreatAlert {
   id: string
   title: string
   severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
@@ -20,8 +15,6 @@ export interface ThreatAlert {
     event_id?: string
   }
 }
-
-// Threat Data Types
 export interface ThreatData {
   id: string
   name: string
@@ -38,8 +31,6 @@ export interface ThreatData {
   data_source?: string
   last_updated?: string
 }
-
-// Visualization Data Types
 export interface VisualizationData {
   id: string
   type: "line" | "bar" | "area" | "radar" | "donut" | "scatter" | "heatmap"
@@ -55,8 +46,6 @@ export interface VisualizationData {
     responsive?: boolean
   }
 }
-
-// Dashboard State Types
 export interface DashboardState {
   threats: ThreatData[]
   alerts: ThreatAlert[]
@@ -76,8 +65,6 @@ export interface DashboardState {
     sound: boolean
   }
 }
-
-// AI Analysis Types
 export interface AIAnalysisResult {
   session_id: string
   timestamp: string
@@ -90,8 +77,6 @@ export interface AIAnalysisResult {
   processing_time: number
   raw_data?: any
 }
-
-// NASA Data Types
 export interface AsteroidData {
   id: string
   name: string
@@ -119,7 +104,6 @@ export interface AsteroidData {
   }>
   orbital_data?: any
 }
-
 export interface EarthEventData {
   id: string
   title: string
@@ -141,7 +125,6 @@ export interface EarthEventData {
     coordinates: [number, number]
   }>
 }
-
 export interface SpaceWeatherData {
   messageType: string
   messageID: string
@@ -152,29 +135,23 @@ export interface SpaceWeatherData {
   phenomena?: string
   location?: string
 }
-
-// Chart Data Types
 export interface TimeSeriesData {
   date: string | Date
   value: number
   category?: string
   label?: string
 }
-
 export interface CategoryData {
   category: string
   value: number
   percentage?: number
   color?: string
 }
-
 export interface RadarDataPoint {
   axis: string
   value: number
   fullMark?: number
 }
-
-// Notification Types
 export interface NotificationItem {
   id: string
   type: "threat" | "system" | "analysis" | "alert" | "info"
@@ -191,8 +168,6 @@ export interface NotificationItem {
   }
   metadata?: Record<string, any>
 }
-
-// Performance Metrics Types
 export interface PerformanceMetrics {
   fps: number
   renderTime: number
@@ -203,8 +178,6 @@ export interface PerformanceMetrics {
   activeConnections: number
   queuedRequests: number
 }
-
-// System Status Types
 export interface SystemStatus {
   status: "healthy" | "degraded" | "critical" | "maintenance"
   uptime: number
@@ -219,7 +192,6 @@ export interface SystemStatus {
   }
   metrics: PerformanceMetrics
 }
-
 export interface ComponentStatus {
   name: string
   status: "operational" | "degraded" | "down" | "maintenance"
@@ -228,8 +200,6 @@ export interface ComponentStatus {
   lastChecked: Date
   message?: string
 }
-
-// Filter and Sort Types
 export interface FilterOptions {
   severity?: ("LOW" | "MEDIUM" | "HIGH" | "CRITICAL")[]
   type?: string[]
@@ -252,13 +222,10 @@ export interface FilterOptions {
     max: number
   }
 }
-
 export interface SortOptions {
   field: "date" | "severity" | "risk_score" | "distance" | "size" | "name"
   direction: "asc" | "desc"
 }
-
-// WebSocket Message Types
 export interface WSMessage {
   type: string
   data: any
@@ -266,12 +233,9 @@ export interface WSMessage {
   id?: string
   source?: string
 }
-
 export interface WSConnectionState {
   status: "connecting" | "connected" | "disconnected" | "error"
   reconnectAttempts: number
   lastError?: string
   lastConnected?: Date
 }
-
-// Export all types (types are already exported above)

@@ -1,12 +1,10 @@
-'use client'
-
+﻿'use client'
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, AlertTriangle, Clock, Target, Zap, Info } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-
 interface ThreatData {
   threat_id: string
   title: string
@@ -19,21 +17,17 @@ interface ThreatData {
   time_to_impact_hours?: number
   impact_probability: number
 }
-
 interface AsteroidDetailPanelProps {
   asteroid: ThreatData | null
   isOpen: boolean
   onClose: () => void
 }
-
 export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
   asteroid,
   isOpen,
   onClose
 }) => {
   if (!asteroid) return null
-
-  // Tehdit seviyesi rengi
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'CRITICAL': return 'text-red-400 bg-red-400/10 border-red-400/20'
@@ -43,8 +37,6 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
       default: return 'text-gray-400 bg-gray-400/10 border-gray-400/20'
     }
   }
-
-  // Risk seviyesi ikonu
   const getRiskIcon = (severity: string) => {
     switch (severity) {
       case 'CRITICAL': return <AlertTriangle className="w-5 h-5 text-red-400" />
@@ -54,12 +46,9 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
       default: return <Info className="w-5 h-5 text-gray-400" />
     }
   }
-
-  // Risk skorunu yüzdeye çevir
   const riskPercentage = Math.round(asteroid.final_risk_score * 100)
   const confidencePercentage = Math.round(asteroid.confidence_score * 100)
   const impactPercentage = Math.round(asteroid.impact_probability * 100)
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -78,7 +67,7 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
             className="bg-pure-black/95 border border-cyan-400/30 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
+            {}
             <div className="p-6 border-b border-gray-800/50">
               <div className="flex items-start justify-between">
                 <div className="flex items-center space-x-3">
@@ -98,12 +87,10 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                 </Button>
               </div>
             </div>
-
-            {/* Content */}
+            {}
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
               <div className="space-y-6">
-                
-                {/* Tehdit Seviyesi */}
+                {}
                 <Card className="p-4 bg-gray-900/50 border-gray-800/50">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-semibold text-white">Tehdit Seviyesi</h3>
@@ -111,8 +98,7 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                       {asteroid.severity}
                     </Badge>
                   </div>
-                  
-                  {/* Risk Skoru Progress Bar */}
+                  {}
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-400">Risk Skoru</span>
@@ -130,11 +116,9 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                     </div>
                   </div>
                 </Card>
-
-                {/* Analiz Detayları */}
+                {}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  
-                  {/* Güven Skoru */}
+                  {}
                   <Card className="p-4 bg-gray-900/50 border-gray-800/50">
                     <div className="flex items-center space-x-2 mb-2">
                       <Target className="w-4 h-4 text-cyan-400" />
@@ -143,8 +127,7 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                     <div className="text-2xl font-bold text-cyan-400">{confidencePercentage}%</div>
                     <div className="text-xs text-gray-400 mt-1">AI analiz güveni</div>
                   </Card>
-
-                  {/* Çarpma Olasılığı */}
+                  {}
                   <Card className="p-4 bg-gray-900/50 border-gray-800/50">
                     <div className="flex items-center space-x-2 mb-2">
                       <AlertTriangle className="w-4 h-4 text-yellow-400" />
@@ -153,8 +136,7 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                     <div className="text-2xl font-bold text-yellow-400">{impactPercentage}%</div>
                     <div className="text-xs text-gray-400 mt-1">İstatistiksel risk</div>
                   </Card>
-
-                  {/* Zaman Bilgisi */}
+                  {}
                   {asteroid.time_to_impact_hours && (
                     <Card className="p-4 bg-gray-900/50 border-gray-800/50">
                       <div className="flex items-center space-x-2 mb-2">
@@ -172,8 +154,7 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                       </div>
                     </Card>
                   )}
-
-                  {/* Veri Kaynağı */}
+                  {}
                   <Card className="p-4 bg-gray-900/50 border-gray-800/50">
                     <div className="flex items-center space-x-2 mb-2">
                       <Info className="w-4 h-4 text-green-400" />
@@ -185,8 +166,7 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                     <div className="text-xs text-gray-400 mt-1">Güvenilir kaynak</div>
                   </Card>
                 </div>
-
-                {/* Koordinat Bilgisi */}
+                {}
                 {asteroid.coordinates && (
                   <Card className="p-4 bg-gray-900/50 border-gray-800/50">
                     <h4 className="font-medium text-white mb-3">Konum Bilgisi</h4>
@@ -206,8 +186,7 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                     </div>
                   </Card>
                 )}
-
-                {/* Eylem Önerileri */}
+                {}
                 <Card className="p-4 bg-gradient-to-r from-cyan-900/20 to-blue-900/20 border-cyan-400/30">
                   <h4 className="font-medium text-cyan-400 mb-3 flex items-center">
                     <Zap className="w-4 h-4 mr-2" />
@@ -229,8 +208,7 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
                 </Card>
               </div>
             </div>
-
-            {/* Footer */}
+            {}
             <div className="p-6 border-t border-gray-800/50 bg-gray-900/30">
               <div className="flex items-center justify-between">
                 <div className="text-xs text-gray-400">
@@ -247,5 +225,4 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
     </AnimatePresence>
   )
 }
-
 export default AsteroidDetailPanel

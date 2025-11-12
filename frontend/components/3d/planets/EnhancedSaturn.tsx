@@ -1,10 +1,8 @@
-'use client'
-
+﻿'use client'
 import React, { useRef } from 'react'
 import { useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import { ShaderUtils } from '../shaders/PlanetaryShaders'
-
 interface EnhancedSaturnProps {
   position?: [number, number, number]
   scale?: number
@@ -14,10 +12,6 @@ interface EnhancedSaturnProps {
   sunPosition?: THREE.Vector3
   nasaTexture?: string
 }
-
-/**
- * Saturn Ring System
- */
 function SaturnRings({
   planetScale,
   quality,
@@ -28,16 +22,12 @@ function SaturnRings({
   sunPosition?: THREE.Vector3
 }) {
   const ringsRef = useRef<THREE.Mesh>(null)
-  
-  // Create ring texture (procedural)
   const ringTexture = React.useMemo(() => {
     const canvas = document.createElement('canvas')
     const size = quality === 'ultra' ? 1024 : quality === 'high' ? 512 : 256
     canvas.width = size
     canvas.height = 1
     const ctx = canvas.getContext('2d')!
-    
-    // Create ring bands
     const gradient = ctx.createLinearGradient(0, 0, size, 0)
     gradient.addColorStop(0, 'transparent')
     gradient.addColorStop(0.3, '#b8a885')
@@ -49,21 +39,16 @@ function SaturnRings({
     gradient.addColorStop(0.75, '#4a3f35')
     gradient.addColorStop(0.85, '#8b7d6f')
     gradient.addColorStop(1, 'transparent')
-    
     ctx.fillStyle = gradient
     ctx.fillRect(0, 0, size, 1)
-    
     const texture = new THREE.CanvasTexture(canvas)
     texture.wrapS = THREE.ClampToEdgeWrapping
     texture.wrapT = THREE.ClampToEdgeWrapping
     return texture
   }, [quality])
-  
-  // Create ring material
   const ringMaterial = React.useMemo(() => {
     return ShaderUtils.createRingMaterial(ringTexture, sunPosition)
   }, [ringTexture, sunPosition])
-  
   return (
     <mesh 
       ref={ringsRef}
@@ -80,11 +65,6 @@ function SaturnRings({
     </mesh>
   )
 }
-
-/**
- * Enhanced Saturn Component
- * Ringed planet with NASA Cassini texture
- */
 export function EnhancedSaturn({
   position = [30, 0, 0],
   scale = 2.4,
@@ -95,20 +75,15 @@ export function EnhancedSaturn({
   nasaTexture = '/textures/nasa/saturn/saturn_cassini_2k.jpg'
 }: EnhancedSaturnProps) {
   const saturnRef = useRef<THREE.Mesh>(null)
-  
-  // Load NASA Cassini texture
   const saturnTexture = useLoader(THREE.TextureLoader, nasaTexture)
-  
-  // Animation
   useFrame((state, delta) => {
     if (enableRotation && saturnRef.current) {
       saturnRef.current.rotation.y += delta * 0.12
     }
   })
-  
   return (
     <group position={position}>
-      {/* Saturn Core with NASA Cassini Texture */}
+      {}
       <mesh ref={saturnRef}>
         <sphereGeometry args={[scale, 64, 64]} />
         <meshStandardMaterial
@@ -117,8 +92,7 @@ export function EnhancedSaturn({
           metalness={0.1}
         />
       </mesh>
-      
-      {/* Ring System */}
+      {}
       {showRings && (
         <SaturnRings 
           planetScale={scale}
@@ -126,8 +100,7 @@ export function EnhancedSaturn({
           sunPosition={sunPosition}
         />
       )}
-      
-      {/* Atmospheric glow */}
+      {}
       {quality !== 'low' && (
         <mesh scale={1.03}>
           <sphereGeometry args={[scale, 32, 32]} />
@@ -143,5 +116,4 @@ export function EnhancedSaturn({
     </group>
   )
 }
-
 export default EnhancedSaturn

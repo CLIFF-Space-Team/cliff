@@ -1,13 +1,10 @@
-'use client'
-
+﻿'use client'
 import React, { Suspense, useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { Html, OrbitControls } from '@react-three/drei'
 import { motion } from 'framer-motion'
-
 import { NASARealisticSolarSystem } from './NASARealisticSolarSystem'
 import { useDashboardStore } from '@/stores/useDashboardStore'
-
 interface SpaceVisualizationProps {
   compact?: boolean
   fullscreen?: boolean
@@ -16,10 +13,8 @@ interface SpaceVisualizationProps {
   className?: string
   useAdvancedEngine?: boolean
 }
-
 const AdvancedEngineWrapper = React.memo(() => {
   const { quality, showOrbits, enableRotation } = useDashboardStore()
-
   return (
     <NASARealisticSolarSystem
       quality={quality}
@@ -29,9 +24,7 @@ const AdvancedEngineWrapper = React.memo(() => {
     />
   )
 })
-
 AdvancedEngineWrapper.displayName = 'AdvancedEngineWrapper'
-
 export function SpaceVisualization({
   compact = false,
   fullscreen = false,
@@ -41,7 +34,6 @@ export function SpaceVisualization({
   useAdvancedEngine = true,
 }: SpaceVisualizationProps) {
   const [showControls, setShowControls] = useState(!compact)
-
   if (useAdvancedEngine) {
     return (
       <div className={`relative w-full h-full bg-gradient-to-b from-gray-900 to-black ${className}`}>
@@ -49,7 +41,6 @@ export function SpaceVisualization({
       </div>
     )
   }
-
   return (
     <div className={`relative w-full h-full bg-gradient-to-b from-gray-900 to-black ${className}`}>
       <div className="flex items-center justify-center h-full text-white">
@@ -68,5 +59,4 @@ export function SpaceVisualization({
     </div>
   )
 }
-
 export default SpaceVisualization

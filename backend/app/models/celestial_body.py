@@ -1,6 +1,5 @@
-from pydantic import BaseModel
+﻿from pydantic import BaseModel
 from typing import Optional
-
 class CelestialBody(BaseModel):
     name: str
     type: str

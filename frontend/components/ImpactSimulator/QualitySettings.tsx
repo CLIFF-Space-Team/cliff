@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useEffect } from 'react'
 import { Settings, Zap, Gauge } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,9 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-
 export type QualityPreset = 'low' | 'medium' | 'high' | 'auto'
-
 export interface QualitySettings {
   preset: QualityPreset
   particles: number
@@ -21,22 +18,17 @@ export interface QualitySettings {
   postProcessing: boolean
   autoAdjust: boolean
 }
-
 interface QualitySettingsProps {
   currentFps: number
   onSettingsChange: (settings: QualitySettings) => void
 }
-
 function detectGPU(): QualityPreset {
   const canvas = document.createElement('canvas')
   const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
-  
   if (!gl) return 'low'
-  
   const debugInfo = (gl as any).getExtension('WEBGL_debug_renderer_info')
   if (debugInfo) {
     const renderer = (gl as any).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL).toLowerCase()
-    
     if (renderer.includes('nvidia') && (renderer.includes('rtx') || renderer.includes('gtx 16') || renderer.includes('gtx 20'))) {
       return 'high'
     }
@@ -44,14 +36,11 @@ function detectGPU(): QualityPreset {
       return 'medium'
     }
   }
-  
   const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE)
   if (maxTextureSize >= 16384) return 'high'
   if (maxTextureSize >= 8192) return 'medium'
-  
   return 'low'
 }
-
 export function QualitySettings({ currentFps, onSettingsChange }: QualitySettingsProps) {
   const [settings, setSettings] = useState<QualitySettings>({
     preset: 'auto',
@@ -60,25 +49,20 @@ export function QualitySettings({ currentFps, onSettingsChange }: QualitySetting
     postProcessing: true,
     autoAdjust: true
   })
-  
   const [detectedQuality, setDetectedQuality] = useState<QualityPreset>('medium')
-  
   useEffect(() => {
     const detected = detectGPU()
     setDetectedQuality(detected)
-    
     if (settings.preset === 'auto') {
       updateSettingsForPreset(detected)
     }
   }, [])
-  
   useEffect(() => {
     if (settings.autoAdjust && currentFps < 30) {
       const lowerPreset = settings.preset === 'high' ? 'medium' : 'low'
       updateSettingsForPreset(lowerPreset)
     }
   }, [currentFps, settings.autoAdjust])
-  
   const updateSettingsForPreset = (preset: QualityPreset) => {
     const presetConfigs = {
       low: { particles: 50, effects: false, postProcessing: false },
@@ -86,23 +70,19 @@ export function QualitySettings({ currentFps, onSettingsChange }: QualitySetting
       high: { particles: 200, effects: true, postProcessing: true },
       auto: { particles: 100, effects: true, postProcessing: true }
     }
-    
     const config = presetConfigs[preset]
     const newSettings = { ...settings, preset, ...config }
     setSettings(newSettings)
     onSettingsChange(newSettings)
   }
-  
   const handlePresetChange = (preset: QualityPreset) => {
     updateSettingsForPreset(preset)
   }
-  
   const toggleEffect = (key: keyof QualitySettings) => {
     const newSettings = { ...settings, [key]: !settings[key] }
     setSettings(newSettings)
     onSettingsChange(newSettings)
   }
-  
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -126,7 +106,6 @@ export function QualitySettings({ currentFps, onSettingsChange }: QualitySetting
               GPU: {detectedQuality.toUpperCase()} algılandı
             </p>
           </div>
-          
           <div className="space-y-2">
             <Label className="text-xs text-cliff-light-gray">Preset</Label>
             <Select value={settings.preset} onValueChange={handlePresetChange}>
@@ -146,7 +125,6 @@ export function QualitySettings({ currentFps, onSettingsChange }: QualitySetting
               </SelectContent>
             </Select>
           </div>
-          
           <div className="space-y-3 pt-2 border-t border-cliff-white/10">
             <div className="flex items-center justify-between">
               <Label className="text-sm">Efektler</Label>
@@ -155,7 +133,6 @@ export function QualitySettings({ currentFps, onSettingsChange }: QualitySetting
                 onCheckedChange={() => toggleEffect('effects')}
               />
             </div>
-            
             <div className="flex items-center justify-between">
               <Label className="text-sm">Post-Processing</Label>
               <Switch
@@ -163,7 +140,6 @@ export function QualitySettings({ currentFps, onSettingsChange }: QualitySetting
                 onCheckedChange={() => toggleEffect('postProcessing')}
               />
             </div>
-            
             <div className="flex items-center justify-between">
               <Label className="text-sm">Otomatik Ayarlama</Label>
               <Switch
@@ -172,7 +148,6 @@ export function QualitySettings({ currentFps, onSettingsChange }: QualitySetting
               />
             </div>
           </div>
-          
           <div className="pt-2 border-t border-cliff-white/10">
             <div className="flex items-center justify-between text-sm">
               <span className="text-cliff-light-gray">Parçacık Sayısı:</span>
@@ -189,7 +164,6 @@ export function QualitySettings({ currentFps, onSettingsChange }: QualitySetting
               </span>
             </div>
           </div>
-          
           {settings.autoAdjust && currentFps < 30 && (
             <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-2">
               <p className="text-xs text-yellow-400">
@@ -202,4 +176,3 @@ export function QualitySettings({ currentFps, onSettingsChange }: QualitySetting
     </Popover>
   )
 }
-

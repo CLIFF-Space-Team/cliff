@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -18,7 +17,6 @@ import {
 } from 'lucide-react'
 import { ChatMessage as ChatMessageType } from '@/types/chat'
 import { cn } from '@/lib/utils'
-
 interface ChatMessageProps {
   message: ChatMessageType
   onResend?: (id: string) => void
@@ -29,22 +27,17 @@ interface ChatMessageProps {
   showTimestamp?: boolean
   compact?: boolean
 }
-
 function formatTimeAgo(date: Date): string {
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
   const diffMins = Math.floor(diffMs / 60000)
-  
   if (diffMins < 1) return 'şimdi'
   if (diffMins < 60) return `${diffMins} dk önce`
-  
   const diffHours = Math.floor(diffMins / 60)
   if (diffHours < 24) return `${diffHours} sa önce`
-  
   const diffDays = Math.floor(diffHours / 24)
   return `${diffDays} gün önce`
 }
-
 export function ChatMessage({
   message,
   onResend,
@@ -59,23 +52,18 @@ export function ChatMessage({
   const isSystem = message.sender === 'system'
   const hasError = message.status === 'error'
   const hasImage = message.metadata?.isImageMessage && message.metadata?.imageUrl
-
   const handleCopy = () => {
     onCopy?.(message.content)
   }
-
   const handleResend = () => {
     onResend?.(message.id)
   }
-
   const handleDelete = () => {
     onDelete?.(message.id)
   }
-
   const handleSpeak = () => {
     onSpeak?.(message.content)
   }
-
   const handleImageDownload = () => {
     if (hasImage && message.metadata?.imageUrl) {
       const link = document.createElement('a')
@@ -84,13 +72,11 @@ export function ChatMessage({
       link.click()
     }
   }
-
   const handleImageFullscreen = () => {
     if (hasImage && message.metadata?.imageUrl) {
       window.open(message.metadata.imageUrl, '_blank')
     }
   }
-
   return (
     <div
       className={cn(
@@ -108,13 +94,12 @@ export function ChatMessage({
           {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
         </div>
       )}
-
       <div className={cn(
         'flex flex-col gap-2 max-w-[80%]',
         isUser && 'items-end',
         isSystem && 'items-center max-w-full'
       )}>
-        {/* Message Header */}
+        {}
         {showTimestamp && (
           <div className={cn(
             'flex items-center gap-2 text-xs text-gray-500',
@@ -135,8 +120,7 @@ export function ChatMessage({
             )}
           </div>
         )}
-
-        {/* Message Content */}
+        {}
         <Card className={cn(
           'shadow-sm',
           isUser ? 'bg-blue-500 text-white border-blue-500' : 
@@ -145,7 +129,7 @@ export function ChatMessage({
           hasImage && 'bg-gradient-to-br from-purple-50 to-blue-50 border-purple-300'
         )}>
           <CardContent className="p-4">
-            {/* Text Content */}
+            {}
             <div className={cn(
               'text-sm leading-relaxed',
               isUser ? 'text-white' : 'text-gray-900',
@@ -155,8 +139,7 @@ export function ChatMessage({
                 {message.content}
               </p>
             </div>
-
-            {/* Image Content */}
+            {}
             {hasImage && message.metadata?.imageUrl && (
               <div className="mt-4 space-y-3">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -168,7 +151,6 @@ export function ChatMessage({
                     </Badge>
                   )}
                 </div>
-                
                 <div className="relative rounded-lg overflow-hidden border-2 border-purple-200">
                   <img
                     src={message.metadata.imageUrl}
@@ -179,8 +161,7 @@ export function ChatMessage({
                       target.style.display = 'none'
                     }}
                   />
-                  
-                  {/* Image Controls */}
+                  {}
                   <div className="absolute top-2 right-2 flex gap-1">
                     <Button
                       size="sm"
@@ -202,8 +183,7 @@ export function ChatMessage({
                     </Button>
                   </div>
                 </div>
-
-                {/* Image Prompt */}
+                {}
                 {message.metadata.imagePrompt && (
                   <div className="bg-gray-50 rounded-md p-3 text-sm">
                     <div className="font-medium text-gray-700 mb-1">Orijinal İstek:</div>
@@ -212,8 +192,7 @@ export function ChatMessage({
                 )}
               </div>
             )}
-
-            {/* Message Metadata */}
+            {}
             {message.metadata && !hasImage && (
               <div className="mt-3 pt-3 border-t border-gray-200 flex flex-wrap gap-2 text-xs text-gray-500">
                 {message.metadata.executionTime && (
@@ -229,8 +208,7 @@ export function ChatMessage({
             )}
           </CardContent>
         </Card>
-
-        {/* Action Buttons */}
+        {}
         {!isSystem && (
           <div className={cn(
             'flex items-center gap-1',
@@ -244,7 +222,6 @@ export function ChatMessage({
             >
               <Copy className="h-3 w-3" />
             </Button>
-            
             {onSpeak && (
               <Button
                 size="sm"
@@ -256,7 +233,6 @@ export function ChatMessage({
                 {isPlaying ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
               </Button>
             )}
-
             {isUser && hasError && onResend && (
               <Button
                 size="sm"
@@ -267,7 +243,6 @@ export function ChatMessage({
                 <RefreshCw className="h-3 w-3" />
               </Button>
             )}
-
             {onDelete && (
               <Button
                 size="sm"
@@ -284,5 +259,4 @@ export function ChatMessage({
     </div>
   )
 }
-
 export default ChatMessage

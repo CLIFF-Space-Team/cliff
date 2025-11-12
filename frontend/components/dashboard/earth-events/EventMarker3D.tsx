@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useRef, useMemo, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
@@ -8,7 +7,6 @@ import { motion } from 'framer-motion'
 import { EarthEvent, useEarthEventsStore } from '@/stores/earthEventsStore'
 import { GeographicRegion, REGION_COLORS, REGION_INFO } from '@/lib/geographic-regions'
 import { regionDetector } from '@/lib/geographic-region-detector'
-
 interface EventMarker3DProps {
   event: EarthEvent
   earthRadius?: number
@@ -16,7 +14,6 @@ interface EventMarker3DProps {
   onSelect?: () => void
   visible?: boolean
 }
-
 const CATEGORY_COLORS = {
   wildfires: '#ef4444',
   earthquakes: '#f59e0b',
@@ -26,7 +23,6 @@ const CATEGORY_COLORS = {
   drought: '#d97706',
   default: '#10b981'
 } as const
-
 const CATEGORY_ICONS = {
   wildfires: '🔥',
   earthquakes: '⚡',
@@ -36,18 +32,15 @@ const CATEGORY_ICONS = {
   drought: '☀️',
   default: '⚠️'
 } as const
-
 function latLonToVector3(lat: number, lon: number, radius: number): THREE.Vector3 {
   const phi = (90 - lat) * (Math.PI / 180)
   const theta = (lon + 180) * (Math.PI / 180)
-  
   return new THREE.Vector3(
     -radius * Math.sin(phi) * Math.cos(theta),
     radius * Math.cos(phi),
     radius * Math.sin(phi) * Math.sin(theta)
   )
 }
-
 export function EventMarker3D({
   event,
   earthRadius = 1.8,
@@ -59,28 +52,22 @@ export function EventMarker3D({
   const pulseRef = useRef<THREE.Mesh>(null)
   const glowRef = useRef<THREE.PointLight>(null)
   const htmlRef = useRef<HTMLDivElement>(null)
-  
   const { regionColorMode } = useEarthEventsStore()
-  
   const position = useMemo(
     () => latLonToVector3(event.location.lat, event.location.lon, earthRadius + 0.02),
     [event.location.lat, event.location.lon, earthRadius]
   )
-  
   const eventRegion = useMemo(
     () => regionDetector.detectRegion(event.location.lat, event.location.lon),
     [event.location.lat, event.location.lon]
   )
-  
   const color = useMemo(() => {
     if (regionColorMode) {
       return REGION_COLORS[eventRegion]?.primary || CATEGORY_COLORS.default
     }
     return CATEGORY_COLORS[event.category as keyof typeof CATEGORY_COLORS] || CATEGORY_COLORS.default
   }, [regionColorMode, eventRegion, event.category])
-  
   const icon = CATEGORY_ICONS[event.category as keyof typeof CATEGORY_ICONS] || CATEGORY_ICONS.default
-  
   const markerScale = useMemo(() => {
     switch (event.severity) {
       case 'high': return 0.025
@@ -89,43 +76,34 @@ export function EventMarker3D({
       default: return 0.02
     }
   }, [event.severity])
-  
   useFrame((state, delta) => {
     if (!markerRef.current || !visible) return
-    
     const time = state.clock.getElapsedTime()
-    
     if (markerRef.current) {
       markerRef.current.rotation.y += delta * 0.5
       const pulseScale = 1 + Math.sin(time * 3) * 0.1
       markerRef.current.scale.setScalar(markerScale * (selected ? 1.5 : 1) * pulseScale)
     }
-    
     if (pulseRef.current) {
       const pulseOpacity = 0.3 + Math.sin(time * 2) * 0.2
       const pulseMaterial = pulseRef.current.material as THREE.MeshBasicMaterial
       pulseMaterial.opacity = pulseOpacity
-      
       const pulseScale = 1.5 + Math.sin(time * 2) * 0.5
       pulseRef.current.scale.setScalar(markerScale * pulseScale * 2)
     }
-    
     if (glowRef.current && event.severity === 'high') {
       glowRef.current.intensity = 0.5 + Math.sin(time * 4) * 0.3
     }
   })
-  
   useEffect(() => {
     if (selected && htmlRef.current) {
       htmlRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
     }
   }, [selected])
-  
   if (!visible) return null
-  
   return (
     <group position={position}>
-      {/* Main Marker */}
+      {}
       <mesh 
         ref={markerRef}
         onClick={(e) => {
@@ -150,8 +128,7 @@ export function EventMarker3D({
           metalness={0.7}
         />
       </mesh>
-      
-      {/* Pulse Ring */}
+      {}
       <mesh ref={pulseRef} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[markerScale * 1.5, markerScale * 2.5, 32]} />
         <meshBasicMaterial
@@ -161,8 +138,7 @@ export function EventMarker3D({
           side={THREE.DoubleSide}
         />
       </mesh>
-      
-      {/* Glow Light for High Severity */}
+      {}
       {event.severity === 'high' && (
         <pointLight
           ref={glowRef}
@@ -172,8 +148,7 @@ export function EventMarker3D({
           decay={2}
         />
       )}
-      
-      {/* HTML Tooltip */}
+      {}
       {selected && (
         <Html
           center
@@ -236,14 +211,12 @@ export function EventMarker3D({
     </group>
   )
 }
-
 interface EventMarkersContainerProps {
   events: EarthEvent[]
   selectedEventId?: string | null
   onSelectEvent?: (event: EarthEvent) => void
   earthRadius?: number
 }
-
 export function EventMarkersContainer({
   events,
   selectedEventId,
@@ -265,5 +238,4 @@ export function EventMarkersContainer({
     </group>
   )
 }
-
 export default EventMarker3D

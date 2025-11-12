@@ -1,9 +1,6 @@
-'use client'
-
+﻿'use client'
 import React from 'react'
 import { NASARealisticSolarSystem } from './NASARealisticSolarSystem'
-
-// Professional 3D Solar System Component - Now powered by NASA Realistic Textures
 function ProfessionalSolarSystem() {
   return (
     <NASARealisticSolarSystem
@@ -14,5 +11,4 @@ function ProfessionalSolarSystem() {
     />
   )
 }
-
 export default ProfessionalSolarSystem

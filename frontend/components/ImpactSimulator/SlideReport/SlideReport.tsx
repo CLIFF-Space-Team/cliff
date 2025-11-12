@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
@@ -8,7 +7,6 @@ import { ImpactResults, ImpactLocation } from '../types'
 import html2canvas from 'html2canvas'
 import jsPDF from 'jspdf'
 import { MemeComposer } from '../3D/MemeComposer'
-
 interface SlideReportProps {
   results: ImpactResults
   location: ImpactLocation
@@ -21,7 +19,6 @@ interface SlideReportProps {
   onClose: () => void
   impactImage?: string
 }
-
 interface SlideImages {
   impact?: string
   crater?: string
@@ -29,7 +26,6 @@ interface SlideImages {
   thermal?: string
   shockwave?: string
 }
-
 export function SlideReport({ 
   results, 
   location, 
@@ -43,33 +39,25 @@ export function SlideReport({
   const [loadingImages, setLoadingImages] = useState(false)
   const totalSlides = 6
   const slideRef = useRef<HTMLDivElement>(null)
-
   const nextSlide = useCallback(() => {
     setCurrentSlide(prev => (prev + 1) % totalSlides)
   }, [totalSlides])
-
   const prevSlide = useCallback(() => {
     setCurrentSlide(prev => (prev - 1 + totalSlides) % totalSlides)
   }, [totalSlides])
-
   useEffect(() => {
     let isMounted = true
-
     const loadSlideImages = async () => {
       if (loadingImages) return
-      
       const needsLoading = 
         (currentSlide === 2 && !slideImages.crater) ||
         (currentSlide === 3 && !slideImages.atmospheric) ||
         (currentSlide === 4 && !slideImages.thermal) ||
         (currentSlide === 5 && !slideImages.shockwave)
-
       if (!needsLoading) return
-
       setLoadingImages(true)
       try {
         const images: Partial<SlideImages> = {}
-
         if (currentSlide === 2 && !slideImages.crater) {
           const craterImg = await MemeComposer.renderCraterCrossSection(
             results.crater.finalDiameter_m / 1000,
@@ -77,7 +65,6 @@ export function SlideReport({
           )
           if (isMounted) images.crater = craterImg
         }
-
         if (currentSlide === 3 && !slideImages.atmospheric) {
           const atmosphericImg = await MemeComposer.renderAtmosphericEntry(
             asteroidParams.velocity_kms,
@@ -85,7 +72,6 @@ export function SlideReport({
           )
           if (isMounted) images.atmospheric = atmosphericImg
         }
-
         if (currentSlide === 4 && !slideImages.thermal) {
           const thermalImg = await MemeComposer.renderThermalFireball(
             results.thermal.fireball_maxRadius_m,
@@ -93,14 +79,12 @@ export function SlideReport({
           )
           if (isMounted) images.thermal = thermalImg
         }
-
         if (currentSlide === 5 && !slideImages.shockwave) {
           const shockwaveImg = await MemeComposer.renderShockwave(
             results.airBlast.radius_20psi_km
           )
           if (isMounted) images.shockwave = shockwaveImg
         }
-
         if (isMounted && Object.keys(images).length > 0) {
           setSlideImages(prev => ({ ...prev, impact: impactImage, ...images }))
         }
@@ -110,17 +94,13 @@ export function SlideReport({
         if (isMounted) setLoadingImages(false)
       }
     }
-
     loadSlideImages()
-
     return () => {
       isMounted = false
     }
   }, [currentSlide, impactImage, results.crater.finalDiameter_m, results.crater.finalDepth_m, results.thermal.fireball_maxRadius_m, results.thermal.fireball_maxTemperature_K, results.airBlast.radius_20psi_km, asteroidParams.velocity_kms, asteroidParams.angle_deg, slideImages.crater, slideImages.atmospheric, slideImages.thermal, slideImages.shockwave, loadingImages])
-
   const handleDownloadPNG = async () => {
     if (!slideRef.current || isExporting) return
-    
     setIsExporting(true)
     try {
       const canvas = await html2canvas(slideRef.current, {
@@ -130,7 +110,6 @@ export function SlideReport({
         width: slideRef.current.offsetWidth,
         height: slideRef.current.offsetHeight,
       })
-      
       const link = document.createElement('a')
       link.download = `impact-report-slide-${currentSlide + 1}-${Date.now()}.png`
       link.href = canvas.toDataURL('image/png')
@@ -141,26 +120,20 @@ export function SlideReport({
       setIsExporting(false)
     }
   }
-
   const handleDownloadPDF = async () => {
     if (!slideRef.current || isExporting) return
-    
     setIsExporting(true)
     const originalSlide = currentSlide
-    
     try {
       const pdf = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
         format: 'a4',
       })
-
       for (let i = 0; i < totalSlides; i++) {
         setCurrentSlide(i)
         await new Promise(resolve => setTimeout(resolve, 800))
-        
         if (!slideRef.current) continue
-        
         const canvas = await html2canvas(slideRef.current, {
           backgroundColor: '#000000',
           scale: 2,
@@ -170,19 +143,14 @@ export function SlideReport({
           width: slideRef.current.offsetWidth,
           height: slideRef.current.offsetHeight,
         })
-        
         const imgData = canvas.toDataURL('image/png', 1.0)
-        
         if (i > 0) {
           pdf.addPage()
         }
-        
         const imgWidth = 297
         const imgHeight = (canvas.height * imgWidth) / canvas.width
-        
         pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight)
       }
-      
       pdf.save(`asteroid-impact-report-${location.cityName || 'location'}-${Date.now()}.pdf`)
     } catch (error) {
       console.error('PDF export hatası:', error)
@@ -191,7 +159,6 @@ export function SlideReport({
       setCurrentSlide(originalSlide)
     }
   }
-
   const slideVariants = useMemo(() => ({
     enter: (direction: number) => ({
       x: direction > 0 ? 1000 : -1000,
@@ -206,11 +173,9 @@ export function SlideReport({
       opacity: 0
     })
   }), [])
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isExporting) return
-      
       if (e.key === 'ArrowRight' || e.key === ' ') {
         e.preventDefault()
         nextSlide()
@@ -221,11 +186,9 @@ export function SlideReport({
         onClose()
       }
     }
-
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [nextSlide, prevSlide, onClose, isExporting])
-
   return (
     <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
       <div className="w-full h-full relative">
@@ -262,7 +225,6 @@ export function SlideReport({
             Kapat
           </Button>
         </div>
-
         <div className="w-full h-full flex items-center justify-center p-4 md:p-8">
           <div className="w-full max-w-6xl h-full max-h-[90vh] relative">
             <AnimatePresence mode="wait" custom={currentSlide}>
@@ -299,7 +261,6 @@ export function SlideReport({
                       </div>
                     </div>
                   )}
-
                   {currentSlide === 1 && (
                     <div className="w-full grid grid-cols-2 gap-8">
                       <div className="flex flex-col justify-center space-y-6">
@@ -345,7 +306,6 @@ export function SlideReport({
                       </div>
                     </div>
                   )}
-
                   {currentSlide === 2 && (
                     <div className="w-full grid grid-cols-2 gap-8">
                       <div className="flex flex-col justify-center space-y-6">
@@ -416,7 +376,6 @@ export function SlideReport({
                       </div>
                     </div>
                   )}
-
                   {currentSlide === 3 && (
                     <div className="w-full grid grid-cols-2 gap-8">
                       <div className="flex flex-col justify-center space-y-6">
@@ -499,7 +458,6 @@ export function SlideReport({
                       </div>
                     </div>
                   )}
-
                   {currentSlide === 4 && (
                     <div className="w-full grid grid-cols-2 gap-8">
                       <div className="flex flex-col justify-center space-y-6">
@@ -528,7 +486,6 @@ export function SlideReport({
                               </div>
                             </div>
                           </div>
-                          
                           <div className="space-y-2">
                             <div className="text-sm text-gray-400 mb-2">Yanık Etki Mesafeleri</div>
                             <div className="flex justify-between items-center bg-red-500/30 rounded p-2 border border-red-500/50">
@@ -577,7 +534,6 @@ export function SlideReport({
                       </div>
                     </div>
                   )}
-
                   {currentSlide === 5 && (
                     <div className="w-full grid grid-cols-2 gap-8">
                       <div className="flex flex-col justify-center space-y-6">
@@ -612,7 +568,6 @@ export function SlideReport({
                               </div>
                             </div>
                           </div>
-                          
                           <div className="bg-purple-500/20 rounded-lg p-4 border border-purple-500/40">
                             <div className="text-sm text-gray-300 mb-2">Sismik Aktivite</div>
                             <div className="grid grid-cols-2 gap-3">
@@ -652,7 +607,6 @@ export function SlideReport({
                     </div>
                   )}
                 </div>
-
                 <div className="absolute bottom-4 md:bottom-8 left-0 right-0 flex items-center justify-between px-4 md:px-12">
                   <Button
                     variant="ghost"
@@ -662,7 +616,6 @@ export function SlideReport({
                   >
                     <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
                   </Button>
-                  
                   <div className="flex gap-1.5 md:gap-2">
                     {Array.from({ length: totalSlides }).map((_, idx) => (
                       <button
@@ -677,7 +630,6 @@ export function SlideReport({
                       />
                     ))}
                   </div>
-                  
                   <Button
                     variant="ghost"
                     onClick={nextSlide}
@@ -687,7 +639,6 @@ export function SlideReport({
                     <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
                   </Button>
                 </div>
-
                 <div className="absolute top-4 md:top-8 left-4 md:left-8 text-xs md:text-sm text-gray-400">
                   {isExporting ? '📄 PDF oluşturuluyor...' : `Slayt ${currentSlide + 1} / ${totalSlides}`}
                 </div>
@@ -699,4 +650,3 @@ export function SlideReport({
     </div>
   )
 }
-

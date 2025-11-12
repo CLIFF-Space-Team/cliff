@@ -1,18 +1,14 @@
-'use client'
-
+﻿'use client'
 import React, { useEffect, useState } from 'react'
 import { useNeoThreatOverview } from '@/hooks/use-neo-threat-overview'
 import { getMessage } from '@/lib/messages'
-
 interface Props { className?: string }
-
 export const AsteroidThreatPanel: React.FC<Props> = ({ className }) => {
   const { data, loading, error } = useNeoThreatOverview()
   const [labels, setLabels] = useState({
     title: 'Gerçek Zamanlı Asteroit Tehdit Analizi',
     critical: 'Kritik', high: 'Yüksek', medium: 'Orta', low: 'Düşük', none: 'Yok'
   })
-
   useEffect(() => {
     ;(async () => {
       const title = await getMessage('threat.title', labels.title)
@@ -24,9 +20,7 @@ export const AsteroidThreatPanel: React.FC<Props> = ({ className }) => {
       setLabels({ title, critical, high, medium, low, none })
     })()
   }, [])
-
   const counters = data?.counters || { critical: 0, high: 0, medium: 0, low: 0, none: 0 }
-
   return (
     <div className={`rounded-xl backdrop-blur-lg bg-white/5 border border-white/10 p-4 ${className || ''}`}>
       <div className="flex items-center justify-between mb-3">
@@ -35,7 +29,7 @@ export const AsteroidThreatPanel: React.FC<Props> = ({ className }) => {
           {loading ? 'Yükleniyor...' : new Date(data?.updatedAt || Date.now()).toLocaleString()}
         </span>
       </div>
-      {/* Backend bağlantı hatalarını kullanıcıya göstermeden, sakin bir durum etiketi ile gizle */}
+      {}
       <div className="text-[11px] text-white/50 mb-2">
         {error ? 'Bağlantı yok - demo değerler gösteriliyor' : 'Canlı veri'}
       </div>
@@ -56,7 +50,4 @@ export const AsteroidThreatPanel: React.FC<Props> = ({ className }) => {
     </div>
   )
 }
-
 export default AsteroidThreatPanel
-
-

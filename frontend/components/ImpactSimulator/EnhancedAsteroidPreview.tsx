@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useRef, useMemo, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Stars } from '@react-three/drei'
@@ -7,11 +6,9 @@ import * as THREE from 'three'
 import { AsteroidParams } from './types'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-
 interface EnhancedAsteroidPreviewProps {
   asteroid: AsteroidParams
 }
-
 const COMPARISONS = [
   { id: 'human', name: 'İnsan', size: 1.7, icon: '👤' },
   { id: 'building', name: 'Bina', size: 50, icon: '🏢' },
@@ -19,44 +16,30 @@ const COMPARISONS = [
   { id: 'burj', name: 'Burj', size: 830, icon: '🏙️' },
   { id: 'field', name: 'Futbol', size: 100, icon: '⚽' }
 ]
-
 function PremiumAsteroid({ diameter }: { diameter: number }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const rimLightRef = useRef<THREE.Mesh>(null)
   const glowRef = useRef<THREE.PointLight>(null)
-  
   const geometry = useMemo(() => {
     const geo = new THREE.IcosahedronGeometry(1, 4) // Daha yüksek detay
     const positions = geo.getAttribute('position')
     const vertex = new THREE.Vector3()
-    
     for (let i = 0; i < positions.count; i++) {
       vertex.fromBufferAttribute(positions, i)
-      
-      // Daha belirgin kraterler ve yüzey detayları
       const noise1 = Math.sin(vertex.x * 12) * Math.cos(vertex.y * 10) * Math.sin(vertex.z * 15)
       const noise2 = Math.sin(vertex.x * 24) * Math.cos(vertex.y * 20) * Math.sin(vertex.z * 30)
       const noise3 = Math.sin(vertex.x * 6) * Math.cos(vertex.y * 5) * Math.sin(vertex.z * 8)
-      
-      // Krater detayları
       const craterNoise = Math.sin(vertex.x * 5) * Math.cos(vertex.y * 4) * Math.sin(vertex.z * 6)
       const deepCraters = Math.pow(Math.max(0, craterNoise), 2) * -0.3
-      
-      // Ridge (sırt) detayları
       const ridgeNoise = Math.abs(Math.sin(vertex.x * 10)) * Math.abs(Math.cos(vertex.z * 10)) * 0.2
-      
       const combinedNoise = (noise1 * 0.35 + noise2 * 0.15 + noise3 * 0.25 + deepCraters + ridgeNoise) * 0.5
-      
       vertex.normalize()
       vertex.multiplyScalar(1.0 + combinedNoise)
-      
       positions.setXYZ(i, vertex.x, vertex.y, vertex.z)
     }
-    
     geo.computeVertexNormals()
     return geo
   }, [])
-  
   const normalMap = useMemo(() => {
     const size = 512
     const canvas = document.createElement('canvas')
@@ -65,26 +48,21 @@ function PremiumAsteroid({ diameter }: { diameter: number }) {
     const ctx = canvas.getContext('2d')!
     const imageData = ctx.createImageData(size, size)
     const data = imageData.data
-    
     for (let i = 0; i < data.length; i += 4) {
       const x = (i / 4) % size
       const y = Math.floor((i / 4) / size)
-      
       const nx = Math.sin(x * 0.1) * Math.cos(y * 0.1) + Math.sin(x * 0.2) * Math.cos(y * 0.2) * 0.5
-      
       data[i] = 128 + nx * 127
       data[i + 1] = 128 - nx * 64
       data[i + 2] = 180 + nx * 75
       data[i + 3] = 255
     }
-    
     ctx.putImageData(imageData, 0, 0)
     const texture = new THREE.CanvasTexture(canvas)
     texture.wrapS = THREE.RepeatWrapping
     texture.wrapT = THREE.RepeatWrapping
     return texture
   }, [])
-  
   const fresnelShader = useMemo(() => {
     return new THREE.ShaderMaterial({
       transparent: true,
@@ -98,7 +76,6 @@ function PremiumAsteroid({ diameter }: { diameter: number }) {
       vertexShader: `
         varying vec3 vNormal;
         varying vec3 vViewPosition;
-        
         void main() {
           vNormal = normalize(normalMatrix * normal);
           vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
@@ -110,10 +87,8 @@ function PremiumAsteroid({ diameter }: { diameter: number }) {
         uniform vec3 fresnelColor;
         uniform float fresnelPower;
         uniform float fresnelIntensity;
-        
         varying vec3 vNormal;
         varying vec3 vViewPosition;
-        
         void main() {
           vec3 viewDir = normalize(vViewPosition);
           float fresnel = pow(1.0 - abs(dot(viewDir, vNormal)), fresnelPower);
@@ -123,7 +98,6 @@ function PremiumAsteroid({ diameter }: { diameter: number }) {
       `
     })
   }, [])
-  
   useFrame((state, delta) => {
     if (meshRef.current) {
       meshRef.current.rotation.y += delta * 0.3
@@ -134,10 +108,9 @@ function PremiumAsteroid({ diameter }: { diameter: number }) {
       rimLightRef.current.rotation.x += delta * 0.1
     }
   })
-  
   return (
     <group>
-      {/* Main asteroid with enhanced PBR */}
+      {}
       <mesh ref={meshRef} geometry={geometry} castShadow receiveShadow>
         <meshPhysicalMaterial
           color="#3a3530"
@@ -153,13 +126,11 @@ function PremiumAsteroid({ diameter }: { diameter: number }) {
           reflectivity={0.2}
         />
       </mesh>
-      
-      {/* Fresnel rim lighting */}
+      {}
       <mesh ref={rimLightRef} geometry={geometry} scale={1.05}>
         <primitive object={fresnelShader} attach="material" />
       </mesh>
-      
-      {/* Subtle glow light */}
+      {}
       <pointLight
         ref={glowRef}
         color="#6688aa"
@@ -167,8 +138,7 @@ function PremiumAsteroid({ diameter }: { diameter: number }) {
         distance={3}
         decay={2}
       />
-      
-      {/* Dust particles around asteroid */}
+      {}
       <points>
         <bufferGeometry>
           <bufferAttribute
@@ -190,12 +160,11 @@ function PremiumAsteroid({ diameter }: { diameter: number }) {
     </group>
   )
 }
-
 function LandmarkModel({ type, size, asteroidSize }: { type: string, size: number, asteroidSize: number }) {
   const models = {
     human: (
       <group>
-        {/* Baş */}
+        {}
         <mesh position={[0, 0.42, 0]} castShadow>
           <sphereGeometry args={[0.08, 16, 16]} />
           <meshPhysicalMaterial 
@@ -204,8 +173,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
             metalness={0.0}
           />
         </mesh>
-        
-        {/* Gövde */}
+        {}
         <mesh position={[0, 0.15, 0]} castShadow>
           <cylinderGeometry args={[0.12, 0.10, 0.40, 16]} />
           <meshPhysicalMaterial 
@@ -214,8 +182,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
             metalness={0.0}
           />
         </mesh>
-        
-        {/* Bacaklar */}
+        {}
         <mesh position={[-0.04, -0.15, 0]} castShadow>
           <cylinderGeometry args={[0.04, 0.035, 0.35, 12]} />
           <meshPhysicalMaterial color="#2d5a8c" roughness={0.8} />
@@ -224,8 +191,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
           <cylinderGeometry args={[0.04, 0.035, 0.35, 12]} />
           <meshPhysicalMaterial color="#2d5a8c" roughness={0.8} />
         </mesh>
-        
-        {/* Kollar */}
+        {}
         <mesh position={[-0.14, 0.15, 0]} rotation={[0, 0, 0.3]} castShadow>
           <cylinderGeometry args={[0.03, 0.025, 0.30, 12]} />
           <meshPhysicalMaterial color="#4a90e2" roughness={0.7} />
@@ -238,7 +204,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
     ),
     building: (
       <group>
-        {/* Ana bina gövdesi */}
+        {}
         <mesh position={[0, 0, 0]} castShadow receiveShadow>
           <boxGeometry args={[0.30, 1.0, 0.30]} />
           <meshPhysicalMaterial 
@@ -249,8 +215,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
             clearcoatRoughness={0.2}
           />
         </mesh>
-        
-        {/* Pencere detayları - grid pattern */}
+        {}
         {Array.from({ length: 10 }).map((_, floor) => (
           <group key={floor}>
             {Array.from({ length: 4 }).map((_, col) => (
@@ -274,8 +239,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
             ))}
           </group>
         ))}
-        
-        {/* Çatı */}
+        {}
         <mesh position={[0, 0.52, 0]}>
           <boxGeometry args={[0.32, 0.04, 0.32]} />
           <meshPhysicalMaterial color="#888888" roughness={0.5} metalness={0.3} />
@@ -284,7 +248,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
     ),
     eiffel: (
       <group>
-        {/* Ana yapı - 4 ayak */}
+        {}
         {[0, 90, 180, 270].map((angle, i) => (
           <mesh 
             key={i}
@@ -304,32 +268,27 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
             />
           </mesh>
         ))}
-        
-        {/* Birinci platform */}
+        {}
         <mesh position={[0, 0.1, 0]} castShadow>
           <cylinderGeometry args={[0.20, 0.25, 0.03, 8]} />
           <meshPhysicalMaterial color="#7a6245" roughness={0.5} metalness={0.7} />
         </mesh>
-        
-        {/* İkinci platform */}
+        {}
         <mesh position={[0, 0.28, 0]} castShadow>
           <cylinderGeometry args={[0.12, 0.15, 0.02, 8]} />
           <meshPhysicalMaterial color="#7a6245" roughness={0.5} metalness={0.7} />
         </mesh>
-        
-        {/* Tepe */}
+        {}
         <mesh position={[0, 0.42, 0]} castShadow>
           <coneGeometry args={[0.08, 0.20, 8]} />
           <meshPhysicalMaterial color="#8b7355" roughness={0.6} metalness={0.7} />
         </mesh>
-        
-        {/* Anten */}
+        {}
         <mesh position={[0, 0.56, 0]} castShadow>
           <cylinderGeometry args={[0.01, 0.01, 0.08, 8]} />
           <meshPhysicalMaterial color="#666666" roughness={0.3} metalness={0.9} />
         </mesh>
-        
-        {/* Kafes yapı detayları */}
+        {}
         {Array.from({ length: 8 }).map((_, i) => (
           <mesh 
             key={i}
@@ -344,7 +303,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
     ),
     burj: (
       <group>
-        {/* Ana gövde - Y-şekilli taban */}
+        {}
         {[0, 120, 240].map((angle, i) => (
           <mesh 
             key={i}
@@ -366,8 +325,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
             />
           </mesh>
         ))}
-        
-        {/* Orta gövde */}
+        {}
         <mesh position={[0, 0.30, 0]} castShadow receiveShadow>
           <cylinderGeometry args={[0.10, 0.12, 0.40, 16]} />
           <meshPhysicalMaterial 
@@ -377,8 +335,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
             clearcoat={0.6}
           />
         </mesh>
-        
-        {/* Pencere katları */}
+        {}
         {Array.from({ length: 20 }).map((_, floor) => (
           <mesh 
             key={floor}
@@ -395,8 +352,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
             />
           </mesh>
         ))}
-        
-        {/* Tepe - spire */}
+        {}
         <mesh position={[0, 0.58, 0]} castShadow>
           <coneGeometry args={[0.05, 0.20, 16]} />
           <meshPhysicalMaterial 
@@ -405,8 +361,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
             metalness={0.9}
           />
         </mesh>
-        
-        {/* Anten */}
+        {}
         <mesh position={[0, 0.72, 0]} castShadow>
           <cylinderGeometry args={[0.008, 0.008, 0.12, 8]} />
           <meshPhysicalMaterial color="#444444" roughness={0.3} metalness={1.0} />
@@ -415,7 +370,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
     ),
     field: (
       <group>
-        {/* Çim saha */}
+        {}
         <mesh position={[0, -0.005, 0]} rotation={[Math.PI / 2, 0, 0]} receiveShadow>
           <planeGeometry args={[1.0, 0.68, 20, 20]} />
           <meshPhysicalMaterial 
@@ -424,9 +379,8 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
             metalness={0.0}
           />
         </mesh>
-        
-        {/* Çizgiler - beyaz çizgi detayları */}
-        {/* Kenar çizgileri */}
+        {}
+        {}
         <mesh position={[0, 0, 0.34]} rotation={[0, 0, 0]}>
           <boxGeometry args={[1.0, 0.002, 0.02]} />
           <meshPhysicalMaterial color="#ffffff" roughness={0.7} />
@@ -443,20 +397,17 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
           <boxGeometry args={[0.02, 0.002, 0.68]} />
           <meshPhysicalMaterial color="#ffffff" roughness={0.7} />
         </mesh>
-        
-        {/* Orta çizgi */}
+        {}
         <mesh position={[0, 0, 0]} rotation={[0, 0, 0]}>
           <boxGeometry args={[0.02, 0.002, 0.68]} />
           <meshPhysicalMaterial color="#ffffff" roughness={0.7} />
         </mesh>
-        
-        {/* Orta daire */}
+        {}
         <mesh position={[0, 0.001, 0]} rotation={[Math.PI / 2, 0, 0]}>
           <torusGeometry args={[0.10, 0.008, 16, 32]} />
           <meshPhysicalMaterial color="#ffffff" roughness={0.7} />
         </mesh>
-        
-        {/* Ceza sahaları */}
+        {}
         <mesh position={[0.38, 0.001, 0]} rotation={[Math.PI / 2, 0, 0]}>
           <ringGeometry args={[0.16, 0.165, 32]} />
           <meshPhysicalMaterial color="#ffffff" roughness={0.7} side={THREE.DoubleSide} />
@@ -465,8 +416,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
           <ringGeometry args={[0.16, 0.165, 32]} />
           <meshPhysicalMaterial color="#ffffff" roughness={0.7} side={THREE.DoubleSide} />
         </mesh>
-        
-        {/* Kaleler */}
+        {}
         <mesh position={[0.50, 0, 0]} castShadow>
           <boxGeometry args={[0.03, 0.10, 0.10]} />
           <meshPhysicalMaterial color="#ffffff" roughness={0.6} metalness={0.3} />
@@ -475,8 +425,7 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
           <boxGeometry args={[0.03, 0.10, 0.10]} />
           <meshPhysicalMaterial color="#ffffff" roughness={0.6} metalness={0.3} />
         </mesh>
-        
-        {/* Ağlar */}
+        {}
         <mesh position={[0.51, 0.05, 0]}>
           <boxGeometry args={[0.01, 0.10, 0.12]} />
           <meshPhysicalMaterial 
@@ -500,25 +449,20 @@ function LandmarkModel({ type, size, asteroidSize }: { type: string, size: numbe
       </group>
     )
   }
-  
   return models[type as keyof typeof models] || models.eiffel
 }
-
 function calculateMass(diameter: number): number {
   const radius = diameter / 2
   const volume = (4/3) * Math.PI * Math.pow(radius, 3)
   const density = 2600
   return volume * density
 }
-
 function calculateEnergy(diameter: number, velocity: number): number {
   const mass = calculateMass(diameter)
   return 0.5 * mass * Math.pow(velocity * 1000, 2) / 4.184e15
 }
-
 export function EnhancedAsteroidPreview({ asteroid }: EnhancedAsteroidPreviewProps) {
   const [selectedComparison, setSelectedComparison] = useState('eiffel')
-  
   const bestMatch = useMemo(() => {
     return COMPARISONS.reduce((prev, curr) => 
       Math.abs(curr.size - asteroid.diameter_m) < Math.abs(prev.size - asteroid.diameter_m) 
@@ -526,14 +470,11 @@ export function EnhancedAsteroidPreview({ asteroid }: EnhancedAsteroidPreviewPro
         : prev
     )
   }, [asteroid.diameter_m])
-  
   const mass = calculateMass(asteroid.diameter_m)
   const energy = calculateEnergy(asteroid.diameter_m, asteroid.velocity_kms)
-  
   const comparison = COMPARISONS.find(c => c.id === selectedComparison) || bestMatch
   const ratio = (asteroid.diameter_m / comparison.size).toFixed(2)
   const humanRatio = Math.round(asteroid.diameter_m / 1.7)
-  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -545,10 +486,9 @@ export function EnhancedAsteroidPreview({ asteroid }: EnhancedAsteroidPreviewPro
         <span>🪨</span>
         Asteroid Boyut Karşılaştırması
       </h4>
-      
-      {/* Split View 3D Canvas - Gerçek Boyut Oranları */}
+      {}
       <div className="grid grid-cols-2 gap-2 h-64 bg-gradient-to-b from-pure-black to-cliff-dark-gray rounded-lg border border-cliff-white/10 overflow-hidden shadow-xl">
-        {/* Asteroid (Sol) */}
+        {}
         <div className="relative border-r border-cliff-white/20">
           <Canvas 
             camera={{ position: [0, 0, 3.5], fov: 50 }}
@@ -569,11 +509,9 @@ export function EnhancedAsteroidPreview({ asteroid }: EnhancedAsteroidPreviewPro
               minDistance={1.5}
               maxDistance={6}
             />
-            
-            {/* Profesyonel Stüdyo Işıklandırması */}
+            {}
             <ambientLight intensity={0.4} />
-            
-            {/* Ana ışık (key light) */}
+            {}
             <directionalLight 
               position={[5, 5, 5]} 
               intensity={2.0} 
@@ -588,25 +526,19 @@ export function EnhancedAsteroidPreview({ asteroid }: EnhancedAsteroidPreviewPro
               shadow-camera-top={5}
               shadow-camera-bottom={-5}
             />
-            
-            {/* Dolgu ışığı (fill light) */}
+            {}
             <pointLight position={[-4, 2, -3]} intensity={0.8} color="#88aaff" />
-            
-            {/* Arka ışık (rim light) */}
+            {}
             <pointLight position={[0, 3, -5]} intensity={0.6} color="#ffaa88" />
-            
-            {/* Alt ışık (ambient ground) */}
+            {}
             <pointLight position={[0, -3, 0]} intensity={0.3} color="#6699aa" />
-            
-            {/* Hemisphere lighting (doğal gökyüzü/zemin) */}
+            {}
             <hemisphereLight args={['#87ceeb', '#4a3428', 0.6]} />
-            
-            {/* Asteroid - Gerçek ölçekli */}
+            {}
             <group scale={asteroid.diameter_m >= comparison.size ? 1.0 : (asteroid.diameter_m / comparison.size)}>
               <PremiumAsteroid diameter={asteroid.diameter_m} />
             </group>
-            
-            {/* Yıldız arka planı */}
+            {}
             <Stars 
               radius={80}
               depth={50}
@@ -616,22 +548,19 @@ export function EnhancedAsteroidPreview({ asteroid }: EnhancedAsteroidPreviewPro
               fade
               speed={0.3}
             />
-            
-            {/* Koyu uzay arka planı */}
+            {}
             <mesh>
               <sphereGeometry args={[100, 32, 32]} />
               <meshBasicMaterial color="#000510" side={THREE.BackSide} />
             </mesh>
           </Canvas>
-          
           <div className="absolute bottom-2 left-0 right-0 text-center">
             <p className="text-xs font-semibold text-cliff-white bg-pure-black/90 backdrop-blur-sm inline-block px-3 py-1.5 rounded-lg border border-cliff-white/20">
               🪨 {asteroid.diameter_m}m
             </p>
           </div>
         </div>
-        
-        {/* Landmark (Sağ) */}
+        {}
         <div className="relative">
           <Canvas 
             camera={{ position: [0, 0, 3.5], fov: 50 }}
@@ -643,8 +572,7 @@ export function EnhancedAsteroidPreview({ asteroid }: EnhancedAsteroidPreviewPro
             }}
           >
             <ambientLight intensity={0.5} />
-            
-            {/* Ana ışık */}
+            {}
             <directionalLight 
               position={[5, 5, 5]} 
               intensity={1.8} 
@@ -653,16 +581,12 @@ export function EnhancedAsteroidPreview({ asteroid }: EnhancedAsteroidPreviewPro
               shadow-mapSize-width={2048}
               shadow-mapSize-height={2048}
             />
-            
-            {/* Dolgu ışık */}
+            {}
             <pointLight position={[-4, 2, -3]} intensity={0.7} color="#88aaff" />
-            
-            {/* Arka rim light */}
+            {}
             <pointLight position={[0, 3, -5]} intensity={0.5} color="#ffaa88" />
-            
             <hemisphereLight args={['#87ceeb', '#4a3428', 0.5]} />
-            
-            {/* Landmark - Gerçek ölçekli */}
+            {}
             <group scale={comparison.size >= asteroid.diameter_m ? 1.0 : (comparison.size / asteroid.diameter_m)}>
               <AnimatePresence mode="wait">
                 <group key={selectedComparison}>
@@ -674,8 +598,7 @@ export function EnhancedAsteroidPreview({ asteroid }: EnhancedAsteroidPreviewPro
                 </group>
               </AnimatePresence>
             </group>
-            
-            {/* Profesyonel zemin */}
+            {}
             <mesh position={[0, -0.81, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
               <planeGeometry args={[15, 15]} />
               <meshPhysicalMaterial 
@@ -684,14 +607,11 @@ export function EnhancedAsteroidPreview({ asteroid }: EnhancedAsteroidPreviewPro
                 metalness={0.1}
               />
             </mesh>
-            
-            {/* Grid çizgileri */}
+            {}
             <gridHelper args={[15, 30, '#333333', '#222222']} position={[0, -0.80, 0]} />
-            
-            {/* Yıldız arka planı */}
+            {}
             <Stars radius={80} depth={50} count={3000} factor={3} saturation={0.3} fade speed={0.5} />
           </Canvas>
-          
           <div className="absolute bottom-2 left-0 right-0 text-center">
             <p className="text-xs font-semibold text-cliff-light-gray bg-pure-black/90 backdrop-blur-sm inline-block px-3 py-1.5 rounded-lg border border-cliff-white/20">
               {comparison.icon} {comparison.size}m
@@ -699,8 +619,7 @@ export function EnhancedAsteroidPreview({ asteroid }: EnhancedAsteroidPreviewPro
           </div>
         </div>
       </div>
-      
-      {/* Karşılaştırma Butonları */}
+      {}
       <div className="flex gap-1 justify-between">
         {COMPARISONS.map((comp) => (
           <button
@@ -717,8 +636,7 @@ export function EnhancedAsteroidPreview({ asteroid }: EnhancedAsteroidPreviewPro
           </button>
         ))}
       </div>
-      
-      {/* Karşılaştırma Bilgisi */}
+      {}
       <div className="bg-pure-black/60 border border-cliff-white/20 rounded-lg p-3 space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs text-cliff-light-gray">⚖️ Oran:</span>
@@ -730,23 +648,19 @@ export function EnhancedAsteroidPreview({ asteroid }: EnhancedAsteroidPreviewPro
           💡 {humanRatio} insan boyutu ({asteroid.diameter_m}m ÷ 1.7m)
         </div>
       </div>
-      
-      {/* Bilimsel Veriler */}
+      {}
       <div className="space-y-2">
         <h5 className="text-xs font-semibold text-cliff-white">📊 Bilimsel Veriler</h5>
-        
         <div className="grid grid-cols-2 gap-2">
           <div className="bg-pure-black/60 rounded-lg p-2 border border-cliff-white/10">
             <p className="text-[10px] text-cliff-light-gray">Kütle</p>
             <p className="text-xs font-mono text-cliff-white">{mass.toExponential(2)} kg</p>
           </div>
-          
           <div className="bg-pure-black/60 rounded-lg p-2 border border-cliff-white/10">
             <p className="text-[10px] text-cliff-light-gray">Enerji</p>
             <p className="text-xs font-mono text-cliff-white">{energy.toFixed(0)} MT</p>
           </div>
         </div>
-        
         <div className="bg-pure-black/60 border border-cliff-white/20 rounded-lg p-2">
           <div className="flex items-center justify-between">
             <span className="text-xs text-cliff-light-gray">Tehdit Seviyesi:</span>
@@ -760,11 +674,9 @@ export function EnhancedAsteroidPreview({ asteroid }: EnhancedAsteroidPreviewPro
           </div>
         </div>
       </div>
-      
       <div className="text-xs text-center text-cliff-light-gray/70 pt-2 border-t border-cliff-white/10">
         🖱️ Fareyle asteroid'i döndürebilirsiniz
       </div>
     </motion.div>
   )
 }
-

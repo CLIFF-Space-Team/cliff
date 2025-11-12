@@ -1,17 +1,13 @@
-'use client'
-
+﻿'use client'
 import { useEffect, useState } from 'react'
-
 export interface RiskOverview {
   updatedAt: string
   counters: Record<'critical' | 'high' | 'medium' | 'low' | 'none', number>
 }
-
 export function useNeoThreatOverview(apiBase: string = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') {
   const [data, setData] = useState<RiskOverview | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
   useEffect(() => {
     let cancelled = false
     const load = async () => {
@@ -30,8 +26,5 @@ export function useNeoThreatOverview(apiBase: string = process.env.NEXT_PUBLIC_A
     load()
     return () => { cancelled = true }
   }, [apiBase])
-
   return { data, loading, error }
 }
-
-

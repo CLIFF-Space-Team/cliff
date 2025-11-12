@@ -1,14 +1,11 @@
 'use client'
-
 import React from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
 import { useLoader } from '@react-three/fiber'
-
 function TestEarth() {
   const earthTexture = useLoader(THREE.TextureLoader, '/textures/earth-night.jpg')
-  
   return (
     <mesh>
       <sphereGeometry args={[2, 64, 64]} />
@@ -16,7 +13,6 @@ function TestEarth() {
     </mesh>
   )
 }
-
 export default function TestTexturePage() {
   return (
     <div className="h-screen w-full bg-black">

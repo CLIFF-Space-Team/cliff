@@ -1,12 +1,9 @@
-'use client'
-
+﻿'use client'
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './card'
 import { Badge } from './badge'
 import { TrendingUp, TrendingDown, AlertTriangle, CheckCircle, Clock, Wifi, WifiOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-// Metric Card Component
 export function MetricCard({
   title,
   value,
@@ -34,7 +31,6 @@ export function MetricCard({
     warning: 'border-warning/50 bg-warning/10',
     success: 'border-success/50 bg-success/10'
   }
-
   const getTrendIcon = () => {
     switch (trend) {
       case 'up':
@@ -45,7 +41,6 @@ export function MetricCard({
         return null
     }
   }
-
   return (
     <Card className={cn(variantStyles[variant], 'transition-all hover:border-primary/50', className)}>
       <CardHeader className="pb-2">
@@ -66,7 +61,6 @@ export function MetricCard({
               <span className="text-sm text-muted-foreground">{unit}</span>
             )}
           </div>
-          
           {trend && trendValue && (
             <div className="flex items-center space-x-1">
               {getTrendIcon()}
@@ -80,7 +74,6 @@ export function MetricCard({
               </span>
             </div>
           )}
-          
           {description && (
             <p className="text-xs text-muted-foreground/80">
               {description}
@@ -91,8 +84,6 @@ export function MetricCard({
     </Card>
   )
 }
-
-// Threat Card Component
 export function ThreatCard({
   title,
   level,
@@ -141,11 +132,9 @@ export function ThreatCard({
             <span className="text-foreground">{source}</span>
           </div>
         </div>
-        
         <p className="text-sm text-foreground/80">
           {description}
         </p>
-        
         <div className="pt-2 border-t border-border">
           <p className="text-xs text-muted-foreground/80">
             Son güncelleme: {lastUpdated}
@@ -155,8 +144,6 @@ export function ThreatCard({
     </Card>
   )
 }
-
-// Status Badge Component
 export function StatusBadge({
   status,
   className
@@ -190,10 +177,8 @@ export function StatusBadge({
       icon: WifiOff
     }
   }
-
   const config = statusConfig[status]
   const Icon = config.icon
-
   return (
     <Badge
       variant="outline"
@@ -208,8 +193,6 @@ export function StatusBadge({
     </Badge>
   )
 }
-
-// Data Source Badge Component
 export function DataSourceBadge({
   source,
   className
@@ -239,9 +222,7 @@ export function DataSourceBadge({
       label: 'Simülasyon'
     }
   }
-
   const config = sourceConfig[source]
-
   return (
     <Badge
       variant="outline"
@@ -255,8 +236,6 @@ export function DataSourceBadge({
     </Badge>
   )
 }
-
-// Threat Level Badge Component
 export function ThreatLevelBadge({
   level,
   className
@@ -282,10 +261,8 @@ export function ThreatLevelBadge({
       icon: AlertTriangle
     }
   }
-
   const config = levelConfig[level]
   const Icon = config.icon
-
   return (
     <Badge
       variant="outline"
@@ -300,8 +277,6 @@ export function ThreatLevelBadge({
     </Badge>
   )
 }
-
-// Notification Badge Component
 export function NotificationBadge({
   count,
   variant = 'default',
@@ -312,14 +287,12 @@ export function NotificationBadge({
   className?: string
 }) {
   if (count === 0) return null
-
   const variantStyles = {
     default: 'bg-primary text-primary-foreground',
     danger: 'bg-destructive text-destructive-foreground',
     warning: 'bg-warning text-warning-foreground',
     success: 'bg-success text-success-foreground'
   }
-
   return (
     <div className={cn(
       'inline-flex items-center justify-center min-w-[18px] h-[18px] text-xs font-bold rounded-full',
@@ -330,7 +303,6 @@ export function NotificationBadge({
     </div>
   )
 }
-
 export default {
   MetricCard,
   ThreatCard,

@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useMemo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
@@ -7,8 +6,6 @@ import { Globe, Shield, Monitor, MessageSquare, Zap } from 'lucide-react'
 import { useEngineState, usePerformanceMetrics, useTimeState } from '@/stores'
 import { useDashboardStore } from '@/stores/useDashboardStore'
 import { cn } from '@/lib/utils'
-
-// Optimized motion variants - sadece gerekli animasyonlar
 const buttonVariants = {
   hover: {
     scale: 1.02,
@@ -19,44 +16,33 @@ const buttonVariants = {
     transition: { duration: 0.1, ease: 'easeOut' }
   }
 }
-
-// Mobile detection hook (Client-side only)
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = React.useState(false)
-  
   React.useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768)
     }
-    
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
-  
   return isMobile
 }
-
 export const NavigationSidebar = React.memo(function NavigationSidebar() {
   const isMobile = useIsMobile()
   const { activeView, setView } = useDashboardStore()
-
-  // Navigation pills data - memoized
   const navigationItems = useMemo(() => [
     { id: 'earth-events', label: 'Dünya Olayları', icon: Globe, color: 'accent-success', shortLabel: 'Dünya' },
     { id: 'threat-analysis', label: 'Tehdit Analizi', icon: Shield, color: 'accent-danger', shortLabel: 'Tehdit' },
     { id: 'system-monitor', label: 'Sistem İzleme', icon: Monitor, color: 'accent-info', shortLabel: 'Sistem' },
     { id: 'chat-interface', label: 'AI Live', icon: MessageSquare, color: 'accent-ai', shortLabel: 'AI' },
   ], [])
-
-  // Optimized click handler
   const handleViewChange = useCallback((viewId: string) => {
     setView(viewId as any)
   }, [setView])
-
   return (
     <div className="hidden lg:block lg:col-span-3 space-y-6">
-      {/* Navigation Pills */}
+      {}
       <div className="bg-pure-black rounded-xl border border-cliff-light-gray/30 p-4">
         <h3 className="text-sm font-semibold text-cliff-light-gray mb-4 uppercase tracking-wider">
           Navigasyon
@@ -65,7 +51,6 @@ export const NavigationSidebar = React.memo(function NavigationSidebar() {
           {navigationItems.map((item) => {
             const IconComponent = item.icon
             const isActive = activeView === item.id
-            
             return (
               <motion.button
                 key={item.id}
@@ -76,11 +61,9 @@ export const NavigationSidebar = React.memo(function NavigationSidebar() {
                     ? 'bg-cliff-light-gray/10 text-cliff-white border border-cliff-light-gray/20' 
                     : 'text-cliff-light-gray hover:bg-cliff-light-gray/5 hover:text-cliff-white'
                 )}
-                // Mobile'da animasyonları disable et
                 variants={isMobile ? {} : buttonVariants}
                 whileHover={isMobile ? {} : "hover"}
                 whileTap={isMobile ? {} : "tap"}
-                // Performance optimization
                 layout={false}
               >
                 <IconComponent className={cn(
@@ -92,7 +75,6 @@ export const NavigationSidebar = React.memo(function NavigationSidebar() {
                   <motion.div
                     layoutId="activeIndicator"
                     className="ml-auto w-2 h-2 bg-accent-success rounded-full gpu-accelerated"
-                    // Smooth transition için optimize edilmiş animation
                     transition={{ 
                       type: "spring", 
                       stiffness: 500, 
@@ -106,8 +88,7 @@ export const NavigationSidebar = React.memo(function NavigationSidebar() {
           })}
         </div>
       </div>
-
-      {/* Desktop Quick Stats Card */}
+      {}
       <div className="bg-pure-black rounded-xl border border-cliff-light-gray/30 p-4">
         <h3 className="text-sm font-semibold text-cliff-light-gray mb-4 uppercase tracking-wider">
           Anlık Durum
@@ -143,13 +124,9 @@ export const NavigationSidebar = React.memo(function NavigationSidebar() {
     </div>
   )
 })
-
-// Performance Badge Component - Memoized
 const PerformanceBadge = React.memo(function PerformanceBadge() {
   if (typeof window === 'undefined') return '-- FPS'
-  
   const performanceMetrics = usePerformanceMetrics()
   if (!performanceMetrics) return '-- FPS'
-  
   return `${Math.round(performanceMetrics.fps)} FPS`
 })

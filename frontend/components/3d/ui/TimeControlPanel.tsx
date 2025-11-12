@@ -1,5 +1,4 @@
-"use client";
-
+﻿"use client";
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   TimeSimulationController, 
@@ -19,19 +18,16 @@ import {
   Clock,
   Settings
 } from 'lucide-react';
-
 interface TimeControlPanelProps {
   timeController: TimeSimulationController;
   className?: string;
   compact?: boolean;
 }
-
 interface DateInputState {
   isOpen: boolean;
   inputValue: string;
   isValid: boolean;
 }
-
 export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
   timeController,
   className = '',
@@ -45,32 +41,24 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
     isValid: true
   });
   const [showAdvanced, setShowAdvanced] = useState(false);
-
-  // Update state when controller changes
   useEffect(() => {
     const handleTimeChanged = ({ time }: { time: number }) => {
       setCurrentDate(JulianDateUtils.julianToDate(time));
       setSimState(timeController.getState());
     };
-
     const handlePlayStateChanged = () => {
       setSimState(timeController.getState());
     };
-
     const handleTimeScaleChanged = () => {
       setSimState(timeController.getState());
     };
-
     const handleRealTimeToggled = () => {
       setSimState(timeController.getState());
     };
-
-    // Subscribe to events
     timeController.on('time-changed', handleTimeChanged);
     timeController.on('play-state-changed', handlePlayStateChanged);
     timeController.on('time-scale-changed', handleTimeScaleChanged);
     timeController.on('real-time-toggled', handleRealTimeToggled);
-
     return () => {
       timeController.off('time-changed', handleTimeChanged);
       timeController.off('play-state-changed', handlePlayStateChanged);
@@ -78,39 +66,26 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
       timeController.off('real-time-toggled', handleRealTimeToggled);
     };
   }, [timeController]);
-
-  // Handle play/pause
   const handlePlayPause = useCallback(() => {
     timeController.togglePlaying();
   }, [timeController]);
-
-  // Handle time scale change
   const handleTimeScaleChange = useCallback((scale: number) => {
     timeController.setTimeScale(scale);
   }, [timeController]);
-
-  // Handle step controls
   const handleStepBackward = useCallback(() => {
     const stepSize = getStepSize(simState.timeScale);
     timeController.stepBackward(stepSize);
   }, [timeController, simState.timeScale]);
-
   const handleStepForward = useCallback(() => {
     const stepSize = getStepSize(simState.timeScale);
     timeController.stepForward(stepSize);
   }, [timeController, simState.timeScale]);
-
-  // Handle jump to now
   const handleJumpToNow = useCallback(() => {
     timeController.jumpToNow(true);
   }, [timeController]);
-
-  // Handle real-time mode toggle
   const handleRealTimeModeToggle = useCallback(() => {
     timeController.setRealTimeMode(!simState.realTimeMode);
   }, [timeController, simState.realTimeMode]);
-
-  // Handle date input
   const handleDateInputChange = useCallback((value: string) => {
     setDateInput(prev => ({
       ...prev,
@@ -118,7 +93,6 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
       isValid: isValidDateString(value)
     }));
   }, []);
-
   const handleDateInputSubmit = useCallback(() => {
     if (dateInput.isValid && dateInput.inputValue) {
       try {
@@ -130,7 +104,6 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
       }
     }
   }, [timeController, dateInput]);
-
   const handleDateInputOpen = useCallback(() => {
     setDateInput({
       isOpen: true,
@@ -138,8 +111,6 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
       isValid: true
     });
   }, [currentDate]);
-
-  // Get appropriate step size based on time scale
   const getStepSize = (timeScale: number): number => {
     if (timeScale <= TIME_SCALE_PRESETS.REAL_TIME) return 1;
     if (timeScale <= TIME_SCALE_PRESETS.HOUR_PER_SECOND) return 1;
@@ -148,15 +119,11 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
     if (timeScale <= TIME_SCALE_PRESETS.YEAR_PER_SECOND) return 365;
     return 365 * 10;
   };
-
-  // Validate date string
   const isValidDateString = (dateString: string): boolean => {
     if (!dateString) return false;
     const date = new Date(dateString);
     return !isNaN(date.getTime());
   };
-
-  // Format current date for display
   const formatCurrentDate = (date: Date): string => {
     return date.toLocaleDateString('tr-TR', {
       year: 'numeric',
@@ -166,18 +133,15 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
       minute: '2-digit'
     });
   };
-
-  // Get time scale presets for current context
   const getRelevantPresets = () => {
     const presets = TimeSimulationController.getTimeScalePresets();
     return compact ? presets.filter(p => [0, 1, 86400, 31556952].includes(p.value)) : presets;
   };
-
   if (compact) {
     return (
       <Card className={`p-3 ${className}`}>
         <div className="flex items-center gap-2">
-          {/* Play/Pause */}
+          {}
           <Button
             variant={simState.isPlaying ? "default" : "outline"}
             size="sm"
@@ -186,8 +150,7 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
           >
             {simState.isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
           </Button>
-
-          {/* Time Scale */}
+          {}
           <select
             value={simState.timeScale}
             onChange={(e) => handleTimeScaleChange(Number(e.target.value))}
@@ -199,8 +162,7 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
               </option>
             ))}
           </select>
-
-          {/* Current Date (clickable) */}
+          {}
           <Button
             variant="ghost"
             size="sm"
@@ -211,8 +173,7 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
             {currentDate.toLocaleDateString('tr-TR')}
           </Button>
         </div>
-
-        {/* Date Input Modal */}
+        {}
         {dateInput.isOpen && (
           <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
             <Card className="p-4 min-w-[300px]">
@@ -242,11 +203,10 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
       </Card>
     );
   }
-
   return (
     <Card className={`p-4 ${className}`}>
       <div className="space-y-4">
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Zaman Kontrolü</h3>
           <Button
@@ -257,8 +217,7 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
             <Settings className="w-4 h-4" />
           </Button>
         </div>
-
-        {/* Current Time Display */}
+        {}
         <div className="text-center">
           <div className="text-2xl font-mono">
             {formatCurrentDate(currentDate)}
@@ -267,8 +226,7 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
             Julian Günü: {simState.currentTime.toFixed(3)}
           </div>
         </div>
-
-        {/* Main Controls */}
+        {}
         <div className="flex items-center justify-center gap-2">
           <Button
             variant="outline"
@@ -278,7 +236,6 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
           >
             <SkipBack className="w-4 h-4" />
           </Button>
-
           <Button
             variant={simState.isPlaying ? "default" : "outline"}
             onClick={handlePlayPause}
@@ -296,7 +253,6 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
               </>
             )}
           </Button>
-
           <Button
             variant="outline"
             size="sm"
@@ -306,8 +262,7 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
             <SkipForward className="w-4 h-4" />
           </Button>
         </div>
-
-        {/* Time Scale Control */}
+        {}
         <div>
           <label className="block text-sm font-medium mb-2">
             Zaman Hızı: {TimeSimulationController.formatTimeScale(simState.timeScale)}
@@ -326,8 +281,7 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
             ))}
           </div>
         </div>
-
-        {/* Quick Actions */}
+        {}
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -338,7 +292,6 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
             <RotateCcw className="w-4 h-4 mr-2" />
             Şimdiye Git
           </Button>
-
           <Button
             variant="outline"
             size="sm"
@@ -349,8 +302,7 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
             Tarihe Git
           </Button>
         </div>
-
-        {/* Real-time Mode Toggle */}
+        {}
         <div className="flex items-center justify-between">
           <span className="text-sm">Gerçek Zaman Modu</span>
           <Button
@@ -362,13 +314,11 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
             {simState.realTimeMode ? 'Açık' : 'Kapalı'}
           </Button>
         </div>
-
-        {/* Advanced Controls */}
+        {}
         {showAdvanced && (
           <div className="border-t pt-4 space-y-3">
             <h4 className="font-medium">Gelişmiş Kontroller</h4>
-            
-            {/* Custom Time Scale */}
+            {}
             <div>
               <label className="block text-sm font-medium mb-1">
                 Özel Zaman Hızı
@@ -387,16 +337,14 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
                 1x - {TimeSimulationController.formatTimeScale(TIME_SCALE_PRESETS.CENTURY_PER_SECOND)}
               </div>
             </div>
-
-            {/* Time Info */}
+            {}
             <div className="text-xs space-y-1 text-muted-foreground">
               <div>J2000'den beri: {timeController.getDaysSinceJ2000().toFixed(1)} gün</div>
               <div>Yüzyıl: {timeController.getCenturiesSinceJ2000().toFixed(6)}</div>
             </div>
           </div>
         )}
-
-        {/* Date Input Modal */}
+        {}
         {dateInput.isOpen && (
           <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
             <Card className="p-6 min-w-[400px]">
@@ -416,8 +364,7 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
                     <p className="text-red-500 text-sm mt-1">Geçerli bir tarih girin</p>
                   )}
                 </div>
-
-                {/* Quick Date Presets */}
+                {}
                 <div>
                   <label className="block text-sm font-medium mb-2">Hızlı Seçim</label>
                   <div className="grid grid-cols-2 gap-2 text-sm">
@@ -451,7 +398,6 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
                     </Button>
                   </div>
                 </div>
-
                 <div className="flex gap-3">
                   <Button 
                     onClick={handleDateInputSubmit} 
@@ -476,5 +422,4 @@ export const TimeControlPanel: React.FC<TimeControlPanelProps> = ({
     </Card>
   );
 };
-
 export default TimeControlPanel;

@@ -1,11 +1,9 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Globe, RefreshCw, AlertTriangle, Expand, Minimize2 } from 'lucide-react'
 import dynamic from 'next/dynamic'
 import { useEarthEventsStore } from '@/stores/earthEventsStore'
-
 const FullScreenLayout = dynamic(() => import('./earth-events/FullScreenLayout'), {
   ssr: false,
   loading: () => (
@@ -17,24 +15,20 @@ const FullScreenLayout = dynamic(() => import('./earth-events/FullScreenLayout')
     </div>
   )
 })
-
 export default function EarthEventsView() {
   const [isFullScreen, setIsFullScreen] = useState(false)
   const { events, loading, error, fetchEvents, setViewMode, viewMode } = useEarthEventsStore()
-
   useEffect(() => {
     fetchEvents()
     const interval = setInterval(fetchEvents, 300000) // 5 dakikada bir güncelle
     return () => clearInterval(interval)
   }, [fetchEvents])
-
   const toggleFullScreen = () => {
     setIsFullScreen(!isFullScreen)
     if (!isFullScreen) {
       setViewMode('3D')
     }
   }
-
   const toggleView = () => {
     if (viewMode === '3D') {
       setViewMode('transitioning')
@@ -42,7 +36,6 @@ export default function EarthEventsView() {
       setViewMode('3D')
     }
   }
-
   if (loading && events.length === 0) {
     return (
       <div className="h-full w-full bg-pure-black text-white flex items-center justify-center">
@@ -53,7 +46,6 @@ export default function EarthEventsView() {
       </div>
     )
   }
-
   if (error && events.length === 0) {
     return (
       <div className="h-full w-full bg-pure-black text-white flex items-center justify-center">
@@ -71,7 +63,6 @@ export default function EarthEventsView() {
       </div>
     )
   }
-
   if (isFullScreen) {
     return (
       <div className="fixed inset-0 z-50 bg-black">
@@ -85,7 +76,6 @@ export default function EarthEventsView() {
       </div>
     )
   }
-
   return (
     <div className="h-full w-full bg-pure-black text-white flex flex-col">
       <div className="p-6 border-b border-white/10">
@@ -99,7 +89,6 @@ export default function EarthEventsView() {
               <p className="text-white/70 text-sm">NASA EONET - İnteraktif 3D dünya modeli</p>
             </div>
           </div>
-          
           <div className="flex items-center gap-3">
             <button
               onClick={toggleView}
@@ -108,7 +97,6 @@ export default function EarthEventsView() {
             >
               {viewMode === "3D" ? "📍 2D Harita" : "🌍 3D Dünya"}
             </button>
-            
             <button
               onClick={toggleFullScreen}
               className="p-2 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 transition-all"
@@ -116,7 +104,6 @@ export default function EarthEventsView() {
             >
               <Expand className="w-4 h-4" />
             </button>
-            
             <button
               onClick={() => fetchEvents()}
               className="p-2 bg-white/10 border border-white/20 rounded-lg text-white hover:bg-white/20 transition-all"
@@ -124,7 +111,6 @@ export default function EarthEventsView() {
             >
               <RefreshCw className="w-4 h-4" />
             </button>
-            
             <div className="flex items-center gap-2">
               <motion.div
                 className="w-3 h-3 bg-emerald-400 rounded-full"
@@ -135,17 +121,13 @@ export default function EarthEventsView() {
             </div>
           </div>
         </div>
-
         <div className="text-xs text-white/50">
           📊 Toplam: {events.length} olay • 🔄 Otomatik güncelleme: Aktif • 🎯 3D/2D geçiş sistemi
         </div>
       </div>
-
       <div className="flex-1 relative">
         <FullScreenLayout />
-        
       </div>
-
       {events.length === 0 && !loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="text-center">

@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useEffect, useState } from 'react'
 import {
   ResponsiveContainer,
@@ -9,12 +8,9 @@ import {
   YAxis,
   Tooltip,
 } from 'recharts'
-
 interface Props { window?: '7d' | '30d' | '90d'; className?: string }
-
 export const ApproachTimeline: React.FC<Props> = ({ window = '7d', className }) => {
   const [series, setSeries] = useState<{ date: string; value: number }[]>([])
-
   useEffect(() => {
     let cancelled = false
     const load = async () => {
@@ -32,7 +28,6 @@ export const ApproachTimeline: React.FC<Props> = ({ window = '7d', className }) 
     load()
     return () => { cancelled = true }
   }, [window])
-
   return (
     <div className={`rounded-xl backdrop-blur-lg bg-white/5 border border-white/10 p-4 shadow-lg ${className || ''}`}>
       <div className="text-sm font-semibold text-white/90 mb-3">Yaklaşan Geçişler ({window})</div>
@@ -61,7 +56,4 @@ export const ApproachTimeline: React.FC<Props> = ({ window = '7d', className }) 
     </div>
   )
 }
-
 export default ApproachTimeline
-
-

@@ -1,16 +1,13 @@
-'use client'
-
+﻿'use client'
 import React, { useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { GeographicRegion, REGION_COLORS, REGION_INFO } from '@/lib/geographic-regions'
 import { useEarthEventsStore } from '@/stores/earthEventsStore'
-
 interface RegionalControlPanelProps {
   isOpen: boolean
   onToggle: () => void
 }
-
 const regionOrder = [
   GeographicRegion.EUROPE,
   GeographicRegion.ASIA,
@@ -21,7 +18,6 @@ const regionOrder = [
   GeographicRegion.MIDDLE_EAST,
   GeographicRegion.ARCTIC
 ]
-
 export function RegionalControlPanel({ isOpen, onToggle }: RegionalControlPanelProps) {
   const {
     regionColorMode,
@@ -33,14 +29,11 @@ export function RegionalControlPanel({ isOpen, onToggle }: RegionalControlPanelP
     getRegionStats,
     events
   } = useEarthEventsStore()
-
   const regionStats = useMemo(() => getRegionStats(), [events])
-
   const getRegionEventCount = (region: GeographicRegion) => {
     const stats = regionStats.find(s => s.region === region)
     return stats?.eventCount || 0
   }
-
   const handleRegionSelect = (region: GeographicRegion) => {
     if (selectedRegion === region) {
       selectRegion(null)
@@ -48,10 +41,8 @@ export function RegionalControlPanel({ isOpen, onToggle }: RegionalControlPanelP
       selectRegion(region)
     }
   }
-
   const allVisible = Array.from(regionVisibility.values()).every(visible => visible)
   const allHidden = Array.from(regionVisibility.values()).every(visible => !visible)
-
   const toggleAllRegions = () => {
     if (allVisible || (!allVisible && !allHidden)) {
       regionOrder.forEach(region => {
@@ -67,7 +58,6 @@ export function RegionalControlPanel({ isOpen, onToggle }: RegionalControlPanelP
       })
     }
   }
-
   return (
     <div className="bg-gray-900/90 backdrop-blur-sm rounded-lg border border-gray-700/50 overflow-hidden">
       <button
@@ -84,7 +74,6 @@ export function RegionalControlPanel({ isOpen, onToggle }: RegionalControlPanelP
           }`}
         />
       </button>
-
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -111,7 +100,6 @@ export function RegionalControlPanel({ isOpen, onToggle }: RegionalControlPanelP
                     }`} />
                   </button>
                 </div>
-
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-300">
                     Tüm Bölgeler
@@ -124,7 +112,6 @@ export function RegionalControlPanel({ isOpen, onToggle }: RegionalControlPanelP
                   </button>
                 </div>
               </div>
-
               <div className="space-y-2">
                 {regionOrder.map(region => {
                   const regionInfo = REGION_INFO[region]
@@ -132,7 +119,6 @@ export function RegionalControlPanel({ isOpen, onToggle }: RegionalControlPanelP
                   const isVisible = regionVisibility.get(region)
                   const isSelected = selectedRegion === region
                   const eventCount = getRegionEventCount(region)
-
                   return (
                     <div
                       key={region}
@@ -161,7 +147,6 @@ export function RegionalControlPanel({ isOpen, onToggle }: RegionalControlPanelP
                           </span>
                         </div>
                       </button>
-                      
                       <button
                         onClick={() => toggleRegionVisibility(region)}
                         className={`ml-2 w-5 h-5 rounded border-2 transition-colors flex items-center justify-center ${
@@ -180,7 +165,6 @@ export function RegionalControlPanel({ isOpen, onToggle }: RegionalControlPanelP
                   )
                 })}
               </div>
-
               {selectedRegion && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -203,7 +187,6 @@ export function RegionalControlPanel({ isOpen, onToggle }: RegionalControlPanelP
                   </p>
                 </motion.div>
               )}
-
               {regionColorMode && (
                 <div className="mt-4 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
                   <div className="flex items-center gap-2 mb-2">
@@ -224,5 +207,4 @@ export function RegionalControlPanel({ isOpen, onToggle }: RegionalControlPanelP
     </div>
   )
 }
-
 export default RegionalControlPanel

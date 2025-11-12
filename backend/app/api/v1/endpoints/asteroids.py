@@ -1,12 +1,6 @@
-"""
-Asteroid Threat API
-"""
-
-from __future__ import annotations
-
+﻿from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
-
 from fastapi import APIRouter, Query, Path
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.encoders import jsonable_encoder
@@ -14,19 +8,14 @@ import asyncio
 import structlog
 from datetime import datetime
 from bson import ObjectId
-
 from app.core.database import get_collection
 from app.services.alerts import subscribe, unsubscribe
 from app.services.ingestors.neows_ingestor import ingest_neows_feed
 from app.services.ingestors.sentry_ingestor import ingest_sentry_once
 from app.services.normalizer.neo_normalizer import normalize_neos
 from app.services.risk_engine import compute_risk_levels
-
-
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/asteroids", tags=["Asteroid Threats"])
-
-
 def _clean_mongo_doc(doc):
     """MongoDB dökümanındaki ObjectId ve datetime'ı serialize et"""
     if doc is None:
@@ -48,27 +37,19 @@ def _clean_mongo_doc(doc):
                 cleaned[k] = v
         return cleaned
     return doc
-
-
 @router.get("/detail/{neo_id:path}")
 async def detail(neo_id: str) -> JSONResponse:
     try:
         logger.info("Detail ucuna istek", neo_id=neo_id)
-        
-        # neows_id veya neo_id ile ara
         ast = await get_collection("asteroids").find_one({"neows_id": neo_id})
         if not ast:
             ast = await get_collection("asteroids").find_one({"neo_id": neo_id})
-        
         risk = await get_collection("risk_assessments").find_one({"neo_id": neo_id})
-        
         approaches_cursor = get_collection("close_approaches").find({"neo_id": neo_id}).sort("timestamp", -1).limit(10)
         approaches = []
         async for doc in approaches_cursor:
             approaches.append(doc)
-        
         logger.info("Detail bulundu", has_ast=bool(ast), has_risk=bool(risk), approaches_count=len(approaches))
-        
         result = {
             "asteroid": _clean_mongo_doc(ast),
             "risk": _clean_mongo_doc(risk),
@@ -78,8 +59,6 @@ async def detail(neo_id: str) -> JSONResponse:
     except Exception as e:
         logger.error("Detail hatası", neo_id=neo_id, error=str(e), exc_info=True)
         return JSONResponse({"error": str(e)}, status_code=500)
-
-
 @router.get("/overview")
 async def overview() -> JSONResponse:
     risks = get_collection("risk_assessments")
@@ -92,8 +71,6 @@ async def overview() -> JSONResponse:
         if ts and (last is None or ts > last):
             last = ts
     return JSONResponse({"updatedAt": (last or datetime.utcnow()).isoformat() + "Z", "counters": counters})
-
-
 @router.get("/approaches")
 async def approaches(window: str = Query("7d", pattern=r"^\d+[d]$")) -> JSONResponse:
     days = int(window[:-1])
@@ -105,8 +82,6 @@ async def approaches(window: str = Query("7d", pattern=r"^\d+[d]$")) -> JSONResp
         buckets[key] = buckets.get(key, 0) + 1
     series = sorted([[k, buckets[k]] for k in buckets.keys()])
     return JSONResponse({"window": window, "series": series})
-
-
 @router.get("/top")
 async def top(limit: int = Query(10, ge=1, le=50)) -> JSONResponse:
     risks = get_collection("risk_assessments")
@@ -118,8 +93,6 @@ async def top(limit: int = Query(10, ge=1, le=50)) -> JSONResponse:
         items.append({"neoId": r.get("neo_id"), "riskLevel": r.get("risk_level"), "score": score})
     items.sort(key=lambda x: x["score"], reverse=True)
     return JSONResponse({"items": items[:limit]})
-
-
 @router.get("/events")
 async def events():
     async def event_stream():
@@ -130,13 +103,10 @@ async def events():
                     data = await asyncio.wait_for(q.get(), timeout=15)
                     yield f"data: {data}\n\n"
                 except asyncio.TimeoutError:
-                    # keep-alive
                     yield f"data: {datetime.utcnow().isoformat()}\n\n"
         finally:
             await unsubscribe(q)
     return StreamingResponse(event_stream(), media_type="text/event-stream")
-
-
 @router.post("/sync")
 async def sync_now() -> JSONResponse:
     """Manuel veri yükleme (NeoWs + Sentry + normalize + risk hesaplama)"""
@@ -149,14 +119,7 @@ async def sync_now() -> JSONResponse:
     except Exception as e:
         logger.error("Sync hatası", error=str(e))
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
-
-
-# ------------------------------------------------------------
-# Search and Compare Endpoints
-# ------------------------------------------------------------
-
 def _risk_weight_expr():
-    # MongoDB aggregation expression to map risk_level to weight
     return {
         "$switch": {
             "branches": [
@@ -168,8 +131,6 @@ def _risk_weight_expr():
             "default": 0,
         }
     }
-
-
 def _build_search_pipeline(
     q: Optional[str],
     risks: Optional[list],
@@ -183,26 +144,18 @@ def _build_search_pipeline(
 ):
     now = datetime.utcnow()
     until = now + timedelta(days=max(window_days, 0))
-
     match_stage = {"$match": {}}
-
-    # Text query on name or exact on neo_id
     if q:
         match_stage["$match"]["$or"] = [
             {"name": {"$regex": q, "$options": "i"}},
             {"neo_id": {"$regex": f"^{q}$", "$options": "i"}},
         ]
-
-    # Diameter range filters (use stored normalized fields if present)
     diameter_filters = []
     if min_d_km is not None:
         diameter_filters.append({"$gte": ["$diameter_max_km", min_d_km]})
     if max_d_km is not None:
         diameter_filters.append({"$lte": ["$diameter_min_km", max_d_km]})
-
     pipeline = [match_stage]
-
-    # Join risk
     pipeline.extend(
         [
             {
@@ -216,8 +169,6 @@ def _build_search_pipeline(
             {"$unwind": {"path": "$risk", "preserveNullAndEmptyArrays": True}},
         ]
     )
-
-    # Join next approach within window
     pipeline.extend(
         [
             {
@@ -240,20 +191,12 @@ def _build_search_pipeline(
             {"$addFields": {"next": {"$arrayElemAt": ["$next", 0]}}},
         ]
     )
-
-    # Risk filter
     if risks:
         pipeline.append({"$match": {"risk.risk_level": {"$in": risks}}})
-
-    # Diameter filters as expressions
     if diameter_filters:
         pipeline.append({"$match": {"$expr": {"$and": diameter_filters}}})
-
-    # Max lunar distance on next approach
     if max_ld is not None:
         pipeline.append({"$match": {"next.distance_ld": {"$lte": max_ld}}})
-
-    # Projection and weight
     pipeline.append(
         {
             "$addFields": {
@@ -261,8 +204,6 @@ def _build_search_pipeline(
             }
         }
     )
-
-    # Sorting
     sort_stage = {"$sort": {"risk_weight": -1, "risk.impact_probability": -1}}
     if sort:
         key = sort.lstrip("-")
@@ -275,8 +216,6 @@ def _build_search_pipeline(
             sort_stage = {"$sort": {"diameter_max_km": direction}}
         elif key == "name":
             sort_stage = {"$sort": {"name": direction}}
-    
-    # Facet for pagination and count
     pipeline.append(
         {
             "$facet": {
@@ -303,10 +242,7 @@ def _build_search_pipeline(
             }
         }
     )
-
     return pipeline
-
-
 @router.get("/search")
 async def search(
     q: Optional[str] = Query(None, description="NEO adı/ID arama"),
@@ -332,24 +268,18 @@ async def search(
             skip=(page - 1) * page_size,
             limit=page_size,
         )
-
         cursor = col.aggregate(pipeline)
         result = None
         async for doc in cursor:
             result = doc
             break
-
         if not result:
             result = {"items": [], "count": []}
-
         items = result.get("items", [])
         total = 0
         if result.get("count") and len(result["count"]) > 0:
             total = result["count"][0].get("total", 0)
-
-        # Clean nested docs
         clean_items = _clean_mongo_doc(items)
-
         return JSONResponse(
             {
                 "total": total,
@@ -361,19 +291,15 @@ async def search(
     except Exception as e:
         logger.error("Search hatası", error=str(e), exc_info=True)
         return JSONResponse({"error": str(e)}, status_code=500)
-
-
 @router.get("/compare")
 async def compare(ids: str = Query(..., description="Virgülle ayrılmış NEO ID listesi")) -> JSONResponse:
     try:
         id_list = [i.strip() for i in ids.split(",") if i.strip()]
         if not id_list:
             return JSONResponse({"items": []})
-
         col = get_collection("asteroids")
         now = datetime.utcnow()
         until = now + timedelta(days=365)
-
         pipeline = [
             {"$match": {"neo_id": {"$in": id_list}}},
             {
@@ -418,14 +344,11 @@ async def compare(ids: str = Query(..., description="Virgülle ayrılmış NEO I
                 }
             },
         ]
-
         cursor = col.aggregate(pipeline)
         items: List[Dict[str, Any]] = []
         async for doc in cursor:
             items.append(doc)
-
         return JSONResponse({"items": _clean_mongo_doc(items)})
     except Exception as e:
         logger.error("Compare hatası", error=str(e), exc_info=True)
         return JSONResponse({"error": str(e)}, status_code=500)
-

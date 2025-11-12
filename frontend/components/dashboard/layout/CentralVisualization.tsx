@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { Suspense } from 'react'
 import { motion } from 'framer-motion'
 import dynamic from 'next/dynamic'
@@ -8,8 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getMessage } from '@/lib/messages'
 import { usePerformanceMetrics } from '@/stores'
 import { useDashboardStore } from '@/stores/useDashboardStore'
-
-// Dynamic import for NASA Realistic Solar System - client-only to avoid SSR issues
 const NASARealisticSolarSystem = dynamic(
   () => import('@/components/3d/NASARealisticSolarSystem'),
   {
@@ -17,12 +14,10 @@ const NASARealisticSolarSystem = dynamic(
     loading: () => <SpaceVisualizationLoading />
   }
 )
-
-// Enhanced loading fallback component for 3D scenes - Space Theme
 function SpaceVisualizationLoading() {
   return (
     <div className="h-full rounded-xl bg-pure-black flex items-center justify-center relative overflow-hidden">
-      {/* Realistic space star field effect */}
+      {}
       <div className="absolute inset-0 bg-pure-black">
         <div className="absolute inset-0" style={{
           backgroundImage: `
@@ -40,7 +35,6 @@ function SpaceVisualizationLoading() {
           animation: 'gentle-twinkle 8s ease-in-out infinite'
         }}></div>
       </div>
-      
       <div className="text-center text-cliff-white relative z-10">
         <div className="relative mb-6">
           <div className="animate-spin rounded-full h-12 w-12 md:h-20 md:w-20 border-4 border-cliff-light-gray/20 border-t-cliff-white/80 mx-auto"></div>
@@ -61,13 +55,10 @@ function SpaceVisualizationLoading() {
     </div>
   )
 }
-
-// Performance Indicator Component
 function PerformanceIndicator() {
   const performanceMetrics = usePerformanceMetrics()
   const [mounted, setMounted] = React.useState(false)
   React.useEffect(() => setMounted(true), [])
-
   if (!mounted || !performanceMetrics) {
     return (
       <div className="flex items-center gap-1 md:gap-2">
@@ -76,7 +67,6 @@ function PerformanceIndicator() {
       </div>
     )
   }
-  
   return (
     <div className="flex items-center gap-1 md:gap-2">
       <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${
@@ -86,13 +76,11 @@ function PerformanceIndicator() {
     </div>
   )
 }
-
 export function CentralVisualization() {
   const { quality, showOrbits, enableRotation } = useDashboardStore()
   const [isReady, setIsReady] = React.useState(false)
   const [displayMode, setDisplayMode] = React.useState<'earth_focus' | 'full'>('earth_focus')
   const [presetLabels, setPresetLabels] = React.useState({ earth: '3D Dünya', system: 'Güneş Sistemi' })
-
   React.useEffect(() => {
     ;(async () => {
       const earth = await getMessage('visualization.presets.earth_focus', presetLabels.earth)
@@ -100,10 +88,8 @@ export function CentralVisualization() {
       setPresetLabels({ earth, system })
     })()
   }, [])
-
   React.useEffect(() => {
     const idle = (cb: () => void) => {
-      // requestIdleCallback desteklenmiyorsa kısa bir gecikme kullan
       if (typeof (window as any).requestIdleCallback === 'function') {
         ;(window as any).requestIdleCallback(cb)
       } else {
@@ -112,7 +98,6 @@ export function CentralVisualization() {
     }
     idle(() => setIsReady(true))
   }, [])
-
   return (
     <div className="lg:col-span-6 order-1 lg:order-none h-full">
       <motion.div
@@ -124,7 +109,7 @@ export function CentralVisualization() {
           boxShadow: 'inset 0 0 100px rgba(0,0,0,0.8)'
         }}
       >
-        {/* Space environment overlay */}
+        {}
         <div className="absolute inset-0 z-0" style={{
           backgroundImage: `
             radial-gradient(1px 1px at 25px 35px, rgba(255,255,255,0.3), transparent),
@@ -138,24 +123,21 @@ export function CentralVisualization() {
           backgroundSize: '220px 110px',
           animation: 'gentle-twinkle 12s ease-in-out infinite'
         }}></div>
-
-        {/* 3D System Header */}
+        {}
         <div className="absolute top-2 left-2 md:top-4 md:left-4 z-20 bg-pure-black/60 backdrop-blur-md rounded-lg px-2 py-1 md:px-4 md:py-2 border border-cliff-light-gray/10">
           <div className="flex items-center gap-1 md:gap-2">
             <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-green-400 rounded-full animate-pulse"></div>
             <span className="text-cliff-white text-xs md:text-sm font-semibold">3D Güneş Sistemi</span>
           </div>
         </div>
-
-        {/* Performance indicator */}
+        {}
         <div className="absolute top-2 right-2 md:top-4 md:right-4 z-20 bg-pure-black/60 backdrop-blur-md rounded-lg px-2 py-1 md:px-3 md:py-2 border border-cliff-light-gray/10">
           <PerformanceIndicator />
         </div>
-
-        {/* Camera presets + Quality selector */}
+        {}
         <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4 z-20 bg-pure-black/60 backdrop-blur-md rounded-lg px-2 py-1 md:px-3 md:py-2 border border-cliff-light-gray/10">
           <div className="flex items-center gap-2">
-            {/* Presets */}
+            {}
             <div className="inline-flex rounded-md overflow-hidden border border-cliff-light-gray/20">
               <button
                 className={`px-2 py-1 text-[11px] ${displayMode === 'earth_focus' ? 'bg-cliff-white/10 text-white' : 'text-cliff-light-gray'}`}
@@ -170,7 +152,6 @@ export function CentralVisualization() {
                 {presetLabels.system}
               </button>
             </div>
-
             <Settings className="h-3 w-3 text-cliff-light-gray" />
             <Select value={quality} onValueChange={(v) => useDashboardStore.getState().setQuality(v as any)}>
               <SelectTrigger className="h-7 w-28 bg-transparent border-cliff-light-gray/20 text-xs text-cliff-white">
@@ -185,8 +166,7 @@ export function CentralVisualization() {
             </Select>
           </div>
         </div>
-
-        {/* 3D Scene Container - NASA Realistic Solar System with Earth Events */
+        {
         }
         <div className="absolute inset-0 z-10">
           <Suspense fallback={<SpaceVisualizationLoading />}>

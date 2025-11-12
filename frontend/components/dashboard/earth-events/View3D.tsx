@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { Suspense, useState } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Stars, Environment } from '@react-three/drei'
@@ -9,12 +8,9 @@ import dynamic from 'next/dynamic'
 import * as THREE from 'three'
 import { useEarthEventsStore } from '@/stores/earthEventsStore'
 import RegionalControlPanel from './RegionalControlPanel'
-
-// Dynamic import for better performance
 const EnhancedEarth = dynamic(() => import('../../3d/planets/EnhancedEarth'), {
   ssr: false
 })
-
 const LoadingFallback = () => (
   <div className="h-full bg-black flex items-center justify-center">
     <div className="text-center">
@@ -23,14 +19,12 @@ const LoadingFallback = () => (
     </div>
   </div>
 )
-
 export default function View3D() {
   const { events, selectedEvent, selectEvent } = useEarthEventsStore()
   const [isRegionalPanelOpen, setIsRegionalPanelOpen] = useState(false)
-
   return (
     <div className="relative w-full h-full bg-gradient-radial from-blue-900/10 via-black to-black">
-      {/* 3D Canvas */}
+      {}
       <Canvas
         className="w-full h-full"
         camera={{
@@ -43,7 +37,7 @@ export default function View3D() {
         performance={{ min: 0.5 }} // Performance settings
       >
         <Suspense fallback={null}>
-          {/* Lighting */}
+          {}
           <ambientLight intensity={0.2} />
           <directionalLight 
             position={[-20, 0, 0]} 
@@ -52,8 +46,7 @@ export default function View3D() {
             shadow-mapSize={[2048, 2048]}
           />
           <pointLight position={[20, 20, 20]} intensity={1} />
-
-          {/* Enhanced Earth with Events */}
+          {}
           <EnhancedEarth
             position={[0, 0, 0]}
             scale={2}
@@ -66,8 +59,7 @@ export default function View3D() {
             showEarthEvents={true}
             sunPosition={new THREE.Vector3(-20, 0, 0)}
           />
-
-          {/* Background Stars */}
+          {}
           <Stars 
             radius={300} 
             depth={60} 
@@ -77,11 +69,9 @@ export default function View3D() {
             fade 
             speed={0.5}
           />
-
-          {/* Environment */}
+          {}
           <Environment preset="night" />
-
-          {/* Camera Controls */}
+          {}
           <OrbitControls
             enablePan={true}
             enableZoom={true}
@@ -95,18 +85,16 @@ export default function View3D() {
           />
         </Suspense>
       </Canvas>
-
-      {/* 3D UI Overlays */}
+      {}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Regional Control Panel - Top Left */}
+        {}
         <div className="absolute top-4 left-4 max-w-sm pointer-events-auto">
           <RegionalControlPanel
             isOpen={isRegionalPanelOpen}
             onToggle={() => setIsRegionalPanelOpen(!isRegionalPanelOpen)}
           />
         </div>
-
-        {/* Event Info Panel - Top Right */}
+        {}
         {selectedEvent && (
           <motion.div
             initial={{ opacity: 0, x: 300 }}
@@ -138,8 +126,7 @@ export default function View3D() {
             </div>
           </motion.div>
         )}
-
-        {/* Stats Panel - Bottom Left */}
+        {}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
@@ -167,10 +154,8 @@ export default function View3D() {
             </div>
           </div>
         </motion.div>
-
       </div>
-
-      {/* Emergency fallback for WebGL */}
+      {}
       {typeof window !== 'undefined' && !window.WebGLRenderingContext && (
         <div className="absolute inset-0 bg-black/90 flex items-center justify-center">
           <div className="text-center text-white p-8">

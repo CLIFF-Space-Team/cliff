@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useRef, useEffect, useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -18,7 +17,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import ChatMessageComponent from './ChatMessage'
 import { cn, formatRelativeTime } from '@/lib/utils'
-
 const ChatHistory: React.FC<ChatHistoryProps> = ({
   messages,
   loading = false,
@@ -34,19 +32,14 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
   const [isAtBottom, setIsAtBottom] = useState(true)
   const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set())
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set())
-
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const loadMoreRef = useRef<HTMLDivElement>(null)
-
-  // Group messages by date
   const groupedMessages = useMemo(() => {
     if (!groupByDate) {
       return { ungrouped: messages }
     }
-
     const groups: { [key: string]: ChatMessage[] } = {}
-    
     messages.forEach(message => {
       const dateKey = new Date(message.timestamp).toDateString()
       if (!groups[dateKey]) {
@@ -54,17 +47,13 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
       }
       groups[dateKey].push(message)
     })
-
     return groups
   }, [messages, groupByDate])
-
-  // Stats
   const stats = useMemo(() => {
     const totalMessages = messages.length
     const userMessages = messages.filter(m => m.sender === 'user').length
     const aiMessages = messages.filter(m => m.sender === 'ai').length
     const voiceMessages = messages.filter(m => m.type === 'voice').length
-    
     return {
       total: totalMessages,
       user: userMessages,
@@ -72,8 +61,6 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
       voice: voiceMessages
     }
   }, [messages])
-
-  // Auto scroll to bottom for new messages
   const scrollToBottom = (smooth = true) => {
     if (bottomRef.current) {
       bottomRef.current.scrollIntoView({ 
@@ -82,40 +69,28 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
       })
     }
   }
-
-  // Handle scroll events
   const handleScroll = () => {
     const container = scrollContainerRef.current
     if (!container) return
-
     const { scrollTop, scrollHeight, clientHeight } = container
     const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100
-    
     setIsAtBottom(isNearBottom)
     setShowScrollButton(!isNearBottom && messages.length > 5)
-
-    // Trigger load more when near top
     if (scrollTop < 100 && hasMore && !loading && onLoadMore) {
       onLoadMore()
     }
   }
-
-  // Auto scroll for new messages (only if user is at bottom)
   useEffect(() => {
     if (isAtBottom && messages.length > 0) {
       setTimeout(() => scrollToBottom(), 100)
     }
   }, [messages.length, isAtBottom])
-
-  // Initialize expanded dates
   useEffect(() => {
     if (groupByDate) {
       const dates = Object.keys(groupedMessages)
       setExpandedDates(new Set(dates.slice(0, 3))) // Expand first 3 dates by default
     }
   }, [groupedMessages, groupByDate])
-
-  // Handle date group toggle
   const toggleDateGroup = (dateKey: string) => {
     setExpandedDates(prev => {
       const newSet = new Set(prev)
@@ -127,8 +102,6 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
       return newSet
     })
   }
-
-  // Message selection handlers
   const toggleMessageSelection = (messageId: string) => {
     setSelectedMessages(prev => {
       const newSet = new Set(prev)
@@ -140,18 +113,14 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
       return newSet
     })
   }
-
   const clearSelection = () => {
     setSelectedMessages(new Set())
   }
-
-  // Date formatting
   const formatDateHeader = (dateString: string) => {
     const date = new Date(dateString)
     const today = new Date()
     const yesterday = new Date(today)
     yesterday.setDate(yesterday.getDate() - 1)
-
     if (date.toDateString() === today.toDateString()) {
       return 'Bugün'
     } else if (date.toDateString() === yesterday.toDateString()) {
@@ -165,8 +134,6 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
       })
     }
   }
-
-  // Empty state
   if (messages.length === 0 && !loading) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center px-6">
@@ -187,7 +154,6 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
       </div>
     )
   }
-
   const renderMessages = () => {
     if (!groupByDate) {
       return (
@@ -203,7 +169,6 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
         </div>
       )
     }
-
     return (
       <div className="space-y-6">
         {Object.entries(groupedMessages).map(([dateKey, dateMessages]) => (
@@ -213,7 +178,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
             animate={{ opacity: 1, y: 0 }}
             className="space-y-4"
           >
-            {/* Date Header */}
+            {}
             <div className="flex items-center justify-center">
               <button
                 onClick={() => toggleDateGroup(dateKey)}
@@ -234,8 +199,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
                 />
               </button>
             </div>
-
-            {/* Messages for this date */}
+            {}
             <AnimatePresence>
               {expandedDates.has(dateKey) && (
                 <motion.div
@@ -260,10 +224,9 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
       </div>
     )
   }
-
   return (
     <div className="relative flex flex-col h-full">
-      {/* Header with stats */}
+      {}
       {messages.length > 0 && (
         <div className="flex items-center justify-between p-4 border-b border-gray-800 bg-gray-900/50">
           <div className="flex items-center gap-4 text-sm text-gray-400">
@@ -280,7 +243,6 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
               <span>{stats.ai}</span>
             </div>
           </div>
-
           <div className="flex items-center gap-2">
             {onExport && (
               <Button
@@ -305,8 +267,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
           </div>
         </div>
       )}
-
-      {/* Messages Container */}
+      {}
       <div 
         ref={scrollContainerRef}
         onScroll={handleScroll}
@@ -316,7 +277,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
         )}
         style={{ maxHeight }}
       >
-        {/* Load More Trigger */}
+        {}
         {hasMore && (
           <div 
             ref={loadMoreRef}
@@ -339,11 +300,9 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
             )}
           </div>
         )}
-
-        {/* Messages */}
+        {}
         {renderMessages()}
-
-        {/* Loading indicator */}
+        {}
         <AnimatePresence>
           {loading && messages.length === 0 && (
             <motion.div
@@ -359,12 +318,10 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Bottom anchor for auto-scroll */}
+        {}
         <div ref={bottomRef} className="h-1" />
       </div>
-
-      {/* Scroll to Bottom Button */}
+      {}
       <AnimatePresence>
         {showScrollButton && (
           <motion.button
@@ -387,8 +344,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
           </motion.button>
         )}
       </AnimatePresence>
-
-      {/* Selection Actions */}
+      {}
       <AnimatePresence>
         {selectedMessages.size > 0 && (
           <motion.div
@@ -426,5 +382,4 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
     </div>
   )
 }
-
 export default ChatHistory

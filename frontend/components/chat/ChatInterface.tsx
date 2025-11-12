@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -34,7 +33,6 @@ import { useChat } from '@/hooks/use-chat'
 import { useWebSocketContext } from '@/providers/websocket-provider'
 import ChatHistory from './ChatHistory'
 import ChatInput from './ChatInput'
-
 const ChatInterface: React.FC<ChatInterfaceProps> = ({
   className,
   compact = false,
@@ -51,9 +49,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [isDragging, setIsDragging] = useState(false)
   const [dragPosition, setDragPosition] = useState({ x: 0, y: 0 })
   const chatContainerRef = useRef<HTMLDivElement>(null)
-
   const { isConnected: wsConnected } = useWebSocketContext()
-
   const {
     state,
     isLoading,
@@ -73,7 +69,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     enableWebSocket: true,
     enablePersistence: true
   })
-
   const {
     messages,
     status,
@@ -84,13 +79,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     activeInputMode,
     lastActivity
   } = state
-
   useEffect(() => {
     if (initialExpanded && !isExpanded) {
       toggleExpanded()
     }
   }, [initialExpanded])
-
   useEffect(() => {
     if (messages.length > 0) {
       const latestMessage = messages[messages.length - 1]
@@ -101,7 +94,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       }
     }
   }, [messages, onMessageSent, onMessageReceived])
-
   const containerVariants = {
     minimized: {
       height: 'auto',
@@ -112,7 +104,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       transition: { duration: 0.3, ease: 'easeInOut' }
     }
   }
-
   const contentVariants = {
     hidden: {
       opacity: 0,
@@ -125,16 +116,13 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       transition: { duration: 0.3, delay: 0.1 }
     }
   }
-
   const getConnectionStatus = () => {
     if (!wsConnected) return { text: 'Bağlantı Yok', color: 'text-red-400', icon: WifiOff }
     if (status.isProcessing) return { text: 'İşleniyor', color: 'text-blue-400', icon: Zap }
     if (status.isListening) return { text: 'Dinleniyor', color: 'text-red-400', icon: Mic }
     return { text: 'Bağlı', color: 'text-green-400', icon: Wifi }
   }
-
   const connectionStatus = getConnectionStatus()
-
   const SettingsPanel = () => (
     <motion.div
       initial={{ opacity: 0, height: 0 }}
@@ -148,7 +136,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             <Volume2 className="h-4 w-4" />
             Ses Ayarları
           </h4>
-          
           <div className="space-y-2">
             <label className="flex items-center justify-between">
               <span className="text-xs text-gray-400">Ses girdi</span>
@@ -167,7 +154,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 )} />
               </Button>
             </label>
-
             <label className="flex items-center justify-between">
               <span className="text-xs text-gray-400">Otomatik dinle</span>
               <Button
@@ -185,7 +171,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 )} />
               </Button>
             </label>
-
             <div className="space-y-1">
               <label className="text-xs text-gray-400">
                 Hız: {settings.speed}x
@@ -200,7 +185,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
               />
             </div>
-
             <div className="space-y-1">
               <label className="text-xs text-gray-400">
                 Ses Seviyesi: {Math.round(settings.volume * 100)}%
@@ -217,13 +201,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </div>
           </div>
         </div>
-
         <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-300 flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Arayüz
           </h4>
-
           <div className="space-y-2">
             <label className="flex items-center justify-between">
               <span className="text-xs text-gray-400">Yazma göstergesi</span>
@@ -242,7 +224,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 )} />
               </Button>
             </label>
-
             <label className="flex items-center justify-between">
               <span className="text-xs text-gray-400">Bildirimler</span>
               <Button
@@ -260,7 +241,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 )} />
               </Button>
             </label>
-
             <div className="space-y-1">
               <label className="text-xs text-gray-400">
                 Geçmiş boyutu: {settings.maxHistorySize}
@@ -275,7 +255,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 className="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer"
               />
             </div>
-
             <select
               value={settings.language}
               onChange={(e) => updateSettings({ language: e.target.value })}
@@ -288,7 +267,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           </div>
         </div>
       </div>
-
       <div className="flex justify-between pt-4 border-t border-gray-800">
         <div className="flex gap-2">
           <Button
@@ -310,7 +288,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             Temizle
           </Button>
         </div>
-        
         <Button
           variant="ghost"
           size="sm"
@@ -322,7 +299,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </div>
     </motion.div>
   )
-
   if (isMinimized) {
     return (
       <motion.div
@@ -339,7 +315,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         >
           <MessageSquare className="h-5 w-5" />
         </Button>
-        
         {notifications.length > 0 && (
           <motion.div
             initial={{ scale: 0 }}
@@ -352,7 +327,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
       </motion.div>
     )
   }
-
   return (
     <div className="mx-4 md:mx-8 lg:mx-16 xl:mx-24 2xl:mx-32">
       <motion.div
@@ -381,7 +355,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   />
                 )}
               </div>
-              
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-medium text-white">CLIFF AI</h3>
@@ -402,7 +375,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 </div>
               </div>
             </div>
-
             <div className="flex items-center gap-2">
               {showSettings && (
                 <Button
@@ -417,7 +389,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   <Settings className="h-4 w-4" />
                 </Button>
               )}
-
               <Button
                 variant="ghost"
                 size="iconSm"
@@ -430,7 +401,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   <ChevronUp className="h-4 w-4" />
                 )}
               </Button>
-
               <Button
                 variant="ghost"
                 size="iconSm"
@@ -442,11 +412,9 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </div>
           </div>
         )}
-
         <AnimatePresence>
           {isSettingsOpen && showSettings && <SettingsPanel />}
         </AnimatePresence>
-
         <AnimatePresence>
           {isExpanded && (
             <motion.div
@@ -473,7 +441,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   />
                 </div>
               )}
-
               <div className="p-4 border-t border-gray-800 bg-gray-900/50">
                 <ChatInput
                   placeholder="CLIFF AI ile sohbet edin..."
@@ -486,7 +453,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
-
         <AnimatePresence>
           {notifications.slice(0, 3).map((notification) => (
             <motion.div
@@ -520,7 +486,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </motion.div>
           ))}
         </AnimatePresence>
-
         <AnimatePresence>
           {error && (
             <motion.div
@@ -546,7 +511,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
-
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-radial from-purple-400/20 to-transparent animate-pulse-slow" />
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-radial from-blue-400/20 to-transparent animate-pulse-slow delay-1000" />
@@ -555,5 +519,4 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     </div>
   )
 }
-
 export default ChatInterface

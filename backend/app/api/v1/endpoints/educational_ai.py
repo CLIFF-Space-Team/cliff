@@ -1,15 +1,8 @@
-"""
-🌌 CLIFF Educational AI API Endpoints
-NASA Challenge Winning Gemini 2.5 Pro Educational System
-Advanced AI-powered learning platform for space science education
-"""
-
-from typing import Dict, List, Optional, Any
+﻿from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
 from datetime import datetime
 import structlog
-
 from app.services.ai_services import (
     VertexAIServices,
     EducationalContentRequest,
@@ -23,16 +16,8 @@ from app.services.ai_services import (
     get_ai_services
 )
 from app.core.config import settings
-
-# Setup logging and router
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/educational-ai", tags=["Educational AI"])
-
-
-# =============================================================================
-# CLIFF-AI MENTOR ENDPOINTS
-# =============================================================================
-
 @router.post("/mentor/chat")
 async def cliff_ai_mentor_chat(
     request: MentorChatRequest,
@@ -43,11 +28,8 @@ async def cliff_ai_mentor_chat(
     NASA Challenge signature feature for personalized learning
     """
     try:
-        # Validate message content
         if not request.message.strip():
             raise HTTPException(status_code=400, detail="Message cannot be empty")
-        
-        # Prepare context for AI mentor
         context = request.get_context_dict()
         context.update({
             "student_id": request.get_student_id(),
@@ -55,20 +37,14 @@ async def cliff_ai_mentor_chat(
             "topic": request.topic,
             "nasa_challenge_mode": True
         })
-        
-        # Generate mentor response using Gemini 2.5 Pro
         mentor_response = await ai_services.cliff_mentor_chat(request.message, context)
-        
-        # Generate follow-up suggestions
         follow_up_suggestions = [
             "Tell me more about that!",
             "How does this relate to space missions?",
             "Can you give me a real-world example?",
             "What should I learn next?"
         ]
-        
         logger.info(f"CLIFF-AI mentor response generated for student {request.get_student_id()}")
-        
         return MentorChatResponse(
             success=True,
             response=mentor_response,
@@ -78,10 +54,8 @@ async def cliff_ai_mentor_chat(
             engagement_level="high",
             follow_up_suggestions=follow_up_suggestions[:2]  # Return first 2 suggestions
         )
-        
     except Exception as e:
         logger.error(f"CLIFF-AI mentor chat failed: {str(e)}")
-        # Return structured error response instead of raising HTTPException
         return MentorChatResponse(
             success=False,
             response=f"I apologize, but I'm experiencing some technical difficulties. However, I'm still here to help you with your space science questions! Could you try rephrasing your question: '{request.message[:50]}...'?",
@@ -91,8 +65,6 @@ async def cliff_ai_mentor_chat(
             engagement_level="moderate",
             follow_up_suggestions=["Try asking again", "Rephrase your question"]
         )
-
-
 @router.post("/content/generate")
 async def generate_educational_content(
     request: EducationalContentRequest,
@@ -103,26 +75,14 @@ async def generate_educational_content(
     Create personalized space science learning materials
     """
     try:
-        # Validate request
         if not request.topic.strip():
             raise HTTPException(status_code=400, detail="Topic is required")
-        
-        # Generate content using Gemini 2.5 Pro
         content_response = await ai_services.generate_educational_content(request)
-        
         logger.info(f"Educational content generated for topic: {request.topic}, difficulty: {request.difficulty_level}")
-        
         return content_response
-        
     except Exception as e:
         logger.error(f"Educational content generation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Content generation failed: {str(e)}")
-
-
-# =============================================================================
-# AI-POWERED QUIZ SYSTEM
-# =============================================================================
-
 @router.post("/quiz/generate")
 async def generate_ai_quiz(
     request: QuizGenerationRequest,
@@ -133,25 +93,16 @@ async def generate_ai_quiz(
     Create intelligent assessments for space science learning
     """
     try:
-        # Validate request
         if not request.topic.strip():
             raise HTTPException(status_code=400, detail="Quiz topic is required")
-        
         if request.num_questions < 1 or request.num_questions > 20:
             raise HTTPException(status_code=400, detail="Number of questions must be between 1 and 20")
-        
-        # Generate quiz using Gemini Flash for speed
         quiz_response = await ai_services.generate_quiz(request)
-        
         logger.info(f"AI quiz generated: {request.num_questions} questions on {request.topic}")
-        
         return quiz_response
-        
     except Exception as e:
         logger.error(f"AI quiz generation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Quiz generation failed: {str(e)}")
-
-
 @router.post("/quiz/evaluate")
 async def evaluate_quiz_responses(
     request: Dict[str, Any],
@@ -165,20 +116,15 @@ async def evaluate_quiz_responses(
         student_answers = request.get("answers", [])
         quiz_questions = request.get("questions", [])
         student_id = request.get("student_id")
-        
         if not student_answers or not quiz_questions:
             raise HTTPException(status_code=400, detail="Answers and questions are required")
-        
-        # Calculate basic score
         correct_answers = 0
         total_questions = len(quiz_questions)
         detailed_feedback = []
-        
         for i, (answer, question) in enumerate(zip(student_answers, quiz_questions)):
             is_correct = answer == question.get("correct_answer")
             if is_correct:
                 correct_answers += 1
-            
             detailed_feedback.append({
                 "question_number": i + 1,
                 "correct": is_correct,
@@ -187,20 +133,14 @@ async def evaluate_quiz_responses(
                 "explanation": question.get("explanation", ""),
                 "feedback": "Excellent!" if is_correct else "Let's review this concept together."
             })
-        
         score_percentage = (correct_answers / total_questions) * 100
-        
-        # Generate AI-powered learning recommendations
         progress_context = {
             "score": score_percentage,
             "topic": request.get("topic", "space_science"),
             "incorrect_areas": [fb["question_number"] for fb in detailed_feedback if not fb["correct"]]
         }
-        
         recommendations = await ai_services.analyze_progress(progress_context)
-        
         logger.info(f"Quiz evaluated for student {student_id}: {score_percentage}% score")
-        
         return {
             "success": True,
             "score": {
@@ -214,16 +154,9 @@ async def evaluate_quiz_responses(
             "next_steps": recommendations.get("recommended_topics", []),
             "study_focus": recommendations.get("knowledge_gaps", [])
         }
-        
     except Exception as e:
         logger.error(f"Quiz evaluation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Quiz evaluation failed: {str(e)}")
-
-
-# =============================================================================
-# PERSONALIZED LEARNING SYSTEM
-# =============================================================================
-
 @router.post("/learning/personalized-path")
 async def create_personalized_learning_path(
     request: PersonalizedLearningRequest,
@@ -234,25 +167,16 @@ async def create_personalized_learning_path(
     AI-adaptive curriculum for individual learning needs
     """
     try:
-        # Validate request
         if not request.student_id.strip():
             raise HTTPException(status_code=400, detail="Student ID is required")
-        
         if not request.learning_goals:
             raise HTTPException(status_code=400, detail="Learning goals are required")
-        
-        # Create personalized path using Gemini 2.5 Pro
         learning_path = await ai_services.create_personalized_path(request)
-        
         logger.info(f"Personalized learning path created for student {request.student_id}")
-        
         return learning_path
-        
     except Exception as e:
         logger.error(f"Personalized learning path creation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Learning path creation failed: {str(e)}")
-
-
 @router.post("/learning/progress-analysis")
 async def analyze_student_progress(
     request: Dict[str, Any],
@@ -265,31 +189,19 @@ async def analyze_student_progress(
     try:
         student_id = request.get("student_id")
         progress_data = request.get("progress_data", {})
-        
         if not student_id:
             raise HTTPException(status_code=400, detail="Student ID is required")
-        
-        # Analyze progress using AI
         analysis = await ai_services.analyze_progress(progress_data)
-        
         logger.info(f"Progress analysis completed for student {student_id}")
-        
         return {
             "success": True,
             "student_id": student_id,
             "analysis": analysis,
             "timestamp": "2025-10-02T15:56:00Z"
         }
-        
     except Exception as e:
         logger.error(f"Student progress analysis failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Progress analysis failed: {str(e)}")
-
-
-# =============================================================================
-# ADAPTIVE CONTENT SYSTEM
-# =============================================================================
-
 @router.post("/content/adaptive")
 async def generate_adaptive_content(
     request: Dict[str, Any],
@@ -304,11 +216,8 @@ async def generate_adaptive_content(
         current_topic = request.get("topic", "")
         difficulty_preference = request.get("difficulty", "intermediate")
         learning_style = request.get("learning_style", "visual")
-        
         if not current_topic:
             raise HTTPException(status_code=400, detail="Topic is required")
-        
-        # Analyze performance and adjust content
         content_request = EducationalContentRequest(
             topic=current_topic,
             difficulty_level=difficulty_preference,
@@ -316,11 +225,8 @@ async def generate_adaptive_content(
             content_type="adaptive_explanation",
             context=student_performance
         )
-        
         adaptive_content = await ai_services.generate_educational_content(content_request)
-        
         logger.info(f"Adaptive content generated for topic: {current_topic}")
-        
         return {
             "success": True,
             "adaptive_content": adaptive_content,
@@ -328,16 +234,9 @@ async def generate_adaptive_content(
             "difficulty_adjusted": True,
             "style_optimized": learning_style
         }
-        
     except Exception as e:
         logger.error(f"Adaptive content generation failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Adaptive content generation failed: {str(e)}")
-
-
-# =============================================================================
-# EDUCATIONAL AI SYSTEM STATUS
-# =============================================================================
-
 @router.get("/status")
 async def educational_ai_system_status(
     ai_services: VertexAIServices = Depends(get_ai_services)
@@ -347,7 +246,6 @@ async def educational_ai_system_status(
     Monitor AI services and capabilities
     """
     try:
-        # Check system status
         system_status = {
             "gemini_pro_model": settings.GEMINI_PRO_MODEL,
             "gemini_flash_model": settings.GEMINI_FLASH_MODEL,
@@ -368,21 +266,16 @@ async def educational_ai_system_status(
                 "Progress Analytics"
             ]
         }
-        
         logger.info("Educational AI system status checked")
-        
         return {
             "success": True,
             "status": "operational",
             "system_info": system_status,
             "nasa_challenge_ready": True
         }
-        
     except Exception as e:
         logger.error(f"Educational AI status check failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Status check failed: {str(e)}")
-
-
 @router.post("/demo/showcase")
 async def nasa_challenge_demo_showcase(
     request: Dict[str, Any],
@@ -395,8 +288,6 @@ async def nasa_challenge_demo_showcase(
     try:
         demo_topic = request.get("topic", "Mars Exploration")
         student_name = request.get("student_name", "Demo Student")
-        
-        # 1. Generate educational content
         content_request = EducationalContentRequest(
             topic=demo_topic,
             difficulty_level="intermediate",
@@ -404,22 +295,16 @@ async def nasa_challenge_demo_showcase(
             content_type="interactive_explanation"
         )
         educational_content = await ai_services.generate_educational_content(content_request)
-        
-        # 2. Generate a quiz
         quiz_request = QuizGenerationRequest(
             topic=demo_topic,
             num_questions=3,
             difficulty_level="intermediate"
         )
         quiz = await ai_services.generate_quiz(quiz_request)
-        
-        # 3. CLIFF-AI mentor interaction
         mentor_response = await ai_services.cliff_mentor_chat(
             f"Tell me something exciting about {demo_topic}!",
             {"demo_mode": True, "student_name": student_name}
         )
-        
-        # 4. Personalized learning path
         learning_request = PersonalizedLearningRequest(
             student_id=f"demo_{student_name.replace(' ', '_')}",
             current_knowledge={demo_topic.lower().replace(' ', '_'): 0.6},
@@ -427,9 +312,7 @@ async def nasa_challenge_demo_showcase(
             time_available=45
         )
         learning_path = await ai_services.create_personalized_path(learning_request)
-        
         logger.info(f"NASA Challenge demo showcase completed for topic: {demo_topic}")
-        
         return {
             "success": True,
             "demo_title": f"🚀 CLIFF Educational AI - {demo_topic} Learning Experience",
@@ -456,16 +339,9 @@ async def nasa_challenge_demo_showcase(
             "competition_advantage": "Most advanced AI-powered space education platform",
             "demo_timestamp": "2025-10-02T15:56:00Z"
         }
-        
     except Exception as e:
         logger.error(f"NASA Challenge demo showcase failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Demo showcase failed: {str(e)}")
-
-
-# =============================================================================
-# HEALTH CHECK
-# =============================================================================
-
 @router.get("/health")
 async def educational_ai_health_check() -> Dict[str, Any]:
     """
@@ -479,7 +355,6 @@ async def educational_ai_health_check() -> Dict[str, Any]:
         "nasa_challenge_ready": True,
         "timestamp": "2025-10-02T15:56:00Z"
     }
-
 @router.post("/diagnostics/test-vertex-ai")
 async def test_vertex_ai_connection(
     ai_services: VertexAIServices = Depends(get_ai_services)
@@ -490,11 +365,7 @@ async def test_vertex_ai_connection(
     """
     try:
         logger.info("🔍 Starting Vertex AI connection diagnostics...")
-        
-        # Test API connection with comprehensive diagnostics
         connection_test = await ai_services.test_gemini_api_connection()
-        
-        # Additional diagnostic information
         diagnostic_info = {
             "test_timestamp": datetime.utcnow().isoformat() + "Z",
             "api_provider": "Vertex AI (beta.vertexapis.com)",
@@ -507,7 +378,6 @@ async def test_vertex_ai_connection(
             "models_configured": ai_services.models,
             "connection_test_result": connection_test
         }
-        
         if connection_test.get("valid"):
             logger.info("✅ Vertex AI diagnostics PASSED")
             return {
@@ -530,7 +400,6 @@ async def test_vertex_ai_connection(
                     "Check network connectivity to beta.vertexapis.com"
                 ]
             }
-            
     except Exception as e:
         error_msg = f"Vertex AI diagnostics failed: {str(e)}"
         logger.error(error_msg)
@@ -540,8 +409,6 @@ async def test_vertex_ai_connection(
             "message": error_msg,
             "error_details": str(e)
         }
-
-
 @router.post("/diagnostics/database-health")
 async def test_database_connection() -> Dict[str, Any]:
     """
@@ -550,14 +417,9 @@ async def test_database_connection() -> Dict[str, Any]:
     """
     try:
         logger.info("🏥 Starting database health diagnostics...")
-        
-        # Import database functions
         from app.core.database import check_database_health, get_connection_status
-        
-        # Run comprehensive health check
         health_result = await check_database_health()
         connection_status = get_connection_status()
-        
         diagnostic_info = {
             "test_timestamp": datetime.utcnow().isoformat() + "Z",
             "database_type": "MongoDB Atlas",
@@ -565,7 +427,6 @@ async def test_database_connection() -> Dict[str, Any]:
             "health_check": health_result,
             "connection_status": connection_status
         }
-        
         if health_result.get("status") == "healthy":
             logger.info("✅ Database diagnostics PASSED")
             return {
@@ -588,7 +449,6 @@ async def test_database_connection() -> Dict[str, Any]:
                     "Review SSL handshake timeout settings"
                 ]
             }
-            
     except Exception as e:
         error_msg = f"Database diagnostics failed: {str(e)}"
         logger.error(error_msg)
@@ -598,8 +458,6 @@ async def test_database_connection() -> Dict[str, Any]:
             "message": error_msg,
             "error_details": str(e)
         }
-
-
 @router.get("/diagnostics/system-overview")
 async def system_diagnostics_overview(
     ai_services: VertexAIServices = Depends(get_ai_services)
@@ -610,15 +468,12 @@ async def system_diagnostics_overview(
     """
     try:
         logger.info("📊 Running complete system diagnostics...")
-        
         diagnostics = {
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "system_version": "CLIFF v2.0.0",
             "nasa_challenge_ready": True,
             "components": {}
         }
-        
-        # Test Vertex AI
         try:
             vertex_test = await ai_services.test_gemini_api_connection()
             diagnostics["components"]["vertex_ai"] = {
@@ -631,8 +486,6 @@ async def system_diagnostics_overview(
                 "status": "error",
                 "error": str(e)
             }
-        
-        # Test Database
         try:
             from app.core.database import check_database_health
             db_health = await check_database_health()
@@ -646,27 +499,21 @@ async def system_diagnostics_overview(
                 "status": "error",
                 "error": str(e)
             }
-        
-        # Overall system status
         all_healthy = all(
             comp.get("status") == "healthy" 
             for comp in diagnostics["components"].values()
         )
-        
         diagnostics["overall_status"] = "healthy" if all_healthy else "needs_attention"
         diagnostics["components_count"] = len(diagnostics["components"])
         diagnostics["healthy_components"] = sum(
             1 for comp in diagnostics["components"].values() 
             if comp.get("status") == "healthy"
         )
-        
         if all_healthy:
             logger.info("✅ All system diagnostics PASSED - NASA Challenge Ready!")
         else:
             logger.warning("⚠️ Some system components need attention")
-        
         return diagnostics
-        
     except Exception as e:
         error_msg = f"System diagnostics failed: {str(e)}"
         logger.error(error_msg)

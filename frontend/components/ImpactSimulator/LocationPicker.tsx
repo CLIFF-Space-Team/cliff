@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -7,20 +6,17 @@ import { Input } from '@/components/ui/input'
 import { Search, MapPin, Loader2 } from 'lucide-react'
 import { ImpactLocation } from './types'
 import 'mapbox-gl/dist/mapbox-gl.css'
-
 interface LocationPickerProps {
   open: boolean
   onClose: () => void
   onLocationSelect: (location: ImpactLocation) => void
   initialLocation?: ImpactLocation
 }
-
 interface MapboxFeature {
   place_name: string
   center: [number, number]
   text: string
 }
-
 export function LocationPicker({ 
   open, 
   onClose, 
@@ -38,12 +34,9 @@ export function LocationPicker({
   const mapRef = useRef<any>(null)
   const markerRef = useRef<any>(null)
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
   const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || 'pk.eyJ1IjoiY2xpZmYtc3BhY2UiLCJhIjoiY2xuZGF0ZXN0MDAwMDJrcGVyMnhxMGtwYyJ9.example'
-
   const handleSearch = useCallback(async () => {
     if (!searchQuery.trim()) return
-
     setLoading(true)
     try {
       const response = await fetch(
@@ -58,13 +51,10 @@ export function LocationPicker({
       setLoading(false)
     }
   }, [searchQuery, MAPBOX_TOKEN])
-
-  // Otomatik arama (500ms gecikme ile)
   useEffect(() => {
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current)
     }
-
     if (searchQuery.trim().length >= 2) {
       searchTimeoutRef.current = setTimeout(() => {
         handleSearch()
@@ -72,34 +62,27 @@ export function LocationPicker({
     } else {
       setSearchResults([])
     }
-
     return () => {
       if (searchTimeoutRef.current) {
         clearTimeout(searchTimeoutRef.current)
       }
     }
   }, [searchQuery, handleSearch])
-
   useEffect(() => {
     if (!open || !mapContainerRef.current) return
     if (typeof window === 'undefined') return
-
     setMapLoading(true)
-
     const loadMapbox = async () => {
       try {
         const mapboxgl = (await import('mapbox-gl')).default
-        
         if (!MAPBOX_TOKEN || MAPBOX_TOKEN.includes('example')) {
           console.error('❌ Mapbox token geçersiz! .env.local dosyasını kontrol edin.')
           console.log('Mevcut token:', MAPBOX_TOKEN?.substring(0, 20) + '...')
           setMapLoading(false)
           return
         }
-        
         console.log('✅ Mapbox token bulundu, harita yükleniyor...')
         mapboxgl.accessToken = MAPBOX_TOKEN
-
         if (mapRef.current) {
           console.log('Harita zaten var, mevcut haritayı kullanıyor...')
           if (initialLocation) {
@@ -109,7 +92,6 @@ export function LocationPicker({
           setMapLoading(false)
           return
         }
-
         console.log('Yeni harita oluşturuluyor...')
         const map = new mapboxgl.Map({
           container: mapContainerRef.current!,
@@ -117,21 +99,17 @@ export function LocationPicker({
           center: [initialLocation?.lng || 28.9784, initialLocation?.lat || 41.0082],
           zoom: 10,
         })
-
         map.on('load', () => {
           console.log('✅ Mapbox haritası başarıyla yüklendi!')
           setMapLoading(false)
         })
-
         map.on('error', (e) => {
           console.error('❌ Mapbox harita hatası:', e)
           setMapLoading(false)
         })
-
         map.on('click', async (e: any) => {
           const { lng, lat } = e.lngLat
           updateMarker(lng, lat)
-          
           const cityName = await reverseGeocode(lng, lat)
           setSelectedLocation({
             lat,
@@ -141,11 +119,9 @@ export function LocationPicker({
             cityName: cityName || `${lat.toFixed(4)}, ${lng.toFixed(4)}`
           })
         })
-
         const marker = new mapboxgl.Marker({ color: '#FF4444', draggable: true })
           .setLngLat([initialLocation?.lng || 28.9784, initialLocation?.lat || 41.0082])
           .addTo(map)
-
         marker.on('dragend', async () => {
           const { lng, lat } = marker.getLngLat()
           const cityName = await reverseGeocode(lng, lat)
@@ -157,7 +133,6 @@ export function LocationPicker({
             cityName: cityName || `${lat.toFixed(4)}, ${lng.toFixed(4)}`
           })
         })
-
         mapRef.current = map
         markerRef.current = marker
       } catch (error) {
@@ -165,9 +140,7 @@ export function LocationPicker({
         setMapLoading(false)
       }
     }
-
     loadMapbox()
-
     return () => {
       if (mapRef.current) {
         mapRef.current.remove()
@@ -176,21 +149,18 @@ export function LocationPicker({
       }
     }
   }, [open])
-
   const updateMarker = (lng: number, lat: number) => {
     if (markerRef.current && mapRef.current) {
       markerRef.current.setLngLat([lng, lat])
       mapRef.current.flyTo({ center: [lng, lat], zoom: 12 })
     }
   }
-
   const reverseGeocode = async (lng: number, lat: number): Promise<string | null> => {
     try {
       const response = await fetch(
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_TOKEN}`
       )
       const data = await response.json()
-      
       if (data.features && data.features.length > 0) {
         return data.features[0].place_name
       }
@@ -200,7 +170,6 @@ export function LocationPicker({
       return null
     }
   }
-
   const handleSelectSearchResult = (feature: MapboxFeature) => {
     const [lng, lat] = feature.center
     updateMarker(lng, lat)
@@ -214,14 +183,12 @@ export function LocationPicker({
     setSearchResults([])
     setSearchQuery('')
   }
-
   const handleConfirm = () => {
     if (selectedLocation) {
       onLocationSelect(selectedLocation)
       onClose()
     }
   }
-
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl h-[80vh] bg-pure-black border-cliff-white/20">
@@ -234,7 +201,6 @@ export function LocationPicker({
             Harita üzerinde tıklayın veya arama yapın
           </DialogDescription>
         </DialogHeader>
-
         <div className="flex flex-col gap-4 flex-1">
           <div className="flex gap-2">
             <Input
@@ -249,7 +215,6 @@ export function LocationPicker({
               </div>
             )}
           </div>
-
           {searchResults.length > 0 && (
             <div className="bg-pure-black/80 border border-cliff-white/20 rounded-lg max-h-40 overflow-y-auto">
               {searchResults.map((result, index) => (
@@ -264,7 +229,6 @@ export function LocationPicker({
               ))}
             </div>
           )}
-
           <div className="flex-1 relative rounded-lg overflow-hidden border border-cliff-white/20" style={{ minHeight: '400px' }}>
             <div 
               ref={mapContainerRef} 
@@ -279,7 +243,6 @@ export function LocationPicker({
               </div>
             )}
           </div>
-
           {selectedLocation && (
             <div className="bg-pure-black/80 border border-cliff-white/20 rounded-lg p-4">
               <p className="text-sm text-cliff-light-gray mb-2">Seçili Konum:</p>
@@ -289,7 +252,6 @@ export function LocationPicker({
               </p>
             </div>
           )}
-
           <div className="flex gap-2 justify-end">
             <Button variant="ghost" onClick={onClose} className="text-cliff-white">
               İptal
@@ -307,4 +269,3 @@ export function LocationPicker({
     </Dialog>
   )
 }
-

@@ -1,5 +1,4 @@
-"use client"
-
+﻿"use client"
 import React, { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -7,13 +6,10 @@ import { Slider } from '@/components/ui/slider'
 import { cn } from '@/lib/utils'
 import { useThreatFilters, RiskFilter } from '@/stores/threatFilters'
 import { loadMessages } from '@/lib/messages'
-
 type Props = {
   onApply?: () => void
 }
-
 const riskOptions: RiskFilter[] = ['critical', 'high', 'medium', 'low', 'none']
-
 export default function FilterBar({ onApply }: Props) {
   const { filters, setFilters, reset } = useThreatFilters()
   const [q, setQ] = useState(filters.q ?? '')
@@ -25,7 +21,6 @@ export default function FilterBar({ onApply }: Props) {
   const [maxLd, setMaxLd] = useState<number | undefined>(filters.maxLd)
   const [windowDays, setWindowDays] = useState<7 | 30 | 90>(filters.windowDays)
   const [sort, setSort] = useState(filters.sort)
-
   useEffect(() => {
     setQ(filters.q ?? '')
     setRisks(filters.risks)
@@ -37,7 +32,6 @@ export default function FilterBar({ onApply }: Props) {
     setWindowDays(filters.windowDays)
     setSort(filters.sort)
   }, [filters])
-
   const apply = () => {
     const minVal = Math.max(0, Math.min(diameter[0] ?? 0, diameter[1] ?? 0))
     const maxVal = Math.max(diameter[0] ?? 0, diameter[1] ?? 0)
@@ -53,18 +47,15 @@ export default function FilterBar({ onApply }: Props) {
     })
     onApply?.()
   }
-
   const clear = () => {
     reset()
     onApply?.()
   }
-
   const windowButtons: (7 | 30 | 90)[] = [7, 30, 90]
-
   return (
     <div className="w-full bg-almost-black border border-cliff-light-gray/20 rounded-lg p-3">
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
-        {/* Search */}
+        {}
         <div className="col-span-1 md:col-span-2">
           <label className="text-xs text-cliff-light-gray">Arama</label>
           <input
@@ -74,8 +65,7 @@ export default function FilterBar({ onApply }: Props) {
             className="mt-1 w-full bg-pure-black border border-cliff-light-gray/20 rounded-md px-3 py-2 text-sm text-cliff-white placeholder:text-cliff-light-gray/50 outline-none focus:ring-2 focus:ring-emerald-500/40"
           />
         </div>
-
-        {/* Risks */}
+        {}
         <div>
           <label className="text-xs text-cliff-light-gray">Risk</label>
           <div className="mt-1 flex flex-wrap gap-1.5">
@@ -102,8 +92,7 @@ export default function FilterBar({ onApply }: Props) {
             })}
           </div>
         </div>
-
-        {/* Diameter */}
+        {}
         <div>
           <label className="text-xs text-cliff-light-gray">Çap (km)</label>
           <div className="px-1 space-y-2">
@@ -139,8 +128,7 @@ export default function FilterBar({ onApply }: Props) {
             </div>
           </div>
         </div>
-
-        {/* Max LD */}
+        {}
         <div>
           <label className="text-xs text-cliff-light-gray">Maks. Mesafe (LD)</label>
           <input
@@ -153,8 +141,7 @@ export default function FilterBar({ onApply }: Props) {
             className="mt-1 w-full bg-pure-black border border-cliff-light-gray/20 rounded-md px-3 py-2 text-sm text-cliff-white placeholder:text-cliff-light-gray/50 outline-none focus:ring-2 focus:ring-emerald-500/40"
           />
         </div>
-
-        {/* Window / Sort */}
+        {}
         <div>
           <label className="text-xs text-cliff-light-gray">Pencere / Sıralama</label>
           <div className="mt-1 flex items-center gap-2">
@@ -191,7 +178,6 @@ export default function FilterBar({ onApply }: Props) {
           </div>
         </div>
       </div>
-
       <div className="mt-3 flex items-center gap-2 justify-end">
         <Button size="sm" variant="ghost" onClick={clear} className="text-xs">
           Temizle
@@ -203,5 +189,3 @@ export default function FilterBar({ onApply }: Props) {
     </div>
   )
 }
-
-

@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent, Button, Badge } from '@/components/ui'
@@ -16,12 +15,10 @@ import {
   Shield
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
 interface AsteroidProfileCardProps {
   asteroidData?: any
   className?: string
 }
-
 interface GeneratedImage {
   id: string
   url: string
@@ -29,7 +26,6 @@ interface GeneratedImage {
   timestamp: Date
   isLoading: boolean
 }
-
 const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
   asteroidData,
   className
@@ -39,33 +35,25 @@ const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
   const [hasGenerated, setHasGenerated] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const previousAsteroidId = useRef<string | null>(null)
-
   const generateVisual = useCallback(async () => {
     if (isGenerating || !asteroidData) return
-
     setIsGenerating(true)
     setError(null)
-    
     try {
       let asteroidId = asteroidData?.neo_reference_id || asteroidData?.id
-      
       if (!asteroidId) {
         throw new Error('Asteroid verisi bulunamadı')
       }
-
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/api/v1/asteroids/${asteroidId}/generate-with-data`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
       })
-
       if (!response.ok) {
         throw new Error(`API hatası: ${response.statusText}`)
       }
-
       const result = await response.json()
-
       const newImage: GeneratedImage = {
         id: result.asteroid_id || `ai-gen-${Date.now()}`,
         url: result.generated_image_url,
@@ -73,14 +61,11 @@ const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
         timestamp: new Date(),
         isLoading: false
       }
-
       setCurrentImage(newImage)
       setHasGenerated(true)
-      
     } catch (error) {
       console.error('AI görsel oluşturma hatası:', error)
       setError(error instanceof Error ? error.message : 'Bilinmeyen hata')
-      
       const fallbackImage: GeneratedImage = {
         id: `ai-gen-fallback-${Date.now()}`,
         url: `https://picsum.photos/400/300?random=${Date.now()}&grayscale`,
@@ -94,24 +79,19 @@ const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
       setIsGenerating(false)
     }
   }, [asteroidData, isGenerating])
-
   useEffect(() => {
     const currentAsteroidId = asteroidData?.neo_reference_id || asteroidData?.id
-    
     if (currentAsteroidId && currentAsteroidId !== previousAsteroidId.current) {
       previousAsteroidId.current = currentAsteroidId
       setHasGenerated(false)
       setCurrentImage(null)
       setError(null)
-      
       const timer = setTimeout(() => {
         generateVisual()
       }, 500)
-      
       return () => clearTimeout(timer)
     }
   }, [asteroidData, generateVisual])
-
   const downloadImage = useCallback(() => {
     if (currentImage?.url) {
       const link = document.createElement('a')
@@ -122,13 +102,11 @@ const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
       document.body.removeChild(link)
     }
   }, [currentImage])
-
   const openFullscreen = useCallback(() => {
     if (currentImage?.url) {
       window.open(currentImage.url, '_blank')
     }
   }, [currentImage])
-
   if (!asteroidData) {
     return (
       <Card variant="cosmic" className={cn("overflow-hidden", className)}>
@@ -144,14 +122,12 @@ const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
       </Card>
     )
   }
-
   const getRiskLevel = () => {
     if (asteroidData?.is_potentially_hazardous_asteroid) return 'YÜKSEK'
     if (asteroidData?.close_approach_data?.[0]?.miss_distance?.kilometers &&
         parseFloat(asteroidData.close_approach_data[0].miss_distance.kilometers) < 7500000) return 'ORTA'
     return 'DÜŞÜK'
   }
-
   const getRiskColor = (level: string) => {
     switch(level) {
       case 'YÜKSEK': return 'text-red-400 border-red-500/30 bg-red-500/10'
@@ -159,7 +135,6 @@ const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
       default: return 'text-green-400 border-green-500/30 bg-green-500/10'
     }
   }
-
   return (
     <Card variant="cosmic" className={cn("overflow-hidden", className)}>
       <CardContent className="p-0">
@@ -201,9 +176,7 @@ const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
                   alt={`${asteroidData.name} AI Profil Görseli`}
                   className="w-full h-full object-cover"
                 />
-                
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
-                
                 <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-200">
                   <div className="flex gap-1">
                     <Button
@@ -224,7 +197,6 @@ const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
                     </Button>
                   </div>
                 </div>
-
                 <div className="absolute bottom-3 left-3">
                   <Badge variant="default" className="bg-black/50 backdrop-blur-sm text-white border-white/20 text-xs">
                     <Sparkles className="h-3 w-3 mr-1" />
@@ -249,7 +221,6 @@ const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
             )}
           </AnimatePresence>
         </div>
-
         <div className="p-4">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1">
@@ -265,7 +236,6 @@ const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
               {getRiskLevel()} RİSK
             </Badge>
           </div>
-
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-cliff-dark-gray/30 rounded-lg p-3 border border-cliff-light-gray/10">
               <div className="flex items-center gap-2 mb-1">
@@ -279,7 +249,6 @@ const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
                 }
               </p>
             </div>
-
             <div className="bg-cliff-dark-gray/30 rounded-lg p-3 border border-cliff-light-gray/10">
               <div className="flex items-center gap-2 mb-1">
                 <Calendar className="h-4 w-4 text-green-400" />
@@ -293,7 +262,6 @@ const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
               </p>
             </div>
           </div>
-
           {currentImage && (
             <div className="bg-cliff-dark-gray/20 rounded-lg p-3 border border-cliff-light-gray/10">
               <p className="text-xs text-cliff-light-gray/80 leading-relaxed line-clamp-3">
@@ -307,5 +275,4 @@ const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
     </Card>
   )
 }
-
 export default AsteroidProfileCard

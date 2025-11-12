@@ -1,10 +1,8 @@
-'use client'
-
+﻿'use client'
 import React, { useMemo } from 'react'
 import * as THREE from 'three'
 import { Html } from '@react-three/drei'
 import { createAsteroidPBRMaterial } from './AsteroidPBRMaterial'
-
 interface DetailedAsteroidProps {
   neoId?: string
   name?: string
@@ -14,7 +12,6 @@ interface DetailedAsteroidProps {
   scale?: number
   showLabel?: boolean
 }
-
 export const DetailedAsteroid: React.FC<DetailedAsteroidProps> = ({
   neoId,
   name,
@@ -25,8 +22,6 @@ export const DetailedAsteroid: React.FC<DetailedAsteroidProps> = ({
   showLabel = true
 }) => {
   const material = useMemo(() => createAsteroidPBRMaterial({ hazardous, quality }), [hazardous, quality])
-
-  // Procedural detailed geometry (gltf yoksa)
   return (
     <group position={position}>
       <mesh castShadow receiveShadow>
@@ -41,7 +36,4 @@ export const DetailedAsteroid: React.FC<DetailedAsteroidProps> = ({
     </group>
   )
 }
-
 export default DetailedAsteroid
-
-

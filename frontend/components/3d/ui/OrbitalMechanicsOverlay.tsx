@@ -1,5 +1,4 @@
-"use client";
-
+﻿"use client";
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as THREE from 'three';
@@ -35,7 +34,6 @@ import {
   Timer,
   X
 } from 'lucide-react';
-
 interface OrbitalPoint {
   id: string;
   name: LocalizedContent;
@@ -46,7 +44,6 @@ interface OrbitalPoint {
   distance: number;
   description: LocalizedContent;
 }
-
 interface OrbitalVisualizationConfig {
   showOrbitalPath: boolean;
   showVelocityVectors: boolean;
@@ -58,30 +55,19 @@ interface OrbitalVisualizationConfig {
   showEducationalInfo: boolean;
   educationalLevel: EducationalLevel;
 }
-
 interface OrbitalMechanicsOverlayProps {
-  // Target celestial body
   celestialBodyId: string;
-  
-  // Configuration
   config: OrbitalVisualizationConfig;
   onConfigChange?: (config: Partial<OrbitalVisualizationConfig>) => void;
-  
-  // 3D Scene integration
   scene?: THREE.Scene;
   camera?: THREE.Camera;
   canvas?: HTMLCanvasElement;
-  
-  // Interaction
   isVisible: boolean;
   onPointClick?: (point: OrbitalPoint) => void;
   onEducationalAction?: (action: string, params?: Record<string, any>) => void;
-  
-  // Layout
   position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
   className?: string;
 }
-
 interface OrbitalMechanicsCalculations {
   eccentricity: number;
   semiMajorAxis: number;
@@ -96,7 +82,6 @@ interface OrbitalMechanicsCalculations {
   currentVelocity: THREE.Vector3;
   orbitalPoints: OrbitalPoint[];
 }
-
 export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = ({
   celestialBodyId,
   config,
@@ -110,94 +95,55 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
   position = 'bottom-right',
   className = ''
 }) => {
-  // State
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<OrbitalPoint | null>(null);
   const [animationProgress, setAnimationProgress] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
-  
-  // Refs
   const overlayRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>();
-  
-  // Store
   const timeState = useSolarSystemStore(state => state.timeState);
   const currentLanguage = 'tr'; // FIXME: Should come from a user preferences store
-  
-  // Get celestial body data
   const celestialBody = useMemo(() => {
     return SOLAR_SYSTEM_DATA[celestialBodyId];
   }, [celestialBodyId]);
-
-  // Get localized text
   const getLocalizedText = useCallback((text: LocalizedContent): string => {
     return text[currentLanguage] || text['en'] || Object.values(text)[0] || '';
   }, [currentLanguage]);
-
-  // Calculate orbital mechanics
   const orbitalCalculations = useMemo((): OrbitalMechanicsCalculations | null => {
     if (!celestialBody || !timeState) return null;
-
     const orbital = celestialBody.orbital;
     const currentTime = timeState.currentTime;
-    
-    // Basic orbital elements
     const a = orbital.semiMajorAxis * ASTRONOMICAL_CONSTANTS.AU_IN_KM; // Convert AU to km
     const e = orbital.eccentricity;
     const n = orbital.meanMotion * Math.PI / 180 / 86400; // Convert degrees/day to radians/second
-    
-    // Semi-minor axis
     const b = a * Math.sqrt(1 - e * e);
-    
-    // Current mean anomaly
     const currentTimeNum = typeof currentTime === 'number' ? currentTime : new Date(currentTime).getTime() / 86400000;
     const epochNum = typeof orbital.epoch === 'number' ? orbital.epoch : new Date(orbital.epoch).getTime() / 86400000;
     const M = (orbital.meanAnomalyAtEpoch + n * (currentTimeNum - epochNum) * 86400) % (2 * Math.PI);
-    
-    // Solve Kepler's equation for eccentric anomaly (simplified)
     let E = M;
     for (let i = 0; i < 10; i++) {
       E = M + e * Math.sin(E);
     }
-    
-    // True anomaly
     const nu = 2 * Math.atan(Math.sqrt((1 + e) / (1 - e)) * Math.tan(E / 2));
-    
-    // Distance from focus
     const r = a * (1 - e * Math.cos(E));
-    
-    // Current position in orbital plane
     const x_orbit = r * Math.cos(nu);
     const y_orbit = r * Math.sin(nu);
-    
-    // Convert to 3D coordinates (simplified, assumes inclination = 0 for now)
     const currentPosition = new THREE.Vector3(x_orbit, 0, y_orbit);
-    
-    // Velocity calculation (simplified)
     const mu = ASTRONOMICAL_CONSTANTS.GRAVITATIONAL_CONSTANT * ASTRONOMICAL_CONSTANTS.SOLAR_MASS;
     const v = Math.sqrt(mu * (2/r - 1/a));
     const currentVelocity = new THREE.Vector3(0, 0, v);
-    
-    // Periapsis and apoapsis
     const periapsis = {
       distance: a * (1 - e),
       position: new THREE.Vector3(a * (1 - e), 0, 0),
       velocity: Math.sqrt(mu * (1 + e) / (a * (1 - e)))
     };
-    
     const apoapsis = {
       distance: a * (1 + e),
       position: new THREE.Vector3(-a * (1 + e), 0, 0),
       velocity: Math.sqrt(mu * (1 - e) / (a * (1 + e)))
     };
-    
-    // Orbital period
     const period = 2 * Math.PI * Math.sqrt(a * a * a / mu);
-    
-    // Specific orbital energy
     const specificEnergy = -mu / (2 * a);
-    
-    // Create orbital points
     const orbitalPoints: OrbitalPoint[] = [
       {
         id: 'periapsis',
@@ -239,7 +185,6 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
         }
       }
     ];
-
     return {
       eccentricity: e,
       semiMajorAxis: a,
@@ -255,32 +200,23 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
       orbitalPoints
     };
   }, [celestialBody, timeState]);
-
-  // Animation loop for orbit
   useEffect(() => {
     if (!config.animateOrbit || !isVisible) return;
-
     const animate = () => {
       setAnimationProgress(prev => (prev + 0.005) % 1);
       animationRef.current = requestAnimationFrame(animate);
     };
-
     animationRef.current = requestAnimationFrame(animate);
-    
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
     };
   }, [config.animateOrbit, isVisible]);
-
-  // Handle point selection
   const handlePointClick = useCallback((point: OrbitalPoint) => {
     setSelectedPoint(point);
     onPointClick?.(point);
   }, [onPointClick]);
-
-  // Format distance
   const formatDistance = useCallback((distance: number): string => {
     if (distance > 1e9) {
       return `${(distance / 1e9).toFixed(2)} Milyar km`;
@@ -292,13 +228,9 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
       return `${distance.toFixed(0)} km`;
     }
   }, []);
-
-  // Format velocity
   const formatVelocity = useCallback((velocity: number): string => {
     return `${(velocity / 1000).toFixed(2)} km/s`;
   }, []);
-
-  // Format time period
   const formatPeriod = useCallback((seconds: number): string => {
     const days = seconds / 86400;
     if (days > 365.25) {
@@ -309,8 +241,6 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
       return `${(seconds / 3600).toFixed(1)} saat`;
     }
   }, []);
-
-  // Get position classes
   const getPositionClasses = () => {
     switch (position) {
       case 'top-left': return 'top-4 left-4';
@@ -320,9 +250,7 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
       default: return 'bottom-4 right-4';
     }
   };
-
   if (!isVisible || !orbitalCalculations) return null;
-
   return (
     <motion.div
       ref={overlayRef}
@@ -332,7 +260,7 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
       className={`fixed ${getPositionClasses()} z-50 ${className}`}
     >
       <Card className="bg-black/90 backdrop-blur-sm border-gray-700 text-white overflow-hidden">
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between p-3 border-b border-gray-700">
           <div className="flex items-center gap-2">
             <Target className="w-5 h-5 text-cyan-400" />
@@ -357,8 +285,7 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
             </Button>
           </div>
         </div>
-
-        {/* Settings Panel */}
+        {}
         <AnimatePresence>
           {showSettings && (
             <motion.div
@@ -410,8 +337,7 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Compact View */}
+        {}
         {!isExpanded && (
           <div className="p-3">
             <div className="flex items-center justify-between text-sm">
@@ -426,8 +352,7 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
             </div>
           </div>
         )}
-
-        {/* Expanded View */}
+        {}
         <AnimatePresence>
           {isExpanded && (
             <motion.div
@@ -437,7 +362,7 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
               className="overflow-hidden"
             >
               <div className="p-4 space-y-4 max-w-sm">
-                {/* Orbital Parameters */}
+                {}
                 <div>
                   <h3 className="text-sm font-semibold text-cyan-400 mb-2">Orbital Parametreler</h3>
                   <div className="grid grid-cols-2 gap-2 text-xs">
@@ -459,8 +384,7 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
                     </div>
                   </div>
                 </div>
-
-                {/* Current State */}
+                {}
                 <div>
                   <h3 className="text-sm font-semibold text-green-400 mb-2">Mevcut Durum</h3>
                   <div className="space-y-2 text-xs">
@@ -478,8 +402,7 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
                     </div>
                   </div>
                 </div>
-
-                {/* Orbital Points */}
+                {}
                 {config.showOrbitalPoints && (
                   <div>
                     <h3 className="text-sm font-semibold text-orange-400 mb-2">Orbital Noktalar</h3>
@@ -513,8 +436,7 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
                     </div>
                   </div>
                 )}
-
-                {/* Educational Info */}
+                {}
                 {config.showEducationalInfo && (
                   <div className="border-t border-gray-700 pt-3">
                     <h3 className="text-sm font-semibold text-purple-400 mb-2">Eğitici Bilgiler</h3>
@@ -525,8 +447,7 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
                     </div>
                   </div>
                 )}
-
-                {/* Actions */}
+                {}
                 <div className="flex flex-wrap gap-2">
                   <Button
                     variant="outline"
@@ -551,8 +472,7 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Selected Point Details */}
+        {}
         <AnimatePresence>
           {selectedPoint && (
             <motion.div
@@ -607,5 +527,4 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
     </motion.div>
   );
 };
-
 export default OrbitalMechanicsOverlay;

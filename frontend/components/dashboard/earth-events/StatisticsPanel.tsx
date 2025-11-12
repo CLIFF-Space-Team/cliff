@@ -1,18 +1,14 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TrendingUp, TrendingDown, AlertTriangle, Globe, Calendar, Activity, BarChart3, Eye, X, Expand, ChevronLeft, ChevronRight } from 'lucide-react'
 import { LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip, Area, AreaChart } from 'recharts'
 import { useEarthEventsStore } from '@/stores/earthEventsStore'
-
 export default function StatisticsPanel() {
   const { events, loading } = useEarthEventsStore()
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalTab, setModalTab] = useState('overview')
-
   const totalEvents = events.length
-  
   const activeEvents = useMemo(() => {
     return events.filter(event => {
       if (!event?.created_date) return false
@@ -26,7 +22,6 @@ export default function StatisticsPanel() {
       }
     }).length
   }, [events])
-
   const categoryData = useMemo(() => {
     return events.reduce((acc: { [key: string]: number }, event) => {
       const category = event.categories?.[0]?.title || 'Unknown'
@@ -34,7 +29,6 @@ export default function StatisticsPanel() {
       return acc
     }, {})
   }, [events])
-
   const pieData = useMemo(() => {
     return Object.entries(categoryData).map(([name, value]) => ({
       name,
@@ -42,10 +36,8 @@ export default function StatisticsPanel() {
       color: getCategoryColor(name)
     }))
   }, [categoryData])
-
   const trendData = useMemo(() => generateTrendData(events), [events])
   const trendDirection = useMemo(() => getTrendDirection(trendData), [trendData])
-
   function getCategoryColor(category: string): string {
     const colors: { [key: string]: string } = {
       'Wildfires': '#FF6B35',
@@ -57,7 +49,6 @@ export default function StatisticsPanel() {
     }
     return colors[category] || '#FFA726'
   }
-
   function generateTrendData(events: any[]) {
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const date = new Date()
@@ -68,17 +59,14 @@ export default function StatisticsPanel() {
         date: date.toISOString().split("T")[0]
       }
     })
-
     events.forEach(event => {
       if (!event?.created_date) return
-      
       try {
         const createdDate = new Date(event.created_date)
         if (isNaN(createdDate.getTime())) {
           console.warn('Invalid date detected:', event.created_date, 'for event:', event.id)
           return
         }
-        
         const eventDate = createdDate.toISOString().split("T")[0]
         const dayData = last7Days.find(d => d.date === eventDate)
         if (dayData) {
@@ -88,20 +76,16 @@ export default function StatisticsPanel() {
         console.warn('Error processing event date:', event.id, error)
       }
     })
-
     return last7Days
   }
-
   function getTrendDirection(data: any[]) {
     if (data.length < 2) return 'stable'
     const recent = data.slice(-3).reduce((sum, d) => sum + d.events, 0)
     const previous = data.slice(-6, -3).reduce((sum, d) => sum + d.events, 0)
-    
     if (recent > previous) return 'up'
     if (recent < previous) return 'down'
     return 'stable'
   }
-
   if (loading) {
     return (
       <motion.div
@@ -113,10 +97,9 @@ export default function StatisticsPanel() {
       </motion.div>
     )
   }
-
   return (
     <>
-      {/* Top-Right Stats Widget */}
+      {}
       <motion.button
         initial={{ scale: 0, x: 100 }}
         animate={{ scale: 1, x: 0 }}
@@ -125,14 +108,13 @@ export default function StatisticsPanel() {
         onClick={() => setIsModalOpen(true)}
         className="fixed right-4 top-4 bg-gradient-to-br from-black/80 via-black/70 to-black/80 backdrop-blur-2xl rounded-2xl border border-emerald-500/30 shadow-2xl z-40 overflow-hidden group"
       >
-        {/* Background effects */}
+        {}
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-blue-500/5 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-all duration-500" />
         <div className="absolute -inset-1 bg-gradient-to-br from-emerald-500/20 to-purple-500/20 rounded-2xl opacity-0 group-hover:opacity-100 animate-pulse blur-sm" />
-        
         <div className="relative z-10 p-4 flex items-center gap-4">
-          {/* Mini Stats Display */}
+          {}
           <div className="flex items-center gap-3">
-            {/* Total Events */}
+            {}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-emerald-500/20 to-emerald-500/10 rounded-xl flex items-center justify-center">
                 <Globe className="w-4 h-4 text-emerald-400" />
@@ -142,11 +124,9 @@ export default function StatisticsPanel() {
                 <div className="text-emerald-400 text-xs font-medium">Events</div>
               </div>
             </div>
-
-            {/* Separator */}
+            {}
             <div className="w-px h-8 bg-white/10" />
-
-            {/* Active Events */}
+            {}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-orange-500/20 to-orange-500/10 rounded-xl flex items-center justify-center">
                 <AlertTriangle className="w-4 h-4 text-orange-400" />
@@ -156,11 +136,9 @@ export default function StatisticsPanel() {
                 <div className="text-orange-400 text-xs font-medium">Active</div>
               </div>
             </div>
-
-            {/* Separator */}
+            {}
             <div className="w-px h-8 bg-white/10" />
-
-            {/* Trend Direction */}
+            {}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500/20 to-blue-500/10 rounded-xl flex items-center justify-center">
                 {trendDirection === 'up' ? (
@@ -180,8 +158,7 @@ export default function StatisticsPanel() {
               </div>
             </div>
           </div>
-
-          {/* Expand Button */}
+          {}
           <div className="ml-2 flex items-center">
             <div className="w-8 h-8 bg-white/10 group-hover:bg-emerald-500/20 rounded-lg flex items-center justify-center transition-colors">
               <BarChart3 className="w-4 h-4 text-white/60 group-hover:text-emerald-400 transition-colors" />
@@ -189,8 +166,7 @@ export default function StatisticsPanel() {
           </div>
         </div>
       </motion.button>
-
-      {/* Full Statistics Modal */}
+      {}
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
@@ -208,7 +184,7 @@ export default function StatisticsPanel() {
               className="bg-gradient-to-br from-black/95 via-black/90 to-black/95 backdrop-blur-2xl rounded-3xl border border-emerald-500/30 shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Modal Header */}
+              {}
               <div className="sticky top-0 bg-black/80 backdrop-blur-xl border-b border-white/10 p-6 rounded-t-3xl">
                 <div className="flex items-center justify-between">
                   <div>
@@ -227,8 +203,7 @@ export default function StatisticsPanel() {
                     <X className="w-6 h-6 text-white group-hover:text-red-400 transition-colors" />
                   </button>
                 </div>
-
-                {/* Tab Navigation */}
+                {}
                 <div className="flex gap-2 mt-6">
                   {[
                     { id: 'overview', label: 'Overview', icon: Globe },
@@ -250,12 +225,11 @@ export default function StatisticsPanel() {
                   ))}
                 </div>
               </div>
-
-              {/* Modal Content */}
+              {}
               <div className="p-6">
                 {modalTab === 'overview' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {/* Key Metrics Cards */}
+                    {}
                     <div className="bg-gradient-to-br from-emerald-500/10 to-emerald-500/5 rounded-2xl p-6 border border-emerald-500/20">
                       <div className="flex items-center justify-between mb-4">
                         <Globe className="w-8 h-8 text-emerald-400" />
@@ -265,7 +239,6 @@ export default function StatisticsPanel() {
                       <div className="text-emerald-400 font-medium">Total Events</div>
                       <div className="text-white/60 text-sm mt-1">Worldwide monitoring</div>
                     </div>
-
                     <div className="bg-gradient-to-br from-orange-500/10 to-orange-500/5 rounded-2xl p-6 border border-orange-500/20">
                       <div className="flex items-center justify-between mb-4">
                         <AlertTriangle className="w-8 h-8 text-orange-400" />
@@ -275,7 +248,6 @@ export default function StatisticsPanel() {
                       <div className="text-orange-400 font-medium">Active Events</div>
                       <div className="text-white/60 text-sm mt-1">Last 7 days</div>
                     </div>
-
                     <div className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 rounded-2xl p-6 border border-blue-500/20">
                       <div className="flex items-center justify-between mb-4">
                         <BarChart3 className="w-8 h-8 text-blue-400" />
@@ -291,7 +263,6 @@ export default function StatisticsPanel() {
                       <div className="text-blue-400 font-medium">Weekly Trend</div>
                       <div className="text-white/60 text-sm mt-1">7-day analysis</div>
                     </div>
-
                     <div className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 rounded-2xl p-6 border border-purple-500/20">
                       <div className="flex items-center justify-between mb-4">
                         <Activity className="w-8 h-8 text-purple-400" />
@@ -303,7 +274,6 @@ export default function StatisticsPanel() {
                     </div>
                   </div>
                 )}
-
                 {modalTab === 'trends' && (
                   <div className="space-y-6">
                     <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
@@ -350,7 +320,6 @@ export default function StatisticsPanel() {
                     </div>
                   </div>
                 )}
-
                 {modalTab === 'categories' && (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
@@ -383,7 +352,6 @@ export default function StatisticsPanel() {
                         </ResponsiveContainer>
                       </div>
                     </div>
-                    
                     <div className="space-y-4">
                       <h3 className="text-xl font-bold text-white">Category Breakdown</h3>
                       {pieData.map((item, index) => (

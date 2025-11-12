@@ -1,17 +1,12 @@
-"use client";
-
+﻿"use client";
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as THREE from 'three';
-
-// Educational Components
 import { InteractiveTooltip } from './InteractiveTooltip';
 import { PlanetInformationPanel } from './PlanetInformationPanel';
 import { OrbitalMechanicsOverlay } from './OrbitalMechanicsOverlay';
 import { SolarSystemMiniMap } from './SolarSystemMiniMap';
 import SearchAndFilterPanel from './SearchAndFilterPanel';
-
-// Types and Services
 import { 
   TooltipConfig, 
   TooltipContent, 
@@ -22,15 +17,9 @@ import {
 } from '../../../types/educational-content';
 import { SOLAR_SYSTEM_DATA } from '../../../types/astronomical-data';
 import { educationalContentManager } from '../../../services/EducationalContentManager';
-
-// Providers
 import { useLanguage } from '../../../providers/LanguageProvider';
 import { useAccessibility } from '../../../providers/AccessibilityProvider';
-
-// Store
 import { useSolarSystemStore } from '../../../stores/solarSystemStore';
-
-// UI Components
 import { Button } from '../../ui/button';
 import { 
   Info, 
@@ -43,56 +32,39 @@ import {
   Compass,
   X
 } from 'lucide-react';
-
 interface EducationalOverlaySystemProps {
-  // 3D Scene integration
   scene?: THREE.Scene;
   camera?: THREE.Camera;
   canvas?: HTMLCanvasElement;
-  
-  // System configuration
   enableTooltips?: boolean;
   enableInformationPanels?: boolean;
   enableOrbitalOverlay?: boolean;
   enableMiniMap?: boolean;
   enableSearch?: boolean;
-  
-  // Event callbacks
   onCameraMove?: (position: THREE.Vector3, target: THREE.Vector3) => void;
   onBodySelect?: (bodyId: string) => void;
   onEducationalAction?: (action: string, params?: Record<string, any>) => void;
-  
-  // Layout options
   className?: string;
 }
-
 interface SystemState {
-  // UI visibility
   showTooltip: boolean;
   showInformationPanel: boolean;
   showOrbitalOverlay: boolean;
   showMiniMap: boolean;
   showSearchPanel: boolean;
-  
-  // Current context
   selectedCelestialBody: string | null;
   hoveredElement: {
     type: 'celestial_body' | 'ui_element' | null;
     id: string | null;
     position?: { x: number; y: number; z: number };
   };
-  
-  // Content state
   currentTooltipContent: TooltipContent | null;
   searchResults: SearchableContent[];
   activeFilters: SearchFilter;
-  
-  // Educational context
   currentEducationalLevel: 'basic' | 'intermediate' | 'advanced' | 'expert';
   showEducationalHints: boolean;
   tourMode: boolean;
 }
-
 const DEFAULT_STATE: SystemState = {
   showTooltip: false,
   showInformationPanel: false,
@@ -115,7 +87,6 @@ const DEFAULT_STATE: SystemState = {
   showEducationalHints: true,
   tourMode: false
 };
-
 export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> = ({
   scene,
   camera,
@@ -130,18 +101,11 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
   onEducationalAction,
   className = ''
 }) => {
-  // State
   const [systemState, setSystemState] = useState<SystemState>(DEFAULT_STATE);
-  
-  // Providers
   const { t, tLocalized } = useLanguage();
   const { announce, setFocus, preferences } = useAccessibility();
-  
-  // Store
   const selectedBody = useSolarSystemStore(state => state.ui.selectedObject);
   const timeState = useSolarSystemStore(state => state.timeState);
-  
-  // Tooltip configuration
   const tooltipConfig: TooltipConfig = useMemo(() => ({
     id: 'educational-tooltip',
     trigger: 'hover',
@@ -160,11 +124,8 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
       duration: 250
     }
   }), []);
-
-  // Information panel configuration
   const informationPanelConfig: InformationPanel = useMemo(() => {
     if (!systemState.selectedCelestialBody) return null as any;
-    
     return {
       id: `${systemState.selectedCelestialBody}-info-panel`,
       celestialBodyId: systemState.selectedCelestialBody,
@@ -201,8 +162,6 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
       syncWithTimeController: true
     };
   }, [systemState.selectedCelestialBody]);
-
-  // Orbital mechanics overlay configuration
   const orbitalOverlayConfig = useMemo(() => ({
     showOrbitalPath: true,
     showVelocityVectors: systemState.currentEducationalLevel !== 'basic',
@@ -214,8 +173,6 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
     showEducationalInfo: systemState.showEducationalHints,
     educationalLevel: systemState.currentEducationalLevel
   }), [systemState.currentEducationalLevel, systemState.showEducationalHints]);
-
-  // Mini map configuration
   const miniMapConfig = useMemo(() => ({
     size: 'medium' as const,
     showOrbits: true,
@@ -226,8 +183,6 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
     autoCenter: false,
     followTarget: systemState.selectedCelestialBody !== null
   }), [systemState.currentEducationalLevel, systemState.selectedCelestialBody]);
-
-  // Handle celestial body selection
   const handleBodySelection = useCallback((bodyId: string) => {
     setSystemState(prev => ({
       ...prev,
@@ -235,27 +190,19 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
       showInformationPanel: true,
       showOrbitalOverlay: bodyId !== 'sun' // Don't show orbital overlay for sun
     }));
-
     onBodySelect?.(bodyId);
-    
-    // Announce selection for accessibility
     if (preferences.announceChanges) {
       const bodyName = SOLAR_SYSTEM_DATA[bodyId]?.name || bodyId;
       announce(t('action.focus_camera') + ': ' + bodyName, 'medium');
     }
   }, [onBodySelect, announce, preferences.announceChanges, t]);
-
-  // Handle hover events
   const handleElementHover = useCallback((elementId: string | null, elementType: 'celestial_body' | 'ui_element' | null, position?: { x: number; y: number; z: number }) => {
     if (!enableTooltips) return;
-
     setSystemState(prev => ({
       ...prev,
       hoveredElement: { type: elementType, id: elementId, position },
       showTooltip: elementId !== null
     }));
-
-    // Generate tooltip content based on hovered element
     if (elementId && elementType === 'celestial_body') {
       const bodyData = SOLAR_SYSTEM_DATA[elementId];
       if (bodyData) {
@@ -298,7 +245,6 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
             }
           ]
         };
-
         setSystemState(prev => ({
           ...prev,
           currentTooltipContent: tooltipContent
@@ -306,8 +252,6 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
       }
     }
   }, [enableTooltips]);
-
-  // Handle educational actions
   const handleEducationalAction = useCallback((action: string, params?: Record<string, any>) => {
     switch (action) {
       case 'open_info_panel':
@@ -315,18 +259,15 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
           handleBodySelection(params.bodyId);
         }
         break;
-      
       case 'focus_camera':
         if (params?.bodyId) {
           handleBodySelection(params.bodyId);
           onEducationalAction?.(action, params);
         }
         break;
-      
       case 'show_orbital_overlay':
         setSystemState(prev => ({ ...prev, showOrbitalOverlay: true }));
         break;
-      
       case 'toggle_educational_level':
         const levels: typeof systemState.currentEducationalLevel[] = ['basic', 'intermediate', 'advanced', 'expert'];
         const currentIndex = levels.indexOf(systemState.currentEducationalLevel);
@@ -334,7 +275,6 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
         setSystemState(prev => ({ ...prev, currentEducationalLevel: nextLevel }));
         announce(`${t('education.level')}: ${t(`education.${nextLevel}` as any)}`, 'medium');
         break;
-
       case 'toggle_search_panel':
         setSystemState(prev => ({ 
           ...prev, 
@@ -344,36 +284,26 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
           setTimeout(() => setFocus('search-input'), 100);
         }
         break;
-
       default:
         onEducationalAction?.(action, params);
     }
   }, [handleBodySelection, onEducationalAction, systemState.currentEducationalLevel, systemState.showSearchPanel, announce, t, setFocus]);
-
-  // Handle search results
   const handleSearchResultSelect = useCallback((result: SearchableContent) => {
     if (result.type === 'celestial_body') {
       handleBodySelection(result.id);
     }
-    
     setSystemState(prev => ({ 
       ...prev, 
       showSearchPanel: false 
     }));
   }, [handleBodySelection]);
-
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!preferences.keyboardNavigation) return;
-
-      // Alt + S: Toggle search
       if (event.altKey && event.key === 's') {
         event.preventDefault();
         handleEducationalAction('toggle_search_panel');
       }
-      
-      // Alt + I: Toggle info panel
       if (event.altKey && event.key === 'i') {
         event.preventDefault();
         if (systemState.selectedCelestialBody) {
@@ -383,8 +313,6 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
           }));
         }
       }
-      
-      // Alt + M: Toggle mini map
       if (event.altKey && event.key === 'm') {
         event.preventDefault();
         setSystemState(prev => ({ 
@@ -392,8 +320,6 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
           showMiniMap: !prev.showMiniMap 
         }));
       }
-      
-      // Alt + O: Toggle orbital overlay
       if (event.altKey && event.key === 'o') {
         event.preventDefault();
         if (systemState.selectedCelestialBody && systemState.selectedCelestialBody !== 'sun') {
@@ -403,28 +329,22 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
           }));
         }
       }
-      
-      // Alt + L: Toggle educational level
       if (event.altKey && event.key === 'l') {
         event.preventDefault();
         handleEducationalAction('toggle_educational_level');
       }
     };
-
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [preferences.keyboardNavigation, systemState, handleEducationalAction]);
-
-  // Sync with solar system store
   useEffect(() => {
     if (selectedBody && selectedBody !== systemState.selectedCelestialBody) {
       handleBodySelection(selectedBody);
     }
   }, [selectedBody, systemState.selectedCelestialBody, handleBodySelection]);
-
   return (
     <div className={`educational-overlay-system relative w-full h-full ${className}`}>
-      {/* Interactive Tooltip */}
+      {}
       <AnimatePresence>
         {enableTooltips && systemState.showTooltip && systemState.currentTooltipContent && (
           <InteractiveTooltip
@@ -439,8 +359,7 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
           />
         )}
       </AnimatePresence>
-
-      {/* Planet Information Panel */}
+      {}
       <AnimatePresence>
         {enableInformationPanels && systemState.showInformationPanel && systemState.selectedCelestialBody && informationPanelConfig && (
           <PlanetInformationPanel
@@ -456,15 +375,13 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
           />
         )}
       </AnimatePresence>
-
-      {/* Orbital Mechanics Overlay */}
+      {}
       <AnimatePresence>
         {enableOrbitalOverlay && systemState.showOrbitalOverlay && systemState.selectedCelestialBody && systemState.selectedCelestialBody !== 'sun' && (
           <OrbitalMechanicsOverlay
             celestialBodyId={systemState.selectedCelestialBody}
             config={orbitalOverlayConfig}
             onConfigChange={(newConfig) => {
-              // Handle config changes if needed
             }}
             scene={scene}
             camera={camera}
@@ -475,8 +392,7 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
           />
         )}
       </AnimatePresence>
-
-      {/* Solar System Mini Map */}
+      {}
       <AnimatePresence>
         {enableMiniMap && systemState.showMiniMap && (
           <SolarSystemMiniMap
@@ -484,7 +400,6 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
             position="top-right"
             config={miniMapConfig}
             onConfigChange={(newConfig) => {
-              // Handle config changes if needed
             }}
             mainCamera={camera}
             onBodySelect={handleBodySelection}
@@ -495,8 +410,7 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
           />
         )}
       </AnimatePresence>
-
-      {/* Search and Filter Panel */}
+      {}
       <AnimatePresence>
         {enableSearch && systemState.showSearchPanel && (
           <SearchAndFilterPanel
@@ -509,8 +423,7 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
           />
         )}
       </AnimatePresence>
-
-      {/* Control Panel */}
+      {}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -528,7 +441,6 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
               <Search className="w-4 h-4 text-cyan-400" />
             </Button>
           )}
-          
           {enableMiniMap && (
             <Button
               variant="ghost"
@@ -540,7 +452,6 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
               <Map className="w-4 h-4 text-green-400" />
             </Button>
           )}
-          
           <Button
             variant="ghost"
             size="sm"
@@ -550,16 +461,13 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
           >
             <BookOpen className="w-4 h-4 text-purple-400" />
           </Button>
-          
           <div className="w-px h-4 bg-gray-600 mx-1" />
-          
           <span className="text-xs text-gray-400">
             {t(`education.${systemState.currentEducationalLevel}` as any)}
           </span>
         </div>
       </motion.div>
-
-      {/* Educational hints overlay */}
+      {}
       <AnimatePresence>
         {systemState.showEducationalHints && (
           <motion.div
@@ -596,5 +504,4 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
     </div>
   );
 };
-
 export default EducationalOverlaySystem;

@@ -1,5 +1,4 @@
-"use client"
-
+﻿"use client"
 import React, { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -13,7 +12,6 @@ import {
   Radar,
   ResponsiveContainer,
 } from 'recharts'
-
 type CompareItem = {
   neoId: string
   name?: string
@@ -29,17 +27,14 @@ type CompareItem = {
     relative_velocity_kms?: number
   }
 }
-
 type Props = {
   ids: string[]
   open: boolean
   onClose: () => void
 }
-
 export default function CompareDrawer({ ids, open, onClose }: Props) {
   const [items, setItems] = useState<CompareItem[]>([])
   const [loading, setLoading] = useState(false)
-
   useEffect(() => {
     const run = async () => {
       if (!open || ids.length === 0) return
@@ -49,7 +44,6 @@ export default function CompareDrawer({ ids, open, onClose }: Props) {
         setItems(res.items || [])
       } catch (e) {
         setItems([])
-        // eslint-disable-next-line no-console
         console.error('compare failed', e)
       } finally {
         setLoading(false)
@@ -57,9 +51,7 @@ export default function CompareDrawer({ ids, open, onClose }: Props) {
     }
     run()
   }, [open, ids])
-
   const radarData = useMemo(() => {
-    // dimensions: diameter, probability, velocity, proximity
     return items.map((it) => ({
       subject: it.name || it.neoId,
       diameter: (it.diameter_max_km ?? it.diameter_min_km ?? 0) * 100, // scale
@@ -68,9 +60,7 @@ export default function CompareDrawer({ ids, open, onClose }: Props) {
       proximity: Math.max(0, 100 - (it.next_approach?.distance_ld ?? 100)),
     }))
   }, [items])
-
   if (!open) return null
-
   return (
     <div className="fixed inset-0 z-50">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
@@ -79,15 +69,12 @@ export default function CompareDrawer({ ids, open, onClose }: Props) {
           <h3 className="text-sm font-semibold text-cliff-white">NEO Karşılaştırma</h3>
           <Button size="sm" variant="ghost" onClick={onClose} className="text-xs">Kapat</Button>
         </div>
-
         {loading && (
           <div className="text-xs text-cliff-light-gray">Yükleniyor...</div>
         )}
-
         {!loading && items.length === 0 && (
           <div className="text-xs text-cliff-light-gray">Seçili NEO bulunamadı.</div>
         )}
-
         {!loading && items.length > 0 && (
           <div className="space-y-3">
             <Card className="bg-pure-black/40 border-cliff-light-gray/20 p-3">
@@ -104,7 +91,6 @@ export default function CompareDrawer({ ids, open, onClose }: Props) {
                 </ResponsiveContainer>
               </div>
             </Card>
-
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead className="text-cliff-light-gray/80">
@@ -139,5 +125,3 @@ export default function CompareDrawer({ ids, open, onClose }: Props) {
     </div>
   )
 }
-
-

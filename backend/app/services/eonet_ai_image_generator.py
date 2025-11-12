@@ -1,10 +1,4 @@
-"""
-🌍 EONET AI Image Generator Service
-EONET doğal olayları için otomatik AI görsel üretimi
-Yangın, deprem, volkan vs. olayları için bağlamsal görseller
-"""
-
-import asyncio
+﻿import asyncio
 import hashlib
 import json
 from typing import Dict, List, Optional, Any, Tuple
@@ -13,7 +7,6 @@ from dataclasses import dataclass
 from enum import Enum
 import structlog
 from pydantic import BaseModel, Field
-
 from app.services.multi_image_generator import (
     MultiImageGenerator,
     MultiImageRequest,
@@ -27,23 +20,19 @@ from app.models.earth_event import (
     EARTH_EVENT_CATEGORIES,
     categorize_earth_event
 )
-
 logger = structlog.get_logger(__name__)
-
 class EventImagePurpose(str, Enum):
     """EONET event image purposes"""
     DISASTER_OVERVIEW = "disaster_overview"  # Genel felaket görünümü
     ENVIRONMENTAL_IMPACT = "environmental_impact"  # Çevresel etki
     SCIENTIFIC_ANALYSIS = "scientific_analysis"  # Bilimsel analiz
     NEWS_COVERAGE = "news_coverage"  # Haber kapsamı
-
 class EventSeverityLevel(str, Enum):
     """Event severity levels for image styling"""
     LOW = "low"
     MODERATE = "moderate" 
     HIGH = "high"
     EXTREME = "extreme"
-
 @dataclass
 class EONETEventContext:
     """EONET event context for AI image generation"""
@@ -58,7 +47,6 @@ class EONETEventContext:
     environmental_keywords: List[str]
     geographical_context: List[str]
     urgency_level: str
-
 class EONETImageRequest(BaseModel):
     """EONET event image generation request"""
     event_context: Dict[str, Any] = Field(..., description="EONET event context")
@@ -71,7 +59,6 @@ class EONETImageRequest(BaseModel):
     quality_level: str = Field(default="high", description="Image quality level")
     include_location_context: bool = Field(default=True, description="Include geographical context")
     emergency_style: bool = Field(default=False, description="Use emergency/urgent styling")
-
 class EONETImageResult(BaseModel):
     """EONET generated image result"""
     event_id: str
@@ -84,7 +71,6 @@ class EONETImageResult(BaseModel):
     severity_indicator: str
     generation_time_ms: int
     metadata: Dict[str, Any] = Field(default_factory=dict)
-
 class EONETImageResponse(BaseModel):
     """EONET image generation response"""
     success: bool
@@ -98,17 +84,13 @@ class EONETImageResponse(BaseModel):
     event_context: Dict[str, Any] = Field(default_factory=dict)
     suggestions: List[str] = Field(default_factory=list)
     error_message: Optional[str] = None
-
 class EONETAIImageGenerator:
     """
     EONET AI Image Generator
     Doğal olaylar için bağlamsal AI görsel üretimi
     """
-    
     def __init__(self):
         self.multi_image_generator: Optional[MultiImageGenerator] = None
-        
-        # EONET event kategorileri için stil ayarları
         self.category_styles = {
             "Wildfires": {
                 "style": PromptStyle.PHOTOREALISTIC,
@@ -167,35 +149,24 @@ class EONETAIImageGenerator:
                 "urgency_level": "moderate"
             }
         }
-        
-        # Cache for generated images
         self.image_cache: Dict[str, EONETImageResponse] = {}
         self.cache_ttl_hours = 2
-        
         logger.info("EONET AI Image Generator initialized")
-    
     async def initialize(self):
         """Initialize multi-image generator service"""
         self.multi_image_generator = await get_multi_image_service()
         logger.info("EONET AI Image Generator services initialized")
-    
     def _extract_event_context(self, event_data: Dict[str, Any]) -> EONETEventContext:
         """Extract context from EONET event data"""
         try:
-            # Temel bilgiler
             event_id = event_data.get("id", "unknown")
             title = event_data.get("title", "Unknown Event")
-            
-            # Kategori bilgisi
             category = "Unknown"
             if event_data.get("categories") and len(event_data["categories"]) > 0:
                 category = event_data["categories"][0].get("title", "Unknown")
-            
-            # Konum bilgisi
             location = None
             coordinates = None
             geographical_context = []
-            
             if event_data.get("geometry") and len(event_data["geometry"]) > 0:
                 geom = event_data["geometry"][-1]  # En son konum
                 if geom.get("coordinates"):
@@ -203,11 +174,7 @@ class EONETAIImageGenerator:
                     if isinstance(coords, list) and len(coords) >= 2:
                         coordinates = {"lat": coords[1], "lon": coords[0]}
                         location = f"{coords[1]:.2f}, {coords[0]:.2f}"
-                        
-                        # Coğrafi bağlam çıkar
                         geographical_context = self._get_geographical_context(coords[1], coords[0])
-            
-            # Önem derecesi belirle
             severity = EventSeverityLevel.LOW
             if category in ["Volcanoes", "Severe Storms"]:
                 severity = EventSeverityLevel.EXTREME
@@ -215,20 +182,13 @@ class EONETAIImageGenerator:
                 severity = EventSeverityLevel.HIGH
             elif category in ["Drought", "Dust and Haze"]:
                 severity = EventSeverityLevel.MODERATE
-            
-            # Çevresel anahtar kelimeler
             environmental_keywords = []
             if category in self.category_styles:
                 environmental_keywords = self.category_styles[category]["environmental_context"]
-            
-            # Tarih
             date = ""
             if event_data.get("geometry") and len(event_data["geometry"]) > 0:
                 date = event_data["geometry"][-1].get("date", "")[:10]
-            
-            # Aciliyet seviyesi
             urgency_level = self.category_styles.get(category, {}).get("urgency_level", "moderate")
-            
             return EONETEventContext(
                 event_id=event_id,
                 title=title,
@@ -242,10 +202,8 @@ class EONETAIImageGenerator:
                 geographical_context=geographical_context,
                 urgency_level=urgency_level
             )
-            
         except Exception as e:
             logger.error(f"Event context extraction error: {str(e)}")
-            # Fallback context
             return EONETEventContext(
                 event_id="unknown",
                 title="Unknown Event",
@@ -259,12 +217,9 @@ class EONETAIImageGenerator:
                 geographical_context=[],
                 urgency_level="low"
             )
-    
     def _get_geographical_context(self, lat: float, lon: float) -> List[str]:
         """Get geographical context from coordinates"""
         context = []
-        
-        # Basit coğrafi bölge tespiti
         if lat >= 35 and lat <= 42 and lon >= 26 and lon <= 45:
             context.extend(["Turkey", "Mediterranean region", "Anatolian landscape"])
         elif lat >= 40 and lat <= 70 and lon >= -10 and lon <= 40:
@@ -279,29 +234,22 @@ class EONETAIImageGenerator:
             context.extend(["Asia", "Asian landscape"])
         elif lat >= -50 and lat <= -10 and lon >= 110 and lon <= 180:
             context.extend(["Oceania", "Pacific region"])
-        
-        # Iklim bölgesi
         if abs(lat) <= 23.5:
             context.append("tropical region")
         elif abs(lat) >= 66.5:
             context.append("polar region")
         else:
             context.append("temperate region")
-        
         return context
-    
     def _create_purpose_specific_prompt(self, context: EONETEventContext, purpose: EventImagePurpose) -> str:
         """Create purpose-specific prompt for EONET event"""
         category_style = self.category_styles.get(context.category, {})
         base_keywords = category_style.get("keywords", [])
         env_context = category_style.get("environmental_context", [])
         color_palette = category_style.get("color_palette", "natural colors")
-        
-        # Coğrafi bağlam ekle
         location_context = ""
         if context.geographical_context:
             location_context = f", {', '.join(context.geographical_context[:2])}"
-        
         purpose_templates = {
             EventImagePurpose.DISASTER_OVERVIEW: f"""
             Wide aerial overview of {context.category.lower()} disaster in {context.location or 'affected area'}{location_context}.
@@ -310,7 +258,6 @@ class EONETAIImageGenerator:
             environmental impact visualization, {', '.join(env_context[:2])}, 
             professional disaster response photography, emergency management perspective.
             """,
-            
             EventImagePurpose.ENVIRONMENTAL_IMPACT: f"""
             Environmental impact of {context.category.lower()} showing {', '.join(env_context[:3])}.
             {context.title} environmental consequences{location_context}.
@@ -318,7 +265,6 @@ class EONETAIImageGenerator:
             environmental monitoring, {color_palette}, research-quality imagery,
             environmental science perspective, ecosystem impact assessment.
             """,
-            
             EventImagePurpose.SCIENTIFIC_ANALYSIS: f"""
             Scientific analysis visualization of {context.category.lower()} phenomenon.
             Technical documentation of {context.title}{location_context}.
@@ -326,7 +272,6 @@ class EONETAIImageGenerator:
             research documentation, analytical perspective, {color_palette},
             scientific equipment, monitoring systems, geological/meteorological analysis.
             """,
-            
             EventImagePurpose.NEWS_COVERAGE: f"""
             Professional news coverage of {context.category.lower()} event.
             Journalistic documentation of {context.title}{location_context}.
@@ -335,32 +280,20 @@ class EONETAIImageGenerator:
             emergency response coverage, human interest perspective.
             """
         }
-        
         prompt = purpose_templates.get(purpose, f"Professional documentation of {context.title}")
-        
-        # Aciliyet seviyesine göre stil ekle
         if context.urgency_level == "extreme":
             prompt += ", urgent emergency situation, critical disaster response"
         elif context.urgency_level == "high":
             prompt += ", serious emergency conditions, rapid response needed"
-        
         return prompt.strip()
-    
     async def generate_event_images(self, request: EONETImageRequest) -> EONETImageResponse:
         """Generate AI images for EONET event"""
         start_time = datetime.now()
-        
         try:
-            # Initialize services if needed
             if not self.multi_image_generator:
                 await self.initialize()
-            
-            # Extract event context
             event_context = self._extract_event_context(request.event_context)
-            
             logger.info(f"Generating images for EONET event: {event_context.title} ({event_context.category})")
-            
-            # Cache kontrolü
             cache_key = self._get_cache_key(event_context.event_id)
             if cache_key in self.image_cache:
                 cached_response = self.image_cache[cache_key]
@@ -368,16 +301,11 @@ class EONETAIImageGenerator:
                     if datetime.now() - cached_response._cached_at < timedelta(hours=self.cache_ttl_hours):
                         logger.info("EONET image cache hit")
                         return cached_response
-            
-            # Her purpose için prompt oluştur
             prompts = []
             for purpose in request.image_purposes:
                 prompt = self._create_purpose_specific_prompt(event_context, purpose)
                 prompts.append((prompt, purpose))
-            
-            # Multi-image generation request oluştur
             category_style = self.category_styles.get(event_context.category, {})
-            
             multi_request = MultiImageRequest(
                 content=f"{event_context.title}: {event_context.description or 'Natural disaster event'}",
                 content_type=ContentType.DOCUMENTARY,
@@ -390,11 +318,7 @@ class EONETAIImageGenerator:
                 professional_grade=True,
                 context_aware=True
             )
-            
-            # Generate images
             multi_response = await self.multi_image_generator.generate_multiple_images(multi_request)
-            
-            # Process results
             eonet_images = []
             if multi_response.generated_images:
                 for i, (generated_img, (prompt, purpose)) in enumerate(zip(multi_response.generated_images, prompts)):
@@ -416,10 +340,7 @@ class EONETAIImageGenerator:
                         }
                     )
                     eonet_images.append(eonet_image)
-            
-            # Create response
             total_time = int((datetime.now() - start_time).total_seconds() * 1000)
-            
             response = EONETImageResponse(
                 success=len(eonet_images) > 0,
                 event_id=event_context.event_id,
@@ -432,15 +353,10 @@ class EONETAIImageGenerator:
                 event_context=event_context.__dict__,
                 suggestions=self._generate_suggestions(event_context, len(eonet_images))
             )
-            
-            # Cache response
             response._cached_at = datetime.now()
             self.image_cache[cache_key] = response
-            
             logger.info(f"EONET image generation completed: {len(eonet_images)}/{len(request.image_purposes)} images for {event_context.title}")
-            
             return response
-            
         except Exception as e:
             logger.error(f"EONET image generation error: {str(e)}")
             return EONETImageResponse(
@@ -450,39 +366,30 @@ class EONETAIImageGenerator:
                 error_message=str(e),
                 total_processing_time_ms=int((datetime.now() - start_time).total_seconds() * 1000)
             )
-    
     def _get_cache_key(self, event_id: str) -> str:
         """Generate cache key for event"""
         return f"eonet_images_{event_id}"
-    
     def _generate_suggestions(self, context: EONETEventContext, successful_images: int) -> List[str]:
         """Generate suggestions for EONET event images"""
         suggestions = []
-        
         if successful_images == 0:
             suggestions.append("Image generation failed - try adjusting event description")
         elif successful_images < 4:
             suggestions.append("Some images failed - consider regenerating for complete coverage")
-        
         if context.urgency_level == "extreme":
             suggestions.append("High urgency event - consider immediate distribution of images")
-        
         if context.category in ["Wildfires", "Volcanoes"]:
             suggestions.append("Consider generating time-lapse series for ongoing monitoring")
-        
         suggestions.extend([
             "Images optimized for emergency response and public information",
             "Suitable for news media and scientific documentation",
             "Professional quality for official disaster reporting"
         ])
-        
         return suggestions[:4]
-    
     async def get_event_images_by_id(self, event_id: str) -> Optional[EONETImageResponse]:
         """Get cached images for specific event ID"""
         cache_key = self._get_cache_key(event_id)
         return self.image_cache.get(cache_key)
-    
     def get_service_stats(self) -> Dict[str, Any]:
         """Get service statistics"""
         return {
@@ -492,14 +399,10 @@ class EONETAIImageGenerator:
             "available_purposes": [purpose.value for purpose in EventImagePurpose],
             "severity_levels": [level.value for level in EventSeverityLevel]
         }
-
-# Global service instance
 eonet_ai_generator = EONETAIImageGenerator()
-
 async def get_eonet_ai_generator() -> EONETAIImageGenerator:
     """Dependency injection for EONET AI image generator"""
     return eonet_ai_generator
-
 async def cleanup_eonet_ai_generator():
     """Cleanup service"""
     eonet_ai_generator.image_cache.clear()

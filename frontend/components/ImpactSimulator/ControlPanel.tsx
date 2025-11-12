@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState } from 'react'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
@@ -10,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AsteroidParams, ImpactLocation } from './types'
 import { Rocket, MapPin, Settings, Map } from 'lucide-react'
 import { LocationPicker } from './LocationPicker'
-
 interface ControlPanelProps {
   asteroid: AsteroidParams
   onAsteroidChange: (asteroid: AsteroidParams) => void
@@ -19,7 +17,6 @@ interface ControlPanelProps {
   onSimulate: () => void
   isSimulating: boolean
 }
-
 const PRESET_ASTEROIDS = [
   { name: '2020 CD3', diameter: 6, velocity: 11 },
   { name: 'Apophis', diameter: 340, velocity: 12.6 },
@@ -27,7 +24,6 @@ const PRESET_ASTEROIDS = [
   { name: 'Tunguska (1908)', diameter: 60, velocity: 15 },
   { name: 'Chicxulub (Dinozor)', diameter: 10000, velocity: 20 },
 ]
-
 const PRESET_LOCATIONS = [
   { name: 'İstanbul', lat: 41.0082, lng: 28.9784, population: 15000000, isOcean: false },
   { name: 'Ankara', lat: 39.9334, lng: 32.8597, population: 5700000, isOcean: false },
@@ -35,7 +31,6 @@ const PRESET_LOCATIONS = [
   { name: 'Akdeniz', lat: 36.0, lng: 30.0, population: 0, isOcean: true, depth: 1500 },
   { name: 'Karadeniz', lat: 42.0, lng: 35.0, population: 0, isOcean: true, depth: 2200 },
 ]
-
 export function ControlPanel({
   asteroid,
   onAsteroidChange,
@@ -45,7 +40,6 @@ export function ControlPanel({
   isSimulating
 }: ControlPanelProps) {
   const [showLocationPicker, setShowLocationPicker] = useState(false)
-  
   return (
     <>
       <LocationPicker
@@ -62,7 +56,7 @@ export function ControlPanel({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Preset Asteroid Seçimi */}
+        {}
         <div className="space-y-2">
           <Label className="text-cliff-white">Hazır Asteroid Seç</Label>
           <Select
@@ -87,8 +81,7 @@ export function ControlPanel({
             </SelectContent>
           </Select>
         </div>
-
-        {/* Asteroid Parametreleri */}
+        {}
         <div className="space-y-4">
           <div className="space-y-2">
             <Label className="text-cliff-white flex justify-between">
@@ -104,7 +97,6 @@ export function ControlPanel({
               className="cursor-pointer"
             />
           </div>
-
           <div className="space-y-2">
             <Label className="text-cliff-white flex justify-between">
               <span>Hız</span>
@@ -119,7 +111,6 @@ export function ControlPanel({
               className="cursor-pointer"
             />
           </div>
-
           <div className="space-y-2">
             <Label className="text-cliff-white flex justify-between">
               <span>Çarpma Açısı</span>
@@ -136,8 +127,7 @@ export function ControlPanel({
             <p className="text-xs text-cliff-light-gray">0° = yatay, 90° = dikey</p>
           </div>
         </div>
-
-        {/* Hedef Konum */}
+        {}
         <div className="space-y-2">
           <Label className="text-cliff-white">Hedef Konum</Label>
           <div className="flex gap-2">
@@ -176,8 +166,7 @@ export function ControlPanel({
             </Button>
           </div>
         </div>
-
-        {/* Konum Bilgileri */}
+        {}
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="bg-pure-black/50 p-2 rounded border border-cliff-white/10">
             <p className="text-cliff-light-gray">Enlem</p>
@@ -188,8 +177,7 @@ export function ControlPanel({
             <p className="text-cliff-white font-mono">{location.lng.toFixed(4)}°</p>
           </div>
         </div>
-
-        {/* Simülasyon Butonu */}
+        {}
         <Button
           onClick={onSimulate}
           disabled={isSimulating}
@@ -198,8 +186,7 @@ export function ControlPanel({
           <Rocket className="mr-2 h-5 w-5" />
           {isSimulating ? 'Simülasyon Çalışıyor...' : 'Simülasyonu Başlat'}
         </Button>
-
-        {/* Uyarı */}
+        {}
         <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
           <p className="text-xs text-yellow-400">
             ⚠️ Bu bir eğitim simülasyonudur. Gerçek etki birçok faktöre bağlıdır.
@@ -210,4 +197,3 @@ export function ControlPanel({
     </>
   )
 }
-

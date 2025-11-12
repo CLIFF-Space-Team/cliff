@@ -1,12 +1,9 @@
-'use client'
-
+﻿'use client'
 import React, { useMemo, useRef, useState, useEffect, Suspense } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls, Environment } from '@react-three/drei'
 import * as THREE from 'three'
 import { NASATextureAssetManager } from './assets/NASATextureAssets'
-
-// Phase 2 Enhanced Components
 import { EnhancedSun } from './stars/EnhancedSun'
 import { EnhancedEarth } from './planets/EnhancedEarth'
 import { EnhancedMars } from './planets/EnhancedMars'
@@ -15,14 +12,11 @@ import { EnhancedSaturn } from './planets/EnhancedSaturn'
 import { Moon } from './planets/Moon'
 import { CosmicDust } from './particles/CosmicDust'
 import { EnhancedStarField } from './stars/EnhancedStarField'
-
-// Phase 3 Performance Components
 import FPSMonitor from './performance/FPSMonitor'
 import { PerformanceManager, createPerformanceManager } from './performance/PerformanceManager'
 import PostProcessingManager from './rendering/PostProcessingManager'
 import { useDashboardStore } from '@/stores/useDashboardStore'
 import { ProceduralAsteroidSystem } from './asteroids/ProceduralAsteroidSystem'
-
 interface NASARealisticSolarSystemProps {
   quality?: 'low' | 'medium' | 'high' | 'ultra'
   showOrbits?: boolean
@@ -30,24 +24,18 @@ interface NASARealisticSolarSystemProps {
   enableRotation?: boolean
   displayMode?: 'full' | 'earth_focus'
 }
-
-// Performance-aware Scene Manager
 function ScenePerformanceManager({ quality, onQualityChange }: any) {
   const { gl, scene, camera } = useThree()
   const perfManagerRef = useRef<PerformanceManager | null>(null)
   const postProcessingRef = useRef<PostProcessingManager | null>(null)
   const [metrics, setMetrics] = useState<any>(null)
-
   useEffect(() => {
-    // Initialize Performance Manager
     perfManagerRef.current = createPerformanceManager(gl, scene, camera, {
       targetFPS: 60,
       enableAdaptiveQuality: true,
       showDebugInfo: false,
       logPerformanceWarnings: true
     })
-
-    // Initialize Modern Post-Processing Manager
     postProcessingRef.current = new PostProcessingManager(scene, camera, gl, {
       enableHDR: quality !== 'low',
       enableBloom: quality !== 'low',
@@ -56,39 +44,28 @@ function ScenePerformanceManager({ quality, onQualityChange }: any) {
       bloomStrength: quality === 'ultra' ? 0.3 : quality === 'high' ? 0.2 : 0.15,
       renderScale: quality === 'low' ? 0.75 : 1.0
     })
-
-    // Listen to quality changes
     perfManagerRef.current.on('quality_changed', (data: any) => {
       console.log('🎯 Quality auto-adjusted:', data)
       onQualityChange?.(data.to)
     })
-
-    // Listen to performance metrics
     const metricsInterval = setInterval(() => {
       if (perfManagerRef.current) {
         setMetrics(perfManagerRef.current.getMetrics())
       }
     }, 500)
-
     return () => {
       clearInterval(metricsInterval)
       perfManagerRef.current?.dispose()
       postProcessingRef.current?.dispose()
     }
   }, [gl, scene, camera, quality])
-
   useFrame((state, delta) => {
     if (perfManagerRef.current) {
       perfManagerRef.current.update(delta)
     }
   })
-
   return null
 }
-
-// Note: SimpleAsteroidBelt removed - using ProceduralAsteroidSystem instead for better performance and quality
-
-// Orbital Path Ring
 function OrbitalPath({ radius, color = "#4A90E2", opacity = 0.1 }: any) {
   return (
     <mesh rotation={[Math.PI / 2, 0, 0]}>
@@ -102,8 +79,6 @@ function OrbitalPath({ radius, color = "#4A90E2", opacity = 0.1 }: any) {
     </mesh>
   )
 }
-
-// Main Scene Component with Phase 3 Enhancements
 function SolarSystemScene({ 
   quality = 'high',
   showOrbits = true,
@@ -116,17 +91,14 @@ function SolarSystemScene({
   const sunPosition = useMemo(() => new THREE.Vector3(-35, 0, 0), [])
   const earthPosition = useMemo(() => new THREE.Vector3(0, 0, 0), [])
   const [cameraPos, setCameraPos] = useState(new THREE.Vector3(0, 20, 35))
-
   useFrame(() => {
     setCameraPos(camera.position.clone())
   })
-  
   return (
     <>
-      {/* Phase 3: Enhanced Lighting with Shadows */}
+      {}
       <ambientLight intensity={0.15} />
-      
-      {/* Main Directional Light from Sun with Shadow Mapping */}
+      {}
       <directionalLight
         position={[-35, 10, 0]}
         intensity={2.5}
@@ -141,17 +113,14 @@ function SolarSystemScene({
         shadow-camera-bottom={-50}
         shadow-bias={-0.0001}
       />
-
-      {/* Fill lights for better illumination */}
+      {}
       <pointLight position={[20, 20, 20]} intensity={0.3} />
       <pointLight position={[-20, -20, -20]} intensity={0.2} />
-
-      {/* Phase 3: Environment Map for Reflections */}
+      {}
       {enableReflections && quality !== 'low' && (
         <Environment preset="sunset" background={false} />
       )}
-      
-      {/* Phase 2: Enhanced Sun with Corona & Flares */}
+      {}
       <EnhancedSun
         position={[-35, 0, 0]}
         scale={4.5}
@@ -162,8 +131,7 @@ function SolarSystemScene({
         coronaIntensity={1.0}
         lightIntensity={15}
       />
-      
-      {/* Phase 3: Enhanced Earth with Earth Events Integration */}
+      {}
       <group castShadow receiveShadow>
         <EnhancedEarth
           position={[0, 0, 0]}
@@ -178,7 +146,7 @@ function SolarSystemScene({
           nasaTexture="/textures/earth-night.jpg"
           showEarthEvents={true}
         />
-        {/* Moon orbiting Earth - Only in full mode */}
+        {}
         {displayMode === 'full' && (
           <Moon 
             earthPosition={earthPosition}
@@ -187,8 +155,7 @@ function SolarSystemScene({
           />
         )}
       </group>
-      
-      {/* Phase 3: Mars with Shadow Support - Only in full mode */}
+      {}
       {displayMode === 'full' && (quality === 'high' || quality === 'ultra') && (
         <group castShadow receiveShadow>
           <EnhancedMars
@@ -200,8 +167,7 @@ function SolarSystemScene({
           />
         </group>
       )}
-      
-      {/* Phase 3: Jupiter with Shadow Support - Only in full mode */}
+      {}
       {displayMode === 'full' && (quality === 'high' || quality === 'ultra') && (
         <group castShadow receiveShadow>
           <EnhancedJupiter
@@ -213,8 +179,7 @@ function SolarSystemScene({
           />
         </group>
       )}
-      
-      {/* Phase 3: Saturn with Shadow Support - Only in full mode */}
+      {}
       {displayMode === 'full' && (quality === 'high' || quality === 'ultra') && (
         <group castShadow receiveShadow>
           <EnhancedSaturn
@@ -227,8 +192,7 @@ function SolarSystemScene({
           />
         </group>
       )}
-      
-      {/* Enhanced Asteroids: Procedural system with PBR/instancing */}
+      {}
       <ProceduralAsteroidSystem
         count={quality === 'ultra' ? 100 : quality === 'high' ? 50 : quality === 'medium' ? 30 : 20}
         quality={quality}
@@ -238,8 +202,7 @@ function SolarSystemScene({
         enableOrbitalMechanics={false}
         maxAsteroids={100}
       />
-      
-      {/* Phase 2: Cosmic Dust - Only in full mode for better performance in earth_focus */}
+      {}
       {displayMode === 'full' && quality !== 'low' && (
         <CosmicDust
           count={quality === 'ultra' ? 2000 : quality === 'high' ? 1200 : 800}
@@ -247,19 +210,17 @@ function SolarSystemScene({
           radius={60}
         />
       )}
-      
-      {/* Phase 2: Enhanced Star Field */}
+      {}
       <EnhancedStarField
         count={quality === 'ultra' ? 8000 : quality === 'high' ? 5000 : quality === 'medium' ? 3000 : 2000}
         quality={quality}
         radius={120}
         enableTwinkling={quality !== 'low'}
       />
-      
-      {/* Orbital Paths */}
+      {}
       {showOrbits && (
         <>
-          {/* Only show other planet orbits in full mode */}
+          {}
           {displayMode === 'full' && (
             <>
               <OrbitalPath radius={Math.sqrt(8*8 + 5*5)} color="#E74C3C" opacity={0.08} />
@@ -267,7 +228,7 @@ function SolarSystemScene({
               <OrbitalPath radius={Math.sqrt(28*28 + 10*10)} color="#F1C40F" opacity={0.08} />
             </>
           )}
-          {/* Asteroid belt orbits - always shown */}
+          {}
           <OrbitalPath radius={20} color="#888888" opacity={0.05} />
           <OrbitalPath radius={25} color="#888888" opacity={0.05} />
         </>
@@ -275,8 +236,6 @@ function SolarSystemScene({
     </>
   )
 }
-
-// Main Component with Phase 3 Enhancements
 export function NASARealisticSolarSystem({
   quality = 'high',
   showOrbits = true,
@@ -288,15 +247,12 @@ export function NASARealisticSolarSystem({
   const shadowsEnabled = quality !== 'low'
   const reflectionsEnabled = quality !== 'low'
   const setQuality = useDashboardStore((s) => s.setQuality)
-
   const mapQualityNameToLevel = (name: string): 'low' | 'medium' | 'high' => {
     const n = (name || '').toLowerCase()
     if (n.includes('düş') || n.includes('dus')) return 'low'
     if (n.includes('orta')) return 'medium'
     return 'high'
   }
-
-  // Calculate camera position based on display mode
   const cameraConfig = useMemo(() => {
     if (displayMode === 'earth_focus') {
       return {
@@ -315,7 +271,6 @@ export function NASARealisticSolarSystem({
       maxDistance: 150
     }
   }, [displayMode])
-  
   return (
     <div className="h-full w-full relative bg-gradient-to-b from-space-black via-space-dark to-space-black">
       <Canvas
@@ -329,7 +284,7 @@ export function NASARealisticSolarSystem({
       }}
     >
       <Suspense fallback={null}>
-        {/* Solar System Scene */}
+        {}
         <ScenePerformanceManager 
           quality={quality}
           onQualityChange={(to: string) => {
@@ -347,8 +302,7 @@ export function NASARealisticSolarSystem({
           enableReflections={reflectionsEnabled}
           displayMode={displayMode}
         />
-          
-          {/* Controls */}
+          {}
           <OrbitControls
             enablePan={true}
             enableZoom={true}
@@ -360,8 +314,7 @@ export function NASARealisticSolarSystem({
           />
         </Suspense>
       </Canvas>
-      
-      {/* FPS Monitor with performance metrics */}
+      {}
       {showFPSMonitor && (
         <div className="absolute top-4 right-4 z-20">
           <FPSMonitor
@@ -374,5 +327,4 @@ export function NASARealisticSolarSystem({
     </div>
   )
 }
-
 export default NASARealisticSolarSystem

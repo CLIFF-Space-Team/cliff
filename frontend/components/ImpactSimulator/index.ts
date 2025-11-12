@@ -1,4 +1,4 @@
-export { ImpactSimulator } from './ImpactSimulator'
+﻿export { ImpactSimulator } from './ImpactSimulator'
 export { EnhancedAtmosphericEntry } from './EnhancedAtmosphericEntry'
 export { PremiumAsteroidModel } from './PremiumAsteroidModel'
 export { RealisticCraterFormation } from './RealisticCraterFormation'
@@ -11,4 +11,3 @@ export { AtmosphericPressureWave } from './AtmosphericPressureWave'
 export { LocationPicker } from './LocationPicker'
 export { MemeGenerator } from './MemeGenerator'
 export type { AsteroidParams, ImpactLocation, ImpactResults } from './types'
-

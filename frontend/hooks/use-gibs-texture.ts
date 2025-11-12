@@ -1,23 +1,18 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import * as THREE from 'three'
 import { gibsService } from '@/services/GIBSService'
-
 export function useGIBSEarthTexture(date: Date = new Date()) {
   const [texture, setTexture] = useState<THREE.Texture | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
-  
   useEffect(() => {
     let mounted = true
-    
     const loadTexture = async () => {
       try {
         setLoading(true)
         const imageURL = await gibsService.getEarthTexture(date)
-        
         const loader = new THREE.TextureLoader()
         loader.crossOrigin = 'anonymous'
-        
         loader.load(
           imageURL,
           (loadedTexture) => {
@@ -61,14 +56,10 @@ export function useGIBSEarthTexture(date: Date = new Date()) {
         }
       }
     }
-    
     loadTexture()
-    
     return () => {
       mounted = false
     }
   }, [date])
-  
   return { texture, loading, error }
 }
-

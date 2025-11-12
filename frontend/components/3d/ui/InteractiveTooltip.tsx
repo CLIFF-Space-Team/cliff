@@ -1,5 +1,4 @@
-"use client";
-
+﻿"use client";
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,39 +24,27 @@ import {
   Zap,
   Users
 } from 'lucide-react';
-
 interface InteractiveTooltipProps {
-  // Core properties
   isVisible: boolean;
   config: TooltipConfig;
   content: TooltipContent;
-  
-  // Positioning
   targetPosition?: { x: number; y: number; z: number }; // 3D world position
   screenPosition?: { x: number; y: number }; // 2D screen position
-  
-  // Callbacks
   onClose?: () => void;
   onAction?: (action: string, params?: Record<string, any>) => void;
   onInteractionChange?: (isInteracting: boolean) => void;
-  
-  // Advanced options
   parentElement?: HTMLElement;
   zIndex?: number;
   followMouse?: boolean;
-  
-  // 3D Integration
   camera?: THREE.Camera;
   canvas?: HTMLCanvasElement;
 }
-
 interface TooltipPosition {
   x: number;
   y: number;
   anchor: 'top' | 'bottom' | 'left' | 'right' | 'center';
   offset: { x: number; y: number };
 }
-
 export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
   isVisible,
   config,
@@ -73,64 +60,43 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
   camera,
   canvas
 }) => {
-  // State
   const [position, setPosition] = useState<TooltipPosition | null>(null);
   const [isInteracting, setIsInteracting] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set());
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
-  
-  // Refs
   const tooltipRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout>();
-  
-  // Store
   const preferences = useUserPreferences();
   const currentLanguage = 'tr';
-  
-  // Get localized content
   const getLocalizedText = useCallback((text: LocalizedContent): string => {
     return text[currentLanguage] || text['en'] || Object.values(text)[0] || '';
   }, [currentLanguage]);
-
-  // Calculate tooltip position
   const calculatePosition = useCallback((): TooltipPosition | null => {
     if (!canvas || !tooltipRef.current) return null;
-
     let screenPos = screenPosition;
-    
-    // Convert 3D position to screen coordinates if needed
     if (targetPosition && camera && !screenPosition) {
       const vector = new Vector3(targetPosition.x, targetPosition.y, targetPosition.z);
       vector.project(camera);
-      
       const canvasRect = canvas.getBoundingClientRect();
       screenPos = {
         x: (vector.x * 0.5 + 0.5) * canvasRect.width + canvasRect.left,
         y: (-vector.y * 0.5 + 0.5) * canvasRect.height + canvasRect.top
       };
     }
-
     if (!screenPos) return null;
-
     const tooltipRect = tooltipRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-    
-    // Determine best position to avoid viewport edges
     let anchor: TooltipPosition['anchor'] = 'top';
     let x = screenPos.x;
     let y = screenPos.y;
     const offset = { x: 0, y: -10 };
-
-    // Check space around target
     const spaceAbove = screenPos.y;
     const spaceBelow = viewportHeight - screenPos.y;
     const spaceLeft = screenPos.x;
     const spaceRight = viewportWidth - screenPos.x;
-    
-    // Determine best vertical position
     if (spaceAbove > tooltipRect.height + 20 && spaceAbove > spaceBelow) {
       anchor = 'bottom';
       y = screenPos.y - tooltipRect.height - 10;
@@ -152,37 +118,26 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
       offset.x = -10;
       offset.y = 0;
     } else {
-      // Center on screen if no good position
       anchor = 'center';
       x = (viewportWidth - tooltipRect.width) / 2;
       y = (viewportHeight - tooltipRect.height) / 2;
       offset.x = 0;
       offset.y = 0;
     }
-
-    // Clamp to viewport bounds
     x = Math.max(10, Math.min(x, viewportWidth - tooltipRect.width - 10));
     y = Math.max(10, Math.min(y, viewportHeight - tooltipRect.height - 10));
-
     return { x, y, anchor, offset };
   }, [targetPosition, screenPosition, camera, canvas]);
-
-  // Handle mouse movement for follow cursor mode
   useEffect(() => {
     if (!followMouse || !isVisible) return;
-
     const handleMouseMove = (event: MouseEvent) => {
       setMousePosition({ x: event.clientX, y: event.clientY });
     };
-
     document.addEventListener('mousemove', handleMouseMove);
     return () => document.removeEventListener('mousemove', handleMouseMove);
   }, [followMouse, isVisible]);
-
-  // Update position when dependencies change
   useEffect(() => {
     if (!isVisible) return;
-
     const updatePosition = () => {
       if (followMouse) {
         setPosition({
@@ -196,27 +151,18 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
         setPosition(newPos);
       }
     };
-
-    // Immediate update
     updatePosition();
-
-    // Update on resize or scroll
     const handleResize = () => requestAnimationFrame(updatePosition);
     window.addEventListener('resize', handleResize);
     window.addEventListener('scroll', handleResize, true);
-
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', handleResize, true);
     };
   }, [isVisible, followMouse, mousePosition, calculatePosition]);
-
-  // Handle interaction state changes
   useEffect(() => {
     onInteractionChange?.(isInteracting);
   }, [isInteracting, onInteractionChange]);
-
-  // Auto-hide timeout
   useEffect(() => {
     if (!isVisible || config.duration === 0 || isHovered || isInteracting) {
       if (timeoutRef.current) {
@@ -225,19 +171,15 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
       }
       return;
     }
-
     timeoutRef.current = setTimeout(() => {
       onClose?.();
     }, config.duration);
-
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
     };
   }, [isVisible, config.duration, isHovered, isInteracting, onClose]);
-
-  // Handle section expansion
   const toggleSection = useCallback((index: number) => {
     setExpandedSections(prev => {
       const newSet = new Set(prev);
@@ -249,21 +191,14 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
       return newSet;
     });
   }, []);
-
-  // Handle action execution
   const executeAction = useCallback((action: string, params?: Record<string, any>) => {
     onAction?.(action, params);
-    
-    // Close tooltip for certain actions unless configured otherwise
     if (['focus_camera', 'show_orbit', 'open_info'].includes(action)) {
       setTimeout(() => onClose?.(), 300);
     }
   }, [onAction, onClose]);
-
-  // Handle keyboard navigation
   useEffect(() => {
     if (!config.focusable || !isVisible) return;
-
     const handleKeyDown = (event: KeyboardEvent) => {
       switch (event.key) {
         case 'Escape':
@@ -277,17 +212,12 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
           break;
       }
     };
-
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [config.focusable, isVisible, content.actions, executeAction, onClose]);
-
-  // Format stat values
   const formatStatValue = useCallback((value: string | number, format?: string, unit?: string): string => {
     if (typeof value === 'string') return value;
-    
     let formattedValue: string;
-    
     switch (format) {
       case 'number':
         formattedValue = value.toLocaleString(currentLanguage);
@@ -321,11 +251,8 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
       default:
         formattedValue = value.toString();
     }
-    
     return unit && format !== 'temperature' ? `${formattedValue} ${unit}` : formattedValue;
   }, [currentLanguage]);
-
-  // Animation variants
   const tooltipVariants = {
     enter: {
       opacity: 1,
@@ -347,8 +274,6 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
       }
     }
   };
-
-  // Get action icon
   const getActionIcon = (action: string) => {
     switch (action) {
       case 'focus_camera': return Camera;
@@ -359,8 +284,6 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
       default: return ExternalLink;
     }
   };
-
-  // Render tooltip content
   const renderTooltipContent = () => (
     <div 
       ref={contentRef}
@@ -372,7 +295,7 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
       aria-label={getLocalizedText(config.ariaLabel)}
       tabIndex={config.focusable ? 0 : -1}
     >
-      {/* Header */}
+      {}
       {(content.title || content.subtitle) && (
         <div className="p-4 pb-2 border-b border-gray-700">
           {content.title && (
@@ -385,8 +308,7 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
               {getLocalizedText(content.subtitle)}
             </p>
           )}
-          
-          {/* Close button */}
+          {}
           <button
             onClick={onClose}
             className="absolute top-2 right-2 p-1 rounded hover:bg-gray-700 transition-colors"
@@ -396,8 +318,7 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
           </button>
         </div>
       )}
-
-      {/* Preview */}
+      {}
       {content.preview && (
         <div className="px-4 pt-2">
           {content.preview.type === 'image' && (
@@ -410,14 +331,12 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
           )}
         </div>
       )}
-
-      {/* Main content */}
+      {}
       <div className="p-4">
         <p className="text-gray-200 text-sm leading-relaxed mb-3">
           {getLocalizedText(content.description)}
         </p>
-
-        {/* Quick stats */}
+        {}
         {content.stats && content.stats.length > 0 && (
           <div className="grid grid-cols-2 gap-2 mb-3">
             {content.stats.map((stat, index) => (
@@ -432,13 +351,11 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
             ))}
           </div>
         )}
-
-        {/* Expandable sections */}
+        {}
         {content.sections && content.sections.length > 0 && (
           <div className="space-y-2 mb-3">
             {content.sections.map((section, index) => {
               const isExpanded = expandedSections.has(index) || section.defaultExpanded;
-              
               return (
                 <div key={index} className="border border-gray-700 rounded">
                   <button
@@ -459,7 +376,6 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
                       />
                     )}
                   </button>
-                  
                   <AnimatePresence>
                     {(isExpanded || !section.expandable) && (
                       <motion.div
@@ -480,13 +396,11 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
             })}
           </div>
         )}
-
-        {/* Actions */}
+        {}
         {content.actions && content.actions.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {content.actions.map((action, index) => {
               const IconComponent = getActionIcon(action.action);
-              
               return (
                 <Button
                   key={index}
@@ -505,8 +419,7 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
           </div>
         )}
       </div>
-
-      {/* Arrow indicator */}
+      {}
       {position && position.anchor !== 'center' && (
         <div
           className={`absolute w-2 h-2 bg-black/95 border-gray-700 rotate-45 ${
@@ -519,9 +432,7 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
       )}
     </div>
   );
-
   if (!isVisible || !position) return null;
-
   const tooltip = (
     <AnimatePresence mode="wait">
       <motion.div
@@ -544,10 +455,7 @@ export const InteractiveTooltip: React.FC<InteractiveTooltipProps> = ({
       </motion.div>
     </AnimatePresence>
   );
-
-  // Use portal to render outside component tree
   const targetElement = parentElement || document.body;
   return createPortal(tooltip, targetElement);
 };
-
 export default InteractiveTooltip;

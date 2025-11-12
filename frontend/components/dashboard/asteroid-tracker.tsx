@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useMemo, useEffect, useCallback, memo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
 import { Badge, ThreatLevelBadge, DataSourceBadge, MetricCard } from '@/components/ui'
@@ -24,7 +23,6 @@ import {
   Radar
 } from 'lucide-react'
 import { cn, formatDistance, formatVelocity, formatDate, formatRelativeTime } from '@/lib/utils'
-
 interface AsteroidData {
   id: string
   name: string
@@ -45,7 +43,6 @@ interface AsteroidData {
   discovery_date?: string
   last_observation?: string
 }
-
 interface AsteroidTrackerProps {
   className?: string
   maxItems?: number
@@ -53,14 +50,11 @@ interface AsteroidTrackerProps {
   autoRefresh?: boolean
   view?: 'list' | 'grid' | 'compact'
 }
-
-// 🚀 PERFORMANCE: Memoized Statistics Component
 const AsteroidStats = memo(function AsteroidStats({ 
   asteroids 
 }: { 
   asteroids: AsteroidData[] 
 }) {
-  // 🚀 PERFORMANCE: Memoized statistics calculation
   const stats = useMemo(() => {
     const total = asteroids.length
     const hazardous = asteroids.filter(a => a.is_potentially_hazardous).length
@@ -71,13 +65,9 @@ const AsteroidStats = memo(function AsteroidStats({
       return daysDiff >= 0 && daysDiff <= 7
     }).length
     const critical = asteroids.filter(a => a.threat_level === 'critical').length
-
     return { total, hazardous, approaching, critical }
   }, [asteroids])
-
-  // 🔧 DEBUG: MetricCard icon type problem
   console.log('🔧 DEBUG MetricCard icon issue - expecting ComponentType but passing JSX element')
-
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
       <MetricCard
@@ -107,8 +97,6 @@ const AsteroidStats = memo(function AsteroidStats({
     </div>
   )
 })
-
-// 🚀 PERFORMANCE: Memoized Filter Controls
 const FilterControls = memo(function FilterControls({
   filter,
   sortBy,
@@ -126,7 +114,6 @@ const FilterControls = memo(function FilterControls({
 }) {
   const filterOptions = useMemo(() => ['all', 'hazardous', 'approaching', 'critical'], [])
   const sortOptions = useMemo(() => ['distance', 'size', 'velocity', 'date'], [])
-  
   const getFilterLabel = useCallback((f: string) => {
     switch (f) {
       case 'all': return 'Tümü'
@@ -136,7 +123,6 @@ const FilterControls = memo(function FilterControls({
       default: return f.charAt(0).toUpperCase() + f.slice(1)
     }
   }, [])
-
   const getSortLabel = useCallback((s: string) => {
     switch (s) {
       case 'distance': return 'Mesafe'
@@ -146,7 +132,6 @@ const FilterControls = memo(function FilterControls({
       default: return s.charAt(0).toUpperCase() + s.slice(1)
     }
   }, [])
-
   return (
     <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-cliff-light-gray/30">
       <div className="flex items-center gap-2">
@@ -162,7 +147,6 @@ const FilterControls = memo(function FilterControls({
           </Button>
         ))}
       </div>
-
       <div className="flex items-center gap-2 ml-4">
         <span className="text-sm text-cliff-light-gray">Sırala:</span>
         {sortOptions.map((s) => (
@@ -176,7 +160,6 @@ const FilterControls = memo(function FilterControls({
           </Button>
         ))}
       </div>
-
       <div className="flex items-center gap-2 ml-auto">
         <div className="relative">
           <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-cliff-light-gray" />
@@ -192,8 +175,6 @@ const FilterControls = memo(function FilterControls({
     </div>
   )
 })
-
-// 🚀 PERFORMANCE: Memoized Asteroid List Item
 const AsteroidListItem = memo(function AsteroidListItem({
   asteroid,
   onAsteroidClick,
@@ -201,32 +182,25 @@ const AsteroidListItem = memo(function AsteroidListItem({
   asteroid: AsteroidData
   onAsteroidClick: (asteroid: AsteroidData) => void
 }) {
-  // 🚀 PERFORMANCE: Memoized category functions
   const getSizeCategory = useCallback((diameter: number) => {
     if (diameter < 10) return 'Küçük'
     if (diameter < 100) return 'Orta'
     if (diameter < 1000) return 'Büyük'
     return 'Dev'
   }, [])
-
   const getVelocityCategory = useCallback((velocity: number) => {
     if (velocity < 10) return 'Yavaş'
     if (velocity < 20) return 'Orta'
     if (velocity < 30) return 'Hızlı'
     return 'Çok Hızlı'
   }, [])
-
   const handleClick = useCallback(() => {
     onAsteroidClick(asteroid)
   }, [asteroid, onAsteroidClick])
-
-  // 🔧 DEBUG: ThreatLevelBadge language mismatch
   console.log('🔧 DEBUG ThreatLevelBadge language issue:', {
     received: asteroid.threat_level, // İngilizce: 'critical' | 'high' | 'medium' | 'low'
     expected: 'Türkçe levels' // 'düşük' | 'orta' | 'yüksek' | 'kritik'
   })
-
-  // Convert English threat levels to Turkish
   const convertThreatLevelToTurkish = (level: string) => {
     switch (level) {
       case 'critical': return 'kritik'
@@ -236,7 +210,6 @@ const AsteroidListItem = memo(function AsteroidListItem({
       default: return 'düşük'
     }
   }
-
   return (
     <div
       className={cn(
@@ -265,7 +238,6 @@ const AsteroidListItem = memo(function AsteroidListItem({
             )}
             <ThreatLevelBadge level={convertThreatLevelToTurkish(asteroid.threat_level)} />
           </div>
-
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <p className="text-cliff-light-gray">Mesafe</p>
@@ -276,7 +248,6 @@ const AsteroidListItem = memo(function AsteroidListItem({
                 {asteroid.miss_distance_au.toFixed(3)} AU
               </p>
             </div>
-
             <div>
               <p className="text-cliff-light-gray">Boyut</p>
               <p className="text-cliff-white font-medium">
@@ -286,7 +257,6 @@ const AsteroidListItem = memo(function AsteroidListItem({
                 {getSizeCategory(asteroid.estimated_diameter_max)}
               </p>
             </div>
-
             <div>
               <p className="text-cliff-light-gray">Hız</p>
               <p className="text-cliff-white font-medium">
@@ -296,7 +266,6 @@ const AsteroidListItem = memo(function AsteroidListItem({
                 {getVelocityCategory(asteroid.velocity_km_per_second)}
               </p>
             </div>
-
             <div>
               <p className="text-cliff-light-gray">Yaklaşma</p>
               <p className="text-cliff-white font-medium">
@@ -311,7 +280,6 @@ const AsteroidListItem = memo(function AsteroidListItem({
             </div>
           </div>
         </div>
-
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm">
             <Eye className="h-4 w-4" />
@@ -321,7 +289,6 @@ const AsteroidListItem = memo(function AsteroidListItem({
           </Button>
         </div>
       </div>
-
       {asteroid.impact_probability && asteroid.impact_probability > 0 && (
         <div className="mt-3 pt-3 border-t border-cliff-light-gray/40">
           <div className="flex items-center justify-between">
@@ -335,8 +302,6 @@ const AsteroidListItem = memo(function AsteroidListItem({
     </div>
   )
 })
-
-// 🚀 PERFORMANCE: Memoized Asteroid Grid Item
 const AsteroidGridItem = memo(function AsteroidGridItem({
   asteroid,
   onAsteroidClick,
@@ -347,8 +312,6 @@ const AsteroidGridItem = memo(function AsteroidGridItem({
   const handleClick = useCallback(() => {
     onAsteroidClick(asteroid)
   }, [asteroid, onAsteroidClick])
-
-  // Convert English threat levels to Turkish
   const convertThreatLevelToTurkish = (level: string) => {
     switch (level) {
       case 'critical': return 'kritik'
@@ -358,7 +321,6 @@ const AsteroidGridItem = memo(function AsteroidGridItem({
       default: return 'düşük'
     }
   }
-
   return (
     <Card
       key={asteroid.id}
@@ -402,8 +364,6 @@ const AsteroidGridItem = memo(function AsteroidGridItem({
     </Card>
   )
 })
-
-// 🚀 PERFORMANCE: Main AsteroidTracker Component with optimizations
 const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
   className,
   maxItems = 20,
@@ -417,19 +377,14 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
   const [sortBy, setSortBy] = useState<'distance' | 'size' | 'velocity' | 'date'>('distance')
   const [selectedAsteroid, setSelectedAsteroid] = useState<AsteroidData | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
-
   const { comprehensiveAssessment, isLoading } = useThreatData()
-
-  // 🚀 PERFORMANCE: Process asteroid data from threat data with memoization
   const processedAsteroids = useMemo(() => {
     if (comprehensiveAssessment?.active_threats) {
-      // Filter only asteroid-related threats
       const asteroidThreats = comprehensiveAssessment.active_threats.filter(
         threat => threat.threat_type.toLowerCase().includes('asteroid') ||
                   threat.threat_type.toLowerCase().includes('neo') ||
                   threat.title.toLowerCase().includes('asteroid')
       )
-
       return asteroidThreats.map((threat, index) => ({
         id: threat.threat_id || `${Date.now()}-${index}`,
         name: threat.title || `NEO-${String(index + 1).padStart(4, '0')}`,
@@ -451,8 +406,6 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
         last_observation: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
       }))
     }
-    
-    // Generate mock asteroid data if no real data available
     return Array.from({ length: 15 }, (_, i) => ({
       id: `mock-asteroid-${i}`,
       name: `2024 ${String.fromCharCode(65 + Math.floor(i / 26))}${String.fromCharCode(65 + (i % 26))}${i + 1}`,
@@ -474,17 +427,11 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
       last_observation: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
     }))
   }, [comprehensiveAssessment])
-
-  // Update asteroids when processed asteroids change
   useEffect(() => {
     setAsteroids(processedAsteroids)
   }, [processedAsteroids])
-
-  // 🚀 PERFORMANCE: Optimized filtered asteroids with better memoization
   const filteredAsteroids = useMemo(() => {
     let filtered = asteroids
-
-    // Apply filters
     if (filter === 'hazardous') {
       filtered = filtered.filter(a => a.is_potentially_hazardous)
     } else if (filter === 'approaching') {
@@ -497,8 +444,6 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
     } else if (filter === 'critical') {
       filtered = filtered.filter(a => a.threat_level === 'critical' || a.threat_level === 'high')
     }
-
-    // Apply search
     if (searchTerm.trim()) {
       const searchLower = searchTerm.toLowerCase()
       filtered = filtered.filter(a => 
@@ -506,8 +451,6 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
         a.designation.toLowerCase().includes(searchLower)
       )
     }
-
-    // Apply sorting
     filtered.sort((a, b) => {
       switch (sortBy) {
         case 'distance':
@@ -522,16 +465,12 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
           return 0
       }
     })
-
     return filtered.slice(0, maxItems)
   }, [asteroids, filter, searchTerm, sortBy, maxItems])
-
-  // 🚀 PERFORMANCE: Memoized statistics
   const hazardousCount = useMemo(() => 
     asteroids.filter(a => a.is_potentially_hazardous).length, 
     [asteroids]
   )
-  
   const todayApproaches = useMemo(() => {
     const now = new Date()
     const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
@@ -540,39 +479,29 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
       return approachDate >= now && approachDate <= tomorrow
     }).length
   }, [asteroids])
-
-  // Helper function for diameter formatting
   const formatDiameter = (diameter: any) => {
     if (typeof diameter === 'object' && diameter.estimated_diameter_max) {
       return `${diameter.estimated_diameter_max.toFixed(0)}m`
     }
     return `${(diameter || 0).toFixed(0)}m`
   }
-
-  // 🚀 PERFORMANCE: Memoized callbacks
   const handleFilterChange = useCallback((newFilter: string) => {
     setFilter(newFilter as any)
   }, [])
-
   const handleSortChange = useCallback((newSort: string) => {
     setSortBy(newSort as any)
   }, [])
-
   const handleSearchChange = useCallback((newSearch: string) => {
     setSearchTerm(newSearch)
   }, [])
-
   const handleAsteroidClick = useCallback((asteroid: AsteroidData) => {
     setSelectedAsteroid(asteroid)
   }, [])
-
   const refreshData = useCallback(async () => {
     setIsRefreshing(true)
-    // Simulate API refresh
     await new Promise(resolve => setTimeout(resolve, 1000))
     setIsRefreshing(false)
   }, [])
-
   if (isLoading) {
     return (
       <Card variant="default" className={cn("animate-pulse", className)}>
@@ -589,7 +518,6 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
       </Card>
     )
   }
-
   return (
     <Card variant="default" className={cn("relative overflow-hidden", className)}>
       <CardHeader>
@@ -599,7 +527,6 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
             Asteroid İzleyici
             <DataSourceBadge source="nasa" />
           </CardTitle>
-
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -611,8 +538,7 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
             </Button>
           </div>
         </div>
-
-        {/* Summary Stats */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="p-4 rounded-lg bg-pure-black border border-cliff-light-gray/30">
             <div className="flex items-center justify-between">
@@ -623,7 +549,6 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
               <Zap className="h-8 w-8 text-blue-400" />
             </div>
           </div>
-
           <div className="p-4 rounded-lg bg-pure-black border border-cliff-light-gray/30">
             <div className="flex items-center justify-between">
               <div>
@@ -633,7 +558,6 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
               <AlertTriangle className="h-8 w-8 text-red-400" />
             </div>
           </div>
-
           <div className="p-4 rounded-lg bg-pure-black border border-cliff-light-gray/30">
             <div className="flex items-center justify-between">
               <div>
@@ -644,8 +568,7 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
             </div>
           </div>
         </div>
-
-        {/* Filters and Search */}
+        {}
         {showFilters && (
           <FilterControls
             filter={filter}
@@ -657,7 +580,6 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
           />
         )}
       </CardHeader>
-
       <CardContent>
         {filteredAsteroids.length === 0 ? (
           <div className="text-center py-8">
@@ -696,7 +618,6 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
                         </Badge>
                       )}
                     </div>
-                    
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <span className="text-cliff-light-gray">Yakın Geçiş:</span>
@@ -724,7 +645,6 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
                       </div>
                     </div>
                   </div>
-
                   <div className="text-right">
                     <div className={cn("text-xs px-2 py-1 rounded-full", 
                       asteroid.is_potentially_hazardous
@@ -733,7 +653,6 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
                     )}>
                       {asteroid.is_potentially_hazardous ? 'Yüksek Risk' : 'Düşük Risk'}
                     </div>
-                    
                     <div className="mt-2 text-xs text-cliff-light-gray">
                       <Calendar className="h-3 w-3 inline mr-1" />
                       {formatRelativeTime(new Date(asteroid.close_approach_date))}
@@ -755,8 +674,7 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
           </div>
         )}
       </CardContent>
-
-      {/* Background effects */}
+      {}
       <div className="absolute inset-0 opacity-5 pointer-events-none overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-radial from-orange-400 to-transparent animate-pulse-slow" />
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-radial from-yellow-400 to-transparent animate-pulse-slow delay-1000" />
@@ -764,5 +682,4 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
     </Card>
   )
 }
-
 export default AsteroidTracker

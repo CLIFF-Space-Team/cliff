@@ -1,7 +1,6 @@
-import React from 'react'
+﻿import React from 'react'
 import { cn } from '@/lib/utils'
 import { VariantProps, cva } from 'class-variance-authority'
-
 const cardVariants = cva(
   "rounded-lg border text-card-foreground shadow-sm",
   {
@@ -41,13 +40,11 @@ const cardVariants = cva(
     },
   }
 )
-
 export interface CardProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof cardVariants> {
   children?: React.ReactNode
 }
-
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant, size, interactive, glow, children, ...props }, ref) => {
     return (
@@ -61,9 +58,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     )
   }
 )
-
 Card.displayName = "Card"
-
 const CardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -75,7 +70,6 @@ const CardHeader = React.forwardRef<
   />
 ))
 CardHeader.displayName = "CardHeader"
-
 const CardTitle = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLHeadingElement>
@@ -92,7 +86,6 @@ const CardTitle = React.forwardRef<
   </h3>
 ))
 CardTitle.displayName = "CardTitle"
-
 const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
@@ -104,7 +97,6 @@ const CardDescription = React.forwardRef<
   />
 ))
 CardDescription.displayName = "CardDescription"
-
 const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -112,7 +104,6 @@ const CardContent = React.forwardRef<
   <div ref={ref} className={cn("space-y-4", className)} {...props} />
 ))
 CardContent.displayName = "CardContent"
-
 const CardFooter = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -124,21 +115,16 @@ const CardFooter = React.forwardRef<
   />
 ))
 CardFooter.displayName = "CardFooter"
-
-// Specialized Card variants for CLIFF
 const ThreatCard = React.forwardRef<HTMLDivElement, CardProps & {
   threatLevel?: 'low' | 'medium' | 'high' | 'critical'
 }>(({ threatLevel = 'low', className, children, ...props }, ref) => {
-  // Fix const assertion and type mismatch - use proper type mapping
   const threatVariantMap: Record<string, "success" | "warning" | "danger"> = {
     'low': 'success',
     'medium': 'warning',  
     'high': 'danger',
     'critical': 'danger'
   }
-  
   const threatVariant = threatVariantMap[threatLevel]
-
   return (
     <Card
       ref={ref}
@@ -155,20 +141,16 @@ const ThreatCard = React.forwardRef<HTMLDivElement, CardProps & {
   )
 })
 ThreatCard.displayName = "ThreatCard"
-
 const DataCard = React.forwardRef<HTMLDivElement, CardProps & {
   status?: 'active' | 'inactive' | 'error' | 'loading'
 }>(({ status = 'active', className, children, ...props }, ref) => {
-  // Fix const assertion and type mismatch - use proper type mapping
   const statusVariantMap: Record<string, "cosmic" | "glass" | "danger" | "info"> = {
     'active': 'cosmic',
     'inactive': 'glass', 
     'error': 'danger',
     'loading': 'info'
   }
-  
   const statusVariant = statusVariantMap[status]
-
   return (
     <Card
       ref={ref}
@@ -186,7 +168,6 @@ const DataCard = React.forwardRef<HTMLDivElement, CardProps & {
   )
 })
 DataCard.displayName = "DataCard"
-
 const MetricCard = React.forwardRef<HTMLDivElement, CardProps & {
   value: string | number
   label: string
@@ -198,7 +179,6 @@ const MetricCard = React.forwardRef<HTMLDivElement, CardProps & {
     'down': 'text-red-400',
     'stable': 'text-blue-400'
   }[trend || 'stable']
-
   return (
     <Card
       ref={ref}
@@ -220,8 +200,7 @@ const MetricCard = React.forwardRef<HTMLDivElement, CardProps & {
         </div>
         {children}
       </CardContent>
-      
-      {/* Cosmic background effect */}
+      {}
       <div className="absolute inset-0 opacity-10 pointer-events-none">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-radial from-cliff-light-gray to-transparent animate-pulse-slow" />
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-radial from-cliff-medium-gray to-transparent animate-pulse-slow delay-1000" />
@@ -230,7 +209,6 @@ const MetricCard = React.forwardRef<HTMLDivElement, CardProps & {
   )
 })
 MetricCard.displayName = "MetricCard"
-
 export { 
   Card, 
   CardHeader, 

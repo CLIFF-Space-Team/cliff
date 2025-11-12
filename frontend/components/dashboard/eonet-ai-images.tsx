@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
@@ -15,14 +14,12 @@ import {
   Gauge
 } from 'lucide-react'
 import { useEarthEventsStore, EONETAIImage } from '@/stores/earthEventsStore'
-
 interface EONETAIImagesProps {
   eventId: string
   eventTitle: string
   eventCategory: string
   className?: string
 }
-
 export default function EONETAIImages({ 
   eventId, 
   eventTitle, 
@@ -35,34 +32,24 @@ export default function EONETAIImages({
     getEventImages,
     clearEventImages
   } = useEarthEventsStore()
-  
   const [selectedImage, setSelectedImage] = useState<EONETAIImage | null>(null)
   const [showFullscreen, setShowFullscreen] = useState(false)
-  
-  // Find current event
   const event = events.find(e => e.id === eventId)
-  
   useEffect(() => {
-    // Auto-generate images when event is selected
     if (eventId && !event?.aiImages && !event?.aiImagesLoading) {
-      // Slight delay to allow UI to settle
       const timer = setTimeout(() => {
         generateEventImages(eventId)
       }, 1000)
-      
       return () => clearTimeout(timer)
     }
   }, [eventId, generateEventImages])
-  
   const handleGenerateImages = async () => {
     await generateEventImages(eventId)
   }
-  
   const handleImageClick = (image: EONETAIImage) => {
     setSelectedImage(image)
     setShowFullscreen(true)
   }
-  
   const getPurposeIcon = (purpose: string) => {
     switch (purpose) {
       case 'disaster_overview':
@@ -77,7 +64,6 @@ export default function EONETAIImages({
         return '📸'
     }
   }
-  
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'extreme':
@@ -90,14 +76,12 @@ export default function EONETAIImages({
         return 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20'
     }
   }
-  
   const formatPurpose = (purpose: string) => {
     return purpose.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
   }
-
   return (
     <div className={`bg-black/40 backdrop-blur-sm border border-white/10 rounded-xl p-6 ${className}`}>
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-xl flex items-center justify-center border border-purple-500/20">
@@ -108,7 +92,6 @@ export default function EONETAIImages({
             <p className="text-white/60 text-sm">Professional disaster visualization</p>
           </div>
         </div>
-        
         <div className="flex items-center gap-2">
           {event?.aiImages && (
             <button
@@ -121,8 +104,7 @@ export default function EONETAIImages({
           )}
         </div>
       </div>
-      
-      {/* Auto-Generation State */}
+      {}
       {!event?.aiImages && !event?.aiImagesLoading && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -141,19 +123,17 @@ export default function EONETAIImages({
           </p>
         </motion.div>
       )}
-      
-      {/* Loading State */}
+      {}
       {event?.aiImagesLoading && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="relative"
         >
-          {/* Background Animation */}
+          {}
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-blue-500/5 to-transparent rounded-xl animate-pulse" />
-          
           <div className="relative text-center py-12">
-            {/* Spinning Animation */}
+            {}
             <div className="relative w-20 h-20 mx-auto mb-6">
               <div className="absolute inset-0 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
               <div className="absolute inset-2 border-2 border-blue-500/20 border-r-blue-500 rounded-full animate-spin animate-reverse" style={{animationDuration: '3s'}} />
@@ -161,13 +141,11 @@ export default function EONETAIImages({
                 <Sparkles className="w-6 h-6 text-purple-400 animate-pulse" />
               </div>
             </div>
-            
             <h4 className="text-white font-semibold mb-2">AI Creating Professional Visuals</h4>
             <p className="text-white/70 text-sm mb-4">
               Analyzing {eventCategory.toLowerCase()} patterns and generating emergency response imagery
             </p>
-            
-            {/* Progress Indicators */}
+            {}
             <div className="space-y-2 max-w-sm mx-auto">
               <div className="flex justify-between text-xs text-white/50">
                 <span>Disaster Analysis</span>
@@ -176,7 +154,6 @@ export default function EONETAIImages({
               <div className="w-full bg-white/10 rounded-full h-1.5">
                 <div className="bg-gradient-to-r from-emerald-500 to-blue-500 h-1.5 rounded-full w-full" />
               </div>
-              
               <div className="flex justify-between text-xs text-white/50">
                 <span>AI Image Generation</span>
                 <span>75%</span>
@@ -184,7 +161,6 @@ export default function EONETAIImages({
               <div className="w-full bg-white/10 rounded-full h-1.5">
                 <div className="bg-gradient-to-r from-purple-500 to-blue-500 h-1.5 rounded-full w-3/4 animate-pulse" />
               </div>
-              
               <div className="flex justify-between text-xs text-white/50">
                 <span>Quality Enhancement</span>
                 <span>25%</span>
@@ -193,15 +169,13 @@ export default function EONETAIImages({
                 <div className="bg-gradient-to-r from-orange-500 to-purple-500 h-1.5 rounded-full w-1/4 animate-pulse" />
               </div>
             </div>
-            
             <p className="text-xs text-white/40 mt-4">
               🎯 Generating 4 specialized visualization types for emergency response teams
             </p>
           </div>
         </motion.div>
       )}
-      
-      {/* Error State */}
+      {}
       {event?.aiImagesError && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -219,8 +193,7 @@ export default function EONETAIImages({
           </button>
         </motion.div>
       )}
-      
-      {/* Generated Images Grid */}
+      {}
       {event?.aiImages && event.aiImages.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -235,7 +208,6 @@ export default function EONETAIImages({
               {event.aiImages[0]?.severity_indicator || 'Low'} Priority
             </div>
           </div>
-          
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {event.aiImages.map((image, index) => (
               <motion.div
@@ -246,7 +218,7 @@ export default function EONETAIImages({
                 className="group relative bg-white/5 border border-white/10 rounded-xl overflow-hidden cursor-pointer hover:border-purple-500/30 transition-all duration-200"
                 onClick={() => handleImageClick(image)}
               >
-                {/* Image */}
+                {}
                 <div className="aspect-video relative overflow-hidden">
                   <img
                     src={image.image_url}
@@ -254,28 +226,23 @@ export default function EONETAIImages({
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                     loading="lazy"
                   />
-                  
-                  {/* Overlay */}
+                  {}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  
-                  {/* Purpose badge */}
+                  {}
                   <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full text-xs text-white">
                     <span>{getPurposeIcon(image.purpose)}</span>
                     <span>{formatPurpose(image.purpose)}</span>
                   </div>
-                  
-                  {/* Hover overlay */}
+                  {}
                   <div className="absolute inset-0 bg-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
                     <Eye className="w-8 h-8 text-white" />
                   </div>
                 </div>
-                
-                {/* Content */}
+                {}
                 <div className="p-4">
                   <h5 className="font-medium text-white mb-1 line-clamp-1">{image.title}</h5>
                   <p className="text-white/60 text-sm line-clamp-2 mb-3">{image.description}</p>
-                  
-                  {/* Metadata */}
+                  {}
                   <div className="flex items-center gap-4 text-xs text-white/50">
                     {image.geographical_context && (
                       <div className="flex items-center gap-1">
@@ -294,8 +261,7 @@ export default function EONETAIImages({
           </div>
         </motion.div>
       )}
-      
-      {/* Fullscreen Modal */}
+      {}
       <AnimatePresence>
         {showFullscreen && selectedImage && (
           <motion.div
@@ -312,7 +278,7 @@ export default function EONETAIImages({
               className="max-w-4xl w-full bg-black/50 border border-white/20 rounded-xl overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header */}
+              {}
               <div className="p-6 border-b border-white/10">
                 <div className="flex items-center justify-between">
                   <div>
@@ -327,8 +293,7 @@ export default function EONETAIImages({
                   </button>
                 </div>
               </div>
-              
-              {/* Image */}
+              {}
               <div className="p-6">
                 <div className="aspect-video relative rounded-xl overflow-hidden mb-4">
                   <img
@@ -337,12 +302,10 @@ export default function EONETAIImages({
                     className="w-full h-full object-cover"
                   />
                 </div>
-                
-                {/* Description */}
+                {}
                 <div className="space-y-4">
                   <p className="text-white/80">{selectedImage.description}</p>
-                  
-                  {/* Metadata grid */}
+                  {}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-white/60">
@@ -367,8 +330,7 @@ export default function EONETAIImages({
                       )}
                     </div>
                   </div>
-                  
-                  {/* Actions */}
+                  {}
                   <div className="flex items-center gap-3 pt-4">
                     <a
                       href={selectedImage.image_url}

@@ -1,5 +1,4 @@
-'use client'
-
+﻿'use client'
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Map, Layers, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react'
@@ -8,15 +7,11 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import { useEarthEventsStore } from '@/stores/earthEventsStore'
 import { regionDetector } from '@/lib/geographic-region-detector'
 import { GeographicRegion, REGION_COLORS } from '@/lib/geographic-regions'
-
-// Mapbox access token with fallback
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || 'pk.eyJ1Ijoia3ludXgiLCJhIjoiY21nczdqemU2MHJ5azJrczh3eTVoOHQzZCJ9.ZbSyFZQzYwri3XTOCee8xQ'
-
 export default function View2D() {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const selectedEventRef = useRef<any>(null)
-
   const {
     events,
     filteredEvents,
@@ -27,18 +22,13 @@ export default function View2D() {
     mapZoom,
     setMapView
   } = useEarthEventsStore()
-
   const [mapLoaded, setMapLoaded] = useState(false)
   const [mapError, setMapError] = useState(false)
   const [currentZoom, setCurrentZoom] = useState(mapZoom)
   const [showHeatmap, setShowHeatmap] = useState(false)
-
-  // Keep latest selected event in ref to avoid frequent re-renders
   useEffect(() => {
     selectedEventRef.current = selectedEvent
   }, [selectedEvent])
-
-  // Build FeatureCollection for events (respect region filters and attach region meta)
   const buildEventsGeoJSON = () => {
     const sourceEvents = (filteredEvents && filteredEvents.length > 0) ? filteredEvents : events
     return {
@@ -66,8 +56,6 @@ export default function View2D() {
       })
     }
   }
-
-  // Helpers to switch color modes on the fly
   const buildCategoryColorExpression = () => ([
     'match', ['get', 'category'],
     'Wildfires', '#FF6B35',
@@ -78,7 +66,6 @@ export default function View2D() {
     'Earthquakes', '#8D6E63',
     '#FFA726'
   ]) as any
-
   const buildRegionColorExpression = () => ([
     'match', ['get', 'region'],
     GeographicRegion.EUROPE, REGION_COLORS[GeographicRegion.EUROPE].primary,
@@ -91,7 +78,6 @@ export default function View2D() {
     GeographicRegion.ARCTIC, REGION_COLORS[GeographicRegion.ARCTIC].primary,
     '#FFA726'
   ]) as any
-
   const applyRegionColorMode = (map: mapboxgl.Map, enabled: boolean) => {
     const layerId = 'unclustered-point'
     if (!map.getLayer(layerId)) return
@@ -101,15 +87,9 @@ export default function View2D() {
       enabled ? buildRegionColorExpression() : buildCategoryColorExpression()
     )
   }
-
-  // Initialize Mapbox
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return
-
-    // Set access token
     mapboxgl.accessToken = MAPBOX_TOKEN
-
-    // Create map
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: 'mapbox://styles/mapbox/dark-v11', // Dark theme
@@ -123,18 +103,12 @@ export default function View2D() {
       cooperativeGestures: true,
       pitchWithRotate: false
     })
-
-    // Add controls
     map.addControl(new mapboxgl.NavigationControl(), 'top-right')
     map.addControl(new mapboxgl.FullscreenControl(), 'top-right')
     map.addControl(new mapboxgl.ScaleControl(), 'bottom-left')
-
-    // Map event listeners
     map.on('load', () => {
       setMapLoaded(true)
       console.log('2D Map loaded successfully')
-
-      // Add clustered events source (GPU katmanlarıyla)
       map.addSource('events', {
         type: 'geojson',
         data: buildEventsGeoJSON(),
@@ -142,8 +116,6 @@ export default function View2D() {
         clusterRadius: 60,
         clusterMaxZoom: 14
       })
-
-      // Cluster circles
       map.addLayer({
         id: 'clusters',
         type: 'circle',
@@ -168,8 +140,6 @@ export default function View2D() {
           'circle-stroke-color': '#0f766e'
         }
       })
-
-      // Cluster count labels
       map.addLayer({
         id: 'cluster-count',
         type: 'symbol',
@@ -181,32 +151,23 @@ export default function View2D() {
         },
         paint: { 'text-color': '#ffffff' }
       })
-
-      // Unclustered event points
       map.addLayer({
         id: 'unclustered-point',
         type: 'circle',
         source: 'events',
         filter: ['!', ['has', 'point_count']],
         paint: {
-          // Initial color; will be overridden by applyRegionColorMode based on toggle
           'circle-color': buildCategoryColorExpression(),
           'circle-radius': 5,
           'circle-stroke-width': 1.5,
           'circle-stroke-color': '#ffffff'
         }
       })
-
-      // Respect current region color mode at load
       applyRegionColorMode(map, regionColorMode)
-
-      // Cursor styles
       map.on('mouseenter', 'clusters', () => { map.getCanvas().style.cursor = 'pointer' })
       map.on('mouseleave', 'clusters', () => { map.getCanvas().style.cursor = '' })
       map.on('mouseenter', 'unclustered-point', () => { map.getCanvas().style.cursor = 'pointer' })
       map.on('mouseleave', 'unclustered-point', () => { map.getCanvas().style.cursor = '' })
-
-      // Cluster click to expand
       map.on('click', 'clusters', (e) => {
         const features = map.queryRenderedFeatures(e.point, { layers: ['clusters'] })
         const feature: any = features[0]
@@ -218,8 +179,6 @@ export default function View2D() {
           map.easeTo({ center: feature.geometry.coordinates as any, zoom })
         })
       })
-
-      // Point click to select and show popup (glassmorphism + robust date)
       map.on('click', 'unclustered-point', (e) => {
         const features = map.queryRenderedFeatures(e.point, { layers: ['unclustered-point'] })
         const feature: any = features[0]
@@ -229,12 +188,10 @@ export default function View2D() {
         const baseList = (filteredEvents && filteredEvents.length > 0) ? filteredEvents : events
         const fullEvent = baseList.find(ev => ev.id === eventId)
         if (fullEvent) selectEvent(fullEvent)
-
         const regionPrimary = feature.properties?.regionPrimary || '#22d3ee'
         const rawDate = (fullEvent?.created_date || fullEvent?.geometry?.[0]?.date || feature.properties?.date) as string | undefined
         const dt = rawDate ? new Date(rawDate) : null
         const dateText = (dt && !isNaN(dt.getTime())) ? dt.toLocaleString('tr-TR', { dateStyle: 'medium' }) : 'Tarih bilgisi yok'
-
         new mapboxgl.Popup({ offset: 16, className: 'glass-popup' })
           .setLngLat([lng, lat])
           .setHTML(`
@@ -253,37 +210,29 @@ export default function View2D() {
           .addTo(map)
       })
     })
-
     map.on('error', (e) => {
       console.error('Mapbox error:', e)
       setMapError(true)
     })
-
     map.on('zoomend', () => {
       setCurrentZoom(map.getZoom())
     })
-
     map.on('moveend', () => {
       const center = map.getCenter()
       setMapView([center.lng, center.lat], map.getZoom())
     })
-
     mapRef.current = map
-
     return () => {
       map.remove()
       mapRef.current = null
     }
   }, [])
-
-  // Update source data when events or filters change
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return
     const source = mapRef.current.getSource('events') as mapboxgl.GeoJSONSource
     if (source) {
       source.setData(buildEventsGeoJSON() as any)
     }
-    // Sync heatmap if visible
     if (mapRef.current.getSource('events-heatmap')) {
       const heatSrc = mapRef.current.getSource('events-heatmap') as mapboxgl.GeoJSONSource
       if (heatSrc) {
@@ -298,14 +247,10 @@ export default function View2D() {
       }
     }
   }, [events, filteredEvents, mapLoaded])
-
-  // React to region color mode toggle
   useEffect(() => {
     if (!mapRef.current || !mapLoaded) return
     applyRegionColorMode(mapRef.current, regionColorMode)
   }, [regionColorMode, mapLoaded])
-
-  // Event color mapping
   const getEventColor = (category: string): string => {
     const colors: { [key: string]: string } = {
       'Wildfires': '#FF6B35',
@@ -317,31 +262,24 @@ export default function View2D() {
     }
     return colors[category] || '#FFA726'
   }
-
-  // Map control handlers
   const handleZoomIn = () => {
     mapRef.current?.zoomIn()
   }
-
   const handleZoomOut = () => {
     mapRef.current?.zoomOut()
   }
-
   const handleReset = () => {
     mapRef.current?.flyTo({
       center: [0, 0],
       zoom: 2
     })
   }
-
   const toggleHeatmap = () => {
     if (!mapRef.current || !mapLoaded) return
-
     if (showHeatmap) {
       mapRef.current.removeLayer('heatmap')
       mapRef.current.removeSource('events-heatmap')
     } else {
-      // Add heatmap source
       mapRef.current.addSource('events-heatmap', {
         type: 'geojson',
         data: {
@@ -358,8 +296,6 @@ export default function View2D() {
           }))
         }
       })
-
-      // Add heatmap layer
       mapRef.current.addLayer({
         id: 'heatmap',
         type: 'heatmap',
@@ -407,20 +343,17 @@ export default function View2D() {
         }
       })
     }
-
     setShowHeatmap(!showHeatmap)
   }
-
   return (
     <div className="relative w-full h-full">
-      {/* Map Container */}
+      {}
       <div 
         ref={mapContainerRef} 
         className="w-full h-full"
         style={{ minHeight: '400px' }}
       />
-
-      {/* Map Controls - Top Left */}
+      {}
       <motion.div
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
@@ -463,9 +396,7 @@ export default function View2D() {
           </div>
         </div>
       </motion.div>
-
-
-      {/* Loading overlay */}
+      {}
       {!mapLoaded && (
         <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
           <div className="text-center">
@@ -474,14 +405,13 @@ export default function View2D() {
           </div>
         </div>
       )}
-
-      {/* CSS for markers and glass popup */}
+      {}
       <style jsx global>{`
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
         .mapboxgl-popup.glass-popup { max-width: 320px; }
         .mapboxgl-popup.glass-popup .mapboxgl-popup-content {
-          background: #000000; /* pure black */
-          color: #f3f4f6; /* slightly off-white for readability */
+          background: #000000; 
+          color: #f3f4f6; 
           border: 1px solid rgba(255,255,255,0.06);
           border-radius: 14px;
           padding: 14px 16px;

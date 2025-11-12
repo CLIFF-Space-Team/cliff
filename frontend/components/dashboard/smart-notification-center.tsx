@@ -1,5 +1,4 @@
-"use client"
-
+﻿"use client"
 import React, { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -13,7 +12,6 @@ import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
-
 export interface NotificationItem {
   id: string
   type: "threat" | "system" | "analysis" | "alert"
@@ -31,7 +29,6 @@ export interface NotificationItem {
     location?: { lat: number; lon: number }
   }
 }
-
 interface NotificationPreferences {
   enableSound: boolean
   enableDesktop: boolean
@@ -46,13 +43,11 @@ interface NotificationPreferences {
     low: boolean
   }
 }
-
 interface SmartNotificationCenterProps {
   className?: string
   position?: "sidebar" | "modal" | "dropdown"
   maxNotifications?: number
 }
-
 const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
   className,
   position = "dropdown",
@@ -79,62 +74,45 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const audioContextRef = useRef<AudioContext | null>(null)
   const wsRef = useRef<WebSocket | null>(null)
-
-  // 🔔 Bildirim sesi çal
   const playNotificationSound = (severity: string) => {
     if (!preferences.enableSound) return
-
     try {
       if (!audioContextRef.current) {
         audioContextRef.current = new AudioContext()
       }
-
       const context = audioContextRef.current
       const oscillator = context.createOscillator()
       const gainNode = context.createGain()
-
       oscillator.connect(gainNode)
       gainNode.connect(context.destination)
-
-      // Severity'ye göre ses tonu
       const frequencies: Record<string, number[]> = {
         CRITICAL: [880, 440, 880], // Yüksek alarm
         HIGH: [660, 440],
         MEDIUM: [440, 330],
         LOW: [330]
       }
-
       const tones = frequencies[severity] || [440]
       let delay = 0
-
       tones.forEach(freq => {
         oscillator.frequency.setValueAtTime(freq, context.currentTime + delay)
         delay += 0.15
       })
-
       gainNode.gain.setValueAtTime(0.3, context.currentTime)
       gainNode.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.5)
-
       oscillator.start()
       oscillator.stop(context.currentTime + 0.5)
     } catch (error) {
       console.warn("Bildirim sesi çalınamadı:", error)
     }
   }
-
-  // 📱 Titreşim efekti
   const triggerVibration = (pattern: number[]) => {
     if (!preferences.enableVibration) return
-    
     if ("vibrate" in navigator) {
       navigator.vibrate(pattern)
     }
   }
-
-  // 🖥️ Desktop bildirimi göster
   const showDesktopNotification = async (notification: NotificationItem) => {
     if (!preferences.enableDesktop) return
-
     if ("Notification" in window) {
       if (Notification.permission === "granted") {
         const desktopNotif = new Notification(`CLIFF - ${notification.severity}`, {
@@ -145,7 +123,6 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
           requireInteraction: notification.severity === "CRITICAL",
           silent: !preferences.enableSound
         })
-
         desktopNotif.onclick = () => {
           window.focus()
           setIsOpen(true)
@@ -159,14 +136,10 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
       }
     }
   }
-
-  // 📥 Bildirim geçmişini yükle
   const loadNotificationHistory = async () => {
     setIsLoading(true)
     try {
-      // CLIFF 3.0 servisi kaldırıldı - mock data kullanıyoruz
       const history = { notifications: [], count: 0, limit: maxNotifications }
-      
       const formattedNotifications: NotificationItem[] = history.notifications.map((notif: any, index: number) => ({
         id: `notif_${Date.now()}_${index}`,
         type: "threat" as const,
@@ -181,7 +154,6 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
           session_id: notif.session_id
         }
       }))
-
       setNotifications(formattedNotifications)
       updateUnreadCount(formattedNotifications)
     } catch (error) {
@@ -190,44 +162,32 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
       setIsLoading(false)
     }
   }
-
-  // ✅ Okundu işaretle
   const markAsRead = (notificationId: string) => {
     setNotifications(prev => prev.map(notif => 
       notif.id === notificationId ? { ...notif, read: true } : notif
     ))
     updateUnreadCount()
   }
-
-  // 🗑️ Bildirimi sil
   const deleteNotification = (notificationId: string) => {
     setNotifications(prev => prev.filter(notif => notif.id !== notificationId))
     updateUnreadCount()
   }
-
-  // 🔢 Okunmamış sayısını güncelle
   const updateUnreadCount = (notifs?: NotificationItem[]) => {
     const list = notifs || notifications
     const count = list.filter(n => !n.read).length
     setUnreadCount(count)
   }
-
-  // 🌐 WebSocket bağlantısı
   useEffect(() => {
     loadNotificationHistory()
-
     const connectWebSocket = () => {
       try {
         const wsUrl = process.env.NODE_ENV === "production"
           ? `wss://${window.location.host}/ws/notifications`
           : "ws://localhost:8000/ws/notifications"
-
         wsRef.current = new WebSocket(wsUrl)
-
         wsRef.current.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data)
-            
             const newNotification: NotificationItem = {
               id: `notif_${Date.now()}`,
               type: data.type || "alert",
@@ -240,30 +200,22 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
               source: data.source || "CLIFF System",
               metadata: data.metadata
             }
-
-            // Yeni bildirimi ekle
             setNotifications(prev => [newNotification, ...prev].slice(0, maxNotifications))
             setUnreadCount(prev => prev + 1)
-
-            // Bildirim efektleri
             playNotificationSound(newNotification.severity)
             showDesktopNotification(newNotification)
-            
             if (newNotification.severity === "CRITICAL") {
               triggerVibration([200, 100, 200, 100, 200])
             } else {
               triggerVibration([100])
             }
-
           } catch (error) {
             console.error("WebSocket mesaj hatası:", error)
           }
         }
-
         wsRef.current.onerror = (error) => {
           console.error("WebSocket hatası:", error)
         }
-
         wsRef.current.onclose = () => {
           setTimeout(connectWebSocket, 5000)
         }
@@ -271,17 +223,13 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
         console.error("WebSocket bağlantı hatası:", error)
       }
     }
-
     connectWebSocket()
-
     return () => {
       if (wsRef.current) {
         wsRef.current.close()
       }
     }
   }, [])
-
-  // 🎨 Severity renkleri
   const getSeverityColor = (severity: string) => {
     const colors = {
       CRITICAL: "text-red-400 bg-red-950/50 border-red-500/30",
@@ -291,8 +239,6 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
     }
     return colors[severity as keyof typeof colors] || colors.MEDIUM
   }
-
-  // 🎨 Type ikonları
   const getTypeIcon = (type: string) => {
     switch (type) {
       case "threat": return <AlertTriangle className="w-4 h-4" />
@@ -302,24 +248,14 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
       default: return <Info className="w-4 h-4" />
     }
   }
-
-  // 📋 Filtrelenmiş bildirimler
   const filteredNotifications = notifications.filter(notif => {
-    // Tab filtresi
     if (activeTab === "threats" && notif.type !== "threat") return false
     if (activeTab === "system" && notif.type !== "system") return false
-
-    // Okunmamış filtresi
     if (preferences.showOnlyUnread && notif.read) return false
-
-    // Severity filtresi
     const severityKey = notif.severity.toLowerCase() as keyof typeof preferences.severityFilter
     if (!preferences.severityFilter[severityKey]) return false
-
     return true
   })
-
-  // 📊 Severity'ye göre grupla
   const groupedNotifications = preferences.groupBySeverity
     ? {
         CRITICAL: filteredNotifications.filter(n => n.severity === "CRITICAL"),
@@ -328,10 +264,9 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
         LOW: filteredNotifications.filter(n => n.severity === "LOW")
       }
     : null
-
   return (
     <>
-      {/* Trigger Button */}
+      {}
       <div className="relative">
         <Button
           variant="ghost"
@@ -347,7 +282,6 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
           ) : (
             <BellOff className="w-5 h-5 text-cliff-light-gray" />
           )}
-          
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
               {unreadCount > 9 ? "9+" : unreadCount}
@@ -355,12 +289,11 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
           )}
         </Button>
       </div>
-
-      {/* Notification Center Panel */}
+      {}
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Backdrop */}
+            {}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -368,8 +301,7 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
               className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
               onClick={() => setIsOpen(false)}
             />
-
-            {/* Panel */}
+            {}
             <motion.div
               initial={{ opacity: 0, x: 400 }}
               animate={{ opacity: 1, x: 0 }}
@@ -380,7 +312,7 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
                 className
               )}
             >
-              {/* Header */}
+              {}
               <div className="border-b border-cliff-light-gray/20 p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div>
@@ -389,7 +321,6 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
                       {unreadCount} okunmamış bildirim
                     </p>
                   </div>
-                  
                   <Button
                     variant="ghost"
                     size="icon"
@@ -399,8 +330,7 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
                     <X className="w-5 h-5 text-cliff-light-gray" />
                   </Button>
                 </div>
-
-                {/* Tabs */}
+                {}
                 <div className="flex gap-2">
                   {["all", "threats", "system"].map((tab) => (
                     <Button
@@ -427,8 +357,7 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
                   ))}
                 </div>
               </div>
-
-              {/* Settings Bar */}
+              {}
               <div className="border-b border-cliff-light-gray/20 p-3 space-y-2">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-cliff-light-gray">Ses Bildirimleri</span>
@@ -439,7 +368,6 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
                     }
                   />
                 </div>
-                
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-cliff-light-gray">Masaüstü Bildirimleri</span>
                   <Switch
@@ -449,7 +377,6 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
                     }
                   />
                 </div>
-                
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-cliff-light-gray">Sadece Okunmamış</span>
                   <Switch
@@ -460,8 +387,7 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
                   />
                 </div>
               </div>
-
-              {/* Notifications List */}
+              {}
               <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ maxHeight: "calc(100vh - 250px)" }}>
                 {isLoading ? (
                   <div className="text-center py-8">
@@ -478,7 +404,6 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
                     {preferences.groupBySeverity && groupedNotifications ? (
                       Object.entries(groupedNotifications).map(([severity, notifs]) => {
                         if (notifs.length === 0) return null
-                        
                         return (
                           <div key={severity} className="space-y-2">
                             <div className="text-xs font-semibold text-cliff-light-gray uppercase">
@@ -512,8 +437,7 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
                   </>
                 )}
               </div>
-
-              {/* Footer Actions */}
+              {}
               <div className="border-t border-cliff-light-gray/20 p-3 flex justify-between">
                 <Button
                   size="sm"
@@ -526,7 +450,6 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
                 >
                   Tümünü Okundu İşaretle
                 </Button>
-                
                 <Button
                   size="sm"
                   variant="ghost"
@@ -546,8 +469,6 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
     </>
   )
 }
-
-// Notification Card Component
 const NotificationCard: React.FC<{
   notification: NotificationItem
   onRead: (id: string) => void
@@ -579,7 +500,6 @@ const NotificationCard: React.FC<{
             </Badge>
           </div>
         </div>
-        
         <Button
           variant="ghost"
           size="icon"
@@ -592,11 +512,9 @@ const NotificationCard: React.FC<{
           <X className="w-3 h-3 text-cliff-light-gray" />
         </Button>
       </div>
-      
       <p className="text-xs text-cliff-light-gray mb-2 line-clamp-2">
         {notification.message}
       </p>
-      
       <div className="flex items-center justify-between text-xs">
         <span className="text-cliff-light-gray/70">
           {notification.source}
@@ -606,7 +524,6 @@ const NotificationCard: React.FC<{
           {new Date(notification.timestamp).toLocaleTimeString("tr-TR")}
         </span>
       </div>
-      
       {notification.actionable && (
         <Button
           size="sm"
@@ -620,5 +537,4 @@ const NotificationCard: React.FC<{
     </motion.div>
   )
 }
-
 export default SmartNotificationCenter

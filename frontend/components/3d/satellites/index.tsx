@@ -1,32 +1,14 @@
-/**
- * Copyright (c) 2025 kynuxdev
- * CLIFF Proprietary Source Available License
- * 
- * UYARI: Bu kod TÜBİTAK, NASA veya herhangi bir yarışmada kullanılamaz.
- * Yetkisiz kullanım telif hakkı ihlalidir.
- * 
- * WARNING: This code cannot be used in TÜBİTAK, NASA, or any competitions.
- * Unauthorized use constitutes copyright infringement.
- */
-
-// CLIFF 3D Solar System - Major Satellite Systems
-// Specialized components for major moons and satellites
-
-'use client'
-
+﻿'use client'
 import { useMemo, useRef } from 'react'
 import { useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
 import { BaseSatelliteComponent, SatelliteComponentProps } from './BaseSatelliteComponent'
 import { SIMPLE_MOONS, SIMPLE_PLANETS } from '../../../types/astronomical-data'
-
-// Moon Component - Earth's satellite with libration and phases
 interface MoonComponentProps extends SatelliteComponentProps {
   showPhases?: boolean
   showLibration?: boolean
   phaseAngle?: number
 }
-
 const MoonComponent: React.FC<MoonComponentProps> = (props) => {
   const {
     showPhases = true,
@@ -38,21 +20,16 @@ const MoonComponent: React.FC<MoonComponentProps> = (props) => {
   } = props
   const moonData = SIMPLE_MOONS.moon
   const earthData = SIMPLE_PLANETS.earth
-
   const phaseRef = useRef<THREE.Mesh>(null)
   const [moonTexture, moonNormalTexture] = useLoader(THREE.TextureLoader, [
     '/textures/moon-surface.jpg',
     '/textures/moon-normal.jpg'
   ])
-  
-  // Create phase shadow geometry
   const phaseShadowGeometry = useMemo(() => {
     if (!showPhases) return null
     const radius = moonData.info.radius_km * 0.000005
     return new THREE.SphereGeometry(radius * 1.01, 32, 32)
   }, [showPhases, moonData])
-  
-  // Phase shadow material
   const phaseMaterial = useMemo(() => {
     if (!showPhases) return null
     return new THREE.MeshBasicMaterial({
@@ -62,16 +39,12 @@ const MoonComponent: React.FC<MoonComponentProps> = (props) => {
       side: THREE.FrontSide
     })
   }, [showPhases])
-  
-  // Update phases
   useFrame((state) => {
     if (showPhases && phaseRef.current) {
-      // Simple phase simulation based on angle from sun
       const phasePosition = Math.cos(phaseAngle) * 0.5 + 0.5
       phaseRef.current.position.x = (phasePosition - 0.5) * moonData.info.radius_km * 0.000005 * 0.1
     }
   })
-  
   return (
     <BaseSatelliteComponent
       satelliteBody={moonData}
@@ -80,29 +53,26 @@ const MoonComponent: React.FC<MoonComponentProps> = (props) => {
       qualityLevel={qualityLevel}
       {...restProps}
     >
-      {/* Moon surface features - Mare regions */}
+      {}
       {qualityLevel !== 'low' && (
         <>
-          {/* Mare Tranquillitatis */}
+          {}
           <mesh position={[0, 0, moonData.info.radius_km * 0.000005 * 0.9]}>
             <sphereGeometry args={[moonData.info.radius_km * 0.000005 * 0.1, 8, 8]} />
             <meshStandardMaterial color="#444444" transparent opacity={0.6} />
           </mesh>
-          
-          {/* Mare Serenitatis */}
+          {}
           <mesh position={[moonData.info.radius_km * 0.000005 * 0.5, moonData.info.radius_km * 0.000005 * 0.5, moonData.info.radius_km * 0.000005 * 0.7]}>
             <sphereGeometry args={[moonData.info.radius_km * 0.000005 * 0.08, 6, 6]} />
             <meshStandardMaterial color="#333333" transparent opacity={0.5} />
           </mesh>
         </>
       )}
-      
-      {/* Phase shadow overlay */}
+      {}
       {showPhases && phaseShadowGeometry && phaseMaterial && (
         <mesh ref={phaseRef} geometry={phaseShadowGeometry} material={phaseMaterial} />
       )}
-      
-      {/* Libration visualization for ultra quality */}
+      {}
       {showLibration && qualityLevel === 'ultra' && (
         <mesh position={[0, 0, moonData.info.radius_km * 0.000005 * 1.1]}>
           <sphereGeometry args={[moonData.info.radius_km * 0.000005 * 0.02, 4, 4]} />
@@ -112,10 +82,7 @@ const MoonComponent: React.FC<MoonComponentProps> = (props) => {
     </BaseSatelliteComponent>
   )
 }
-
-// Io Component - Jupiter's volcanic moon
 const IoComponent: React.FC<SatelliteComponentProps> = (props) => {
-  // Mock Io data - in real implementation this would come from SATELLITE_SYSTEMS
   const ioData = {
     id: 'io',
     name: 'Io',
@@ -150,9 +117,7 @@ const IoComponent: React.FC<SatelliteComponentProps> = (props) => {
     textures: { diffuse: '/textures/io-surface.jpg' },
     color: '#FFFF99'
   }
-  
   const jupiterData = SIMPLE_PLANETS.jupiter
-  
   return (
     <BaseSatelliteComponent
       satelliteBody={ioData}
@@ -163,7 +128,7 @@ const IoComponent: React.FC<SatelliteComponentProps> = (props) => {
     >
       {props.qualityLevel !== 'low' && (
         <>
-          {/* Active volcanoes */}
+          {}
           <mesh position={[ioData.physical.radius * 0.000005 * 0.9, 0, 0]}>
             <sphereGeometry args={[ioData.physical.radius * 0.000005 * 0.05, 4, 4]} />
             <meshStandardMaterial 
@@ -172,7 +137,6 @@ const IoComponent: React.FC<SatelliteComponentProps> = (props) => {
               emissiveIntensity={0.5} 
             />
           </mesh>
-          
           <mesh position={[0, ioData.physical.radius * 0.000005 * 0.8, 0]}>
             <sphereGeometry args={[ioData.physical.radius * 0.000005 * 0.03, 4, 4]} />
             <meshStandardMaterial 
@@ -183,8 +147,7 @@ const IoComponent: React.FC<SatelliteComponentProps> = (props) => {
           </mesh>
         </>
       )}
-      
-      {/* Sulfur dioxide plumes */}
+      {}
       {props.qualityLevel === 'ultra' && (
         <mesh position={[ioData.physical.radius * 0.000005 * 0.9, ioData.physical.radius * 0.000005 * 0.5, 0]}>
           <coneGeometry args={[ioData.physical.radius * 0.000005 * 0.02, ioData.physical.radius * 0.000005 * 0.2, 8]} />
@@ -194,8 +157,6 @@ const IoComponent: React.FC<SatelliteComponentProps> = (props) => {
     </BaseSatelliteComponent>
   )
 }
-
-// Europa Component - Jupiter's ice moon
 const EuropaComponent: React.FC<SatelliteComponentProps> = (props) => {
   const europaData = {
     id: 'europa',
@@ -227,9 +188,7 @@ const EuropaComponent: React.FC<SatelliteComponentProps> = (props) => {
     textures: { diffuse: '/textures/europa-surface.jpg' },
     color: '#AACCFF'
   }
-  
   const jupiterData = SIMPLE_PLANETS.jupiter
-  
   return (
     <BaseSatelliteComponent
       satelliteBody={europaData}
@@ -237,7 +196,7 @@ const EuropaComponent: React.FC<SatelliteComponentProps> = (props) => {
       tidallyLocked={true}
       {...props}
     >
-      {/* Ice surface cracks */}
+      {}
       {props.qualityLevel !== 'low' && (
         <mesh scale={1.005}>
           <sphereGeometry args={[europaData.physical.radius * 0.000005, 24, 24]} />
@@ -249,8 +208,7 @@ const EuropaComponent: React.FC<SatelliteComponentProps> = (props) => {
           />
         </mesh>
       )}
-      
-      {/* Subsurface ocean glow */}
+      {}
       {props.qualityLevel === 'ultra' && (
         <mesh scale={0.98}>
           <sphereGeometry args={[europaData.physical.radius * 0.000005, 16, 16]} />
@@ -265,8 +223,6 @@ const EuropaComponent: React.FC<SatelliteComponentProps> = (props) => {
     </BaseSatelliteComponent>
   )
 }
-
-// Titan Component - Saturn's largest moon with atmosphere
 const TitanComponent: React.FC<SatelliteComponentProps> = (props) => {
   const titanData = {
     id: 'titan',
@@ -305,9 +261,7 @@ const TitanComponent: React.FC<SatelliteComponentProps> = (props) => {
     textures: { diffuse: '/textures/titan-surface.jpg' },
     color: '#FFA500'
   }
-  
   const saturnData = SIMPLE_PLANETS.saturn
-  
   return (
     <BaseSatelliteComponent
       satelliteBody={titanData}
@@ -315,7 +269,7 @@ const TitanComponent: React.FC<SatelliteComponentProps> = (props) => {
       tidallyLocked={true}
       {...props}
     >
-      {/* Thick atmosphere */}
+      {}
       <mesh scale={1.1}>
         <sphereGeometry args={[titanData.physical.radius * 0.000005, 32, 32]} />
         <meshStandardMaterial 
@@ -325,23 +279,20 @@ const TitanComponent: React.FC<SatelliteComponentProps> = (props) => {
           roughness={1.0}
         />
       </mesh>
-      
-      {/* Methane lakes */}
+      {}
       {props.qualityLevel !== 'low' && (
         <>
           <mesh position={[titanData.physical.radius * 0.000005 * 0.7, titanData.physical.radius * 0.000005 * 0.7, 0]}>
             <sphereGeometry args={[titanData.physical.radius * 0.000005 * 0.1, 6, 6]} />
             <meshStandardMaterial color="#001133" metalness={0.8} roughness={0.1} />
           </mesh>
-          
           <mesh position={[-titanData.physical.radius * 0.000005 * 0.6, titanData.physical.radius * 0.000005 * 0.5, 0]}>
             <sphereGeometry args={[titanData.physical.radius * 0.000005 * 0.08, 6, 6]} />
             <meshStandardMaterial color="#001133" metalness={0.8} roughness={0.1} />
           </mesh>
         </>
       )}
-      
-      {/* Atmospheric haze */}
+      {}
       <mesh scale={1.2}>
         <sphereGeometry args={[titanData.physical.radius * 0.000005, 16, 16]} />
         <meshBasicMaterial 
@@ -354,8 +305,6 @@ const TitanComponent: React.FC<SatelliteComponentProps> = (props) => {
     </BaseSatelliteComponent>
   )
 }
-
-// Phobos Component - Mars' larger moon
 const PhobosComponent: React.FC<SatelliteComponentProps> = (props) => {
   const phobosData = {
     id: 'phobos',
@@ -387,9 +336,7 @@ const PhobosComponent: React.FC<SatelliteComponentProps> = (props) => {
     textures: { diffuse: '/textures/phobos-surface.jpg' },
     color: '#8B4513'
   }
-  
   const marsData = SIMPLE_PLANETS.mars
-  
   return (
     <BaseSatelliteComponent
       satelliteBody={phobosData}
@@ -397,7 +344,7 @@ const PhobosComponent: React.FC<SatelliteComponentProps> = (props) => {
       tidallyLocked={true}
       {...props}
     >
-      {/* Stickney crater */}
+      {}
       {props.qualityLevel !== 'low' && (
         <mesh position={[phobosData.physical.radius * 0.000005 * 0.8, 0, 0]}>
           <sphereGeometry args={[phobosData.physical.radius * 0.000005 * 0.4, 6, 6]} />
@@ -407,13 +354,10 @@ const PhobosComponent: React.FC<SatelliteComponentProps> = (props) => {
     </BaseSatelliteComponent>
   )
 }
-
-// Satellite system manager
 interface SatelliteSystemProps extends Omit<SatelliteComponentProps, 'satelliteId' | 'parentBody'> {
   system: 'earth' | 'mars' | 'jupiter' | 'saturn'
   satelliteFilter?: string[]
 }
-
 export const SatelliteSystemComponent: React.FC<SatelliteSystemProps> = ({
   system,
   satelliteFilter,
@@ -431,21 +375,16 @@ export const SatelliteSystemComponent: React.FC<SatelliteSystemProps> = ({
       jupiter: [
         { id: 'io', component: IoComponent, name: 'Io' },
         { id: 'europa', component: EuropaComponent, name: 'Europa' }
-        // Ganymede and Callisto would be added here
       ],
       saturn: [
         { id: 'titan', component: TitanComponent, name: 'Titan' }
       ]
     }
-    
     const systemSatellites = satelliteComponents[system] || []
-    
     if (!satelliteFilter) return systemSatellites
     return systemSatellites.filter(sat => satelliteFilter.includes(sat.id))
   }, [system, satelliteFilter])
-  
   const parentBody = SIMPLE_PLANETS[system]
-  
   return (
     <group>
       {satellites.map(({ id, component: SatelliteComp }) => (
@@ -459,8 +398,6 @@ export const SatelliteSystemComponent: React.FC<SatelliteSystemProps> = ({
     </group>
   )
 }
-
-// Export all satellite components
 export {
   BaseSatelliteComponent,
   MoonComponent,
@@ -469,6 +406,4 @@ export {
   TitanComponent,
   PhobosComponent
 }
-
-// Export types
 export type { SatelliteComponentProps, SatelliteState } from './BaseSatelliteComponent'

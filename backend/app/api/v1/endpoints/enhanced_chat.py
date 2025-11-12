@@ -1,9 +1,4 @@
-"""
-🚀 Enhanced CortexAI Chat API Endpoints
-Grok-4-fast-reasoning modeli için optimize edilmiş chat endpoint'leri
-"""
-
-from typing import List, Dict, Any, Optional
+﻿from typing import List, Dict, Any, Optional
 from fastapi import APIRouter, HTTPException, Depends, status, BackgroundTasks
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -11,7 +6,6 @@ import json
 import asyncio
 from datetime import datetime
 import structlog
-
 from app.services.enhanced_cortex_chat_service import (
     EnhancedCortexChatService,
     EnhancedChatRequest,
@@ -21,13 +15,8 @@ from app.services.enhanced_cortex_chat_service import (
     ModelType,
     get_enhanced_cortex_service
 )
-
 logger = structlog.get_logger(__name__)
-
-# Router oluştur
 router = APIRouter(prefix="/enhanced-chat", tags=["Enhanced Chat"])
-
-# API Response Models
 class ChatRequestAPI(BaseModel):
     """API Chat Request Model"""
     message: str = Field(..., description="Gönderilecek mesaj")
@@ -37,7 +26,6 @@ class ChatRequestAPI(BaseModel):
     conversation_history: Optional[List[Dict[str, str]]] = Field(default=[], description="Konuşma geçmişi")
     use_cache: Optional[bool] = Field(default=True, description="Cache kullan")
     stream: Optional[bool] = Field(default=False, description="Streaming yanıt")
-
 class ChatResponseAPI(BaseModel):
     """API Chat Response Model"""
     success: bool
@@ -49,7 +37,6 @@ class ChatResponseAPI(BaseModel):
     error_message: Optional[str] = None
     timestamp: str
     conversation_id: Optional[str] = None
-
 class ConversationRequest(BaseModel):
     """Conversation Request Model"""
     messages: List[Dict[str, str]] = Field(..., description="Konuşma mesajları")
@@ -57,14 +44,12 @@ class ConversationRequest(BaseModel):
     temperature: Optional[float] = Field(default=0.7, ge=0.0, le=2.0)
     max_tokens: Optional[int] = Field(default=2048, ge=1, le=8192)
     use_cache: Optional[bool] = Field(default=True)
-
 class ServiceStatusResponse(BaseModel):
     """Service Status Response"""
     status: str
     metrics: Dict[str, Any]
     supported_models: List[str]
     cache_stats: Dict[str, Any]
-
 @router.post("/chat", 
             response_model=ChatResponseAPI,
             summary="Basit Chat Completion",
@@ -76,7 +61,6 @@ async def simple_chat(
 ) -> ChatResponseAPI:
     """
     🚀 Basit chat completion endpoint'i
-    
     - **message**: Gönderilecek mesaj
     - **model**: Kullanılacak model (varsayılan: grok-4-fast-reasoning)
     - **temperature**: Yaratıcılık seviyesi (0.0-2.0)
@@ -85,32 +69,22 @@ async def simple_chat(
     """
     try:
         logger.info(f"🚀 Simple chat request - Model: {request.model}")
-        
-        # Model validation
         if request.model not in service.get_supported_models():
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Desteklenmeyen model: {request.model}"
             )
-        
-        # Chat mesajları hazırla
         messages = []
-        
-        # Conversation history ekle
         for msg in request.conversation_history:
             if "role" in msg and "content" in msg:
                 messages.append(ChatMessage(
                     role=MessageRole(msg["role"]),
                     content=msg["content"]
                 ))
-        
-        # Yeni mesaj ekle
         messages.append(ChatMessage(
             role=MessageRole.USER,
             content=request.message
         ))
-        
-        # Enhanced chat request oluştur
         chat_request = EnhancedChatRequest(
             messages=messages,
             model=ModelType(request.model),
@@ -118,11 +92,7 @@ async def simple_chat(
             max_tokens=request.max_tokens,
             use_cache=request.use_cache
         )
-        
-        # Chat completion çağır
         response = await service.chat_completion(chat_request)
-        
-        # API response oluştur
         api_response = ChatResponseAPI(
             success=response.success,
             message=response.content,
@@ -133,18 +103,14 @@ async def simple_chat(
             error_message=response.error_message,
             timestamp=response.timestamp.isoformat()
         )
-        
-        # Background task - metrics logging
         background_tasks.add_task(
             log_chat_metrics,
             response.success,
             response.response_time_ms,
             request.model
         )
-        
         logger.info(f"✅ Simple chat completed - Success: {response.success}")
         return api_response
-        
     except ValueError as ve:
         logger.error(f"❌ Validation error: {str(ve)}")
         raise HTTPException(
@@ -157,7 +123,6 @@ async def simple_chat(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="İç sunucu hatası"
         )
-
 @router.post("/conversation",
             response_model=ChatResponseAPI,
             summary="Conversation Chat",
@@ -169,7 +134,6 @@ async def conversation_chat(
 ) -> ChatResponseAPI:
     """
     🗣️ Conversation chat endpoint'i - Çoklu mesaj desteği
-    
     - **messages**: Konuşma mesajları listesi (role ve content içermeli)
     - **model**: Kullanılacak model
     - **temperature**: Yaratıcılık seviyesi
@@ -177,24 +141,18 @@ async def conversation_chat(
     """
     try:
         logger.info(f"🗣️ Conversation chat request - {len(request.messages)} messages")
-        
-        # Mesajları validate et ve convert et
         messages = []
         for msg in request.messages:
             if "role" not in msg or "content" not in msg:
                 raise ValueError("Her mesaj 'role' ve 'content' içermelidir")
-            
             try:
                 role = MessageRole(msg["role"])
             except ValueError:
                 raise ValueError(f"Geçersiz rol: {msg['role']}. Geçerli roller: user, assistant, system")
-            
             messages.append(ChatMessage(
                 role=role,
                 content=msg["content"]
             ))
-        
-        # Enhanced chat request oluştur
         chat_request = EnhancedChatRequest(
             messages=messages,
             model=ModelType(request.model),
@@ -202,11 +160,7 @@ async def conversation_chat(
             max_tokens=request.max_tokens,
             use_cache=request.use_cache
         )
-        
-        # Chat completion çağır
         response = await service.chat_completion(chat_request)
-        
-        # API response oluştur
         api_response = ChatResponseAPI(
             success=response.success,
             message=response.content,
@@ -217,10 +171,8 @@ async def conversation_chat(
             error_message=response.error_message,
             timestamp=response.timestamp.isoformat()
         )
-        
         logger.info(f"✅ Conversation chat completed - Success: {response.success}")
         return api_response
-        
     except ValueError as ve:
         logger.error(f"❌ Validation error: {str(ve)}")
         raise HTTPException(
@@ -233,7 +185,6 @@ async def conversation_chat(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="İç sunucu hatası"
         )
-
 @router.get("/models",
            summary="Supported Models",
            description="Desteklenen model listesi")
@@ -244,7 +195,6 @@ async def get_supported_models(
     📋 Desteklenen modelleri listele
     """
     return service.get_supported_models()
-
 @router.get("/status",
            response_model=ServiceStatusResponse,
            summary="Service Status",
@@ -257,7 +207,6 @@ async def get_service_status(
     """
     try:
         metrics = service.get_metrics()
-        
         return ServiceStatusResponse(
             status="healthy" if metrics["total_requests"] >= 0 else "unknown",
             metrics=metrics,
@@ -273,7 +222,6 @@ async def get_service_status(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Servis durumu alınamadı"
         )
-
 @router.delete("/cache",
               summary="Clear Cache",
               description="Cache'i temizle")
@@ -285,9 +233,7 @@ async def clear_cache(
     """
     try:
         cleared_count = service.clear_cache()
-        
         logger.info(f"🗑️ Cache cleared - {cleared_count} items removed")
-        
         return {
             "success": True,
             "message": f"{cleared_count} cache kaydı temizlendi",
@@ -300,7 +246,6 @@ async def clear_cache(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Cache temizlenirken hata oluştu"
         )
-
 @router.post("/quick",
             summary="Quick Chat",
             description="Hızlı tek mesaj chat")
@@ -311,15 +256,12 @@ async def quick_chat(
 ) -> Dict[str, Any]:
     """
     ⚡ Hızlı chat - tek mesaj için optimize edilmiş
-    
     - **message**: Gönderilecek mesaj
     - **model**: Kullanılacak model
     """
     try:
         logger.info(f"⚡ Quick chat: {message[:50]}...")
-        
         result = await service.simple_chat(message, ModelType(model))
-        
         return {
             "success": True,
             "response": result,
@@ -332,16 +274,12 @@ async def quick_chat(
             "error": str(e),
             "timestamp": datetime.now().isoformat()
         }
-
-# Background task functions
 async def log_chat_metrics(success: bool, response_time_ms: int, model: str):
     """Background task - chat metrics logging"""
     logger.info(
         f"📊 Chat Metrics - Success: {success}, "
         f"ResponseTime: {response_time_ms}ms, Model: {model}"
     )
-
-# Health check endpoint
 @router.get("/health",
            summary="Health Check",
            description="Servis sağlık kontrolü")
@@ -355,8 +293,6 @@ async def health_check() -> Dict[str, Any]:
         "timestamp": datetime.now().isoformat(),
         "version": "1.0.0"
     }
-
-# Streaming chat endpoint (gelişmiş)
 @router.post("/stream",
             summary="Streaming Chat",
             description="Streaming chat response")
@@ -369,9 +305,7 @@ async def streaming_chat(
     """
     async def generate_stream():
         try:
-            # Normal chat completion al
             messages = [ChatMessage(role=MessageRole.USER, content=request.message)]
-            
             chat_request = EnhancedChatRequest(
                 messages=messages,
                 model=ModelType(request.model),
@@ -379,11 +313,8 @@ async def streaming_chat(
                 max_tokens=request.max_tokens,
                 stream=True  # Streaming enabled
             )
-            
             response = await service.chat_completion(chat_request)
-            
             if response.success and response.content:
-                # Content'i kelime kelime stream et
                 words = response.content.split()
                 for word in words:
                     chunk = {
@@ -393,8 +324,6 @@ async def streaming_chat(
                     }
                     yield f"data: {json.dumps(chunk)}\n\n"
                     await asyncio.sleep(0.05)  # Simulate streaming delay
-                
-                # Stream bitişi
                 final_chunk = {
                     "type": "done",
                     "data": {
@@ -405,16 +334,13 @@ async def streaming_chat(
                     "timestamp": datetime.now().isoformat()
                 }
                 yield f"data: {json.dumps(final_chunk)}\n\n"
-            
             else:
-                # Hata stream et
                 error_chunk = {
                     "type": "error",
                     "data": response.error_message,
                     "timestamp": datetime.now().isoformat()
                 }
                 yield f"data: {json.dumps(error_chunk)}\n\n"
-                
         except Exception as e:
             error_chunk = {
                 "type": "error",
@@ -422,7 +348,6 @@ async def streaming_chat(
                 "timestamp": datetime.now().isoformat()
             }
             yield f"data: {json.dumps(error_chunk)}\n\n"
-    
     return StreamingResponse(
         generate_stream(),
         media_type="text/plain",

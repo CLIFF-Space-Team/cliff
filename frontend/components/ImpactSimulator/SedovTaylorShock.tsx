@@ -1,16 +1,13 @@
-'use client'
-
+﻿'use client'
 import React, { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-
 interface SedovTaylorShockProps {
   impactPosition: THREE.Vector3
   energy_joules: number
   progress: number
   delay: number
 }
-
 export function SedovTaylorShock({
   impactPosition,
   energy_joules,
@@ -18,17 +15,13 @@ export function SedovTaylorShock({
   delay
 }: SedovTaylorShockProps) {
   const meshRef = useRef<THREE.Mesh>(null)
-  
   const calculateShockRadius = (time_s: number, energy: number): number => {
     const xi = 1.03
     const rho_air = 1.225
     const t_squared = time_s * time_s
-    
     const R = xi * Math.pow((energy * t_squared) / rho_air, 0.2)
-    
     return R / 1000
   }
-  
   const shockMaterial = useMemo(() => {
     return new THREE.ShaderMaterial({
       transparent: true,
@@ -44,26 +37,18 @@ export function SedovTaylorShock({
       vertexShader: `
         uniform float shockRadius;
         uniform float progress;
-        
         varying vec2 vUv;
         varying float vDistance;
         varying vec3 vNormal;
-        
         void main() {
           vUv = uv;
           vNormal = normalize(normalMatrix * normal);
-          
-          // Hemisphere üzerinde radyal mesafe
           float dist = length(position.xy) / 2.0;
           vDistance = dist;
-          
-          // Sedov-Taylor şok dalgası - hemisphere üzerinde
           float wave = sin((dist - shockRadius) * 30.0) * 0.04;
           wave *= smoothstep(shockRadius + 0.1, shockRadius, dist);
           wave *= smoothstep(0.0, shockRadius - 0.1, dist);
-          
           vec3 displaced = position + normal * wave * progress;
-          
           gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);
         }
       `,
@@ -71,75 +56,51 @@ export function SedovTaylorShock({
         uniform float shockRadius;
         uniform float progress;
         uniform float time;
-        
         varying vec2 vUv;
         varying float vDistance;
         varying vec3 vNormal;
-        
         void main() {
-          // Hemisphere üzerinde radyal mesafe
           float dist = vDistance;
-          
-          // Sedov-Taylor şok cephesi
           float shockFront = abs(dist - shockRadius);
           float frontIntensity = 1.0 - smoothstep(0.0, 0.15, shockFront);
-          
-          // Dalga animasyonu
           float wave = sin((dist - shockRadius) * 35.0 + time * 8.0) * 0.5 + 0.5;
-          
-          // Renk gradyanı
           vec3 color = mix(
             vec3(1.0, 0.4, 0.0),  // Turuncu
             vec3(1.0, 1.0, 0.7),  // Sarı-beyaz
             frontIntensity
           );
-          
-          // Görünürlük artırıldı
           float alpha = frontIntensity * wave * progress * 1.5;
-          
-          // Kenar fade
           float edgeFade = smoothstep(0.0, 0.05, dist) * smoothstep(1.0, 0.85, dist);
           alpha *= edgeFade;
-          
           gl_FragColor = vec4(color, alpha);
         }
       `
     })
   }, [])
-  
   useFrame((state) => {
     if (!meshRef.current) return
-    
     if (progress < delay || progress > 0.95) {
       meshRef.current.visible = false
       return
     }
-    
     meshRef.current.visible = true
-    
     const localProgress = (progress - delay) / (0.95 - delay)
     const time_s = localProgress * 30
-    
     const R_km = calculateShockRadius(time_s, energy_joules)
     const R_scaled = (R_km / 6371) * 1.8
-    
     if (shockMaterial.uniforms) {
       shockMaterial.uniforms.time.value = state.clock.elapsedTime
       shockMaterial.uniforms.shockRadius.value = R_scaled
       shockMaterial.uniforms.progress.value = Math.min(localProgress * 1.5, 1)
     }
-    
-    // Hemisphere dünya yüzeyinde yayılır
     meshRef.current.scale.setScalar(R_scaled * 3)
     meshRef.current.position.copy(impactPosition)
   })
-  
   const normal = useMemo(() => impactPosition.clone().normalize(), [impactPosition])
   const quaternion = useMemo(() => {
     const up = new THREE.Vector3(0, 1, 0)
     return new THREE.Quaternion().setFromUnitVectors(up, normal)
   }, [normal])
-  
   return (
     <mesh
       ref={meshRef}
@@ -147,13 +108,9 @@ export function SedovTaylorShock({
       quaternion={quaternion}
       visible={false}
     >
-      {/* Hemisphere geometry - dünya yüzeyinde yayılan şok dalgası */}
+      {}
       <sphereGeometry args={[2, 64, 64, 0, Math.PI * 2, 0, Math.PI / 2]} />
       <primitive object={shockMaterial} attach="material" />
     </mesh>
   )
 }
-
-
-
-
