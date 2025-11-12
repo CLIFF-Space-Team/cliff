@@ -4,7 +4,7 @@ module.exports = {
       name: 'cliff-backend',
       cwd: './backend',
       script: 'uvicorn',
-      args: 'main:app --host 0.0.0.0 --port 8001',  // 8000 yerine 8001
+      args: 'main:app --host 0.0.0.0 --port 8000',
       interpreter: 'python',
       instances: 1,
       autorestart: true,
@@ -26,7 +26,7 @@ module.exports = {
       max_memory_restart: '1G',
       env: {
         NODE_ENV: 'production',
-        PORT: 3001  // 3000 yerine 3001
+        PORT: 3000
       }
     }
   ]
