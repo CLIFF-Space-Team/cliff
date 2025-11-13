@@ -1,5 +1,6 @@
 ﻿'use client'
 import React, { useRef, useState, useCallback, useEffect } from 'react'
+import * as THREE from 'three'
 import { motion, PanInfo } from 'framer-motion'
 interface TouchGesture {
   type: 'pan' | 'pinch' | 'rotate' | 'tap' | 'double-tap'

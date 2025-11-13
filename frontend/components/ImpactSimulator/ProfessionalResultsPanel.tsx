@@ -19,7 +19,7 @@ interface ProfessionalResultsPanelProps {
     diameter_m: number
     velocity_kms: number
     angle_deg: number
-    density: number
+    density?: number
   }
 }
 export function ProfessionalResultsPanel({ 

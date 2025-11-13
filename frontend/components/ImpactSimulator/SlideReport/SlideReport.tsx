@@ -14,7 +14,7 @@ interface SlideReportProps {
     diameter_m: number
     velocity_kms: number
     angle_deg: number
-    density: number
+    density?: number
   }
   onClose: () => void
   impactImage?: string

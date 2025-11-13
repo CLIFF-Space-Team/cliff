@@ -14,7 +14,7 @@ export function PlasmaTrail({
   intensity,
   color 
 }: PlasmaTrailProps) {
-  const trailRef = useRef<THREE.Line>(null)
+  const trailRef = useRef<THREE.Mesh>(null)
   const pointsRef = useRef<THREE.Points>(null)
   const { curve, particlePositions } = useMemo(() => {
     const curve = new THREE.CatmullRomCurve3([
@@ -44,7 +44,7 @@ export function PlasmaTrail({
   })
   return (
     <>
-      <line ref={trailRef}>
+      <mesh ref={trailRef as any}>
         <primitive object={trailGeometry} attach="geometry" />
         <meshBasicMaterial
           color={color}
@@ -52,7 +52,7 @@ export function PlasmaTrail({
           opacity={0.8 * intensity}
           blending={THREE.AdditiveBlending}
         />
-      </line>
+      </mesh>
       <points ref={pointsRef}>
         <bufferGeometry>
           <bufferAttribute

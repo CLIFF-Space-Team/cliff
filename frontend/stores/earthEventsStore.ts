@@ -106,7 +106,7 @@ interface EarthEventsStore {
   toggleRegionVisibility: (region: GeographicRegion) => void
   getRegionStats: () => RegionStats[]
   updateRegionStats: () => void
-  getVisibleEvents: () => DetectorEarthEvent[]
+  getVisibleEvents: () => Array<{id: string; coordinates: {lat: number; lng: number}}>
   
   // AI Image Generation actions
   generateEventImages: (eventId: string) => Promise<void>
@@ -442,7 +442,7 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
 
       getRegionStats: () => {
         const events = get().events
-        const detectorEvents: DetectorEarthEvent[] = events.map(event => ({
+        const detectorEvents = events.map(event => ({
           id: event.id,
           coordinates: {
             lat: event.geometry?.[0]?.coordinates?.[1] || 0,
@@ -450,7 +450,7 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
           }
         }))
         
-        return regionDetector.getRegionStats(detectorEvents)
+        return regionDetector.getRegionStats(detectorEvents as any)
       },
 
       updateRegionStats: () => {
@@ -458,7 +458,7 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
         set({ regionStats: stats })
       },
 
-      getVisibleEvents: (): DetectorEarthEvent[] => {
+      getVisibleEvents: () => {
         const visibleRegions = Array.from(get().regionVisibility.entries())
           .filter(([_, visible]) => visible)
           .map(([region, _]) => region)

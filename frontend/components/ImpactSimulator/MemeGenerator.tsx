@@ -16,7 +16,7 @@ interface MemeGeneratorProps {
       diameter_m: number
       velocity_kms: number
       angle_deg: number
-      density: number
+      density?: number
     }
     location: ImpactLocation
     results: ImpactResults

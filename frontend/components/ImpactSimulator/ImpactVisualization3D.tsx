@@ -522,6 +522,7 @@ export function ImpactVisualization3D({
             impactPosition={impactPosition}
             progress={animationProgress}
             delay={timeline.shockStart}
+            energy_joules={results.energy.joules}
           />
           {}
           <SphericalShockWave

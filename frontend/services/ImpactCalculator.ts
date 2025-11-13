@@ -19,6 +19,7 @@ export interface ImpactLocation {
   depth?: number
   population?: number
   cityName?: string
+  countryName?: string
 }
 export interface ImpactResults {
   energy: {

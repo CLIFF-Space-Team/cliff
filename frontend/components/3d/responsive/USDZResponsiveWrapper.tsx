@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, Suspense, useCallback, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, PerspectiveCamera, Stats } from '@react-three/drei'
-import { USDZProfessionalSolarSystem } from '../USDZProfessionalSolarSystem'
+import { NASARealisticSolarSystem } from '../NASARealisticSolarSystem'
 import { PerformanceTracker, USDZPerformanceMetrics } from '../performance/USDZPerformanceManager'
 interface DeviceCapabilities {
   isMobile: boolean
@@ -141,8 +141,11 @@ const CanvasContent: React.FC<{
       />
       {}
       <Suspense fallback={null}>
-        <USDZProfessionalSolarSystem 
+        <NASARealisticSolarSystem 
           quality={currentQuality}
+          showOrbits={true}
+          showStars={true}
+          enableRotation={true}
         />
       </Suspense>
       {}
@@ -190,9 +193,14 @@ export const USDZResponsiveWrapper: React.FC<{
     }
     return baseConfig
   }, [capabilities, isClient])
-  const handleError = (error: Error) => {
-    console.error('🚨 USDZ Wrapper Error:', error)
-    setError(error.message)
+  const handleError = (error: any) => {
+    try {
+      const msg = (error && (error.message || error.toString())) || 'Unknown error'
+      console.error('🚨 USDZ Wrapper Error:', msg, error)
+      setError(msg)
+    } catch {
+      setError('Unknown error')
+    }
   }
   const handleLoadingComplete = useCallback(() => {
     setIsLoading(false)

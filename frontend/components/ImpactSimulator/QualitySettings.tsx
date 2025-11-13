@@ -26,9 +26,10 @@ function detectGPU(): QualityPreset {
   const canvas = document.createElement('canvas')
   const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
   if (!gl) return 'low'
-  const debugInfo = (gl as any).getExtension('WEBGL_debug_renderer_info')
+  const webgl = gl as WebGLRenderingContext
+  const debugInfo = (webgl as any).getExtension('WEBGL_debug_renderer_info')
   if (debugInfo) {
-    const renderer = (gl as any).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL).toLowerCase()
+    const renderer = (webgl as any).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL).toLowerCase()
     if (renderer.includes('nvidia') && (renderer.includes('rtx') || renderer.includes('gtx 16') || renderer.includes('gtx 20'))) {
       return 'high'
     }
@@ -36,7 +37,7 @@ function detectGPU(): QualityPreset {
       return 'medium'
     }
   }
-  const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE)
+  const maxTextureSize = webgl.getParameter(webgl.MAX_TEXTURE_SIZE)
   if (maxTextureSize >= 16384) return 'high'
   if (maxTextureSize >= 8192) return 'medium'
   return 'low'
