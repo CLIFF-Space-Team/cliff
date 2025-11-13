@@ -33,3 +33,9 @@ python-dateutil==2.8.2
 
 # Utilities
 colorama==0.4.6
+
+# Machine Learning and Scientific Computing (for Hybrid System)
+numpy>=1.24.0
+scipy>=1.11.0
+scikit-learn>=1.3.0
+xgboost>=2.0.0

@@ -5,6 +5,7 @@ from app.api.v1.endpoints import (
     educational_ai,
     health,
     nasa,
+    horizons,
     solar_system,
     asteroid_images,
     asteroid_visual_generator,
@@ -31,6 +32,11 @@ api_v1_router.include_router(
     nasa.router,
     prefix="",
     tags=["NASA Services", "Space Data APIs"],
+)
+api_v1_router.include_router(
+    horizons.router,
+    prefix="",
+    tags=["NASA Horizons", "High-Precision Ephemeris"],
 )
 api_v1_router.include_router(
     asteroids.router,

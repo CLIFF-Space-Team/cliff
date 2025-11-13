@@ -14,12 +14,12 @@ export default function ImpactSimulatorPage() {
             <Link href="/dashboard">
               <Button variant="ghost" size="sm" className="text-cliff-white hover:text-white">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Dashboard'a Dön
+                Dashboard'a DÃ¶n
               </Button>
             </Link>
             <div>
-              <h1 className="text-xl font-bold text-gradient-minimal">Asteroid Çarpma Simülatörü</h1>
-              <p className="text-sm text-cliff-light-gray">Gerçek zamanlý etki analizi ve görselleþtirme</p>
+              <h1 className="text-xl font-bold text-gradient-minimal">Asteroid Ã‡arpma SimÃ¼latÃ¶rÃ¼</h1>
+              <p className="text-sm text-cliff-light-gray">GerÃ§ek zamanlÄ± etki analizi ve gÃ¶rselleÅŸtirme</p>
             </div>
           </div>
         </div>

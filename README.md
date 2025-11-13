@@ -143,8 +143,30 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 | `POST` | `/api/v1/ai/chat` | AI chat completion |
 | `GET` | `/api/v1/asteroids/overview` | Threat overview statistics |
 | `GET` | `/api/v1/asteroids/approaches` | Upcoming asteroid approaches |
+| `GET` | `/api/v1/horizons/asteroid/{id}/ephemeris` | NASA JPL Horizons ephemeris (RA/DEC, delta, velocity) |
+| `GET` | `/api/v1/horizons/asteroid/{id}/future-positions` | Future positions (high-precision) |
+| `GET` | `/api/v1/horizons/asteroid/{id}/uncertainty` | Uncertainty estimate from series |
+| `GET` | `/api/v1/horizons/asteroid/{id}/hybrid-analysis` | Hybrid analysis (NASA + ML + MC) |
 
 Full API documentation available at: http://localhost:8000/docs
+
+### 🛰 NASA Horizons Integration (Hybrid System)
+
+- Source: NASA/JPL Horizons (DE441) — industry-grade, high-precision ephemeris
+- Our hybrid pipeline layers ML classification and Monte Carlo uncertainty over NASA data
+
+Flow:
+1) Fetch precise positions from Horizons → 2) Estimate uncertainty → 3) Monte Carlo (10k) → 4) ML threat class → 5) Human-readable explanation
+
+Example:
+```bash
+curl "http://localhost:8000/api/v1/horizons/asteroid/499/hybrid-analysis?days=30"
+```
+
+Accuracy Targets:
+- Position (NASA): 99.99%+
+- ML threat classification: >90%
+- MC confidence reporting: 95% intervals
 
 ### 🏗 Project Structure
 
@@ -315,8 +337,30 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 | `POST` | `/api/v1/ai/chat` | AI sohbet tamamlama |
 | `GET` | `/api/v1/asteroids/overview` | Tehdit özet istatistikleri |
 | `GET` | `/api/v1/asteroids/approaches` | Yaklaşan asteroid yaklaşımları |
+| `GET` | `/api/v1/horizons/asteroid/{id}/ephemeris` | NASA JPL Horizons efemeris (RA/DEC, delta, hız) |
+| `GET` | `/api/v1/horizons/asteroid/{id}/future-positions` | Gelecek pozisyonlar (yüksek doğruluk) |
+| `GET` | `/api/v1/horizons/asteroid/{id}/uncertainty` | Zaman serisinden belirsizlik tahmini |
+| `GET` | `/api/v1/horizons/asteroid/{id}/hybrid-analysis` | Hibrit analiz (NASA + ML + MC) |
 
 Tam API dokümantasyonu: http://localhost:8000/docs
+
+### 🛰 NASA Horizons Entegrasyonu (Hibrit Sistem)
+
+- Kaynak: NASA/JPL Horizons (DE441) — endüstri standardı, yüksek doğruluklu efemeris
+- Bizim hibrit hattımız: NASA verisi + ML sınıflandırma + Monte Carlo belirsizlik
+
+Akış:
+1) Horizons ile kesin pozisyon → 2) Belirsizlik tahmini → 3) Monte Carlo (10k) → 4) ML tehdit sınıfı → 5) Doğal dil açıklama
+
+Örnek:
+```bash
+curl "http://localhost:8000/api/v1/horizons/asteroid/499/hybrid-analysis?days=30"
+```
+
+Doğruluk Hedefleri:
+- Pozisyon (NASA): %99.99+
+- ML sınıflandırma: >%90
+- MC güven raporlama: %95 aralığı
 
 ### 🏗 Proje Yapısı
 

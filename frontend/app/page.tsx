@@ -13,8 +13,8 @@ const ScrollNavigation = () => {
   const [scrollProgress, setScrollProgress] = useState(0)
   const sections = React.useMemo(() => [
     { id: 'hero', icon: Home, label: 'Ana Sayfa' },
-    { id: 'features', icon: Star, label: 'Özellikler' },
-    { id: 'cta', icon: Rocket, label: 'Baþla' },
+    { id: 'features', icon: Star, label: 'Ã–zellikler' },
+    { id: 'cta', icon: Rocket, label: 'BaÅŸla' },
   ], [])
   useEffect(() => {
     let ticking = false
@@ -176,34 +176,34 @@ export default function LandingPage() {
   const features = [
     {
       icon: Globe,
-      title: "3D Güneþ Sistemi",
-      description: "Gerçek zamanlý astronomik veriler ile interaktif 3D uzay simülasyonu",
+      title: "3D GÃ¼neÅŸ Sistemi",
+      description: "GerÃ§ek zamanlÄ± astronomik veriler ile interaktif 3D uzay simÃ¼lasyonu",
       gradient: "from-blue-500/20 to-cyan-500/20"
     },
     {
       icon: Shield,
       title: "Tehdit Analizi",
-      description: "Geliþmiþ AI algoritmalarý ile uzay tehditlerinin erken tespiti",
+      description: "GeliÅŸmiÅŸ AI algoritmalarÄ± ile uzay tehditlerinin erken tespiti",
       gradient: "from-red-500/20 to-orange-500/20"
     },
     {
       icon: Zap,
-      title: "AI Yardýmcýsý",
-      description: "Doðal dil iþleme ile uzay bilimi eðitimi ve analiz desteði",
+      title: "AI YardÄ±mcÄ±sÄ±",
+      description: "DoÄŸal dil iÅŸleme ile uzay bilimi eÄŸitimi ve analiz desteÄŸi",
       gradient: "from-purple-500/20 to-pink-500/20"
     },
     {
       icon: Activity,
-      title: "Gerçek Zamanlý Ýzleme",
-      description: "NASA API'leri ile canlý uzay hava durumu ve asteroid takibi",
+      title: "GerÃ§ek ZamanlÄ± Ä°zleme",
+      description: "NASA API'leri ile canlÄ± uzay hava durumu ve asteroid takibi",
       gradient: "from-green-500/20 to-emerald-500/20"
     }
   ]
   const stats = [
-    { value: "60+", label: "FPS Performans", description: "3D Render Hýzý" },
-    { value: "24/7", label: "Gerçek Zamanlý", description: "NASA Veri Akýþý" },
-    { value: "AI", label: "Yapay Zeka", description: "Akýllý Analiz" },
-    { value: "?", label: "Sýnýrsýz", description: "Keþif Ýmkaný" }
+    { value: "60+", label: "FPS Performans", description: "3D Render Hï¿½zï¿½" },
+    { value: "24/7", label: "Gerï¿½ek Zamanlï¿½", description: "NASA Veri Akï¿½ï¿½ï¿½" },
+    { value: "AI", label: "Yapay Zeka", description: "Akï¿½llï¿½ Analiz" },
+    { value: "?", label: "Sï¿½nï¿½rsï¿½z", description: "Keï¿½if ï¿½mkanï¿½" }
   ]
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden safe-area-top safe-area-bottom">
@@ -239,9 +239,9 @@ export default function LandingPage() {
             <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
               {[
                 { name: 'Ana Sayfa', href: '#', active: true },
-                { name: 'Özellikler', href: '#features' },
-                { name: 'Hakkýnda', href: '#about' },
-                { name: 'Ýletiþim', href: '#contact' }
+                { name: 'Ã–zellikler', href: '#features' },
+                { name: 'HakkÄ±nda', href: '#about' },
+                { name: 'Ä°letiÅŸim', href: '#contact' }
               ].map((item) => (
                 <motion.a
                   key={item.name}
@@ -307,9 +307,9 @@ export default function LandingPage() {
                 <nav className="space-y-2">
                   {[
                     { name: 'Ana Sayfa', href: '#', active: true },
-                    { name: 'Özellikler', href: '#features' },
-                    { name: 'Hakkýnda', href: '#about' },
-                    { name: 'Ýletiþim', href: '#contact' }
+                    { name: 'Ã–zellikler', href: '#features' },
+                    { name: 'HakkÄ±nda', href: '#about' },
+                    { name: 'Ä°letiÅŸim', href: '#contact' }
                   ].map((item) => (
                     <motion.a
                       key={item.name}
@@ -410,8 +410,8 @@ export default function LandingPage() {
                 <span className="text-cliff-white">Space System</span>
               </h1>
               <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-cliff-light-gray max-w-2xl mx-auto lg:mx-0">
-                Kozmik Seviye Akýllý Tahmin Çerçevesi ile uzay bilimlerinde 
-                <span className="text-accent-success font-semibold"> yeni nesil keþif</span> deneyimi
+                Kozmik Seviye AkÄ±llÄ± Tahmin Ã‡erÃ§evesi ile uzay bilimlerinde 
+                <span className="text-accent-success font-semibold"> yeni nesil keÅŸif</span> deneyimi
               </p>
             </div>
             {}
@@ -435,7 +435,7 @@ export default function LandingPage() {
                     size="lg"
                     className="w-full sm:w-auto bg-gradient-to-r from-cliff-white to-cliff-light-gray text-pure-black hover:from-cliff-light-gray hover:to-cliff-white transition-all duration-600 ease-in-out font-semibold text-base md:text-lg px-6 md:px-8 py-3 md:py-4 tap-target relative overflow-hidden group"
                   >
-                    Sisteme Giriþ Yap
+                    Sisteme GiriÅŸ Yap
                     <motion.div
                       whileHover={{ x: 5 }}
                       transition={{ type: "spring", stiffness: 400 }}
@@ -452,7 +452,7 @@ export default function LandingPage() {
                 size="lg"
                 className="w-full sm:w-auto border-cliff-white/30 text-cliff-white hover:bg-cliff-white/10 transition-all duration-600 ease-in-out text-base md:text-lg px-6 md:px-8 py-3 md:py-4 tap-target"
               >
-                Demo Ýzle
+                Demo Ä°zle
               </Button>
             </motion.div>
             {}
@@ -543,7 +543,7 @@ export default function LandingPage() {
             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
             className="flex flex-col items-center space-y-2 text-cliff-light-gray"
           >
-            <span className="text-sm">Keþfetmeye devam et</span>
+            <span className="text-sm">KeÅŸfetmeye devam et</span>
             <ChevronDown className="h-5 w-5" />
           </motion.div>
         </motion.div>
@@ -560,11 +560,11 @@ export default function LandingPage() {
             className="text-center mb-12 md:mb-16 lg:mb-20"
           >
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gradient-minimal mb-4 md:mb-6">
-              Geliþmiþ Özellikler
+              GeliÅŸmiÅŸ Ã–zellikler
             </h2>
             <p className="text-base md:text-lg lg:text-xl text-cliff-light-gray max-w-3xl mx-auto">
-              CLIFF 3D Space System, uzay bilimlerinde eðitim ve araþtýrma için 
-              gereken tüm modern teknolojileri bir arada sunar
+              CLIFF 3D Space System, uzay bilimlerinde eÄŸitim ve araÅŸtÄ±rma iÃ§in 
+              gereken tÃ¼m modern teknolojileri bir arada sunar
             </p>
           </motion.div>
           {}
@@ -613,11 +613,11 @@ export default function LandingPage() {
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
               <CardContent className="p-8 md:p-12 lg:p-16">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gradient-minimal mb-4 md:mb-6 responsive-title">
-                  Uzay Keþfine Hazýr mýsýn?
+                  Uzay KeÅŸfine HazÄ±r mÄ±sÄ±n?
                 </h2>
                 <p className="text-base md:text-lg lg:text-xl text-cliff-light-gray/90 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed">
-                  CLIFF 3D Space System ile uzayýn derinliklerine dalýn, 
-                  gerçek zamanlý verilerle eðitim alýn ve AI destekli analizlerle geleceði keþfedin.
+                  CLIFF 3D Space System ile uzayÄ±n derinliklerine dalÄ±n, 
+                  gerÃ§ek zamanlÄ± verilerle eÄŸitim alÄ±n ve AI destekli analizlerle geleceÄŸi keÅŸfedin.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
                   <Link href="/dashboard" className="flex-1 sm:flex-initial">
@@ -633,7 +633,7 @@ export default function LandingPage() {
                         size="lg"
                         className="w-full bg-gradient-to-r from-white to-cliff-light-gray text-pure-black hover:from-cliff-light-gray hover:to-white transition-all duration-300 font-semibold text-base md:text-lg px-6 md:px-8 py-3 md:py-4 tap-target shadow-lg hover:shadow-xl"
                       >
-                        Hemen Baþla
+                        Hemen BaÅŸla
                         <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
                       </Button>
                     </motion.div>
@@ -658,14 +658,14 @@ export default function LandingPage() {
                   CLIFF 3D Space System
                 </span>
                 <span className="text-xs text-cliff-light-gray">
-                  Kozmik Seviye Akýllý Tahmin Çerçevesi
+                  Kozmik Seviye Akï¿½llï¿½ Tahmin ï¿½erï¿½evesi
                 </span>
               </div>
             </div>
             <div className="text-xs md:text-sm text-cliff-light-gray text-center md:text-right">
-              <p className="font-medium">© 2025 CLIFF 3D. Pure Black Edition.</p>
+              <p className="font-medium">ï¿½ 2025 CLIFF 3D. Pure Black Edition.</p>
               <p className="mt-1 text-cliff-light-gray/70">
-                Eðitim ve Araþtýrma için NASA API Entegrasyonu
+                Eï¿½itim ve Araï¿½tï¿½rma iï¿½in NASA API Entegrasyonu
               </p>
             </div>
           </div>
