@@ -197,8 +197,9 @@ function SolarSystemScene({
         count={quality === 'ultra' ? 100 : quality === 'high' ? 50 : quality === 'medium' ? 30 : 20}
         quality={quality}
         enableAnimation={false}
+        enableOrbitalMechanics={false}
         distributionRadius={[14, 28]}
-        enableThreatVisualization
+        enableThreatVisualization={false}
         enableOrbitalMechanics={false}
         maxAsteroids={100}
       />
