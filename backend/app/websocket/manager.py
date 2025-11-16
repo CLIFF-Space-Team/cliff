@@ -667,16 +667,17 @@ class WebSocketManager:
                 try:
                     asteroids = await nasa_services.get_simple_asteroids(days_ahead=7)
                     for ast in asteroids:
-                        if ast.threat_level in ["Yüksek", "Orta"]:
-                            severity_map = {"Yüksek": "CRITICAL", "Orta": "HIGH"}
+                        # ast is a dict, not an object - use dictionary keys
+                        is_hazardous = ast.get("is_hazardous", False)
+                        if is_hazardous:
                             alert = ThreatAlert(
-                                alert_id=f"asteroid-{ast.id}",
-                                severity=severity_map.get(ast.threat_level, "MODERATE"),
-                                title=f"Yaklaşan Asteroit: {ast.name}",
-                                description=f"{ast.approach_date} tarihinde {ast.distance_km:,.0f} km mesafeden geçecek. Tehlike: {ast.threat_level}.",
+                                alert_id=f"asteroid-{ast.get('id', 'unknown')}",
+                                severity="CRITICAL" if is_hazardous else "MODERATE",
+                                title=f"Yaklaşan Asteroit: {ast.get('name', 'Bilinmeyen')}",
+                                description=f"{ast.get('close_approach_date', 'Bilinmeyen')} tarihinde {ast.get('miss_distance_km', 0):,.0f} km mesafeden geçecek.",
                                 threat_type="asteroid",
                                 actions=["Yörüngeyi analiz et", "Detayları görüntüle"],
-                                expires_at=datetime.fromisoformat(ast.approach_date) + timedelta(days=1) if ast.approach_date else datetime.utcnow() + timedelta(days=1)
+                                expires_at=datetime.utcnow() + timedelta(days=1)
                             )
                             all_potential_alerts.append(alert)
                 except Exception as e:
@@ -686,18 +687,22 @@ class WebSocketManager:
                 try:
                     events = await nasa_services.get_simple_earth_events(limit=10)
                     for event in events:
-                        if event.severity in ["Yüksek", "Orta"]:
-                            severity_map = {"Yüksek": "CRITICAL", "Orta": "HIGH"}
-                            alert = ThreatAlert(
-                                alert_id=f"eonet-{event.id}",
-                                severity=severity_map.get(event.severity, "MODERATE"),
-                                title=f"Doğal Afet: {event.title}",
-                                description=f"Kategori: {event.category}. Konum: {event.location or 'Bilinmiyor'}.",
-                                threat_type="earth_event",
-                                actions=["Etkilenen bölgeyi incele", "Uyarı yayınla"],
-                                expires_at=datetime.fromisoformat(event.date) + timedelta(days=2) if event.date else datetime.utcnow() + timedelta(days=2)
-                            )
-                            all_potential_alerts.append(alert)
+                        # event is a dict, not an object - use dictionary keys
+                        category = event.get("category", "Unknown")
+                        # Earth events don't have severity, so we categorize by type
+                        critical_categories = ["Wildfires", "Severe Storms", "Volcanoes"]
+                        severity = "CRITICAL" if category in critical_categories else "MODERATE"
+                        
+                        alert = ThreatAlert(
+                            alert_id=f"eonet-{event.get('id', 'unknown')}",
+                            severity=severity,
+                            title=f"Doğal Olay: {event.get('title', 'Bilinmeyen')}",
+                            description=f"Kategori: {category}",
+                            threat_type="earth_event",
+                            actions=["Etkilenen bölgeyi incele", "Detayları görüntüle"],
+                            expires_at=datetime.utcnow() + timedelta(days=2)
+                        )
+                        all_potential_alerts.append(alert)
                 except Exception as e:
                     logger.warning(f"Threat monitor could not fetch earth event data: {e}")
 

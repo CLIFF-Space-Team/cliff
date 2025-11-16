@@ -22,10 +22,10 @@ async def ingest_neows_feed(days_ahead: int = 7) -> Dict[str, Any]:
         now = datetime.utcnow().strftime("%Y-%m-%d")
         end = (datetime.utcnow() + timedelta(days=min(days_ahead, 7))).strftime("%Y-%m-%d")
         result = await service.get_neo_feed(start_date=now, end_date=end)
-        if not result.get("success"):
+        if result.get("status") != "success":
             logger.error("NeoWs feed alınamadı", error=result.get("error"))
             return {"success": False, "error": result.get("error")}
-        neos_by_day = result.get("near_earth_objects", {})
+        neos_by_day = result.get("data", {}).get("near_earth_objects", {})
         neo_count = 0
         approach_docs: List[CloseApproach] = []
         for day, neos in neos_by_day.items():

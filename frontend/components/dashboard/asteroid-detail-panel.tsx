@@ -1,10 +1,11 @@
 ﻿'use client'
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, AlertTriangle, Clock, Target, Zap, Info } from 'lucide-react'
+import { X, AlertTriangle, Clock, Target, Zap, Info, Satellite } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { HybridRiskPanel } from './hybrid-risk-panel'
 interface ThreatData {
   threat_id: string
   title: string

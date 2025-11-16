@@ -330,7 +330,10 @@ export function ImpactVisualization3D({
   }, [asteroidParams])
   useFrame((state, delta) => {
     if (!isAnimating) return
-    const newProgress = Math.min(animationProgress + delta * 0.03 * animationSpeed, 1)
+    // Animasyon süresini daha dengeli yap: ~20 saniye yerine ~30-40 saniye
+    // delta * 0.025 ile progress artışını yavaşlat
+    const progressIncrement = delta * 0.025 * animationSpeed
+    const newProgress = Math.min(animationProgress + progressIncrement, 1)
     setAnimationProgress(newProgress)
     if (onProgressChange) {
       onProgressChange(newProgress)

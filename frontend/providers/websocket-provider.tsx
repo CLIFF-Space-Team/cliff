@@ -60,7 +60,7 @@ const WebSocketContext = createContext<WebSocketProviderState>(initialState)
 
 export function WebSocketProvider({
   children,
-  url = process.env.NEXT_PUBLIC_WS_URL || 'wss://nasa.kynux.dev/ws/cliff_frontend',
+  url = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/ws/cliff_frontend',
   reconnectInterval = 5000,
   maxReconnectAttempts = 10,
   heartbeatInterval = 30000,

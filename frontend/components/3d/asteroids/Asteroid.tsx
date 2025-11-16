@@ -222,12 +222,8 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
       `
     })
   }, [data.is_hazardous, data.orbital_data, hovered, showTooltip, isMobile])
-  const rotationSpeed = useMemo(() => ({
-    x: (Math.random() - 0.5) * (isMobile ? 0.0005 : 0.001),
-    y: (Math.random() - 0.5) * (isMobile ? 0.0005 : 0.001),
-    z: (Math.random() - 0.5) * (isMobile ? 0.0002 : 0.0005)
-  }), [isMobile])
   useFrame((state, delta) => {
+    // Sadece scale animasyonu, dönme yok
     if (meshRef.current) {
       const targetScale = (hovered || showTooltip) ? 1.2 : 1.0
       const currentScale = meshRef.current.scale.x

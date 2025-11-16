@@ -114,89 +114,7 @@ interface EarthEventsStore {
   clearEventImages: (eventId: string) => void
 }
 
-// NASA EONET API formatında mock data
-const mockEvents: any[] = [
-  {
-    id: 'EONET_001',
-    title: 'Türkiye Orman Yangını',
-    description: 'Antalya bölgesinde devam eden orman yangını',
-    created_date: new Date().toISOString(),
-    categories: [{ id: 8, title: 'Wildfires' }],
-    geometry: [{ coordinates: [30.7133, 36.8969] }]
-  },
-  {
-    id: 'EONET_002',
-    title: 'Ege Denizi Depremi',
-    description: '5.2 büyüklüğünde deprem',
-    created_date: new Date(Date.now() - 86400000).toISOString(),
-    categories: [{ id: 16, title: 'Earthquakes' }],
-    geometry: [{ coordinates: [26.1238, 38.4237] }]
-  },
-  {
-    id: 'EONET_003',
-    title: 'Karadeniz Fırtınası',
-    description: 'Şiddetli fırtına ve yağış',
-    created_date: new Date(Date.now() - 172800000).toISOString(),
-    categories: [{ id: 10, title: 'Severe Storms' }],
-    geometry: [{ coordinates: [36.3300, 41.2861] }]
-  },
-  {
-    id: 'EONET_004',
-    title: 'Akdeniz Sel Felaketi',
-    description: 'Aşırı yağış sonucu sel',
-    created_date: new Date(Date.now() - 259200000).toISOString(),
-    categories: [{ id: 9, title: 'Floods' }],
-    geometry: [{ coordinates: [32.0, 36.5] }]
-  },
-  {
-    id: 'EONET_005',
-    title: 'Etna Yanardağı Aktivitesi',
-    description: 'İtalya Etna yanardağında artan aktivite',
-    created_date: new Date(Date.now() - 345600000).toISOString(),
-    categories: [{ id: 12, title: 'Volcanoes' }],
-    geometry: [{ coordinates: [14.9934, 37.7510] }]
-  },
-  {
-    id: 'EONET_006',
-    title: 'California Orman Yangını',
-    description: 'Los Angeles yakınlarında büyük yangın',
-    created_date: new Date(Date.now() - 432000000).toISOString(),
-    categories: [{ id: 8, title: 'Wildfires' }],
-    geometry: [{ coordinates: [-118.2437, 34.0522] }]
-  },
-  {
-    id: 'EONET_007',
-    title: 'Japonya Depremi',
-    description: '6.8 büyüklüğünde deprem',
-    created_date: new Date(Date.now() - 518400000).toISOString(),
-    categories: [{ id: 16, title: 'Earthquakes' }],
-    geometry: [{ coordinates: [139.6503, 35.6762] }]
-  },
-  {
-    id: 'EONET_008',
-    title: 'Avustralya Kuraklık',
-    description: 'Şiddetli kuraklık devam ediyor',
-    created_date: new Date(Date.now() - 604800000).toISOString(),
-    categories: [{ id: 15, title: 'Drought' }],
-    geometry: [{ coordinates: [133.7751, -25.2744] }]
-  },
-  {
-    id: 'EONET_009',
-    title: 'Amazon Orman Yangını',
-    description: 'Amazon yağmur ormanlarında büyük yangın',
-    created_date: new Date(Date.now() - 691200000).toISOString(),
-    categories: [{ id: 8, title: 'Wildfires' }],
-    geometry: [{ coordinates: [-60.0261, -3.4653] }]
-  },
-  {
-    id: 'EONET_010',
-    title: 'Himalaya Buzul Eriması',
-    description: 'Küresel ısınma nedeniyle hızlanan buzul eriması',
-    created_date: new Date(Date.now() - 777600000).toISOString(),
-    categories: [{ id: 15, title: 'Drought' }],
-    geometry: [{ coordinates: [86.9250, 27.9881] }]
-  }
-]
+// Mock data removed - using only real NASA EONET data
 
 export const useEarthEventsStore = create<EarthEventsStore>()(
   devtools(
@@ -204,10 +122,11 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
       viewMode: '3D',
       transitionProgress: 0,
       
-      events: mockEvents,
+      events: [], // No initial data - will load from NASA EONET API
       selectedEvent: null,
-      filteredEvents: mockEvents,
+      filteredEvents: [],
       filters: {},
+      _lastFetchTime: 0, // Rate limiting timestamp
       
       mapCenter: [0, 0],
       mapZoom: 2,
@@ -312,65 +231,93 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
       setViewMode: (mode) => set({ viewMode: mode }),
       
       loadEvents: async () => {
-        set({ loading: true, error: null })
+        // Rate limiting - son fetch'ten beri en az 2 saniye geçmiş mi kontrol et
+        const state = get()
+        const now = Date.now()
+        const lastFetch = (state as any)._lastFetchTime || 0
+        
+        if (now - lastFetch < 2000) {
+          console.log('⚠️ Load rate limited - waiting...')
+          return
+        }
+        
+        set({ loading: true, error: null, _lastFetchTime: now } as any)
         try {
-          const response = await fetch('http://localhost:8000/api/v1/nasa/earth-events')
+          const response = await fetch('http://localhost:8000/api/v1/nasa/earth-events?limit=100')
           if (response.ok) {
             const data = await response.json()
-            const events = data.success ? data.data?.events || mockEvents : mockEvents
+            // API'den gelen data formatı: { success: true, data: { events: [...] } }
+            const apiEvents = data.success && data.data?.events ? data.data.events : []
+            
+            console.log(`✅ Earth events loaded: ${apiEvents.length} gerçek NASA event`)
+            
             set({
-              events,
-              filteredEvents: events,
+              events: apiEvents,
+              filteredEvents: apiEvents,
               loading: false
             })
           } else {
-            console.log('Server not available, using mock data')
+            console.error('Server error:', response.status)
             set({
-              events: mockEvents,
-              filteredEvents: mockEvents,
+              events: [],
+              filteredEvents: [],
               loading: false,
-              error: null // Server olmadığında error gösterme
+              error: 'Server bağlantı hatası'
             })
           }
         } catch (error) {
-          console.log('Failed to load events, using mock data:', error)
+          console.error('Failed to load events:', error)
           set({
-            events: mockEvents,
-            filteredEvents: mockEvents,
+            events: [],
+            filteredEvents: [],
             loading: false,
-            error: null // Network error durumunda error gösterme
+            error: 'NASA EONET verileri yüklenemedi'
           })
         }
       },
       
       fetchEvents: async () => {
-        set({ loading: true, error: null })
+        // Rate limiting - son fetch'ten beri en az 2 saniye geçmiş mi kontrol et
+        const state = get()
+        const now = Date.now()
+        const lastFetch = (state as any)._lastFetchTime || 0
+        
+        if (now - lastFetch < 2000) {
+          console.log('⚠️ Fetch rate limited - waiting...')
+          return
+        }
+        
+        set({ loading: true, error: null, _lastFetchTime: now } as any)
         try {
-          const response = await fetch('http://localhost:8000/api/v1/nasa/earth-events')
+          const response = await fetch('http://localhost:8000/api/v1/nasa/earth-events?limit=100')
           if (response.ok) {
             const data = await response.json()
-            const events = data.success ? data.data?.events || mockEvents : mockEvents
+            // API'den gelen data formatı: { success: true, data: { events: [...] } }
+            const apiEvents = data.success && data.data?.events ? data.data.events : []
+            
+            console.log(`✅ Earth events fetched: ${apiEvents.length} gerçek NASA event`)
+            
             set({
-              events,
-              filteredEvents: events,
+              events: apiEvents,
+              filteredEvents: apiEvents,
               loading: false
             })
           } else {
-            console.log('Server not available, using mock data')
+            console.error('Server error:', response.status)
             set({
-              events: mockEvents,
-              filteredEvents: mockEvents,
+              events: [],
+              filteredEvents: [],
               loading: false,
-              error: null // Server olmadığında error gösterme
+              error: 'Server bağlantı hatası'
             })
           }
         } catch (error) {
-          console.log('Failed to load events, using mock data:', error)
+          console.error('Failed to fetch events:', error)
           set({
-            events: mockEvents,
-            filteredEvents: mockEvents,
+            events: [],
+            filteredEvents: [],
             loading: false,
-            error: null // Network error durumunda error gösterme
+            error: 'NASA EONET verileri yüklenemedi'
           })
         }
       },

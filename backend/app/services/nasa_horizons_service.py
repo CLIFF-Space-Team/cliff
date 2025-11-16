@@ -41,6 +41,8 @@ class NASAHorizonsService:
 
 	def __init__(self, cache_ttl_seconds: int = 3600) -> None:
 		self._cache = _TTLCache(default_ttl_seconds=cache_ttl_seconds)
+		# Clear cache on init to ensure fresh start
+		self._cache._store = {}
 
 	def _cache_key(self, params: Dict[str, str]) -> str:
 		parts = [f"{k}={v}" for k, v in sorted(params.items())]
@@ -51,16 +53,25 @@ class NASAHorizonsService:
 		command: str,
 		start_time: str,
 		stop_time: str,
-		step_size: str = "1 d",
-		quantities: str = "1,9,20,23,24,29",
+		step_size: str = "1d",  # Boşluksuz format (URL encoding sorunu yok)
+		quantities: str = "1",  # Sadece RA/DEC (en basit)
 	) -> Dict[str, str]:
 		"""
 		Build default parameters for an observer-table query (geocentric).
 		Using CSV output for easier parsing.
+		
+		For NEO asteroids:
+		- Use IAU number with semicolon: '99942;' for Apophis
+		- Use DES keyword: 'DES=99942;' 
+		- Use name: 'Apophis;' (not guaranteed unique)
+		
+		QUANTITIES=1 only (RA/DEC):
+		- Avoiding "Too many constants" error from Horizons
+		- For range data, use NeoWs instead
 		"""
 		return {
-			"format": "text",
-			"COMMAND": f"'{command}'",  # asteroid/comet/planet id or name; e.g. '499' for Mars
+			"format": "json",  # JSON format for reliable parsing
+			"COMMAND": f"'{command}'",  # NEO asteroid: '99942;' for Apophis
 			"OBJ_DATA": "YES",
 			"MAKE_EPHEM": "YES",
 			"EPHEM_TYPE": "OBSERVER",
@@ -69,19 +80,50 @@ class NASAHorizonsService:
 			"STOP_TIME": stop_time,
 			"STEP_SIZE": step_size,
 			"QUANTITIES": quantities,
-			"CSV_FORMAT": "YES",
+			"CSV_FORMAT": "NO",  # JSON format doesn't use CSV
 		}
 
 	async def _request(self, params: Dict[str, str]) -> str:
 		cache_key = self._cache_key(params)
 		cached = self._cache.get(cache_key)
 		if cached is not None:
+			import structlog
+			logger = structlog.get_logger(__name__)
+			logger.debug(f"Cache hit for Horizons query")
 			return cached
+		
+		import structlog
+		logger = structlog.get_logger(__name__)
+		
+		# Horizons requires special encoding:
+		# - Single quotes must be encoded as %27
+		# - Semicolons must be encoded as %3B
+		# - Spaces in values must be encoded as %20
+		from urllib.parse import quote
+		
+		# Build URL with proper Horizons encoding
+		url_parts = []
+		for key, value in params.items():
+			# Encode everything including quotes
+			encoded_val = quote(str(value), safe='')
+			url_parts.append(f"{key}={encoded_val}")
+		
+		full_url = f"{self._base_url}?{'&'.join(url_parts)}"
+		logger.info(f"Horizons API request: {params.get('COMMAND', 'unknown')}")
+		logger.debug(f"Full URL: {full_url[:200]}...")
+		
 		async with httpx.AsyncClient(timeout=60) as client:
-			resp = await client.get(self._base_url, params=params)
+			resp = await client.get(full_url)
 			resp.raise_for_status()
 			text = resp.text
-		self._cache.set(cache_key, text)
+			
+		logger.info(f"Horizons API response: {len(text)} bytes")
+		
+		# Check for INPUT ERROR
+		if "INPUT ERROR" in text:
+			logger.error(f"Horizons INPUT ERROR: {text[:300]}")
+		
+		self._cache.set(cache_key, text, ttl_seconds=3600)
 		return text
 
 	@staticmethod
@@ -100,40 +142,56 @@ class NASAHorizonsService:
 				end_idx = i
 				break
 		if start_idx is None or end_idx is None or end_idx <= start_idx:
+			import structlog
+			logger = structlog.get_logger(__name__)
+			logger.warning(f"No $$SOE/$$EOE markers found. Start: {start_idx}, End: {end_idx}")
+			# Debug: print first 20 lines
+			logger.debug("Raw text preview:", lines=lines[:20] if len(lines) > 20 else lines)
 			return []
-		return [l for l in lines[start_idx:end_idx] if l.strip()]
+		extracted = [l for l in lines[start_idx:end_idx] if l.strip()]
+		import structlog
+		logger = structlog.get_logger(__name__)
+		logger.info(f"Extracted {len(extracted)} data lines from Horizons response")
+		return extracted
 
 	@staticmethod
 	def _parse_csv_line(csv_line: str) -> Dict[str, Any]:
 		"""
-		Basic parser for Horizons CSV line with columns:
-		  Date__(UT)__HR:MN, RA(ICRF), DEC, APmag, S-brt, delta(AU), deldot(km/s), S-O-T, S-T-O, Cnst
-		Some columns may be missing depending on QUANTITIES; parser tries to be robust.
+		Parser for Horizons line with QUANTITIES='1':
+		  Date__(UT)__HR:MN, RA(ICRF), DEC
+		
+		Columns for QUANTITIES='1':
+		0: Date/Time (UTC)
+		1: RA (ICRF) - Right Ascension
+		2: DEC (ICRF) - Declination
 		"""
-		parts = [p.strip() for p in csv_line.split(",")]
+		# Split by multiple spaces (Horizons uses space-separated, not CSV)
+		parts = csv_line.split()
 		data: Dict[str, Any] = {}
-		if parts:
-			data["datetime_utc"] = parts[0]
-		# Heuristic mapping by typical column count
-		# Try to locate delta and deldot near the end safely
-		if len(parts) >= 6:
-			# Common positions with QUANTITIES='1,9,20,23,24,29'
-			# 0:date, 1:RA, 2:DEC, 3:APmag, 4:S-brt, 5:delta, 6:deldot, 7:S-O-T, 8:S-T-O, 9:Cnst
-			data["ra_icrf"] = parts[1] if len(parts) > 1 else None
-			data["dec_icrf"] = parts[2] if len(parts) > 2 else None
-			data["apparent_mag"] = NASAHorizonsService._to_float(parts[3]) if len(parts) > 3 else None
-			data["surface_brightness"] = NASAHorizonsService._to_float(parts[4]) if len(parts) > 4 else None
-			data["delta_au"] = NASAHorizonsService._to_float(parts[5]) if len(parts) > 5 else None
-			data["deldot_kms"] = NASAHorizonsService._to_float(parts[6]) if len(parts) > 6 else None
-			data["s_o_t_deg"] = NASAHorizonsService._to_float(parts[7]) if len(parts) > 7 else None
-			# parts[8] sometimes in format '120.6420 /T' when CSV is not strict; try split
-			if len(parts) > 8 and parts[8]:
-				try:
-					data["s_t_o_deg"] = NASAHorizonsService._to_float(parts[8].split()[0])
-				except Exception:
-					data["s_t_o_deg"] = NASAHorizonsService._to_float(parts[8])
-			if len(parts) > 9:
-				data["constellation"] = parts[9]
+		
+		# Parse space-separated format
+		# Example: "2025-Nov-15 00:00     16 07 05.15 -19 37 56.3"
+		if len(parts) >= 2:
+			# Date and time
+			data["datetime_utc"] = f"{parts[0]} {parts[1]}"
+		
+		if len(parts) >= 5:
+			# RA in format: "HH MM SS.SS"
+			data["ra_icrf"] = f"{parts[2]} {parts[3]} {parts[4]}"
+		
+		if len(parts) >= 8:
+			# DEC in format: "+DD MM SS.S" or "-DD MM SS.S"
+			data["dec_icrf"] = f"{parts[5]} {parts[6]} {parts[7]}"
+			
+		# Fields not available with QUANTITIES='1'
+		data["apparent_mag"] = None
+		data["surface_brightness"] = None
+		data["delta_au"] = None
+		data["deldot_kms"] = None
+		data["s_o_t_deg"] = None
+		data["s_t_o_deg"] = None
+		data["constellation"] = None
+		
 		return data
 
 	@staticmethod
@@ -163,10 +221,11 @@ class NASAHorizonsService:
 		start_date: Optional[str] = None,
 		stop_date: Optional[str] = None,
 		step_size: str = "1 d",
-		quantities: str = "1,9,20,23,24,29",
+		quantities: str = "1",  # FIXED: Sadece RA/DEC
 	) -> str:
 		"""
-		Fetch raw Horizons ephemeris table (text, CSV-formatted rows between $$SOE/$$EOE).
+		Fetch raw Horizons ephemeris table from JSON response.
+		QUANTITIES='1,20' = RA/DEC + Range/Range-rate
 		"""
 		if not start_date or not stop_date:
 			s, e = self._default_range(days=30)
@@ -187,38 +246,90 @@ class NASAHorizonsService:
 		start_date: Optional[str] = None,
 		stop_date: Optional[str] = None,
 		step_size: str = "1 d",
-		quantities: str = "1,9,20,23,24,29",
+		quantities: str = "1",  # Sadece RA/DEC
 	) -> Dict[str, Any]:
 		"""
 		Return parsed ephemeris entries with useful fields.
+		Now using JSON format for reliable parsing.
 		"""
-		raw = await self.get_ephemeris_raw(
-			object_command=object_command,
-			start_date=start_date,
-			stop_date=stop_date,
+		import json
+		import structlog
+		logger = structlog.get_logger(__name__)
+		
+		if not start_date or not stop_date:
+			s, e = self._default_range(days=30)
+			start_date = start_date or s
+			stop_date = stop_date or e
+			
+		params = self._default_params(
+			command=object_command,
+			start_time=start_date,
+			stop_time=stop_date,
 			step_size=step_size,
 			quantities=quantities,
 		)
-		rows = self._extract_table_lines(raw)
-		parsed = [self._parse_csv_line(r) for r in rows]
-		return {
-			"success": True,
-			"source": "NASA/JPL Horizons",
-			"model": "DE441",
-			"object": object_command,
-			"start_date": start_date,
-			"stop_date": stop_date,
-			"step_size": step_size,
-			"count": len(parsed),
-			"data": parsed,
-			"raw": raw,
-		}
+		
+		raw = await self._request(params)
+		
+		# Parse JSON response
+		try:
+			json_data = json.loads(raw)
+			logger.debug(f"JSON keys: {list(json_data.keys())}")
+			
+			# Check for errors in result
+			if "result" in json_data:
+				result_text = json_data["result"]
+				
+				# Check for Horizons errors (case insensitive)
+				if "ERROR" in result_text.upper() or "error loading" in result_text.lower():
+					logger.error(f"Horizons returned error for {object_command}: {result_text[:200]}")
+					return {
+						"success": False,
+						"error": "Horizons API error",
+						"object": object_command,
+						"raw": result_text[:500]
+					}
+				
+				# Extract data between $$SOE and $$EOE
+				rows = self._extract_table_lines(result_text)
+				parsed = [self._parse_csv_line(r) for r in rows]
+				
+				logger.info(f"Parsed {len(parsed)} ephemeris points for {object_command}")
+				
+				return {
+					"success": True,
+					"source": "NASA/JPL Horizons",
+					"model": "DE441",
+					"object": object_command,
+					"start_date": start_date,
+					"stop_date": stop_date,
+					"step_size": step_size,
+					"count": len(parsed),
+					"data": parsed,
+					"raw": result_text,
+				}
+			else:
+				logger.error("Unexpected JSON structure from Horizons")
+				return {
+					"success": False,
+					"error": "Unexpected response format",
+					"object": object_command
+				}
+				
+		except json.JSONDecodeError as e:
+			logger.error(f"Failed to parse Horizons JSON: {e}")
+			return {
+				"success": False,
+				"error": "JSON parse error",
+				"object": object_command,
+				"raw": raw[:500]
+			}
 
 	async def get_future_positions(
 		self,
 		object_command: str,
 		days_ahead: int = 30,
-		step_size: str = "1 d",
+		step_size: str = "1d",  # FIXED: Boşluksuz format
 	) -> Dict[str, Any]:
 		"""
 		Convenience wrapper to fetch next N days of ephemeris.

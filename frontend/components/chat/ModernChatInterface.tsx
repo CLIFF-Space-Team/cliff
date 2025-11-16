@@ -61,7 +61,7 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
   }, [])
   const generateImage = useCallback(async (prompt: string): Promise<{ success: boolean, image_url?: string, error?: string }> => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/image-generation/generate`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/image-generation/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
     setIsTyping(true)
     try {
       let response: Response
-      response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/chat`, {
+      response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/ai/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -211,7 +211,7 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
     setIsTyping(true)
     try {
       let response: Response
-      response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/chat`, {
+      response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/ai/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -411,12 +411,11 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
               <button
                 onClick={onClose}
                 className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors duration-200"
+                title="Kapat"
               >
                 <X className="w-4 h-4 text-white/80" />
               </button>
             )}
-            {}
-            <div className="px-2" />
           </div>
           {}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-pure-black">

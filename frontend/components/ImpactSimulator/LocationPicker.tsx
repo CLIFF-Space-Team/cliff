@@ -93,6 +93,13 @@ export function LocationPicker({
           return
         }
         console.log('Yeni harita oluşturuluyor...')
+        
+        // Timeout ile güvenlik
+        const loadingTimeout = setTimeout(() => {
+          console.warn('⚠️  Harita yükleme timeout (10 saniye), loading kapatılıyor...')
+          setMapLoading(false)
+        }, 10000) // 10 saniye timeout
+        
         const map = new mapboxgl.Map({
           container: mapContainerRef.current!,
           style: 'mapbox://styles/mapbox/satellite-streets-v12',
@@ -101,10 +108,12 @@ export function LocationPicker({
         })
         map.on('load', () => {
           console.log('✅ Mapbox haritası başarıyla yüklendi!')
+          clearTimeout(loadingTimeout)
           setMapLoading(false)
         })
         map.on('error', (e) => {
           console.error('❌ Mapbox harita hatası:', e)
+          clearTimeout(loadingTimeout)
           setMapLoading(false)
         })
         map.on('click', async (e: any) => {

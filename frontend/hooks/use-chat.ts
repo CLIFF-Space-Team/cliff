@@ -55,7 +55,7 @@ const DEFAULT_INPUT_MODE: ChatInputMode = {
 }
 export function useChat(options: UseChatOptions = {}): ChatHookReturn {
   const {
-    apiEndpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/chat`,
+    apiEndpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/ai/chat`,
     enableVoice = false,
     enableWebSocket = true,
     enablePersistence = true,
@@ -229,7 +229,7 @@ export function useChat(options: UseChatOptions = {}): ChatHookReturn {
   }
   const detectImageIntent = async (message: string): Promise<any> => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/images/detect-intent`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/images/detect-intent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -247,7 +247,7 @@ export function useChat(options: UseChatOptions = {}): ChatHookReturn {
   }
   const generateImage = async (request: any): Promise<any> => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/images/generate`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/images/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

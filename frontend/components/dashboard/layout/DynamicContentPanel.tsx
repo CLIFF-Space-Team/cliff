@@ -27,16 +27,32 @@ const SystemMonitorView = React.lazy(() =>
 const ChatInterfaceView = React.lazy(() =>
   import("@/components/chat/ModernChatInterface").then(mod => ({ default: mod.default }))
 )
+
+// Wrapper component for chat with close functionality
+const ChatInterfaceWrapper: React.FC = () => {
+  const setView = useDashboardStore((state) => state.setView) // FIXED: setView (not setActiveView)
+  return (
+    <ErrorBoundary fallback={<p className="text-cliff-light-gray p-8">Chat yüklenirken bir hata oluştu.</p>}>
+      <Suspense fallback={<DashboardSkeleton />}>
+        <ChatInterfaceView 
+          isOpen={true} 
+          onClose={() => setView('earth-events')} // Ana sayfaya dön
+        />
+      </Suspense>
+    </ErrorBoundary>
+  )
+}
 const ThreatVisualization3DView = React.lazy(() =>
   import("@/components/dashboard/modern-threat-panel").then(mod => ({ default: mod.ModernThreatPanel }))
 )
-const viewComponents: Record<ViewType, React.LazyExoticComponent<React.FC<any>>> = {
+// Create wrapper components for views that need special props
+const viewComponents: Record<ViewType, React.ComponentType<any>> = {
   'earth-events': EarthEventsView,
   'asteroid-info': AsteroidInfoView,
   'threat-analysis': ThreatAnalysisView,
   '3d-threat-visualization': ThreatVisualization3DView,
   'system-monitor': SystemMonitorView,
-  'chat-interface': ChatInterfaceView,
+  'chat-interface': ChatInterfaceWrapper as any, // Use wrapper instead of direct component
 }
 interface DynamicContentPanelProps {
   className?: string

@@ -19,10 +19,19 @@ export default function EarthEventsView() {
   const [isFullScreen, setIsFullScreen] = useState(false)
   const { events, loading, error, fetchEvents, setViewMode, viewMode } = useEarthEventsStore()
   useEffect(() => {
-    fetchEvents()
-    const interval = setInterval(fetchEvents, 300000) // 5 dakikada bir güncelle
+    // İlk yüklemede - eğer events zaten varsa fetch yapma
+    if (events.length === 0) {
+      fetchEvents()
+    }
+    
+    // 5 dakikada bir güncelle
+    const interval = setInterval(() => {
+      fetchEvents()
+    }, 300000)
+    
     return () => clearInterval(interval)
-  }, [fetchEvents])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Boş array - sadece mount'ta çalışsın
   const toggleFullScreen = () => {
     setIsFullScreen(!isFullScreen)
     if (!isFullScreen) {
@@ -128,15 +137,7 @@ export default function EarthEventsView() {
       <div className="flex-1 relative">
         <FullScreenLayout />
       </div>
-      {events.length === 0 && !loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="text-center">
-            <Globe className="w-16 h-16 text-white/30 mx-auto mb-4" />
-            <h3 className="text-white font-semibold mb-2">Henüz Olay Bulunamadı</h3>
-            <p className="text-white/70">NASA EONET'ten aktif olay verisi bekleniyor.</p>
-          </div>
-        </div>
-      )}
+      {/* Empty state overlay removed - mockEvents always available */}
     </div>
   )
 }

@@ -31,8 +31,11 @@ async def connect_to_mongo() -> AsyncIOMotorClient:
     global _mongodb_client, _database, _connection_status
     
     try:
-        logger.info("Attempting MongoDB connection with SSL diagnostics...")
+        logger.info("Attempting MongoDB connection...")
         logger.info(f"MongoDB URL: {settings.MONGODB_URL[:50]}...")
+        
+        # Determine if we should use TLS based on the connection URL
+        use_tls = settings.MONGODB_URL.startswith("mongodb+srv://") or "ssl=true" in settings.MONGODB_URL.lower()
         
         connection_config = {
             "host": settings.MONGODB_URL,
@@ -42,14 +45,20 @@ async def connect_to_mongo() -> AsyncIOMotorClient:
             "heartbeatFrequencyMS": 10000,
             "retryWrites": True,
             "w": "majority",
-            "tls": True,
-            "tlsCAFile": certifi.where(),
-            "tlsInsecure": False,
             "maxPoolSize": 10,
             "minPoolSize": 1
         }
         
-        logger.info("Connection config applied - SSL timeout fixes enabled")
+        # Only add TLS config if connecting to a remote cluster (MongoDB Atlas)
+        if use_tls:
+            connection_config.update({
+                "tls": True,
+                "tlsCAFile": certifi.where(),
+                "tlsInsecure": False,
+            })
+            logger.info("Connection config applied - TLS enabled for remote connection")
+        else:
+            logger.info("Connection config applied - TLS disabled for local connection")
         
         _mongodb_client = AsyncIOMotorClient(**connection_config)
         

@@ -10,14 +10,14 @@ interface AnimationTimelineProps {
 }
 const TIMELINE_EVENTS = [
   { time: 0.0, label: 'Başlangıç', color: '#888', description: 'Uzayda (15 km mesafe)', scientific: 'v = 20 km/s' },
-  { time: 0.10, label: 'Yaklaşma', color: '#4488ff', description: 'Hızlı yaklaşım', scientific: '5 km mesafe' },
-  { time: 0.15, label: 'Atmosfer', color: '#ffaa00', description: '100 km yükseklikte', scientific: 'Sürtünme başlıyor' },
-  { time: 0.20, label: 'Çarpma!', color: '#ff0000', description: 'Yüzeye temas (t=0)', scientific: 'E = mv²/2' },
-  { time: 0.22, label: 'Fireball', color: '#ff6600', description: 'Patlama genişliyor', scientific: 'T = 7000K → 2000K' },
-  { time: 0.23, label: 'Shock Wave', color: '#ff8800', description: 'Süpersonik şok dalgası', scientific: 'v = 343 m/s + psi yayılımı' },
-  { time: 0.25, label: 'Termal', color: '#ffcc00', description: 'Işık hızı radyasyon', scientific: 'c = 299,792 km/s' },
-  { time: 0.35, label: 'Debris', color: '#aa8866', description: 'Balistik enkaz fırlatma', scientific: 'h = v²/2g, v₀ ≤ 2 km/s' },
-  { time: 0.70, label: 'Yayılım', color: '#666', description: 'Şok dalgası genişliyor', scientific: 'R ∝ t²/⁵ (Sedov-Taylor)' },
+  { time: 0.08, label: 'Yaklaşma', color: '#4488ff', description: 'Hızlı yaklaşım', scientific: '5 km mesafe' },
+  { time: 0.12, label: 'Atmosfer', color: '#ffaa00', description: '100 km yükseklikte', scientific: 'Sürtünme başlıyor' },
+  { time: 0.18, label: 'Çarpma!', color: '#ff0000', description: 'Yüzeye temas (t=0)', scientific: 'E = mv²/2' },
+  { time: 0.24, label: 'Fireball', color: '#ff6600', description: 'Patlama genişliyor', scientific: 'T = 7000K → 2000K' },
+  { time: 0.32, label: 'Shock Wave', color: '#ff8800', description: 'Süpersonik şok dalgası', scientific: 'v = 343 m/s + psi yayılımı' },
+  { time: 0.42, label: 'Termal', color: '#ffcc00', description: 'Işık hızı radyasyon', scientific: 'c = 299,792 km/s' },
+  { time: 0.55, label: 'Debris', color: '#aa8866', description: 'Balistik enkaz fırlatma', scientific: 'h = v²/2g, v₀ ≤ 2 km/s' },
+  { time: 0.72, label: 'Yayılım', color: '#666', description: 'Şok dalgası genişliyor', scientific: 'R ∝ t²/⁵ (Sedov-Taylor)' },
   { time: 0.88, label: 'Yerleşme', color: '#444', description: 'Gravitasyonel düşüş', scientific: 'a = -g = -9.8 m/s²' },
   { time: 1.0, label: 'Tamamlandı', color: '#00ff88', description: 'Simülasyon sonu', scientific: 'Final krater durumu' }
 ]

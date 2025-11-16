@@ -50,9 +50,17 @@ export function HybridRiskPanel({ targetId, days = 30 }: Props) {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="text-sm text-muted-foreground">Yükleniyor...</div>
-        ) : error ? (
-          <div className="text-sm text-red-400">{error}</div>
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-2 border-cyan-400 border-t-transparent mx-auto mb-4"></div>
+            <div className="text-sm text-muted-foreground">NASA Horizons verisi yükleniyor...</div>
+          </div>
+        ) : error || !data?.success ? (
+          <div className="text-center py-8">
+            <div className="text-sm text-red-400 mb-2">{error || data?.error || 'Veri yüklenemedi'}</div>
+            <div className="text-xs text-muted-foreground">
+              Asteroid ID: {targetId} için NASA Horizons verisi alınamadı
+            </div>
+          </div>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

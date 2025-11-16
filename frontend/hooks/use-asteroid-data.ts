@@ -38,12 +38,11 @@ export function useAsteroidData({
   autoRefresh = false, // Auto-refresh kapalı - manuel refresh
 }: UseAsteroidDataOptions = {}): UseAsteroidDataReturn {
   const [asteroids, setAsteroids] = useState<SimpleCelestialBody[]>([])
-  const [isLoading, setIsLoading] = useState(false) // false olarak başlat - mock veri hemen hazır
+  const [isLoading, setIsLoading] = useState(true) // true - gerçek veri yüklenene kadar
   const [error, setError] = useState<string | null>(null)
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null)
   const refreshTimer = useRef<NodeJS.Timeout | null>(null)
   const abortController = useRef<AbortController | null>(null)
-  const USE_MOCK_DATA = true
   const convertBackendAsteroid = (backendAst: BackendAsteroid): SimpleCelestialBody => {
     const safeOrbitalData = backendAst.orbital_data || {
       miss_distance: { kilometers: '5000000' },
@@ -105,107 +104,36 @@ export function useAsteroidData({
   }
   const fetchAsteroids = useCallback(async () => {
     try {
-      const processedAsteroids: SimpleCelestialBody[] = []
-      if (USE_MOCK_DATA) {
-        for (let i = 0; i < 12; i++) {
-          processedAsteroids.push(createMockAsteroid(i))
-        }
+      setIsLoading(true)
+      // NASA API'den gerçek asteroid verisi çek
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const response = await fetch(`${apiUrl}/api/v1/nasa/asteroids?days=7`)
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`)
       }
+      
+      const data = await response.json()
+      const backendAsteroids = data.asteroids || []
+      
+      const processedAsteroids: SimpleCelestialBody[] = backendAsteroids.map((ast: BackendAsteroid) => 
+        convertBackendAsteroid(ast)
+      )
+      
       setAsteroids(processedAsteroids)
       setLastRefresh(new Date())
-      setError(null) // Hataları temizle
-      console.log(`✅ ${processedAsteroids.length} asteroid yüklendi (${processedAsteroids.filter(a => a.is_hazardous).length} tehlikeli)`)
+      setError(null)
+      console.log(`✅ ${processedAsteroids.length} gerçek NASA asteroid yüklendi (${processedAsteroids.filter(a => a.is_hazardous).length} tehlikeli)`)
     } catch (err) {
-      console.warn('⚠️ Mock veri oluşturulurken uyarı:', err)
-      const fallbackAsteroids: SimpleCelestialBody[] = []
-      for (let i = 0; i < 8; i++) {
-        fallbackAsteroids.push(createFallbackAsteroid(`fallback-${i}`))
-      }
-      setAsteroids(fallbackAsteroids)
-      setError(null) // Hata gösterme, sessizce fallback kullan
+      console.error('❌ NASA asteroid verisi yüklenemedi:', err)
+      setAsteroids([])
+      setError('NASA asteroid verileri yüklenemedi')
       setLastRefresh(new Date())
+    } finally {
+      setIsLoading(false)
     }
   }, [])
-  const createFallbackAsteroid = (id: string): SimpleCelestialBody => {
-    return {
-      id: id,
-      name: `Fallback ${id}`,
-      turkish_name: `Acil Durum Asteroidi ${id}`,
-      type: 'asteroid',
-      info: {
-        radius_km: 0.5,
-        mass_relative_to_earth: 0.0005,
-        gravity_relative_to_earth: 0.001,
-        has_atmosphere: false,
-        has_rings: false,
-        moon_count: 0,
-        surface_temp_celsius: { min: -100, max: -50, average: -75 }
-      },
-      orbit: {
-        distance_from_sun: 1.5,
-        orbital_period_days: 400,
-        rotation_period_hours: 12,
-        tilt_degrees: 15
-      },
-      color: '#888888',
-      description: 'Bağlantı hatası - örnek asteroit',
-      interesting_facts: ['API bağlantısı başarısız'],
-      is_hazardous: false,
-      threat_level: 'Düşük',
-      orbital_data: {
-        miss_distance: { kilometers: '5000000' },
-        relative_velocity: {
-          kilometers_per_second: '10.0',
-          kilometers_per_hour: '36000'
-        }
-      }
-    }
-  }
-  const createMockAsteroid = (index: number): SimpleCelestialBody => {
-    const isHazardous = Math.random() > 0.75
-    const distance_km = Math.random() * 50000000 + 1000000 // 1M - 50M km
-    const velocity_kmh = Math.random() * 50000 + 15000 // 15K - 65K km/h
-    const radius_km = Math.random() * 2 + 0.2 // 0.2 - 2.2 km
-    return {
-      id: `mock-asteroid-${index}`,
-      name: `2024 ${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${String.fromCharCode(65 + Math.floor(Math.random() * 26))}${index + 1}`,
-      turkish_name: `Asteroit ${index + 1}`,
-      type: 'asteroid',
-      info: {
-        radius_km: radius_km,
-        mass_relative_to_earth: radius_km * 0.001,
-        gravity_relative_to_earth: 0.001,
-        has_atmosphere: false,
-        has_rings: false,
-        moon_count: 0,
-        surface_temp_celsius: { min: -100, max: -50, average: -75 }
-      },
-      orbit: {
-        distance_from_sun: distance_km / 149597870.7, // AU'ya çevir
-        orbital_period_days: 365 + Math.random() * 1000,
-        rotation_period_hours: Math.random() * 48,
-        tilt_degrees: Math.random() * 180
-      },
-      color: isHazardous ? '#ff4444' : '#888888',
-      description: `${isHazardous ? 'Yüksek' : 'Düşük'} seviyede asteroit`,
-      interesting_facts: [
-        `Çap: ${(radius_km * 2).toFixed(1)} km`,
-        `Hız: ${(velocity_kmh / 1000).toFixed(1)} km/s`,
-        `Mesafe: ${(distance_km / 1000000).toFixed(1)} milyon km`
-      ],
-      is_hazardous: isHazardous,
-      threat_level: isHazardous ? 'Yüksek' : distance_km < 7500000 ? 'Orta' : 'Düşük',
-      orbital_data: {
-        miss_distance: {
-          kilometers: distance_km.toString()
-        },
-        relative_velocity: {
-          kilometers_per_second: (velocity_kmh / 3600).toFixed(2),
-          kilometers_per_hour: velocity_kmh.toString()
-        }
-      }
-    }
-  }
+  // Mock functions removed - using only real NASA data
   const refreshAsteroids = useCallback(async () => {
     setIsLoading(true)
     setError(null)

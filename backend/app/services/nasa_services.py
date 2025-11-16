@@ -273,6 +273,135 @@ class NASAServices:
         except Exception as e:
             logger.error(f"APOD çekme hatası: {str(e)}")
             return {"error": str(e), "status": "failed"}
+    async def get_simple_asteroids(self, days_ahead: int = 7) -> list:
+        """Basitleştirilmiş asteroid listesi döndürür."""
+        try:
+            feed_result = await self.get_neo_feed(
+                start_date=datetime.now().strftime('%Y-%m-%d'),
+                end_date=(datetime.now() + timedelta(days=days_ahead)).strftime('%Y-%m-%d')
+            )
+            
+            if feed_result.get("status") != "success":
+                logger.warning("NEO feed başarısız, boş liste döndürülüyor")
+                return []
+            
+            data = feed_result.get("data", {})
+            near_earth_objects = data.get("near_earth_objects", {})
+            
+            asteroids = []
+            for date, objects in near_earth_objects.items():
+                for obj in objects:
+                    asteroids.append({
+                        "id": obj.get("id"),
+                        "name": obj.get("name"),
+                        "is_hazardous": obj.get("is_potentially_hazardous_asteroid", False),
+                        "diameter_km": obj.get("estimated_diameter", {}).get("kilometers", {}).get("estimated_diameter_max", 0),
+                        "close_approach_date": obj.get("close_approach_data", [{}])[0].get("close_approach_date", date),
+                        "miss_distance_km": float(obj.get("close_approach_data", [{}])[0].get("miss_distance", {}).get("kilometers", 0)),
+                        "velocity_kms": float(obj.get("close_approach_data", [{}])[0].get("relative_velocity", {}).get("kilometers_per_second", 0))
+                    })
+            
+            logger.info(f"Simple asteroids listesi hazırlandı: {len(asteroids)} asteroid")
+            return asteroids
+        except Exception as e:
+            logger.error(f"Simple asteroids hazırlama hatası: {str(e)}")
+            return []
+
+    async def get_simple_earth_events(self, limit: int = 10) -> list:
+        """Basitleştirilmiş dünya olayları listesi döndürür."""
+        try:
+            # EONET API'den olayları çek
+            from app.core.database import get_earth_events_collection
+            collection = get_earth_events_collection()
+            
+            # MongoDB'den en son olayları getir
+            cursor = collection.find().sort("event_date", -1).limit(limit)
+            events = []
+            
+            async for event in cursor:
+                events.append({
+                    "id": event.get("event_id"),
+                    "title": event.get("title"),
+                    "category": event.get("categories", [{}])[0].get("title") if event.get("categories") else "Unknown",
+                    "date": event.get("event_date"),
+                    "coordinates": event.get("geometry", [{}])[0].get("coordinates") if event.get("geometry") else None
+                })
+            
+            logger.info(f"Simple earth events listesi hazırlandı: {len(events)} olay")
+            return events
+        except Exception as e:
+            logger.error(f"Simple earth events hazırlama hatası: {str(e)}")
+            return []
+
+    async def get_earth_events(self, limit: int = 100, category: Optional[str] = None) -> Dict[str, Any]:
+        """Dünya olaylarını detaylı olarak döndürür."""
+        try:
+            from app.core.database import get_earth_events_collection
+            collection = get_earth_events_collection()
+            
+            # Filtre oluştur
+            query_filter = {}
+            if category:
+                query_filter["categories.title"] = category
+            
+            # MongoDB'den olayları getir
+            cursor = collection.find(query_filter).sort("event_date", -1).limit(limit)
+            events = []
+            
+            async for event in cursor:
+                events.append({
+                    "event_id": event.get("event_id"),
+                    "title": event.get("title"),
+                    "description": event.get("description"),
+                    "categories": event.get("categories", []),
+                    "event_date": event.get("event_date"),
+                    "geometry": event.get("geometry", []),
+                    "sources": event.get("sources", [])
+                })
+            
+            # Eğer MongoDB'de veri yoksa EONET API'den canlı çek
+            if len(events) == 0:
+                logger.info("MongoDB'de event yok, EONET API'den çekiliyor...")
+                try:
+                    session = await self._get_session()
+                    eonet_url = "https://eonet.gsfc.nasa.gov/api/v3/events"
+                    params = {"limit": min(limit, 20), "status": "open"}
+                    if category:
+                        params["category"] = category
+                    
+                    async with session.get(eonet_url, params=params) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            eonet_events = data.get("events", [])
+                            for event in eonet_events:
+                                events.append({
+                                    "event_id": event.get("id"),
+                                    "title": event.get("title"),
+                                    "description": event.get("description"),
+                                    "categories": event.get("categories", []),
+                                    "event_date": event.get("geometry", [{}])[-1].get("date") if event.get("geometry") else None,
+                                    "geometry": event.get("geometry", []),
+                                    "sources": event.get("sources", [])
+                                })
+                            logger.info(f"EONET API'den {len(eonet_events)} event çekildi")
+                except Exception as eonet_error:
+                    logger.warning(f"EONET API çağrısı başarısız: {str(eonet_error)}")
+            
+            logger.info(f"Earth events listesi hazırlandı: {len(events)} olay (kategori: {category})")
+            return {
+                "status": "success",
+                "count": len(events),
+                "events": events
+            }
+        except Exception as e:
+            logger.error(f"Earth events çekme hatası: {str(e)}")
+            return {
+                "status": "failed",
+                "error": str(e),
+                "count": 0,
+                "events": []
+            }
+
 nasa_services = NASAServices()
 
 async def close_client():

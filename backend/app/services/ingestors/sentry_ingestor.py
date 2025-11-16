@@ -24,8 +24,8 @@ async def ingest_sentry_once() -> Dict[str, Any]:
     """Sentry listesini bir kez çekip kaydeder; eksik verileri Sentry'den doldurur."""
     service = NASAServices()
     try:
-        response = await service.get_sentry_risk_data()
-        if not response.get("success"):
+        response = await service.get_sentry_data()
+        if response.get("status") != "success":
             logger.error("Sentry verisi alınamadı", error=response.get("error"))
             return {"success": False, "error": response.get("error")}
         data = response.get("data", {})

@@ -10,6 +10,31 @@ from app.services.tle_services import get_tle_service, TLEService
 from app.core.config import settings
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/nasa", tags=["NASA Services"])
+
+@router.get("/asteroids")
+async def get_asteroids_simplified(
+    days: int = Query(7, ge=1, le=30, description="Days ahead to fetch"),
+    nasa_services: NASAServices = Depends(get_nasa_services)
+) -> JSONResponse:
+    """
+    🪨 Simplified Asteroids List
+    Get list of NEO asteroids for the next N days
+    """
+    try:
+        logger.info(f"Simplified asteroids requested: {days} days")
+        asteroids = await nasa_services.get_simple_asteroids(days_ahead=days)
+        logger.info(f"Asteroids retrieved: {len(asteroids)} items")
+        return JSONResponse(content={
+            "success": True,
+            "asteroids": asteroids,
+            "count": len(asteroids),
+            "days_ahead": days,
+            "retrieved_at": datetime.utcnow().isoformat() + "Z"
+        })
+    except Exception as e:
+        logger.error(f"Asteroids request failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get asteroids: {str(e)}")
+
 @router.get("/neo/feed")
 async def get_neo_feed(
     start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),

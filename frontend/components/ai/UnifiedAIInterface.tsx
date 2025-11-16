@@ -39,7 +39,7 @@ interface Message {
 const UnifiedAIInterface: React.FC<UnifiedAIInterfaceProps> = ({
   className,
   maxHeight = '600px',
-  apiEndpoint = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://nasa.kynux.dev/api'}/v1/ai/chat`,
+  apiEndpoint = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/ai/chat`,
   showHeader = true,
   compact = false,
   onMessageSent,

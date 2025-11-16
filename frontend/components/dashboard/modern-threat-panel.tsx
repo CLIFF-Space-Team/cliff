@@ -396,20 +396,22 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
   return (
     <div className={cn("h-full bg-pure-black/60 backdrop-blur-md border border-cliff-light-gray/10 rounded-xl overflow-hidden", className)}>
       {}
-      <div className="border-b border-cliff-light-gray/10 bg-gradient-to-r from-pure-black via-almost-black to-pure-black p-3 sm:p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-red-400 flex-shrink-0" />
-            <h2 className="text-base sm:text-xl font-bold text-cliff-white truncate">
-              <span className="hidden sm:inline">Gerçek Zamanlı </span>Tehdit Analizi
-            </h2>
+      <div className="border-b border-cyan-500/10 bg-black/40 p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-red-500/20 rounded-lg">
+              <AlertTriangle className="w-5 h-5 text-red-400" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-white">Tehdit Analizi</h2>
+              <p className="text-xs text-gray-400">NASA + AI</p>
+            </div>
           </div>
           <div className="flex items-center gap-2 flex-wrap justify-end">
             {}
             <div 
               role="tablist" 
-              aria-label="Threat panel tabs" 
-              className="inline-flex items-center gap-0.5 p-0.5 rounded-lg border border-cliff-light-gray/20 bg-gradient-to-br from-pure-black/80 to-almost-black/60 backdrop-blur-sm"
+              className="inline-flex items-center gap-0.5 p-0.5 rounded-lg bg-gray-900/50 border border-gray-700/30"
             >
               {[
                 { key: "overview", label: "Overview", icon: BarChart3 },
@@ -418,27 +420,16 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
               ].map((tab) => (
                 <button
                   key={tab.key}
-                  role="tab"
-                  aria-selected={activeTab === tab.key}
                   onClick={() => setActiveTab(tab.key as any)}
                   className={cn(
-                    "relative flex items-center justify-center gap-1 px-2 py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all duration-200",
-                    "hover:bg-white/5 active:scale-95 whitespace-nowrap",
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
                     activeTab === tab.key
-                      ? "bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 text-emerald-300 shadow-lg shadow-emerald-500/10 border border-emerald-500/30"
-                      : "text-cliff-light-gray hover:text-cliff-white border border-transparent"
+                      ? "bg-cyan-500/20 text-cyan-400"
+                      : "text-gray-500 hover:text-white hover:bg-gray-800/50"
                   )}
-                  title={tab.label}
                 >
-                  <tab.icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
-                  <span className="hidden md:inline">{tab.label}</span>
-                  {activeTab === tab.key && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 rounded-md -z-10"
-                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                    />
-                  )}
+                  <tab.icon className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">{tab.label}</span>
                 </button>
               ))}
             </div>
