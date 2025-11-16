@@ -249,30 +249,8 @@ export const ProceduralAsteroidSystem = React.memo(({
     })
     instancedMeshRef.current.instanceMatrix.needsUpdate = true
   }, [THREE, asteroidInstances, instancedMatrix])
-  useFrame((state, delta) => {
-    // Orbital hareket var ama asteroid kendi etrafında dönmüyor
-    if (!enableAnimation || !instancedMeshRef.current || !THREE || !instancedMatrix || asteroidInstances.length === 0) return
-    const matrix = new THREE.Matrix4()
-    const position = new THREE.Vector3()
-    const scaleV = new THREE.Vector3()
-    const rotation = new THREE.Euler()
-    asteroidInstances.forEach((instance, i) => {
-      if (enableOrbitalMechanics) {
-        // Sadece orbital hareket, instance kendi etrafında dönmez
-        instance.orbitAngle += delta * instance.speed * 0.02
-        const x = instance.orbitRadius * Math.cos(instance.orbitAngle)
-        const y = instance.position[1]
-        const z = instance.orbitRadius * Math.sin(instance.orbitAngle)
-        instance.position = [x, y, z]
-      }
-      position.set(...instance.position)
-      scaleV.set(...instance.scale)
-      // Sabit rotation - değişmiyor
-      rotation.set(...instance.rotation)
-      matrix.compose(position, new THREE.Quaternion().setFromEuler(rotation), scaleV)
-      matrix.toArray(instancedMatrix, i * 16)
-    })
-    instancedMeshRef.current.instanceMatrix.needsUpdate = true
+  useFrame(() => {
+    return
   })
   if (isLoading || !THREE || !asteroidGeometry || !asteroidMaterial) {
     return (
