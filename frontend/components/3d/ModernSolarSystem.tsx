@@ -237,7 +237,7 @@ export const ModernSolarSystem = React.memo(({
       />
       <PerformantAsteroids
         count={asteroidCount}
-        enableAnimation={!enablePerformanceMode}
+        enableAnimation={false}
         quality={currentQuality}
         distributionRadius={[12, 25]}
         nasaAsteroidsData={asteroids}
