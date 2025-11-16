@@ -260,7 +260,7 @@ const ThreatAsteroid: React.FC<{
 }
 export const AIThreatVisualizationSolarSystem: React.FC<AIThreatVisualizationProps> = ({
   onAsteroidSelect,
-  enableAnimation = true,
+  enableAnimation = false,
   quality = 'high'
 }) => {
   const { threats, loading, error } = useAIThreatData()

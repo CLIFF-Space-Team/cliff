@@ -26,10 +26,10 @@ interface AsteroidInstanceData {
 export const ProceduralAsteroidSystem = React.memo(({
   count = 100,
   quality = 'high',
-  enableAnimation = true,
+  enableAnimation = false,
   distributionRadius = [12, 28],
   enableThreatVisualization = true,
-  enableOrbitalMechanics = true,
+  enableOrbitalMechanics = false,
   maxAsteroids = 200
 }: ProceduralAsteroidSystemProps) => {
   const asteroidGroupRef = useRef<any>(null)

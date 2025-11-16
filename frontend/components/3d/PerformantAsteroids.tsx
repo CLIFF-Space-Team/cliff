@@ -26,7 +26,7 @@ interface AsteroidInstance {
 }
 export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
   count = 300,
-  enableAnimation = true,
+  enableAnimation = false,
   quality = 'high',
   distributionRadius = [10, 45],
   nasaAsteroidsData = [],
@@ -226,6 +226,7 @@ export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
     meshRef.current.instanceMatrix.needsUpdate = true
   }, [asteroidInstances, enableAnimation])
   useFrame((state, delta) => {
+    if (!enableAnimation) return
     updateAsteroids(delta)
   })
   const hazardousAsteroids = asteroidInstances.filter(a => a.isHazardous)
