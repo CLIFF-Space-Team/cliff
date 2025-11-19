@@ -40,12 +40,17 @@ export function ControlPanel({
   isSimulating
 }: ControlPanelProps) {
   const [showLocationPicker, setShowLocationPicker] = useState(false)
+  const [selectedLocationIndex, setSelectedLocationIndex] = useState<string | undefined>(undefined)
+  const [selectedAsteroidIndex, setSelectedAsteroidIndex] = useState<string | undefined>(undefined)
   return (
     <>
       <LocationPicker
         open={showLocationPicker}
         onClose={() => setShowLocationPicker(false)}
-        onLocationSelect={onLocationChange}
+        onLocationSelect={(newLocation) => {
+          onLocationChange(newLocation)
+          setSelectedLocationIndex(undefined) // Haritadan seçildi, dropdown'u temizle
+        }}
         initialLocation={location}
       />
     <Card className="bg-pure-black/80 backdrop-blur-md border-cliff-white/10">
@@ -60,7 +65,9 @@ export function ControlPanel({
         <div className="space-y-2">
           <Label className="text-cliff-white">Hazır Asteroid Seç</Label>
           <Select
+            value={selectedAsteroidIndex}
             onValueChange={(value) => {
+              setSelectedAsteroidIndex(value)
               const preset = PRESET_ASTEROIDS[parseInt(value)]
               onAsteroidChange({
                 ...asteroid,
@@ -72,9 +79,13 @@ export function ControlPanel({
             <SelectTrigger className="bg-pure-black/50 border-cliff-white/20 text-cliff-white">
               <SelectValue placeholder="Asteroid seçin..." />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-pure-black border-cliff-white/20 text-cliff-white">
               {PRESET_ASTEROIDS.map((preset, index) => (
-                <SelectItem key={index} value={index.toString()}>
+                <SelectItem 
+                  key={index} 
+                  value={index.toString()}
+                  className="text-cliff-white hover:bg-cliff-white/10 focus:bg-cliff-white/20 cursor-pointer"
+                >
                   {preset.name} ({preset.diameter}m)
                 </SelectItem>
               ))}
@@ -132,7 +143,9 @@ export function ControlPanel({
           <Label className="text-cliff-white">Hedef Konum</Label>
           <div className="flex gap-2">
             <Select
+              value={selectedLocationIndex}
               onValueChange={(value) => {
+                setSelectedLocationIndex(value)
                 const preset = PRESET_LOCATIONS[parseInt(value)]
                 onLocationChange({
                   lat: preset.lat,
@@ -147,9 +160,13 @@ export function ControlPanel({
               <SelectTrigger className="flex-1 bg-pure-black/50 border-cliff-white/20 text-cliff-white">
                 <SelectValue placeholder="Konum seçin..." />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-pure-black border-cliff-white/20 text-cliff-white">
                 {PRESET_LOCATIONS.map((preset, index) => (
-                  <SelectItem key={index} value={index.toString()}>
+                  <SelectItem 
+                    key={index} 
+                    value={index.toString()}
+                    className="text-cliff-white hover:bg-cliff-white/10 focus:bg-cliff-white/20 cursor-pointer"
+                  >
                     {preset.name}
                   </SelectItem>
                 ))}
@@ -167,16 +184,24 @@ export function ControlPanel({
           </div>
         </div>
         {}
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="bg-pure-black/50 p-2 rounded border border-cliff-white/10">
-            <p className="text-cliff-light-gray">Enlem</p>
-            <p className="text-cliff-white font-mono">{location.lat.toFixed(4)}°</p>
+        {location.cityName && (
+          <div className="bg-pure-black/50 p-3 rounded border border-cliff-white/20">
+            <div className="flex items-center gap-2 mb-2">
+              <MapPin className="h-4 w-4 text-red-400" />
+              <p className="text-cliff-white font-semibold">{location.cityName}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <p className="text-cliff-light-gray">Enlem</p>
+                <p className="text-cliff-white font-mono">{location.lat.toFixed(4)}°</p>
+              </div>
+              <div>
+                <p className="text-cliff-light-gray">Boylam</p>
+                <p className="text-cliff-white font-mono">{location.lng.toFixed(4)}°</p>
+              </div>
+            </div>
           </div>
-          <div className="bg-pure-black/50 p-2 rounded border border-cliff-white/10">
-            <p className="text-cliff-light-gray">Boylam</p>
-            <p className="text-cliff-white font-mono">{location.lng.toFixed(4)}°</p>
-          </div>
-        </div>
+        )}
         {}
         <Button
           onClick={onSimulate}
