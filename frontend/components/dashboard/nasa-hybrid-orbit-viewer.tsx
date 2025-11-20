@@ -18,17 +18,14 @@ function Scene({ distanceKm, ci95 }: { distanceKm: number; ci95: [number, number
   const rHigh = Math.max(0, ci95[1] / scale)
   return (
     <group>
-      {/* Origin marker (Earth center) */}
       <mesh>
         <sphereGeometry args={[0.1, 16, 16]} />
         <meshBasicMaterial color="#4FC3F7" />
       </mesh>
-      {/* Uncertainty band (simple line segment) */}
       <mesh position={[(rLow + rHigh) / 2, 0, 0]}>
         <boxGeometry args={[Math.max(0.05, rHigh - rLow), 0.02, 0.02]} />
         <meshBasicMaterial color="orange" transparent opacity={0.4} />
       </mesh>
-      {/* Asteroid nominal point */}
       <mesh position={[x, 0, 0]}>
         <sphereGeometry args={[0.06, 16, 16]} />
         <meshBasicMaterial color="#FF5252" />
@@ -116,5 +113,4 @@ export function NASAHybridOrbitViewer({ targetId, days = 30 }: Props) {
 }
 
 export default NASAHybridOrbitViewer
-
 

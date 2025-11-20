@@ -2,7 +2,6 @@ import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 import type { Vector3 } from 'three'
 
-// Core interfaces
 interface TimeState {
   currentTime: Date
   timeScale: number
@@ -52,23 +51,19 @@ interface UIState {
   }
 }
 
-// Store interface
 interface SolarSystemStore {
-  // States
   engineState: EngineState
   timeState: TimeState
   ui: UIState
   performance: PerformanceState
   storeObjects: { [key: string]: CelestialBodyState }
 
-  // Actions
   initializeEngine: () => void
   startEngine: () => void
   stopEngine: () => void
   updateTime: (deltaTime: number) => void
   setTimeScale: (scale: number) => void
   
-  // UI Actions
   selectObject: (id: string | null) => void
   setCameraTarget: (id: string | null) => void
   toggleOrbits: () => void
@@ -76,16 +71,13 @@ interface SolarSystemStore {
   setSearchQuery: (query: string) => void
   setActiveFilters: (filters: UIState['activeFilters']) => void
   
-  // Performance Actions
   updatePerformanceMetrics: (metrics: Partial<PerformanceMetrics>) => void
   
-  // Object Management
   addObject: (object: CelestialBodyState) => void
   removeObject: (id: string) => void
   updateObject: (id: string, updates: Partial<CelestialBodyState>) => void
 }
 
-// Initial states
 const initialEngineState: EngineState = {
   isInitialized: false,
   isRunning: false,
@@ -123,18 +115,15 @@ const initialPerformanceState: PerformanceState = {
   isMonitoring: false
 }
 
-// 🔧 FIX: Create store with stable selectors and cleanup
 export const useSolarSystemStore = create<SolarSystemStore>()(
   devtools(
     (set, get) => ({
-      // Initial states
       engineState: initialEngineState,
       timeState: initialTimeState,
       ui: initialUIState,
       performance: initialPerformanceState,
       storeObjects: {},
 
-      // Engine actions
       initializeEngine: () => {
         set((state) => ({
           engineState: {
@@ -170,7 +159,6 @@ export const useSolarSystemStore = create<SolarSystemStore>()(
         }), false, 'stopEngine')
       },
 
-      // 🔧 FIX: Stable time update without causing re-renders
       updateTime: (deltaTime: number) => {
         const state = get()
         if (!state.timeState.isRunning) return
@@ -192,7 +180,6 @@ export const useSolarSystemStore = create<SolarSystemStore>()(
         }), false, 'setTimeScale')
       },
 
-      // UI Actions
       selectObject: (id: string | null) => {
         set((state) => ({
           ui: {
@@ -247,7 +234,6 @@ export const useSolarSystemStore = create<SolarSystemStore>()(
         }), false, 'setActiveFilters')
       },
 
-      // 🔧 FIX: Performance metrics update without infinite loops
       updatePerformanceMetrics: (metrics: Partial<PerformanceMetrics>) => {
         set((state) => ({
           performance: {
@@ -260,7 +246,6 @@ export const useSolarSystemStore = create<SolarSystemStore>()(
         }), false, 'updatePerformanceMetrics')
       },
 
-      // Object Management
       addObject: (object: CelestialBodyState) => {
         set((state) => ({
           storeObjects: {
@@ -307,20 +292,16 @@ export const useSolarSystemStore = create<SolarSystemStore>()(
   )
 )
 
-// 🔧 FIX: Export stable selectors to prevent unnecessary re-renders
 export const solarSystemSelectors = {
-  // Engine selectors
   isEngineInitialized: (state: SolarSystemStore) => state.engineState.isInitialized,
   isEngineRunning: (state: SolarSystemStore) => state.engineState.isRunning,
   engineVersion: (state: SolarSystemStore) => state.engineState.engineVersion,
   totalObjects: (state: SolarSystemStore) => state.engineState.totalObjects,
   
-  // Time selectors
   currentTime: (state: SolarSystemStore) => state.timeState.currentTime,
   timeScale: (state: SolarSystemStore) => state.timeState.timeScale,
   isTimeRunning: (state: SolarSystemStore) => state.timeState.isRunning,
   
-  // UI selectors
   selectedObject: (state: SolarSystemStore) => state.ui.selectedObject,
   cameraTarget: (state: SolarSystemStore) => state.ui.cameraTarget,
   showOrbits: (state: SolarSystemStore) => state.ui.showOrbits,
@@ -328,28 +309,22 @@ export const solarSystemSelectors = {
   searchQuery: (state: SolarSystemStore) => state.ui.searchQuery,
   activeFilters: (state: SolarSystemStore) => state.ui.activeFilters,
   
-  // Performance selectors
   fps: (state: SolarSystemStore) => state.performance.metrics.fps,
   frameTime: (state: SolarSystemStore) => state.performance.metrics.frameTime,
   memoryUsage: (state: SolarSystemStore) => state.performance.metrics.memoryUsage,
   visibleObjects: (state: SolarSystemStore) => state.performance.metrics.visibleObjects,
   
-  // Object selectors
   allObjects: (state: SolarSystemStore) => state.storeObjects,
   getObject: (id: string) => (state: SolarSystemStore) => state.storeObjects[id],
 }
 
-// 🔧 FIX: Remove problematic TimeController class that caused infinite loops
-// The TimeController was causing subscription loops, so we handle time in the store directly
 
-// 🔧 FIX: Simplified Performance Manager without subscriptions
 export class PerformanceManager {
   private updateCallback: ((metrics: Partial<PerformanceMetrics>) => void) | null = null
   private isMonitoring: boolean = false
   private rafId: number | null = null
   
   constructor() {
-    // 🔧 FIX: No automatic initialization to prevent loops
   }
 
   setUpdateCallback(callback: (metrics: Partial<PerformanceMetrics>) => void) {
@@ -369,7 +344,6 @@ export class PerformanceManager {
       frameCount++
       const currentTime = performance.now()
       
-      // Update every 60 frames (approximately 1 second at 60fps)
       if (frameCount >= 60) {
         const deltaTime = currentTime - lastTime
         const fps = Math.round((frameCount * 1000) / deltaTime)
@@ -402,15 +376,12 @@ export class PerformanceManager {
   }
 
   private getMemoryUsage(): number {
-    // @ts-ignore - performance.memory might not be available
     if (typeof window !== 'undefined' && window.performance?.memory) {
-      // @ts-ignore
       return Math.round(window.performance.memory.usedJSHeapSize / 1048576) // MB
     }
     return 0
   }
 
-  // 🔧 FIX: Clean disposal method
   dispose() {
     this.stopMonitoring()
     this.updateCallback = null

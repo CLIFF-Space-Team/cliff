@@ -10,6 +10,8 @@ interface EnhancedAtmosphericEntryProps {
   diameter: number
   velocity: number
   isAnimating?: boolean
+  useLocalCoordinates?: boolean
+  scale?: number
 }
 export function EnhancedAtmosphericEntry({
   asteroidPosition,
@@ -17,7 +19,9 @@ export function EnhancedAtmosphericEntry({
   progress,
   diameter,
   velocity,
-  isAnimating = true
+  isAnimating = true,
+  useLocalCoordinates = false,
+  scale = 1.0
 }: EnhancedAtmosphericEntryProps) {
   const groupRef = useRef<THREE.Group>(null)
   const asteroidRef = useRef<THREE.Group>(null)
@@ -26,10 +30,11 @@ export function EnhancedAtmosphericEntry({
   const bowShockRef = useRef<THREE.Mesh>(null)
   const ablationRef = useRef<THREE.Points>(null)
   const direction = useMemo(() => {
+    if (useLocalCoordinates) return new THREE.Vector3(0, 0, -1)
     return new THREE.Vector3()
       .subVectors(targetPosition, asteroidPosition)
       .normalize()
-  }, [asteroidPosition, targetPosition])
+  }, [asteroidPosition, targetPosition, useLocalCoordinates])
   const particleCount = 500
   const { trailPositions, trailColors, trailSizes, trailInitialOffsets } = useMemo(() => {
     const positions = new Float32Array(particleCount * 3)
@@ -216,8 +221,10 @@ export function EnhancedAtmosphericEntry({
   }, [velocity])
   useFrame((state, delta) => {
     if (!groupRef.current || !isAnimating) return
-    groupRef.current.position.copy(asteroidPosition)
-    groupRef.current.lookAt(targetPosition)
+    if (!useLocalCoordinates) {
+      groupRef.current.position.copy(asteroidPosition)
+      groupRef.current.lookAt(targetPosition)
+    }
     if (asteroidRef.current) {
       asteroidRef.current.rotation.z += delta * (1 + progress * 2)
     }
@@ -269,7 +276,10 @@ export function EnhancedAtmosphericEntry({
     quaternion.setFromUnitVectors(up, direction)
     return quaternion
   }, [direction])
-  const asteroidScale = 0.06 * (diameter / 100)
+  const asteroidScale = useMemo(() => {
+    return scale * 2
+  }, [scale])
+
   return (
     <group ref={groupRef}>
       {}

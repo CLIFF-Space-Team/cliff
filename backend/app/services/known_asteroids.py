@@ -3,7 +3,6 @@ Bilinen büyük ve tehlikeli asteroidler listesi
 Horizons API'de mevcut olan asteroidler
 """
 
-# Horizons ID'si bilinen tehlikeli/büyük asteroidler
 KNOWN_HAZARDOUS_ASTEROIDS = {
     "99942": {
         "name": "Apophis",
@@ -49,7 +48,6 @@ KNOWN_HAZARDOUS_ASTEROIDS = {
     }
 }
 
-# Horizons'da kesinlikle bulunan büyük NEO'lar
 HORIZONS_AVAILABLE_NEOS = [
     "99942",   # Apophis
     "101955",  # Bennu
@@ -66,7 +64,6 @@ HORIZONS_AVAILABLE_NEOS = [
 
 def is_horizons_available(asteroid_id: str) -> bool:
     """Asteroid'in Horizons'da olup olmadığını kontrol et"""
-    # SPK-ID veya IAU number kontrolü
     asteroid_id_clean = asteroid_id.strip().split()[0]  # "99942 (2004 MN4)" -> "99942"
     
     return asteroid_id_clean in HORIZONS_AVAILABLE_NEOS or asteroid_id_clean in KNOWN_HAZARDOUS_ASTEROIDS
@@ -77,11 +74,7 @@ def get_asteroid_info(asteroid_id: str) -> dict | None:
 
 def format_for_horizons(asteroid_id: str) -> str:
     """Asteroid ID'yi Horizons formatına çevir"""
-    # Eğer NeoWs ID'si ise (uzun sayı), designation kullan
     if len(asteroid_id) > 7:
-        # Bu NeoWs internal ID, Horizons tanımaz
         return None
     
-    # IAU number ise, semicolon ekle
     return f"{asteroid_id};"
-

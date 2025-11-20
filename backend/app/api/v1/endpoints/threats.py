@@ -34,7 +34,6 @@ async def get_threat_alerts(
         try:
             asteroids = await nasa_services.get_simple_asteroids(days_ahead=7)
             for ast in asteroids[:5]:  # İlk 5 asteroit
-                # ast is a dict, not an object - use dictionary keys
                 is_hazardous = ast.get("is_hazardous", False)
                 if is_hazardous:
                     alert_level = "CRITICAL" if is_hazardous else "WARNING"
@@ -60,10 +59,7 @@ async def get_threat_alerts(
         try:
             events = await nasa_services.get_simple_earth_events(limit=5)
             for event in events:
-                # event is a dict, not an object - use dictionary keys
                 category = event.get("category", "Unknown")
-                # Earth events don't have severity in get_simple_earth_events
-                # Categorize by type
                 critical_categories = ["Wildfires", "Severe Storms", "Volcanoes"]
                 is_critical = category in critical_categories
                 alert_level = "CRITICAL" if is_critical else "WARNING"
@@ -87,31 +83,6 @@ async def get_threat_alerts(
                 })
         except Exception as e:
             logger.warning(f"Doğal olay alertleri alınamadı: {str(e)}")
-        # Space weather alerts - disabled for now (method not implemented)
-        # try:
-        #     weather = await nasa_services.get_simple_space_weather()
-        #     for w in weather[:3]:  # İlk 3 olay
-        #         if w.intensity in ["Yüksek", "Orta"]:
-        #             alert_level = "CRITICAL" if w.intensity == "Yüksek" else "WARNING"
-        #             alerts.append({
-        #                 "alert_id": f"space-{w.id}",
-        #                 "alert_level": alert_level,
-        #                 "message": f"Uzay Hava Durumu: {w.type}",
-        #                 "threat_details": {
-        #                     "threat_id": w.id,
-        #                     "threat_type": "space_weather",
-        #                     "severity": w.intensity.upper(),
-        #                     "title": f"Güneş Aktivitesi: {w.type}",
-        #                     "description": w.impact or "Uzay hava durumu etkisi",
-        #                     "impact_probability": 0.6,
-        #                     "recommended_actions": ["Uydu sistemleri izleme", "Radyo kesintisi uyarısı"],
-        #                     "data_source": "NOAA SWPC"
-        #                 },
-        #                 "created_at": w.start_time.isoformat(),
-        #                 "expires_at": (w.start_time + timedelta(hours=12)).isoformat()
-        #             })
-        # except Exception as e:
-        #     logger.warning(f"Uzay hava durumu alertleri alınamadı: {str(e)}")
         if severity:
             severity_map = {"critical": "CRITICAL", "warning": "WARNING", "info": "INFO"}
             target_severity = severity_map.get(severity.lower())
@@ -177,18 +148,15 @@ async def get_threat_summary(
         asteroids, earth_events = await asyncio.gather(
             nasa_services.get_simple_asteroids(days_ahead=7),
             nasa_services.get_simple_earth_events(limit=10),
-            # nasa_services.get_simple_space_weather(),  # Method not implemented
             return_exceptions=True
         )
         if isinstance(asteroids, Exception):
             asteroids = []
         if isinstance(earth_events, Exception):
             earth_events = []
-        # Space weather not implemented yet
         space_weather = []
         high_priority = []
         medium_priority = []
-        # Process asteroids (they are dicts)
         for ast in asteroids:
             is_hazardous = ast.get("is_hazardous", False)
             if is_hazardous:
@@ -198,10 +166,8 @@ async def get_threat_summary(
                     "description": f"{ast.get('close_approach_date', 'Bilinmeyen')} tarihinde yaklaşacak",
                     "level": "Yüksek"
                 })
-        # Process earth events (they are dicts, don't have severity)
         for event in earth_events:
             category = event.get("category", "Unknown")
-            # Categorize by type
             critical_categories = ["Wildfires", "Severe Storms", "Volcanoes"]
             if category in critical_categories:
                 high_priority.append({
@@ -216,15 +182,6 @@ async def get_threat_summary(
                     "title": f"{category}: {event.get('title', 'Bilinmeyen')[:30]}",
                     "level": "Orta"
                 })
-        # Space weather processing (not implemented, space_weather is empty array)
-        # for weather in space_weather:
-        #     if weather.intensity == "Yüksek":
-        #         high_priority.append({
-        #             "type": "space_weather",
-        #             "title": "Güçlü Güneş Patlaması",
-        #             "description": weather.impact,
-        #             "level": "Yüksek"
-        #         })
         overall_status = "normal"
         if len(high_priority) >= 2:
             overall_status = "elevated"
@@ -363,23 +320,7 @@ async def get_space_weather_threats(
     """
     try:
         logger.info("Uzay hava durumu tehditleri alınıyor...")
-        # Method not implemented - returning empty data
         weather_list = []
-        # weather_events = await nasa_services.get_simple_space_weather()  # Not implemented
-        # weather_events.sort(key=lambda x: {"Yüksek": 3, "Orta": 2, "Düşük": 1}.get(x.intensity, 0), reverse=True)
-        # for weather in weather_events:
-        #     weather_info = {
-        #         "id": weather.id,
-        #         "type": weather.type,
-        #         "intensity": weather.intensity,
-        #         "start_time": weather.start_time.isoformat(),
-        #         "impact": weather.impact,
-        #         "duration": _calculate_duration(weather.start_time)
-        #     }
-        #     weather_list.append(weather_info)
-        # recent_high = sum(1 for w in weather_events 
-        #                  if w.intensity == "Yüksek" and 
-        #                  (datetime.utcnow() - w.start_time).days == 0)
         response = {
             "events": weather_list,
             "total_count": 0,

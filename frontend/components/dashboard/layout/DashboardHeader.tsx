@@ -1,93 +1,75 @@
 ﻿'use client'
+
 import React from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Shield, Activity, Database, Menu, X } from 'lucide-react'
+import { Shield, Activity, Menu, Bell, Search } from 'lucide-react'
 import FPSMonitor from '@/components/3d/performance/FPSMonitor'
 import { useDashboardStore } from '@/stores/useDashboardStore'
 import { cn } from '@/lib/utils'
+
 interface DashboardHeaderProps {
   className?: string
   isMobileSidebarOpen?: boolean
   setIsMobileSidebarOpen?: (open: boolean) => void
 }
+
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ 
   className,
-  isMobileSidebarOpen,
-  setIsMobileSidebarOpen 
 }) => {
   const { toggleMobileSidebar } = useDashboardStore()
+
   return (
     <header
       className={cn(
-        'border-b border-cliff-light-gray/10 bg-pure-black backdrop-blur-xl sticky top-0 z-50 h-20 flex-shrink-0',
+        'h-20 flex-shrink-0 border-b border-white/5 bg-[#020204] sticky top-0 z-40',
         className
       )}
     >
-      <div className="container mx-auto h-full flex items-center justify-between px-6">
-        {}
+      <div className="h-full px-6 flex items-center justify-between gap-4">
+        
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden hover:bg-cliff-light-gray/10 transition-colors duration-200"
+            className="lg:hidden text-gray-400 hover:text-white"
             onClick={toggleMobileSidebar}
           >
-            <Menu className="h-6 w-6 text-cliff-white" />
+            <Menu className="h-6 w-6" />
           </Button>
-          <div className="flex items-center gap-3">
-            <div className="relative w-10 h-10 rounded-full bg-gradient-to-tr from-pure-black to-almost-black border border-cliff-light-gray/30 flex items-center justify-center shadow-lg">
-              <Shield className="h-6 w-6 md:h-6 md:w-6 text-cliff-white" />
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-md"></div>
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-xl md:text-2xl font-bold text-cliff-white">
-                CLIFF Navigation Center
-              </h1>
-              <p className="text-cliff-light-gray text-xs md:text-sm hidden md:block">
-                Cosmic Level Intelligent Forecast Framework
-              </p>
-            </div>
-            {}
-            <div className="sm:hidden">
-              <h1 className="text-base font-bold text-cliff-white">
-                CLIFF
-              </h1>
-            </div>
+
+          <div className="hidden md:flex items-center text-sm text-gray-500">
+            <span className="text-gray-300 font-medium">Dashboard</span>
+            <span className="mx-2 text-gray-700">/</span>
+            <span>Overview</span>
           </div>
         </div>
-        {}
-        <div className="hidden md:flex items-center gap-3">
-          <Badge 
-            variant="default" 
-            className="bg-green-500/10 text-green-400 border-green-400/30 text-xs hover:bg-green-500/20 transition-colors duration-200 cursor-pointer"
-          >
-            <Activity className="w-3 h-3 mr-1" />
-            Sistem Aktif
-          </Badge>
-          <Badge 
-            variant="default" 
-            className="bg-cliff-light-gray/10 text-cliff-white border-cliff-light-gray/30 text-xs hover:bg-cliff-light-gray/20 transition-colors duration-200 cursor-pointer"
-          >
-            <Database className="w-3 h-3 mr-1" />
-            Canlı Veri
-          </Badge>
-          <FPSMonitor 
-            compact={true}
-            targetFPS={60}
-            showGraph={false}
-            showDetails={false}
-          />
-        </div>
-        {}
-        <div className="md:hidden flex items-center gap-2">
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-          <FPSMonitor 
-            compact={true}
-            targetFPS={60}
-            showGraph={false}
-            showDetails={false}
-          />
+
+        <div className="flex items-center gap-3 md:gap-6">
+          
+          <div className="hidden md:flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/5 border border-green-500/10">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-xs font-medium text-green-500">Sistem Online</span>
+            </div>
+            
+            <FPSMonitor compact={true} targetFPS={60} showGraph={false} showDetails={false} />
+          </div>
+
+          <div className="hidden md:block w-px h-8 bg-white/5" />
+
+          <div className="flex items-center gap-2">
+            <Button size="icon" variant="ghost" className="text-gray-400 hover:text-white hover:bg-white/5 rounded-full">
+              <Search className="w-5 h-5" />
+            </Button>
+            <Button size="icon" variant="ghost" className="text-gray-400 hover:text-white hover:bg-white/5 rounded-full relative">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-[#020204]" />
+            </Button>
+            
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-purple-600 border border-white/10 ml-2" />
+          </div>
+
         </div>
       </div>
     </header>

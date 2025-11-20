@@ -16,13 +16,9 @@ from app.core.config import settings
 from app.services.nasa_services import get_nasa_services, SimplifiedNASAServices
 from app.services.ai_services import get_ai_services
 
-# Setup logging
 logger = structlog.get_logger(__name__)
 
 
-# =============================================================================
-# PYDANTIC MODELS FOR WEBSOCKET MESSAGES
-# =============================================================================
 
 class WebSocketMessage(BaseModel):
     """Base WebSocket message structure"""
@@ -66,9 +62,6 @@ class DataUpdate(BaseModel):
     affects_threat_level: bool = Field(default=False, description="Whether update affects threat level")
 
 
-# =============================================================================
-# WEBSOCKET CONNECTION MANAGER
-# =============================================================================
 
 class WebSocketManager:
     """
@@ -77,13 +70,10 @@ class WebSocketManager:
     """
     
     def __init__(self):
-        # Active WebSocket connections
         self.active_connections: Dict[str, WebSocket] = {}
         
-        # Client information
         self.clients: Dict[str, ClientInfo] = {}
         
-        # Subscription management
         self.subscriptions: Dict[str, Set[str]] = {
             "threat_alerts": set(),
             "data_updates": set(), 
@@ -95,13 +85,10 @@ class WebSocketManager:
         }
         self.last_known_alert_ids: Set[str] = set()
         
-        # Background tasks
         self.background_tasks: Set[asyncio.Task] = set()
         
-        # Message queue for reliable delivery
         self.message_queue: Dict[str, List[WebSocketMessage]] = {}
         
-        # Statistics
         self.stats = {
             "total_connections": 0,
             "active_connections": 0,
@@ -115,7 +102,6 @@ class WebSocketManager:
     async def initialize(self):
         """Initialize WebSocket manager and start background tasks"""
         try:
-            # Start background monitoring tasks
             if settings.ENABLE_REAL_TIME_ALERTS:
                 task = asyncio.create_task(self._monitor_threats())
                 self.background_tasks.add(task)
@@ -204,11 +190,9 @@ class WebSocketManager:
             client_id: Client identifier to disconnect
         """
         try:
-            # Remove from subscriptions
             for subscription_type in self.subscriptions:
                 self.subscriptions[subscription_type].discard(client_id)
             
-            # Close WebSocket connection
             if client_id in self.active_connections:
                 websocket = self.active_connections[client_id]
                 try:
@@ -218,17 +202,14 @@ class WebSocketManager:
                 
                 del self.active_connections[client_id]
             
-            # Clean up client data
             if client_id in self.clients:
                 del self.clients[client_id]
             
             if client_id in self.message_queue:
                 del self.message_queue[client_id]
             
-            # Cleanup AI subscriptions
             await self._cleanup_ai_client(client_id)
             
-            # Update statistics
             self.stats["active_connections"] = len(self.active_connections)
             
             logger.info(f"WebSocket client disconnected: {client_id}")
@@ -256,11 +237,9 @@ class WebSocketManager:
                 logger.warning(f"Unknown client: {client_id}")
                 return False
             
-            # Add to subscription
             self.subscriptions[subscription_type].add(client_id)
             self.clients[client_id].subscriptions.add(subscription_type)
             
-            # Send confirmation
             confirmation = WebSocketMessage(
                 type="subscription_confirmed",
                 data={
@@ -344,10 +323,8 @@ class WebSocketManager:
                 broadcast=True,
             )
             
-            # Send to general data update subscribers
             subscribers = self.subscriptions.get("data_updates", set())
             
-            # Also send to specific data type subscribers
             specific_subscribers = self.subscriptions.get(f"{update.data_type}_updates", set())
             all_subscribers = subscribers.union(specific_subscribers)
             
@@ -421,7 +398,6 @@ class WebSocketManager:
                 broadcast=True,
             )
             
-            # Send to all active connections
             all_clients = set(self.active_connections.keys())
             
             if all_clients:
@@ -440,11 +416,9 @@ class WebSocketManager:
             message: Raw message string from client
         """
         try:
-            # Update client activity
             if client_id in self.clients:
                 self.clients[client_id].last_activity = datetime.utcnow()
             
-            # Parse message
             try:
                 data = json.loads(message)
             except json.JSONDecodeError as e:
@@ -452,12 +426,10 @@ class WebSocketManager:
                 await self._send_error(client_id, "Invalid JSON message")
                 return
             
-            # Debug: Log parsed data structure
             logger.debug(f"Parsed message from {client_id}: {data}")
             
             message_type = data.get("type")
             
-            # Handle None or missing message type
             if not message_type:
                 logger.warning(f"Message from {client_id} has no type field. Full data: {data}")
                 await self._send_error(client_id, "Message type is required")
@@ -481,7 +453,6 @@ class WebSocketManager:
                 await self._send_pong(client_id)
             
             elif message_type == "pong":
-                # Client responded to ping - connection is healthy
                 logger.debug(f"Received pong from client {client_id}")
             
             elif message_type == "voice_command":
@@ -490,7 +461,6 @@ class WebSocketManager:
             elif message_type == "get_current_threats":
                 await self._send_current_threats(client_id)
             
-            # AI specific message types
             elif message_type in ["subscribe_to_analysis", "unsubscribe_from_analysis",
                                 "get_active_analyses", "request_ai_system_status"]:
                 await self._handle_ai_message(client_id, data)
@@ -521,9 +491,6 @@ class WebSocketManager:
             "uptime": "Running",  # Could track actual uptime
         }
     
-    # =============================================================================
-    # PRIVATE METHODS
-    # =============================================================================
     
     async def _send_to_client(self, client_id: str, message: WebSocketMessage):
         """Send message to specific client with improved error handling"""
@@ -534,7 +501,6 @@ class WebSocketManager:
         websocket = self.active_connections[client_id]
         
         try:
-            # Check if WebSocket is still open
             if websocket.client_state == websocket.client_state.DISCONNECTED:
                 logger.warning(f"WebSocket for {client_id} is already disconnected")
                 await self.disconnect(client_id)
@@ -548,7 +514,6 @@ class WebSocketManager:
             await self.disconnect(client_id)
         except Exception as e:
             logger.error(f"Failed to send message to {client_id}: {str(e)}")
-            # Don't disconnect on other errors, might be temporary
             if "ConnectionClosed" in str(type(e)) or "websocket" in str(e).lower():
                 await self.disconnect(client_id)
     
@@ -557,7 +522,6 @@ class WebSocketManager:
         if not subscribers:
             return
         
-        # Send to all subscribers concurrently
         tasks = []
         for client_id in subscribers.copy():  # Copy to avoid modification during iteration
             if client_id in self.active_connections:
@@ -591,10 +555,8 @@ class WebSocketManager:
     async def _handle_voice_command(self, client_id: str, data: Dict[str, Any]):
         """Handle voice command from client"""
         try:
-            # This would integrate with the voice processing system
             command = data.get("command", "")
             
-            # For now, send acknowledgment
             response = WebSocketMessage(
                 type="voice_command_received",
                 data={
@@ -613,7 +575,6 @@ class WebSocketManager:
     async def _send_current_threats(self, client_id: str):
         """Send current threat information to client"""
         try:
-            # This would get real threat data
             threat_data = {
                 "threat_level": "MODERATE",
                 "active_threats": 3,
@@ -656,18 +617,14 @@ class WebSocketManager:
 
         while True:
             try:
-                # In production, this interval should be in settings
                 await asyncio.sleep(30)
                 logger.debug("Threat monitoring check: Fetching new data...")
 
-                # Fetch all potential alerts from NASA services
                 all_potential_alerts: List[ThreatAlert] = []
 
-                # 1. Get Asteroids
                 try:
                     asteroids = await nasa_services.get_simple_asteroids(days_ahead=7)
                     for ast in asteroids:
-                        # ast is a dict, not an object - use dictionary keys
                         is_hazardous = ast.get("is_hazardous", False)
                         if is_hazardous:
                             alert = ThreatAlert(
@@ -683,13 +640,10 @@ class WebSocketManager:
                 except Exception as e:
                     logger.warning(f"Threat monitor could not fetch asteroid data: {e}")
 
-                # 2. Get Earth Events
                 try:
                     events = await nasa_services.get_simple_earth_events(limit=10)
                     for event in events:
-                        # event is a dict, not an object - use dictionary keys
                         category = event.get("category", "Unknown")
-                        # Earth events don't have severity, so we categorize by type
                         critical_categories = ["Wildfires", "Severe Storms", "Volcanoes"]
                         severity = "CRITICAL" if category in critical_categories else "MODERATE"
                         
@@ -706,7 +660,6 @@ class WebSocketManager:
                 except Exception as e:
                     logger.warning(f"Threat monitor could not fetch earth event data: {e}")
 
-                # Compare with last known state
                 current_alert_ids = {alert.alert_id for alert in all_potential_alerts}
                 new_alert_ids = current_alert_ids - self.last_known_alert_ids
 
@@ -719,7 +672,6 @@ class WebSocketManager:
                 else:
                     logger.debug("No new threats detected.")
 
-                # Update last known state
                 self.last_known_alert_ids = current_alert_ids
 
             except asyncio.CancelledError:
@@ -744,7 +696,6 @@ class WebSocketManager:
                     if client_info.last_activity < cutoff_time:
                         inactive_clients.append(client_id)
                 
-                # Disconnect inactive clients
                 for client_id in inactive_clients:
                     logger.info(f"Disconnecting inactive client: {client_id}")
                     await self.disconnect(client_id)
@@ -768,7 +719,6 @@ class WebSocketManager:
                 await asyncio.sleep(30)  # Send heartbeat every 30 seconds
                 
                 if self.active_connections:
-                    # Send ping to all clients to check connection health
                     ping_tasks = []
                     for client_id in list(self.active_connections.keys()):
                         ping_message = WebSocketMessage(
@@ -806,17 +756,10 @@ class WebSocketManager:
             await self.disconnect(client_id)
 
 
-# =============================================================================
-# GLOBAL WEBSOCKET MANAGER INSTANCE
-# =============================================================================
 
-# Create global WebSocket manager instance
 websocket_manager = WebSocketManager()
 
 
-# =============================================================================
-# UTILITY FUNCTIONS
-# =============================================================================
 
 async def get_websocket_manager() -> WebSocketManager:
     """Get WebSocket manager instance for dependency injection"""
@@ -858,7 +801,6 @@ async def create_threat_alert(
         actions=actions or [],
     )
     
-    # Broadcast alert
     await websocket_manager.broadcast_threat_alert(alert)
     
     return alert
@@ -890,13 +832,11 @@ async def create_data_update(
         affects_threat_level=affects_threat_level,
     )
     
-    # Broadcast update
     await websocket_manager.broadcast_data_update(update)
     
     return update
 
 
-# Health check for WebSocket services
 async def check_websocket_health() -> Dict[str, Any]:
     """Check WebSocket manager health"""
     try:

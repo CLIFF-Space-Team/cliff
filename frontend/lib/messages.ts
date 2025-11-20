@@ -1,7 +1,6 @@
 let cache: Record<string, any> | null = null
 
 function parseSimpleYaml(yaml: string): any {
-  // Çok basit YAML -> JSON dönüştürücü (2 seviye)
   const result: any = {}
   let currentSection: string | null = null
   yaml.split(/\r?\n/).forEach(line => {
@@ -44,5 +43,4 @@ export async function getMessage(path: string, fallback?: string): Promise<strin
   }
   return typeof cur === 'string' ? cur : fallback ?? path
 }
-
 

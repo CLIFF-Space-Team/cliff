@@ -156,7 +156,6 @@ export interface ChatHookReturn extends ChatActions {
   reconnect: () => void
 }
 
-// Voice Integration Types
 export interface VoiceInputData {
   transcript: string
   confidence: number
@@ -175,7 +174,6 @@ export interface VoiceOutputData {
   duration?: number
 }
 
-// WebSocket Integration Types
 export interface ChatWebSocketMessage {
   type: 'chat_message' | 'chat_response' | 'typing_start' | 'typing_stop' | 'status_update' | 'voice_data'
   data: any
@@ -184,7 +182,6 @@ export interface ChatWebSocketMessage {
   userId?: string
 }
 
-// Educational AI Integration Types
 export interface EducationalChatRequest {
   message: string
   topic?: string
@@ -204,7 +201,6 @@ export interface EducationalChatResponse {
   personalizedContent?: boolean
 }
 
-// Chat Component Props Types
 export interface ChatInterfaceProps {
   className?: string
   compact?: boolean
@@ -254,7 +250,6 @@ export interface ChatHistoryProps {
   groupByDate?: boolean
 }
 
-// Utility Types
 export type ChatMessageType = ChatMessage['type']
 export type ChatSenderType = ChatMessage['sender']
 export type ChatStatusType = ChatStatus['currentMode']
@@ -262,7 +257,6 @@ export type ChatThemeType = ChatSettings['theme']
 export type ChatLanguageType = string
 export type ChatVoiceType = string
 
-// Constants
 export const CHAT_CONSTANTS = {
   MAX_MESSAGE_LENGTH: 2000,
   MAX_HISTORY_SIZE: 1000,
@@ -289,7 +283,6 @@ export const CHAT_LANGUAGES = [
   { code: 'en-GB', name: 'English (UK)', flag: '🇬🇧' }
 ] as const
 
-// Error Types
 export class ChatError extends Error {
   constructor(
     message: string,
@@ -362,7 +355,6 @@ export interface MessageMetadata {
   }
 }
 
-// Görsel oluşturma için yeni request tipleri
 export interface ImageGenerationRequest {
   message: string
   prompt?: string

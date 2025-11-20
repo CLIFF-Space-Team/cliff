@@ -223,7 +223,6 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     })
   }, [data.is_hazardous, data.orbital_data, hovered, showTooltip, isMobile])
   useFrame((state, delta) => {
-    // Sadece scale animasyonu, dönme yok
     if (meshRef.current) {
       const targetScale = (hovered || showTooltip) ? 1.2 : 1.0
       const currentScale = meshRef.current.scale.x

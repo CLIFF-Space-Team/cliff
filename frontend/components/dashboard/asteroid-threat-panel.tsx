@@ -33,7 +33,6 @@ export const AsteroidThreatPanel: React.FC<Props> = ({ className }) => {
   
   return (
     <div className={cn('rounded-xl bg-black/40 border border-cyan-500/20 p-4', className)}>
-      {/* Compact Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-cyan-400" />
@@ -48,7 +47,6 @@ export const AsteroidThreatPanel: React.FC<Props> = ({ className }) => {
         </div>
       </div>
       
-      {/* Compact Risk Counters */}
       <div className="grid grid-cols-5 gap-2">
         {[
           { 
@@ -122,7 +120,6 @@ export const AsteroidThreatPanel: React.FC<Props> = ({ className }) => {
         ))}
       </div>
       
-      {/* Compact Footer */}
       <div className="mt-3 pt-3 border-t border-cyan-500/10 flex justify-between items-center">
         <span className="text-[10px] text-gray-500">Güncelleme</span>
         <span className="text-[10px] text-cyan-400 font-mono">

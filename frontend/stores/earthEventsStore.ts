@@ -17,7 +17,6 @@ export interface EarthEvent {
   imageUrl?: string
   affectedArea?: number
   populationImpact?: number
-  // AI Generated Images
   aiImages?: EONETAIImage[]
   aiImagesLoading?: boolean
   aiImagesError?: string
@@ -75,7 +74,6 @@ interface EarthEventsStore {
   mapZoom: number
   clusters: EventCluster[]
   
-  // Regional properties
   selectedRegion: GeographicRegion | null
   regionColorMode: boolean
   regionVisibility: Map<GeographicRegion, boolean>
@@ -100,7 +98,6 @@ interface EarthEventsStore {
   loadEvents: () => Promise<void>
   fetchEvents: () => Promise<void>
   
-  // Regional actions
   selectRegion: (region: GeographicRegion | null) => void
   setRegionColorMode: (enabled: boolean) => void
   toggleRegionVisibility: (region: GeographicRegion) => void
@@ -108,13 +105,11 @@ interface EarthEventsStore {
   updateRegionStats: () => void
   getVisibleEvents: () => Array<{id: string; coordinates: {lat: number; lng: number}}>
   
-  // AI Image Generation actions
   generateEventImages: (eventId: string) => Promise<void>
   getEventImages: (eventId: string) => Promise<void>
   clearEventImages: (eventId: string) => void
 }
 
-// Mock data removed - using only real NASA EONET data
 
 export const useEarthEventsStore = create<EarthEventsStore>()(
   devtools(
@@ -132,7 +127,6 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
       mapZoom: 2,
       clusters: [],
       
-      // Regional properties initialization
       selectedRegion: null,
       regionColorMode: true,
       regionVisibility: new Map([
@@ -231,7 +225,6 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
       setViewMode: (mode) => set({ viewMode: mode }),
       
       loadEvents: async () => {
-        // Rate limiting - son fetch'ten beri en az 2 saniye geçmiş mi kontrol et
         const state = get()
         const now = Date.now()
         const lastFetch = (state as any)._lastFetchTime || 0
@@ -246,7 +239,6 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
           const response = await fetch('http://localhost:8000/api/v1/nasa/earth-events?limit=100')
           if (response.ok) {
             const data = await response.json()
-            // API'den gelen data formatı: { success: true, data: { events: [...] } }
             const apiEvents = data.success && data.data?.events ? data.data.events : []
             
             console.log(`✅ Earth events loaded: ${apiEvents.length} gerçek NASA event`)
@@ -277,7 +269,6 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
       },
       
       fetchEvents: async () => {
-        // Rate limiting - son fetch'ten beri en az 2 saniye geçmiş mi kontrol et
         const state = get()
         const now = Date.now()
         const lastFetch = (state as any)._lastFetchTime || 0
@@ -292,7 +283,6 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
           const response = await fetch('http://localhost:8000/api/v1/nasa/earth-events?limit=100')
           if (response.ok) {
             const data = await response.json()
-            // API'den gelen data formatı: { success: true, data: { events: [...] } }
             const apiEvents = data.success && data.data?.events ? data.data.events : []
             
             console.log(`✅ Earth events fetched: ${apiEvents.length} gerçek NASA event`)
@@ -322,7 +312,6 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
         }
       },
 
-      // Regional actions implementation
       selectRegion: (region) => {
         set({ selectedRegion: region })
         
@@ -370,7 +359,6 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
         
         set({ regionVisibility: newVisibility })
         
-        // Update filtered events based on new visibility
         const visibleRegions = Array.from(newVisibility.entries())
           .filter(([_, visible]) => visible)
           .map(([region, _]) => region)
@@ -428,12 +416,10 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
           }))
       },
       
-      // AI Image Generation actions
       generateEventImages: async (eventId: string) => {
         const event = get().events.find(e => e.id === eventId)
         if (!event) return
         
-        // Mark as loading
         set(state => ({
           events: state.events.map(e =>
             e.id === eventId
@@ -458,7 +444,6 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
           if (response.ok) {
             const data = await response.json()
             if (data.success) {
-              // Update event with generated images
               set(state => ({
                 events: state.events.map(e =>
                   e.id === eventId
@@ -500,7 +485,6 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
           if (response.ok) {
             const data = await response.json()
             if (data.success) {
-              // Update event with cached images
               set(state => ({
                 events: state.events.map(e =>
                   e.id === eventId

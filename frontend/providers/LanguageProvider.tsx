@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { LocalizedContent } from '../types/educational-content';
 
-// Supported languages
 export const SUPPORTED_LANGUAGES = {
   tr: {
     code: 'tr',
@@ -23,9 +22,7 @@ export const SUPPORTED_LANGUAGES = {
 
 export type SupportedLanguage = keyof typeof SUPPORTED_LANGUAGES;
 
-// Translation keys interface
 export interface TranslationKeys {
-  // Common UI
   'common.loading': string;
   'common.error': string;
   'common.close': string;
@@ -40,7 +37,6 @@ export interface TranslationKeys {
   'common.clear': string;
   'common.settings': string;
   
-  // Solar System
   'solarsystem.sun': string;
   'solarsystem.mercury': string;
   'solarsystem.venus': string;
@@ -53,7 +49,6 @@ export interface TranslationKeys {
   'solarsystem.pluto': string;
   'solarsystem.moon': string;
   
-  // Educational Content
   'education.overview': string;
   'education.physics': string;
   'education.exploration': string;
@@ -67,7 +62,6 @@ export interface TranslationKeys {
   'education.level': string;
   'education.tips': string;
   
-  // Orbital Mechanics
   'orbital.periapsis': string;
   'orbital.apoapsis': string;
   'orbital.eccentricity': string;
@@ -77,7 +71,6 @@ export interface TranslationKeys {
   'orbital.velocity': string;
   'orbital.distance': string;
   
-  // Units
   'units.km': string;
   'units.au': string;
   'units.kg': string;
@@ -89,7 +82,6 @@ export interface TranslationKeys {
   'units.ms2': string;
   'units.kms': string;
   
-  // UI Components
   'ui.tooltip.close': string;
   'ui.panel.expand': string;
   'ui.panel.collapse': string;
@@ -103,7 +95,6 @@ export interface TranslationKeys {
   'ui.orbital.mechanics': string;
   'ui.time.controls': string;
   
-  // Actions
   'action.focus_camera': string;
   'action.show_orbit': string;
   'action.compare': string;
@@ -113,17 +104,14 @@ export interface TranslationKeys {
   'action.play': string;
   'action.pause': string;
   
-  // Error Messages
   'error.loading_content': string;
   'error.network_error': string;
   'error.not_found': string;
   'error.invalid_data': string;
 }
 
-// Translation data
 const translations: Record<SupportedLanguage, TranslationKeys> = {
   tr: {
-    // Common UI
     'common.loading': 'Yükleniyor...',
     'common.error': 'Hata',
     'common.close': 'Kapat',
@@ -138,7 +126,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'common.clear': 'Temizle',
     'common.settings': 'Ayarlar',
     
-    // Solar System
     'solarsystem.sun': 'Güneş',
     'solarsystem.mercury': 'Merkür',
     'solarsystem.venus': 'Venüs',
@@ -151,7 +138,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'solarsystem.pluto': 'Plüton',
     'solarsystem.moon': 'Ay',
     
-    // Educational Content
     'education.overview': 'Genel Bakış',
     'education.physics': 'Fizik',
     'education.exploration': 'Keşif',
@@ -165,7 +151,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'education.level': 'Seviye',
     'education.tips': 'İpuçları',
     
-    // Orbital Mechanics
     'orbital.periapsis': 'Günberi',
     'orbital.apoapsis': 'Günöte',
     'orbital.eccentricity': 'Eksantriklik',
@@ -175,7 +160,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'orbital.velocity': 'Hız',
     'orbital.distance': 'Mesafe',
     
-    // Units
     'units.km': 'km',
     'units.au': 'AU',
     'units.kg': 'kg',
@@ -187,7 +171,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'units.ms2': 'm/s²',
     'units.kms': 'km/s',
     
-    // UI Components
     'ui.tooltip.close': 'Kapat',
     'ui.panel.expand': 'Genişlet',
     'ui.panel.collapse': 'Daralt',
@@ -201,7 +184,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'ui.orbital.mechanics': 'Orbital Mekanik',
     'ui.time.controls': 'Zaman Kontrolü',
     
-    // Actions
     'action.focus_camera': 'Kameraya Odakla',
     'action.show_orbit': 'Yörüngeyi Göster',
     'action.compare': 'Karşılaştır',
@@ -211,7 +193,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'action.play': 'Oynat',
     'action.pause': 'Durdur',
     
-    // Error Messages
     'error.loading_content': 'İçerik yüklenemedi',
     'error.network_error': 'Ağ bağlantısı hatası',
     'error.not_found': 'İçerik bulunamadı',
@@ -219,7 +200,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
   },
   
   en: {
-    // Common UI
     'common.loading': 'Loading...',
     'common.error': 'Error',
     'common.close': 'Close',
@@ -234,7 +214,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'common.clear': 'Clear',
     'common.settings': 'Settings',
     
-    // Solar System
     'solarsystem.sun': 'Sun',
     'solarsystem.mercury': 'Mercury',
     'solarsystem.venus': 'Venus',
@@ -247,7 +226,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'solarsystem.pluto': 'Pluto',
     'solarsystem.moon': 'Moon',
     
-    // Educational Content
     'education.overview': 'Overview',
     'education.physics': 'Physics',
     'education.exploration': 'Exploration',
@@ -261,7 +239,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'education.level': 'Level',
     'education.tips': 'Tips',
     
-    // Orbital Mechanics
     'orbital.periapsis': 'Periapsis',
     'orbital.apoapsis': 'Apoapsis',
     'orbital.eccentricity': 'Eccentricity',
@@ -271,7 +248,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'orbital.velocity': 'Velocity',
     'orbital.distance': 'Distance',
     
-    // Units
     'units.km': 'km',
     'units.au': 'AU',
     'units.kg': 'kg',
@@ -283,7 +259,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'units.ms2': 'm/s²',
     'units.kms': 'km/s',
     
-    // UI Components
     'ui.tooltip.close': 'Close',
     'ui.panel.expand': 'Expand',
     'ui.panel.collapse': 'Collapse',
@@ -297,7 +272,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'ui.orbital.mechanics': 'Orbital Mechanics',
     'ui.time.controls': 'Time Controls',
     
-    // Actions
     'action.focus_camera': 'Focus Camera',
     'action.show_orbit': 'Show Orbit',
     'action.compare': 'Compare',
@@ -307,7 +281,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
     'action.play': 'Play',
     'action.pause': 'Pause',
     
-    // Error Messages
     'error.loading_content': 'Failed to load content',
     'error.network_error': 'Network connection error',
     'error.not_found': 'Content not found',
@@ -315,7 +288,6 @@ const translations: Record<SupportedLanguage, TranslationKeys> = {
   }
 };
 
-// Language context state
 interface LanguageState {
   currentLanguage: SupportedLanguage;
   isLoading: boolean;
@@ -323,14 +295,12 @@ interface LanguageState {
   fallbackLanguage: SupportedLanguage;
 }
 
-// Language actions
 type LanguageAction =
   | { type: 'SET_LANGUAGE'; payload: SupportedLanguage }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_FALLBACK'; payload: SupportedLanguage };
 
-// Language reducer
 function languageReducer(state: LanguageState, action: LanguageAction): LanguageState {
   switch (action.type) {
     case 'SET_LANGUAGE':
@@ -346,43 +316,34 @@ function languageReducer(state: LanguageState, action: LanguageAction): Language
   }
 }
 
-// Language context interface
 interface LanguageContextType {
-  // State
   currentLanguage: SupportedLanguage;
   supportedLanguages: typeof SUPPORTED_LANGUAGES;
   isLoading: boolean;
   error: string | null;
   
-  // Actions
   setLanguage: (language: SupportedLanguage) => void;
   
-  // Translation functions
   t: (key: keyof TranslationKeys, fallback?: string) => string;
   tLocalized: (content: LocalizedContent) => string;
   
-  // Format functions
   formatDate: (date: Date) => string;
   formatNumber: (num: number) => string;
   formatDistance: (distance: number, unit?: 'km' | 'au') => string;
   formatTime: (seconds: number) => string;
   
-  // Utility functions
   getLanguageInfo: (langCode: SupportedLanguage) => typeof SUPPORTED_LANGUAGES[SupportedLanguage];
   isRTL: () => boolean;
 }
 
-// Create context
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
-// Language provider props
 interface LanguageProviderProps {
   children: React.ReactNode;
   defaultLanguage?: SupportedLanguage;
   fallbackLanguage?: SupportedLanguage;
 }
 
-// Language provider component
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({
   children,
   defaultLanguage = 'tr',
@@ -395,13 +356,11 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
     fallbackLanguage
   });
 
-  // Load saved language preference
   useEffect(() => {
     const savedLanguage = localStorage.getItem('cliff-language') as SupportedLanguage;
     if (savedLanguage && SUPPORTED_LANGUAGES[savedLanguage]) {
       dispatch({ type: 'SET_LANGUAGE', payload: savedLanguage });
     } else {
-      // Detect browser language
       const browserLanguage = navigator.language.split('-')[0] as SupportedLanguage;
       if (SUPPORTED_LANGUAGES[browserLanguage]) {
         dispatch({ type: 'SET_LANGUAGE', payload: browserLanguage });
@@ -409,7 +368,6 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
     }
   }, []);
 
-  // Set language
   const setLanguage = useCallback((language: SupportedLanguage) => {
     if (!SUPPORTED_LANGUAGES[language]) {
       console.warn(`Unsupported language: ${language}`);
@@ -419,14 +377,11 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
     dispatch({ type: 'SET_LANGUAGE', payload: language });
     localStorage.setItem('cliff-language', language);
     
-    // Update document language
     document.documentElement.lang = language;
     
-    // Update document direction for RTL languages
     document.documentElement.dir = SUPPORTED_LANGUAGES[language].rtl ? 'rtl' : 'ltr';
   }, []);
 
-  // Translation function
   const t = useCallback((key: keyof TranslationKeys, fallback?: string): string => {
     const translation = translations[state.currentLanguage]?.[key] ||
                        translations[state.fallbackLanguage]?.[key] ||
@@ -436,7 +391,6 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
     return translation;
   }, [state.currentLanguage, state.fallbackLanguage]);
 
-  // Localized content translation
   const tLocalized = useCallback((content: LocalizedContent): string => {
     return content[state.currentLanguage] ||
            content[state.fallbackLanguage] ||
@@ -445,7 +399,6 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
            '';
   }, [state.currentLanguage, state.fallbackLanguage]);
 
-  // Format date according to current language
   const formatDate = useCallback((date: Date): string => {
     const locale = state.currentLanguage === 'tr' ? 'tr-TR' : 'en-US';
     return new Intl.DateTimeFormat(locale, {
@@ -457,13 +410,11 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
     }).format(date);
   }, [state.currentLanguage]);
 
-  // Format numbers according to current language
   const formatNumber = useCallback((num: number): string => {
     const locale = state.currentLanguage === 'tr' ? 'tr-TR' : 'en-US';
     return new Intl.NumberFormat(locale).format(num);
   }, [state.currentLanguage]);
 
-  // Format distance with appropriate units
   const formatDistance = useCallback((distance: number, unit: 'km' | 'au' = 'km'): string => {
     if (unit === 'au') {
       return `${distance.toFixed(3)} ${t('units.au')}`;
@@ -480,7 +431,6 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
     }
   }, [t, formatNumber, state.currentLanguage]);
 
-  // Format time duration
   const formatTime = useCallback((seconds: number): string => {
     if (seconds >= 31557600) { // Years
       const years = seconds / 31557600;
@@ -496,37 +446,30 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
     }
   }, [t]);
 
-  // Get language info
   const getLanguageInfo = useCallback((langCode: SupportedLanguage) => {
     return SUPPORTED_LANGUAGES[langCode];
   }, []);
 
-  // Check if current language is RTL
   const isRTL = useCallback((): boolean => {
     return SUPPORTED_LANGUAGES[state.currentLanguage].rtl;
   }, [state.currentLanguage]);
 
   const contextValue: LanguageContextType = {
-    // State
     currentLanguage: state.currentLanguage,
     supportedLanguages: SUPPORTED_LANGUAGES,
     isLoading: state.isLoading,
     error: state.error,
     
-    // Actions
     setLanguage,
     
-    // Translation functions
     t,
     tLocalized,
     
-    // Format functions
     formatDate,
     formatNumber,
     formatDistance,
     formatTime,
     
-    // Utility functions
     getLanguageInfo,
     isRTL
   };
@@ -538,7 +481,6 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
   );
 };
 
-// Language hook
 export const useLanguage = (): LanguageContextType => {
   const context = useContext(LanguageContext);
   if (!context) {
@@ -547,19 +489,16 @@ export const useLanguage = (): LanguageContextType => {
   return context;
 };
 
-// Translation hook (shorthand)
 export const useTranslation = () => {
   const { t, tLocalized } = useLanguage();
   return { t, tLocalized };
 };
 
-// Localized content hook
 export const useLocalizedContent = () => {
   const { tLocalized } = useLanguage();
   return tLocalized;
 };
 
-// Format hooks
 export const useFormatters = () => {
   const { formatDate, formatNumber, formatDistance, formatTime } = useLanguage();
   return { formatDate, formatNumber, formatDistance, formatTime };

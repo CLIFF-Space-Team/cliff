@@ -15,7 +15,6 @@ def _parse_horizons_result(ephem: Dict[str, Any]) -> list[dict]:
     """
     raw = ephem.get("result") or ""
     if not isinstance(raw, str) or "$$SOE" not in raw:
-        # Bazı durumlarda önceden parse edilmiş olabilir
         data = ephem.get("data")
         return data if isinstance(data, list) else []
     lines = raw.splitlines()
@@ -46,7 +45,6 @@ def _parse_horizons_result(ephem: Dict[str, Any]) -> list[dict]:
                 except Exception:
                     continue
         else:
-            # Fallback: boşluk tabanlı kaba ayrıştırma
             parts = s.split()
             if len(parts) < 12:
                 continue
@@ -75,25 +73,20 @@ async def analyze_target(
     mc = get_monte_carlo_engine()
     ml = get_ml_risk_classifier()
 
-    # 1) NASA verisi
     ephem = await horizons.get_future_positions(
         target_id=target_id,
         days_ahead=days_ahead,
         step_size=step,
     )
-    # 2) Ephemeris'i parse et
     parsed_rows = _parse_horizons_result(ephem)
     AU_TO_KM = 149_597_870.7
     deltas_km = [float(r["delta_au"]) * AU_TO_KM for r in parsed_rows if r.get("delta_au") is not None]
-    # 3) Basit 1-sigma tahmini (zaman serisi varyansı)
     sigma_km = 0.0
     if len(deltas_km) >= 3:
         mean = sum(deltas_km) / len(deltas_km)
         var = sum((d - mean) ** 2 for d in deltas_km) / (len(deltas_km) - 1)
         sigma_km = var ** 0.5
 
-    # 4) Monte Carlo simülasyonu (son gün için)
-    # Nominal mesafe serisi (km)
     nominal_distances_km = deltas_km
     mc_summary = mc.run(
         nominal_distances_km=nominal_distances_km,
@@ -101,7 +94,6 @@ async def analyze_target(
         samples=10000,
     )
 
-    # 5) ML risk sınıflandırma
     last_row = parsed_rows[-1] if parsed_rows else {}
     features = {
         "distance_au": float(last_row.get("delta_au", 1.0)),
@@ -114,7 +106,6 @@ async def analyze_target(
     }
     ml_pred = ml.predict(features)
 
-    # 6) Kullanıcıya okunur açıklama (LLM yerine deterministik özet)
     explanation = (
         f"NASA Horizons verilerine göre nominal en yakın mesafe ~{nominal_distances_km[-1]:,.0f} km. "
         f"Monte Carlo (10k) sonucunda %95 aralık {mc_summary.ci95_km[0]:,.0f} - {mc_summary.ci95_km[1]:,.0f} km. "

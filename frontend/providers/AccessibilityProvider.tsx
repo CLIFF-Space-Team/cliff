@@ -3,40 +3,32 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef } from 'react';
 import { AccessibilityFeatures } from '../types/educational-content';
 
-// Remove circular dependency - we'll handle translation differently
 
-// Accessibility preferences interface
 export interface AccessibilityPreferences {
-  // Visual accessibility
   highContrast: boolean;
   largeText: boolean;
   reducedMotion: boolean;
   colorBlindSupport: boolean;
   focusIndicators: boolean;
   
-  // Audio accessibility
   audioDescriptions: boolean;
   soundEffects: boolean;
   voiceNavigation: boolean;
   
-  // Motor accessibility
   keyboardNavigation: boolean;
   stickyKeys: boolean;
   slowKeys: boolean;
   mouseKeys: boolean;
   
-  // Cognitive accessibility
   simplifiedInterface: boolean;
   readingGuide: boolean;
   pauseAnimations: boolean;
   
-  // Screen reader support
   screenReader: boolean;
   verboseDescriptions: boolean;
   announceChanges: boolean;
 }
 
-// Keyboard shortcuts interface
 export interface KeyboardShortcut {
   key: string;
   modifiers: ('ctrl' | 'alt' | 'shift' | 'meta')[];
@@ -45,7 +37,6 @@ export interface KeyboardShortcut {
   category: 'navigation' | 'content' | 'media' | 'accessibility';
 }
 
-// Focus management interface
 export interface FocusState {
   currentFocus: string | null;
   focusHistory: string[];
@@ -57,7 +48,6 @@ export interface FocusState {
   }>;
 }
 
-// Accessibility state interface
 interface AccessibilityState {
   preferences: AccessibilityPreferences;
   shortcuts: KeyboardShortcut[];
@@ -72,7 +62,6 @@ interface AccessibilityState {
   error: string | null;
 }
 
-// Accessibility actions
 type AccessibilityAction =
   | { type: 'SET_PREFERENCE'; payload: { key: keyof AccessibilityPreferences; value: boolean } }
   | { type: 'SET_PREFERENCES'; payload: Partial<AccessibilityPreferences> }
@@ -83,7 +72,6 @@ type AccessibilityAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null };
 
-// Default preferences
 const DEFAULT_PREFERENCES: AccessibilityPreferences = {
   highContrast: false,
   largeText: false,
@@ -105,7 +93,6 @@ const DEFAULT_PREFERENCES: AccessibilityPreferences = {
   announceChanges: true
 };
 
-// Default keyboard shortcuts
 const DEFAULT_SHORTCUTS: KeyboardShortcut[] = [
   {
     key: 'h',
@@ -179,7 +166,6 @@ const DEFAULT_SHORTCUTS: KeyboardShortcut[] = [
   }
 ];
 
-// Accessibility reducer
 function accessibilityReducer(state: AccessibilityState, action: AccessibilityAction): AccessibilityState {
   switch (action.type) {
     case 'SET_PREFERENCE':
@@ -260,9 +246,7 @@ function accessibilityReducer(state: AccessibilityState, action: AccessibilityAc
   }
 }
 
-// Accessibility context interface
 interface AccessibilityContextType {
-  // State
   preferences: AccessibilityPreferences;
   shortcuts: KeyboardShortcut[];
   focusState: FocusState;
@@ -270,45 +254,36 @@ interface AccessibilityContextType {
   isLoading: boolean;
   error: string | null;
   
-  // Preference actions
   setPreference: (key: keyof AccessibilityPreferences, value: boolean) => void;
   setPreferences: (prefs: Partial<AccessibilityPreferences>) => void;
   resetPreferences: () => void;
   
-  // Focus management
   setFocus: (elementId: string | null) => void;
   trapFocus: (containerId: string | null) => void;
   getNextFocusableElement: (currentId: string, direction: 'forward' | 'backward') => string | null;
   
-  // Announcements
   announce: (message: string, priority?: 'low' | 'medium' | 'high') => void;
   clearAnnouncements: () => void;
   
-  // Keyboard shortcuts
   registerShortcut: (shortcut: KeyboardShortcut) => void;
   unregisterShortcut: (key: string, modifiers: string[]) => void;
   
-  // Utility functions
   isHighContrast: () => boolean;
   isReducedMotion: () => boolean;
   shouldShowFocusIndicators: () => boolean;
   getAriaLabel: (baseLabel: string, context?: string) => string;
   getAriaDescription: (description: string, verbose?: boolean) => string;
   
-  // Audio descriptions
   playAudioDescription: (text: string) => void;
   stopAudioDescription: () => void;
 }
 
-// Create context
 const AccessibilityContext = createContext<AccessibilityContextType | null>(null);
 
-// Accessibility provider props
 interface AccessibilityProviderProps {
   children: React.ReactNode;
 }
 
-// Accessibility provider component
 export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(accessibilityReducer, {
     preferences: DEFAULT_PREFERENCES,
@@ -331,9 +306,7 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
   const audioRef = useRef<SpeechSynthesis | null>(null);
   const shortcutHandlersRef = useRef<Map<string, () => void>>(new Map());
 
-  // Initialize accessibility features
   useEffect(() => {
-    // Load saved preferences
     const savedPrefs = localStorage.getItem('cliff-accessibility-preferences');
     if (savedPrefs) {
       try {
@@ -344,15 +317,12 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
       }
     }
 
-    // Detect system preferences
     detectSystemPreferences();
 
-    // Initialize speech synthesis
     if ('speechSynthesis' in window) {
       audioRef.current = window.speechSynthesis;
     }
 
-    // Set up mutation observer for dynamic content announcements
     const observer = new MutationObserver(handleDynamicContentChanges);
     observer.observe(document.body, {
       childList: true,
@@ -366,22 +336,18 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     };
   }, []);
 
-  // Detect system accessibility preferences
   const detectSystemPreferences = useCallback(() => {
     const systemPrefs: Partial<AccessibilityPreferences> = {};
 
-    // Reduced motion
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       systemPrefs.reducedMotion = true;
       systemPrefs.pauseAnimations = true;
     }
 
-    // High contrast
     if (window.matchMedia('(prefers-contrast: high)').matches) {
       systemPrefs.highContrast = true;
     }
 
-    // Color scheme preference
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       systemPrefs.highContrast = true;
     }
@@ -391,7 +357,6 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     }
   }, []);
 
-  // Handle dynamic content changes
   const handleDynamicContentChanges = useCallback((mutations: MutationRecord[]) => {
     if (!state.preferences.announceChanges) return;
 
@@ -414,7 +379,6 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     });
   }, [state.preferences.announceChanges]);
 
-  // Set up keyboard event listeners
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (!state.preferences.keyboardNavigation) return;
@@ -433,7 +397,6 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
         handler();
       }
 
-      // Handle tab navigation for focus trapping
       if (event.key === 'Tab' && state.focusState.focusTrappedIn) {
         handleTabInFocusTrap(event);
       }
@@ -443,7 +406,6 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [state.preferences.keyboardNavigation, state.focusState.focusTrappedIn]);
 
-  // Handle tab navigation in focus trap
   const handleTabInFocusTrap = useCallback((event: KeyboardEvent) => {
     const trapContainer = document.querySelector(`[data-focus-trap="${state.focusState.focusTrappedIn}"]`);
     if (!trapContainer) return;
@@ -456,13 +418,11 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     const lastFocusable = focusableElements[focusableElements.length - 1];
 
     if (event.shiftKey) {
-      // Shift + Tab
       if (document.activeElement === firstFocusable) {
         event.preventDefault();
         lastFocusable.focus();
       }
     } else {
-      // Tab
       if (document.activeElement === lastFocusable) {
         event.preventDefault();
         firstFocusable.focus();
@@ -470,32 +430,27 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     }
   }, [state.focusState.focusTrappedIn]);
 
-  // Apply CSS preferences
   useEffect(() => {
     const root = document.documentElement;
 
-    // High contrast
     if (state.preferences.highContrast) {
       root.setAttribute('data-high-contrast', 'true');
     } else {
       root.removeAttribute('data-high-contrast');
     }
 
-    // Large text
     if (state.preferences.largeText) {
       root.setAttribute('data-large-text', 'true');
     } else {
       root.removeAttribute('data-large-text');
     }
 
-    // Reduced motion
     if (state.preferences.reducedMotion) {
       root.setAttribute('data-reduced-motion', 'true');
     } else {
       root.removeAttribute('data-reduced-motion');
     }
 
-    // Focus indicators
     if (state.preferences.focusIndicators) {
       root.setAttribute('data-focus-visible', 'true');
     } else {
@@ -503,31 +458,25 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     }
   }, [state.preferences]);
 
-  // Set preference
   const setPreference = useCallback((key: keyof AccessibilityPreferences, value: boolean) => {
     dispatch({ type: 'SET_PREFERENCE', payload: { key, value } });
     
-    // Save to localStorage
     const newPreferences = { ...state.preferences, [key]: value };
     localStorage.setItem('cliff-accessibility-preferences', JSON.stringify(newPreferences));
   }, [state.preferences]);
 
-  // Set multiple preferences
   const setPreferences = useCallback((prefs: Partial<AccessibilityPreferences>) => {
     dispatch({ type: 'SET_PREFERENCES', payload: prefs });
     
-    // Save to localStorage
     const newPreferences = { ...state.preferences, ...prefs };
     localStorage.setItem('cliff-accessibility-preferences', JSON.stringify(newPreferences));
   }, [state.preferences]);
 
-  // Reset preferences
   const resetPreferences = useCallback(() => {
     dispatch({ type: 'SET_PREFERENCES', payload: DEFAULT_PREFERENCES });
     localStorage.removeItem('cliff-accessibility-preferences');
   }, []);
 
-  // Focus management
   const setFocus = useCallback((elementId: string | null) => {
     dispatch({ type: 'SET_FOCUS', payload: elementId });
     
@@ -536,7 +485,6 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
       if (element) {
         element.focus();
         
-        // Announce focus change if screen reader support is enabled
         if (state.preferences.screenReader) {
           const label = element.getAttribute('aria-label') || 
                         element.getAttribute('title') || 
@@ -548,12 +496,10 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     }
   }, [state.preferences.screenReader]);
 
-  // Focus trap management
   const trapFocus = useCallback((containerId: string | null) => {
     dispatch({ type: 'TRAP_FOCUS', payload: containerId });
   }, []);
 
-  // Get next focusable element
   const getNextFocusableElement = useCallback((currentId: string, direction: 'forward' | 'backward'): string | null => {
     const focusableElements = Array.from(document.querySelectorAll(
       'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])'
@@ -569,11 +515,9 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     return focusableElements[nextIndex]?.id || null;
   }, []);
 
-  // Announcements
   const announce = useCallback((message: string, priority: 'low' | 'medium' | 'high' = 'medium') => {
     dispatch({ type: 'ADD_ANNOUNCEMENT', payload: { message, priority } });
 
-    // Create live region announcement
     const liveRegion = document.createElement('div');
     liveRegion.setAttribute('aria-live', priority === 'high' ? 'assertive' : 'polite');
     liveRegion.setAttribute('aria-atomic', 'true');
@@ -581,41 +525,33 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     liveRegion.textContent = message;
     document.body.appendChild(liveRegion);
 
-    // Remove after announcement
     setTimeout(() => {
       document.body.removeChild(liveRegion);
     }, 1000);
 
-    // Play audio description if enabled
     if (state.preferences.audioDescriptions) {
       playAudioDescription(message);
     }
   }, [state.preferences.audioDescriptions]);
 
-  // Clear announcements
   const clearAnnouncements = useCallback(() => {
     dispatch({ type: 'CLEAR_ANNOUNCEMENTS' });
   }, []);
 
-  // Register keyboard shortcut
   const registerShortcut = useCallback((shortcut: KeyboardShortcut) => {
     const key = `${shortcut.modifiers.sort().join('+')}+${shortcut.key}`;
-    // This would be implemented with proper action handlers
     console.log('Registering shortcut:', key, shortcut.action);
   }, []);
 
-  // Unregister keyboard shortcut
   const unregisterShortcut = useCallback((key: string, modifiers: string[]) => {
     const shortcutKey = `${modifiers.sort().join('+')}+${key}`;
     shortcutHandlersRef.current.delete(shortcutKey);
   }, []);
 
-  // Utility functions
   const isHighContrast = useCallback(() => state.preferences.highContrast, [state.preferences.highContrast]);
   const isReducedMotion = useCallback(() => state.preferences.reducedMotion, [state.preferences.reducedMotion]);
   const shouldShowFocusIndicators = useCallback(() => state.preferences.focusIndicators, [state.preferences.focusIndicators]);
 
-  // Generate accessible labels
   const getAriaLabel = useCallback((baseLabel: string, context?: string): string => {
     if (context && state.preferences.verboseDescriptions) {
       return `${baseLabel} - ${context}`;
@@ -623,20 +559,16 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     return baseLabel;
   }, [state.preferences.verboseDescriptions]);
 
-  // Generate accessible descriptions
   const getAriaDescription = useCallback((description: string, verbose = false): string => {
     if (verbose || state.preferences.verboseDescriptions) {
       return description;
     }
-    // Shorten for non-verbose mode
     return description.length > 100 ? `${description.substring(0, 97)}...` : description;
   }, [state.preferences.verboseDescriptions]);
 
-  // Audio descriptions
   const playAudioDescription = useCallback((text: string) => {
     if (!audioRef.current || !state.preferences.audioDescriptions) return;
 
-    // Cancel any ongoing speech
     audioRef.current.cancel();
 
     const utterance = new SpeechSynthesisUtterance(text);
@@ -644,7 +576,6 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     utterance.pitch = 1;
     utterance.volume = 0.8;
     
-    // Use appropriate language
     const lang = document.documentElement.lang || 'tr-TR';
     utterance.lang = lang;
 
@@ -658,7 +589,6 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
   }, []);
 
   const contextValue: AccessibilityContextType = {
-    // State
     preferences: state.preferences,
     shortcuts: state.shortcuts,
     focusState: state.focusState,
@@ -666,39 +596,32 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
     isLoading: state.isLoading,
     error: state.error,
     
-    // Preference actions
     setPreference,
     setPreferences,
     resetPreferences,
     
-    // Focus management
     setFocus,
     trapFocus,
     getNextFocusableElement,
     
-    // Announcements
     announce,
     clearAnnouncements,
     
-    // Keyboard shortcuts
     registerShortcut,
     unregisterShortcut,
     
-    // Utility functions
     isHighContrast,
     isReducedMotion,
     shouldShowFocusIndicators,
     getAriaLabel,
     getAriaDescription,
     
-    // Audio descriptions
     playAudioDescription,
     stopAudioDescription
   };
 
   return (
     <AccessibilityContext.Provider value={contextValue}>
-      {/* Skip links */}
       <div className="sr-only">
         {state.focusState.skipLinks.map(link => (
           <a
@@ -712,7 +635,6 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
         ))}
       </div>
       
-      {/* Live region for announcements */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
         {state.announcements
           .filter(a => a.priority !== 'high')
@@ -734,7 +656,6 @@ export const AccessibilityProvider: React.FC<AccessibilityProviderProps> = ({ ch
   );
 };
 
-// Accessibility hook
 export const useAccessibility = (): AccessibilityContextType => {
   const context = useContext(AccessibilityContext);
   if (!context) {
@@ -743,7 +664,6 @@ export const useAccessibility = (): AccessibilityContextType => {
   return context;
 };
 
-// Specific accessibility hooks
 export const useAccessibilityPreferences = () => {
   const { preferences, setPreference, setPreferences } = useAccessibility();
   return { preferences, setPreference, setPreferences };

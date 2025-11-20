@@ -118,7 +118,6 @@ export const GEOGRAPHIC_REGIONS: RegionBounds[] = [
   }
 ]
 
-// Create REGION_INFO object - maps region enum to region information
 export const REGION_INFO: Record<GeographicRegion, { name: string; bounds: RegionBounds['bounds']; countries?: string[] }> = {
   [GeographicRegion.EUROPE]: {
     name: 'Avrupa',
@@ -167,7 +166,6 @@ export const REGION_INFO: Record<GeographicRegion, { name: string; bounds: Regio
   }
 }
 
-// Create REGION_COLORS object - maps region enum to color scheme
 export const REGION_COLORS: Record<GeographicRegion, { primary: string; secondary: string; accent: string }> = {
   [GeographicRegion.EUROPE]: {
     primary: '#3B82F6',

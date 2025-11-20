@@ -1,4 +1,3 @@
-/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
   swcMinify: true,
@@ -10,7 +9,6 @@ const nextConfig = {
     ignoreDuringBuilds: false,
   },
   webpack: (config, { isServer }) => {
-    // Three.js multiple instance sorununu çöz
     if (!isServer) {
       config.resolve.alias = {
         ...config.resolve.alias,
@@ -31,7 +29,6 @@ const nextConfig = {
         encoding: false
       }
       
-      // Three.js postprocessing modülleri için ek ayarlar
       config.resolve.extensionAlias = {
         '.js': ['.js', '.ts', '.tsx'],
         '.jsx': ['.jsx', '.tsx']

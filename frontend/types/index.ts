@@ -1,4 +1,3 @@
-// Core API Response Types
 export interface APIResponse<T> {
   data: T
   message?: string
@@ -7,7 +6,6 @@ export interface APIResponse<T> {
   execution_time?: number
 }
 
-// Threat System Types
 export interface ThreatSummary {
   total_threats: number
   critical_count: number
@@ -61,7 +59,6 @@ export interface ThreatData {
   dst_index?: number
 }
 
-// NASA API Types
 export interface AsteroidData {
   id: string
   neo_reference_id: string
@@ -136,7 +133,6 @@ export interface OrbitalData {
   }
 }
 
-// Space Weather Types
 export interface SpaceWeatherEvent {
   id: string
   event_type: 'solar_flare' | 'cme' | 'geomagnetic_storm' | 'radiation_storm' | 'radio_blackout'
@@ -178,7 +174,6 @@ export interface SolarActivity {
   }
 }
 
-// Earth Events Types
 export interface EarthEvent {
   id: string
   event_id: string
@@ -202,7 +197,6 @@ export interface EarthEvent {
   link?: string
 }
 
-// Voice Interface Types
 export interface VoiceCommand {
   id: string
   text: string
@@ -244,7 +238,6 @@ export interface VoiceSettings {
   sensitivity: number
 }
 
-// AI Analysis Types
 export interface ThreatAnalysis {
   threat_id: string
   analysis_type: 'risk_assessment' | 'impact_prediction' | 'trajectory_analysis'
@@ -284,7 +277,6 @@ export interface AIInsight {
   expires_at?: string
 }
 
-// System Status Types
 export interface SystemStatus {
   service_name: string
   status: 'healthy' | 'degraded' | 'down' | 'maintenance'
@@ -323,7 +315,6 @@ export interface SystemAlert {
   metadata?: Record<string, any>
 }
 
-// WebSocket Types
 export interface WebSocketMessage {
   type: string
   data: any
@@ -346,7 +337,6 @@ export interface WebSocketConnectionState {
   }
 }
 
-// 3D Visualization Types
 export interface SpaceObject {
   id: string
   name: string
@@ -389,7 +379,6 @@ export interface VisualizationSettings {
   }
 }
 
-// Dashboard Types
 export interface DashboardLayout {
   id: string
   name: string
@@ -423,7 +412,6 @@ export interface MetricData {
   icon?: string
 }
 
-// Search and Filter Types
 export interface SearchQuery {
   term: string
   filters: {
@@ -453,7 +441,6 @@ export interface SearchResult<T> {
   hasMore: boolean
 }
 
-// Notification Types
 export interface NotificationData {
   id: string
   type: 'info' | 'success' | 'warning' | 'error'
@@ -470,7 +457,6 @@ export interface NotificationData {
   expiresAt?: string
 }
 
-// User Preferences Types
 export interface UserPreferences {
   theme: 'light' | 'dark' | 'system'
   language: string
@@ -495,7 +481,6 @@ export interface UserPreferences {
   }
 }
 
-// Error Types
 export interface APIError {
   code: string
   message: string
@@ -512,14 +497,12 @@ export interface ValidationError {
   value?: any
 }
 
-// Utility Types
 export type ThreatLevel = 'critical' | 'high' | 'medium' | 'low'
 export type SystemHealth = 'healthy' | 'degraded' | 'down' | 'maintenance'
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error' | 'reconnecting'
 export type EventSeverity = 'minor' | 'moderate' | 'strong' | 'severe' | 'extreme'
 export type AlertType = 'system' | 'threat' | 'cosmic_event' | 'data_update'
 
-// Component Props Types
 export interface BaseComponentProps {
   className?: string
   children?: React.ReactNode
@@ -540,7 +523,6 @@ export interface PaginationProps {
   maxVisiblePages?: number
 }
 
-// Chart/Graph Data Types
 export interface TimeSeriesData {
   timestamp: string
   value: number
@@ -560,6 +542,5 @@ export interface ChartData {
   }>
 }
 
-// Export all types as a single namespace for easier imports
 export * from './api'
 export * from './components'

@@ -1,11 +1,8 @@
 import { useSolarSystemStore, solarSystemSelectors, PerformanceManager } from './solarSystemStore'
 
-// 🔧 FIX: Export main store and selectors
 export { useSolarSystemStore, solarSystemSelectors, PerformanceManager }
 
-// 🔧 FIX: Create stable custom hooks using selectors to prevent re-renders
 
-// Engine State Hooks
 export const useEngineState = () => {
   const isInitialized = useSolarSystemStore(solarSystemSelectors.isEngineInitialized)
   const isRunning = useSolarSystemStore(solarSystemSelectors.isEngineRunning)
@@ -20,7 +17,6 @@ export const useEngineState = () => {
   }
 }
 
-// Time State Hooks
 export const useTimeState = () => {
   const currentTime = useSolarSystemStore(solarSystemSelectors.currentTime)
   const timeScale = useSolarSystemStore(solarSystemSelectors.timeScale)
@@ -33,7 +29,6 @@ export const useTimeState = () => {
   }
 }
 
-// Performance Metrics Hooks
 export const usePerformanceMetrics = () => {
   const fps = useSolarSystemStore(solarSystemSelectors.fps)
   const frameTime = useSolarSystemStore(solarSystemSelectors.frameTime)
@@ -50,7 +45,6 @@ export const usePerformanceMetrics = () => {
   }
 }
 
-// UI State Hooks  
 export const useUIState = () => {
   const selectedObject = useSolarSystemStore(solarSystemSelectors.selectedObject)
   const cameraTarget = useSolarSystemStore(solarSystemSelectors.cameraTarget)
@@ -65,7 +59,6 @@ export const useUIState = () => {
   }
 }
 
-// 🔧 FIX: Create placeholder hooks for compatibility
 export const useCameraState = () => {
   const cameraTarget = useSolarSystemStore(solarSystemSelectors.cameraTarget)
   
@@ -96,7 +89,6 @@ export const useUserPreferences = () => {
   }
 }
 
-// Action Hooks
 export const useEngineActions = () => {
   const initializeEngine = useSolarSystemStore(state => state.initializeEngine)
   const startEngine = useSolarSystemStore(state => state.startEngine)
@@ -140,7 +132,6 @@ export const useVisualizationActions = () => {
   }
 }
 
-// Complex Action Hooks
 export const useInitializeEngine = () => {
   const initializeEngine = useSolarSystemStore(state => state.initializeEngine)
   const startEngine = useSolarSystemStore(state => state.startEngine)
@@ -157,7 +148,6 @@ export const usePerformanceMonitoring = () => {
   return {
     updateMetrics,
     startMonitoring: () => {
-      // Performance monitoring logic would go here
       console.log('Performance monitoring started')
     },
     stopMonitoring: () => {
@@ -179,5 +169,4 @@ export const useTimeSimulation = () => {
   }
 }
 
-// 🔧 FIX: Default export for backward compatibility
 export default useSolarSystemStore

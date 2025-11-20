@@ -72,7 +72,6 @@ export function UncertaintyTimeline({ targetId, days = 30 }: Props) {
         const deltaAu = typeof row?.delta === 'number' ? row.delta : NaN
         if (!date || !isFinite(deltaAu)) return null
         const nominalKm = deltaAu * KM_PER_AU
-        // Basit ölçekli belirsizlik: final CI genişliğini nominal mesafe oranına göre dağıt
         const scale =
           lastDelta && lastDelta > 0 ? Math.max(0.25, Math.min(1.5, nominalKm / lastDelta)) : 1
         const half = (spanKm * 0.5) * scale
@@ -144,5 +143,4 @@ export function UncertaintyTimeline({ targetId, days = 30 }: Props) {
 }
 
 export default UncertaintyTimeline
-
 

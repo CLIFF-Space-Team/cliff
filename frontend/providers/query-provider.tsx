@@ -8,34 +8,25 @@ interface QueryProviderProps {
   children: React.ReactNode
 }
 
-// Create a client with optimized settings for CLIFF
 const createQueryClient = () => {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        // Stale time for different types of data
         staleTime: 5 * 60 * 1000, // 5 minutes default
-        // Refetch on window focus for real-time data
         refetchOnWindowFocus: true,
-        // Retry failed requests
         retry: (failureCount, error: any) => {
-          // Don't retry on 4xx errors (client errors)
           if (error?.status >= 400 && error?.status < 500) {
             return false
           }
-          // Retry up to 3 times for other errors
           return failureCount < 3
         },
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-        // Network mode for handling offline scenarios
         networkMode: 'offlineFirst'
       },
       mutations: {
-        // Global error handling for mutations
         onError: (error) => {
           console.error('Mutation error:', error)
         },
-        // Retry mutations once
         retry: 1,
         networkMode: 'offlineFirst'
       }
@@ -44,13 +35,11 @@ const createQueryClient = () => {
 }
 
 export function QueryProvider({ children }: QueryProviderProps) {
-  // Create client inside component to avoid SSR issues
   const [queryClient] = useState(() => createQueryClient())
 
   return (
     <QueryClientProvider client={queryClient}>
       {children}
-      {/* Only show devtools in development */}
       {process.env.NODE_ENV === 'development' && (
         <ReactQueryDevtools 
           initialIsOpen={false}
@@ -60,17 +49,13 @@ export function QueryProvider({ children }: QueryProviderProps) {
   )
 }
 
-// Custom hooks for CLIFF data fetching
 
-// Base API configuration - API çağrıları devre dışı
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
 const DISABLE_API_CALLS = true // API çağrılarını devre dışı bırak
 
 const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
-  // API çağrıları devre dışı - mock veri döndür
   if (DISABLE_API_CALLS) {
     console.log(`🚫 API çağrısı engellendi: ${endpoint}`)
-    // Mock veri döndür
     return Promise.resolve({
       asteroids: [],
       threats: [],
@@ -96,7 +81,6 @@ const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
   return response.json()
 }
 
-// Threat data queries
 export const useThreatSummaryQuery = () => {
   return useQuery({
     queryKey: ['threat-summary'],
@@ -133,7 +117,6 @@ export const useEarthEventsQuery = () => {
   })
 }
 
-// Individual threat query
 export const useThreatQuery = (threatId: string) => {
   return useQuery({
     queryKey: ['threat', threatId],
@@ -143,7 +126,6 @@ export const useThreatQuery = (threatId: string) => {
   })
 }
 
-// NASA data queries
 export const useNasaDataQuery = (endpoint: string, params: Record<string, any> = {}) => {
   const queryParams = new URLSearchParams(params).toString()
   const url = `/api/v1/nasa/${endpoint}${queryParams ? `?${queryParams}` : ''}`
@@ -156,7 +138,6 @@ export const useNasaDataQuery = (endpoint: string, params: Record<string, any> =
   })
 }
 
-// System status query
 export const useSystemStatusQuery = () => {
   return useQuery({
     queryKey: ['system-status'],
@@ -166,7 +147,6 @@ export const useSystemStatusQuery = () => {
   })
 }
 
-// Voice interface queries
 export const useVoiceModelsQuery = () => {
   return useQuery({
     queryKey: ['voice-models'],
@@ -175,7 +155,6 @@ export const useVoiceModelsQuery = () => {
   })
 }
 
-// AI analysis mutations
 export const useAnalyzeThreatMutation = () => {
   const queryClient = useQueryClient()
   
@@ -186,7 +165,6 @@ export const useAnalyzeThreatMutation = () => {
         body: JSON.stringify(threatData),
       }),
     onSuccess: () => {
-      // Invalidate and refetch threat data
       queryClient.invalidateQueries({ queryKey: ['threat-summary'] })
       queryClient.invalidateQueries({ queryKey: ['asteroid-threats'] })
     },
@@ -213,29 +191,24 @@ export const useRefreshDataMutation = () => {
         body: JSON.stringify({ data_type: dataType }),
       }),
     onSuccess: () => {
-      // Invalidate all queries to force fresh data
       queryClient.invalidateQueries()
     },
   })
 }
 
-// Custom hooks for optimistic updates
 export const useOptimisticThreatUpdate = () => {
   const queryClient = useQueryClient()
   
   const updateThreat = (threatId: string, updates: Partial<any>) => {
-    // Optimistically update the cache
     queryClient.setQueryData(['threat', threatId], (old: any) => ({
       ...old,
       ...updates,
       updated_at: new Date().toISOString()
     }))
     
-    // Also update summary if needed
     queryClient.setQueryData(['threat-summary'], (old: any) => {
       if (!old) return old
       
-      // Update relevant counts/statistics
       return {
         ...old,
         last_updated: new Date().toISOString()
@@ -246,7 +219,6 @@ export const useOptimisticThreatUpdate = () => {
   return { updateThreat }
 }
 
-// Prefetch utilities
 export const usePrefetchThreatData = () => {
   const queryClient = useQueryClient()
   
@@ -269,13 +241,11 @@ export const usePrefetchThreatData = () => {
   return { prefetchThreat, prefetchAsteroidData }
 }
 
-// Background sync hook
 export const useBackgroundSync = () => {
   const queryClient = useQueryClient()
   
   React.useEffect(() => {
     const handleFocus = () => {
-      // Refetch critical data when window regains focus
       queryClient.refetchQueries({ 
         queryKey: ['threat-summary'],
         type: 'active' 
@@ -283,7 +253,6 @@ export const useBackgroundSync = () => {
     }
     
     const handleOnline = () => {
-      // Refetch all data when coming back online
       queryClient.refetchQueries({ 
         type: 'active' 
       })
@@ -299,7 +268,6 @@ export const useBackgroundSync = () => {
   }, [queryClient])
 }
 
-// Cache management utilities
 export const useCacheManagement = () => {
   const queryClient = useQueryClient()
   
@@ -336,21 +304,15 @@ export const useCacheManagement = () => {
   }
 }
 
-// Error boundary hook for React Query errors
 export const useQueryErrorHandler = () => {
   return {
     onError: (error: Error, query: any) => {
       console.error('Query error:', error, query)
       
-      // You could integrate with error tracking service here
-      // e.g., Sentry, LogRocket, etc.
       
-      // Show user-friendly error message
       if (error.message.includes('Network')) {
-        // Handle network errors
         console.warn('Network error detected, some features may be limited')
       } else if (error.message.includes('401')) {
-        // Handle authentication errors
         console.warn('Authentication error, please check your connection')
       }
     }

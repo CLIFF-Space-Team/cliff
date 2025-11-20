@@ -46,7 +46,6 @@ export const ApproachTimeline: React.FC<Props> = ({ window = '7d', className }) 
   
   return (
     <div className={cn('rounded-xl bg-black/40 border border-green-500/20 p-4', className)}>
-      {/* Compact Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-green-400" />
@@ -61,7 +60,6 @@ export const ApproachTimeline: React.FC<Props> = ({ window = '7d', className }) 
         </div>
       </div>
       
-      {/* Chart - Compact */}
       <div className="relative" style={{ width: '100%', height: 180 }}>
         {loading ? (
           <div className="h-full flex items-center justify-center">
@@ -124,7 +122,6 @@ export const ApproachTimeline: React.FC<Props> = ({ window = '7d', className }) 
         )}
       </div>
       
-      {/* Compact Stats */}
       {maxValue > 0 && (
         <div className="mt-3 pt-3 border-t border-green-500/10 flex justify-between items-center text-[10px]">
           <div>

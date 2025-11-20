@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 import httpx
 
-# Simple in-memory TTL cache for API responses
 class _TTLCache:
 	_def_ttl_seconds: int
 	_store: Dict[str, Tuple[float, Any]]
@@ -41,7 +40,6 @@ class NASAHorizonsService:
 
 	def __init__(self, cache_ttl_seconds: int = 3600) -> None:
 		self._cache = _TTLCache(default_ttl_seconds=cache_ttl_seconds)
-		# Clear cache on init to ensure fresh start
 		self._cache._store = {}
 
 	def _cache_key(self, params: Dict[str, str]) -> str:
@@ -95,16 +93,10 @@ class NASAHorizonsService:
 		import structlog
 		logger = structlog.get_logger(__name__)
 		
-		# Horizons requires special encoding:
-		# - Single quotes must be encoded as %27
-		# - Semicolons must be encoded as %3B
-		# - Spaces in values must be encoded as %20
 		from urllib.parse import quote
 		
-		# Build URL with proper Horizons encoding
 		url_parts = []
 		for key, value in params.items():
-			# Encode everything including quotes
 			encoded_val = quote(str(value), safe='')
 			url_parts.append(f"{key}={encoded_val}")
 		
@@ -119,7 +111,6 @@ class NASAHorizonsService:
 			
 		logger.info(f"Horizons API response: {len(text)} bytes")
 		
-		# Check for INPUT ERROR
 		if "INPUT ERROR" in text:
 			logger.error(f"Horizons INPUT ERROR: {text[:300]}")
 		
@@ -145,7 +136,6 @@ class NASAHorizonsService:
 			import structlog
 			logger = structlog.get_logger(__name__)
 			logger.warning(f"No $$SOE/$$EOE markers found. Start: {start_idx}, End: {end_idx}")
-			# Debug: print first 20 lines
 			logger.debug("Raw text preview:", lines=lines[:20] if len(lines) > 20 else lines)
 			return []
 		extracted = [l for l in lines[start_idx:end_idx] if l.strip()]
@@ -165,25 +155,18 @@ class NASAHorizonsService:
 		1: RA (ICRF) - Right Ascension
 		2: DEC (ICRF) - Declination
 		"""
-		# Split by multiple spaces (Horizons uses space-separated, not CSV)
 		parts = csv_line.split()
 		data: Dict[str, Any] = {}
 		
-		# Parse space-separated format
-		# Example: "2025-Nov-15 00:00     16 07 05.15 -19 37 56.3"
 		if len(parts) >= 2:
-			# Date and time
 			data["datetime_utc"] = f"{parts[0]} {parts[1]}"
 		
 		if len(parts) >= 5:
-			# RA in format: "HH MM SS.SS"
 			data["ra_icrf"] = f"{parts[2]} {parts[3]} {parts[4]}"
 		
 		if len(parts) >= 8:
-			# DEC in format: "+DD MM SS.S" or "-DD MM SS.S"
 			data["dec_icrf"] = f"{parts[5]} {parts[6]} {parts[7]}"
 			
-		# Fields not available with QUANTITIES='1'
 		data["apparent_mag"] = None
 		data["surface_brightness"] = None
 		data["delta_au"] = None
@@ -204,7 +187,6 @@ class NASAHorizonsService:
 		try:
 			return float(s)
 		except Exception:
-			# Some fields may have trailing flags, attempt to strip
 			try:
 				return float(s.split()[0])
 			except Exception:
@@ -271,16 +253,13 @@ class NASAHorizonsService:
 		
 		raw = await self._request(params)
 		
-		# Parse JSON response
 		try:
 			json_data = json.loads(raw)
 			logger.debug(f"JSON keys: {list(json_data.keys())}")
 			
-			# Check for errors in result
 			if "result" in json_data:
 				result_text = json_data["result"]
 				
-				# Check for Horizons errors (case insensitive)
 				if "ERROR" in result_text.upper() or "error loading" in result_text.lower():
 					logger.error(f"Horizons returned error for {object_command}: {result_text[:200]}")
 					return {
@@ -290,7 +269,6 @@ class NASAHorizonsService:
 						"raw": result_text[:500]
 					}
 				
-				# Extract data between $$SOE and $$EOE
 				rows = self._extract_table_lines(result_text)
 				parsed = [self._parse_csv_line(r) for r in rows]
 				
@@ -360,7 +338,6 @@ class NASAHorizonsService:
 		if not ranges:
 			return {"success": False, "message": "No range data to derive uncertainty"}
 		avg_delta = sum(ranges) / len(ranges)
-		# Assume nominal 0.01% fractional uncertainty as a conservative seed
 		fractional = 1e-4
 		return {
 			"success": True,
@@ -379,5 +356,4 @@ def get_horizons_service() -> NASAHorizonsService:
 	if _horizons_instance is None:
 		_horizons_instance = NASAHorizonsService()
 	return _horizons_instance
-
 

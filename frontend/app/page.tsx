@@ -1,711 +1,398 @@
 'use client'
-import React, { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+
+import React, { useState, useEffect, useRef } from 'react'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
-import { ArrowRight, Shield, Globe, Zap, Activity, ChevronDown, Menu, X, Home, Star, Rocket } from 'lucide-react'
+import { 
+  ArrowRight, Shield, Globe, Zap, Activity, ChevronDown, 
+  Menu, X, Crosshair, Brain, Rocket, Cpu 
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import EarthPreview from '@/components/landing/EarthPreview'
 import { FloatingChatButton } from '@/components/chat'
-const ScrollNavigation = () => {
-  const [activeSection, setActiveSection] = useState('hero')
-  const [scrollProgress, setScrollProgress] = useState(0)
-  const sections = React.useMemo(() => [
-    { id: 'hero', icon: Home, label: 'Ana Sayfa' },
-    { id: 'features', icon: Star, label: 'Özellikler' },
-    { id: 'cta', icon: Rocket, label: 'Başla' },
-  ], [])
+
+
+const AnimatedBackground = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
   useEffect(() => {
-    let ticking = false
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const scrollPosition = window.scrollY
-          const windowHeight = window.innerHeight
-          const documentHeight = document.documentElement.scrollHeight
-          const maxScroll = documentHeight - windowHeight
-          const progress = maxScroll > 0 ? scrollPosition / maxScroll : 0
-          setScrollProgress(Math.min(Math.max(progress, 0), 1))
-          const centerPosition = scrollPosition + windowHeight / 2
-          for (const section of sections) {
-            const element = document.getElementById(section.id)
-            if (element) {
-              const { offsetTop, offsetHeight } = element
-              if (centerPosition >= offsetTop && centerPosition < offsetTop + offsetHeight) {
-                setActiveSection(section.id)
-                break
-              }
-            }
-          }
-          ticking = false
+    const canvas = canvasRef.current
+    if (!canvas) return
+    
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let animationFrameId: number
+    let particles: Array<{x: number, y: number, size: number, speed: number, opacity: number}> = []
+
+    const resize = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+    }
+
+    const createParticles = () => {
+      particles = []
+      const count = Math.floor(window.innerWidth / 10)
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 2,
+          speed: Math.random() * 0.5 + 0.1,
+          opacity: Math.random() * 0.5 + 0.1
         })
-        ticking = true
       }
     }
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    handleScroll()
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [sections])
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
+
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.fillStyle = '#ffffff'
+      
+      particles.forEach(p => {
+        ctx.globalAlpha = p.opacity
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+        ctx.fill()
+        
+        p.y -= p.speed
+        if (p.y < 0) {
+          p.y = canvas.height
+          p.x = Math.random() * canvas.width
+        }
+      })
+      
+      animationFrameId = requestAnimationFrame(draw)
     }
-  }
-  const activeIndex = sections.findIndex(s => s.id === activeSection)
+
+    window.addEventListener('resize', resize)
+    resize()
+    createParticles()
+    draw()
+
+    return () => {
+      window.removeEventListener('resize', resize)
+      cancelAnimationFrame(animationFrameId)
+    }
+  }, [])
+
   return (
-    <div className="fixed right-6 top-1/2 -translate-y-1/2 z-40 hidden lg:block">
-      <div className="relative flex flex-col items-center gap-10">
-        {}
-        {sections.map((_, index) => {
-          if (index === sections.length - 1) return null
-          return (
-            <div
-              key={`line-${index}`}
-              className="absolute w-px bg-white/10"
-              style={{
-                left: '50%',
-                transform: 'translateX(-50%)',
-                top: `calc(${(index * 100 / (sections.length - 1))}% + 22px)`,
-                height: `calc(${(100 / (sections.length - 1))}% - 44px)`,
-              }}
-            />
-          )
-        })}
-        {}
-        {sections.map((_, index) => {
-          if (index === sections.length - 1) return null
-          const segmentProgress = scrollProgress * (sections.length - 1)
-          const segmentStart = index
-          const segmentEnd = index + 1
-          let height = 0
-          if (segmentProgress > segmentEnd) {
-            height = 100
-          } else if (segmentProgress > segmentStart) {
-            height = ((segmentProgress - segmentStart) / (segmentEnd - segmentStart)) * 100
-          }
-          return (
-            <motion.div
-              key={`progress-${index}`}
-              className="absolute w-0.5 origin-top overflow-hidden"
-              style={{
-                left: '50%',
-                transform: 'translateX(-50%)',
-                top: `calc(${(index * 100 / (sections.length - 1))}% + 22px)`,
-                height: `calc(${(100 / (sections.length - 1))}% - 44px)`,
-              }}
-            >
-              <motion.div
-                className="w-full bg-gradient-to-b from-white via-white to-white/70 rounded-full shadow-[0_0_6px_rgba(255,255,255,0.5)]"
-                initial={{ height: '0%' }}
-                animate={{ 
-                  height: `${height}%`
-                }}
-                transition={{ 
-                  duration: 0.3,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-              />
-            </motion.div>
-          )
-        })}
-        {sections.map((section) => {
-          const isActive = activeSection === section.id
-          const Icon = section.icon
-          return (
-            <button
-              key={section.id}
-              onClick={() => scrollToSection(section.id)}
-              className="group relative z-20 transition-transform hover:scale-105 active:scale-95"
-            >
-              {}
-              <div
-                className={`relative w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 bg-pure-black ${
-                  isActive
-                    ? 'ring-4 ring-white shadow-lg'
-                    : 'bg-white/5 border border-white/15 hover:bg-white/10 hover:border-white/30'
-                }`}
-              >
-                <div className={`absolute inset-0 rounded-full ${isActive ? 'bg-white' : ''}`} />
-                <Icon
-                  className={`relative w-5 h-5 transition-colors duration-300 ${
-                    isActive ? 'text-black' : 'text-white'
-                  }`}
-                />
-              </div>
-              {}
-              <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                <div className="bg-black/90 px-3 py-1.5 rounded-lg border border-white/20 whitespace-nowrap">
-                  <span className="text-xs font-medium text-white">{section.label}</span>
-                </div>
-              </div>
-            </button>
-          )
-        })}
-      </div>
-    </div>
+    <canvas 
+      ref={canvasRef} 
+      className="absolute inset-0 z-0 opacity-30 pointer-events-none"
+    />
   )
 }
+
+const TechBadge = ({ name, icon: Icon }: { name: string, icon: any }) => (
+  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 transition-colors">
+    <Icon className="w-4 h-4 text-cliff-light-gray" />
+    <span className="text-sm font-medium text-gray-300">{name}</span>
+  </div>
+)
+
 export default function LandingPage() {
-  const [scrollY, setScrollY] = useState(0)
+  const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const starCount = 30
-  const stars = React.useMemo(() => Array.from({ length: starCount }, (_, i) => i), [])
-  const seededRand = (seed: number) => {
-    const x = Math.sin(seed * 9301 + 49297) * 233280
-    return x - Math.floor(x)
-  }
+  const { scrollY } = useScroll()
+  
   useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY)
+    const handleScroll = () => setIsScrolled(window.scrollY > 50)
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
-  useEffect(() => { setMounted(true) }, [])
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
-    }
-    return () => {
-      document.body.style.overflow = 'unset'
-    }
-  }, [isMobileMenuOpen])
+
   const features = [
     {
+      icon: Crosshair,
+      title: "Asteroid Çarpışma Simülatörü",
+      description: "NASA verilerini kullanarak potansiyel çarpışma senaryolarını ve etkilerini 3D ortamda simüle edin.",
+      color: "text-red-400",
+      bg: "bg-red-500/10",
+      border: "border-red-500/20"
+    },
+    {
       icon: Globe,
-      title: "3D Güneş Sistemi",
-      description: "Gerçek zamanlı astronomik veriler ile interaktif 3D uzay simülasyonu",
-      gradient: "from-blue-500/20 to-cyan-500/20"
-    },
-    {
-      icon: Shield,
-      title: "Tehdit Analizi",
-      description: "Gelişmiş AI algoritmaları ile uzay tehditlerinin erken tespiti",
-      gradient: "from-red-500/20 to-orange-500/20"
-    },
-    {
-      icon: Zap,
-      title: "AI Yardımcısı",
-      description: "Doğal dil işleme ile uzay bilimi eğitimi ve analiz desteği",
-      gradient: "from-purple-500/20 to-pink-500/20"
-    },
-    {
-      icon: Activity,
       title: "Gerçek Zamanlı İzleme",
-      description: "NASA API'leri ile canlı uzay hava durumu ve asteroid takibi",
-      gradient: "from-green-500/20 to-emerald-500/20"
+      description: "Dünya'ya yakın cisimleri (NEO) ve uzay hava durumunu anlık olarak takip edin.",
+      color: "text-blue-400",
+      bg: "bg-blue-500/10",
+      border: "border-blue-500/20"
+    },
+    {
+      icon: Brain,
+      title: "AI Destekli Analiz",
+      description: "Gemini 3.0 Pro ve GPT-5.1 modelleri ile tehdit seviyelerini otomatik analiz edin.",
+      color: "text-purple-400",
+      bg: "bg-purple-500/10",
+      border: "border-purple-500/20"
     }
   ]
-  const stats = [
-    { value: "60+", label: "FPS Performans", description: "3D Render H�z�" },
-    { value: "24/7", label: "Ger�ek Zamanl�", description: "NASA Veri Ak���" },
-    { value: "AI", label: "Yapay Zeka", description: "Ak�ll� Analiz" },
-    { value: "?", label: "S�n�rs�z", description: "Ke�if �mkan�" }
-  ]
+
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden safe-area-top safe-area-bottom">
-      {}
-      <ScrollNavigation />
-      {}
-      <motion.header
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 safe-area-top ${
-          scrollY > 50 
-            ? 'bg-pure-black/98 backdrop-blur-xl border-b border-cliff-white/10 shadow-lg' 
-            : 'bg-transparent'
-        }`}
-      >
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 md:h-20">
-            {}
-            <motion.div
-              className="flex items-center space-x-2 md:space-x-3"
-              whileHover={{ scale: 1.05 }}
-            >
-              <div className="relative">
-                <Shield className="h-6 w-6 md:h-8 md:w-8 text-white" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 md:w-3 md:h-3 bg-accent-success rounded-full animate-pulse" />
+    <div className="min-h-screen bg-[#020204] text-white overflow-x-hidden selection:bg-white/20">
+      <AnimatedBackground />
+      
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isScrolled ? 'bg-[#020204]/80 backdrop-blur-xl border-b border-white/5' : 'bg-transparent'
+      }`}>
+        <div className="container mx-auto px-6 h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-white/20 to-transparent border border-white/10 flex items-center justify-center backdrop-blur-md">
+                <Shield className="w-6 h-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-lg md:text-xl font-bold text-gradient-minimal">CLIFF 3D</h1>
-                <p className="text-xs text-cliff-light-gray hidden sm:block">Space System</p>
-              </div>
-            </motion.div>
-            {}
-            <nav className="hidden md:flex items-center space-x-1 lg:space-x-2">
-              {[
-                { name: 'Ana Sayfa', href: '#', active: true },
-                { name: 'Özellikler', href: '#features' },
-                { name: 'Hakkında', href: '#about' },
-                { name: 'İletişim', href: '#contact' }
-              ].map((item) => (
-                <motion.a
-                  key={item.name}
-                  href={item.href}
-                  className={`px-3 lg:px-4 py-2 rounded-lg transition-all duration-200 text-sm lg:text-base ${
-                    item.active
-                      ? 'text-white bg-cliff-white/10'
-                      : 'text-cliff-light-gray hover:text-white hover:bg-cliff-white/5'
-                  }`}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {item.name}
-                </motion.a>
-              ))}
-            </nav>
-            {}
-            <div className="flex items-center space-x-3">
-              <Link href="/dashboard" className="hidden md:block">
-                <motion.div
-                  whileHover={{ 
-                    scale: 1.05,
-                    boxShadow: "0 10px 30px rgba(255, 255, 255, 0.3)"
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                >
-                  <Button className="bg-gradient-to-r from-cliff-white to-cliff-light-gray text-pure-black hover:from-cliff-light-gray hover:to-cliff-white transition-all duration-600 ease-in-out font-semibold tap-target relative overflow-hidden group">
-                    Sisteme Gir
-                    <motion.div
-                      whileHover={{ x: 3 }}
-                      transition={{ type: "spring", stiffness: 400 }}
-                      className="ml-2"
-                    >
-                      <ArrowRight className="h-4 w-4" />
-                    </motion.div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
-                  </Button>
-                </motion.div>
-              </Link>
-              {}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="md:hidden tap-target"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </Button>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.5)] animate-pulse" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold tracking-tight">CLIFF 3D</h1>
+              <p className="text-[10px] text-gray-400 tracking-wider uppercase">Planetary Defense</p>
             </div>
           </div>
-        </div>
-        {}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-pure-black/98 backdrop-blur-xl border-t border-cliff-white/10"
-            >
-              <div className="container mx-auto px-4 py-6 space-y-4">
-                <nav className="space-y-2">
-                  {[
-                    { name: 'Ana Sayfa', href: '#', active: true },
-                    { name: 'Özellikler', href: '#features' },
-                    { name: 'Hakkında', href: '#about' },
-                    { name: 'İletişim', href: '#contact' }
-                  ].map((item) => (
-                    <motion.a
-                      key={item.name}
-                      href={item.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className={`block px-4 py-3 rounded-lg transition-all duration-200 tap-target ${
-                        item.active
-                          ? 'text-white bg-cliff-white/10 border border-cliff-white/20'
-                          : 'text-cliff-light-gray active:text-white active:bg-cliff-white/5'
-                      }`}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      {item.name}
-                    </motion.a>
-                  ))}
-                </nav>
-                <div className="pt-4 border-t border-cliff-white/10">
-                  <Link href="/dashboard" className="block">
-                    <motion.div
-                      whileHover={{ 
-                        scale: 1.02,
-                        boxShadow: "0 8px 25px rgba(255, 255, 255, 0.25)"
-                      }}
-                      whileTap={{ scale: 0.98 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <Button className="w-full bg-gradient-to-r from-cliff-white to-cliff-light-gray text-pure-black hover:from-cliff-light-gray hover:to-cliff-white transition-all duration-600 ease-in-out font-semibold tap-target relative overflow-hidden group">
-                        Sisteme Gir
-                        <motion.div
-                          whileHover={{ x: 3 }}
-                          transition={{ type: "spring", stiffness: 400 }}
-                          className="ml-2"
-                        >
-                          <ArrowRight className="h-4 w-4" />
-                        </motion.div>
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
-                      </Button>
-                    </motion.div>
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
-      {}
-      <section id="hero" className="relative min-h-screen flex items-center justify-center px-4 md:px-6 lg:px-8 pt-16 md:pt-20">
-        {}
-        <div className="absolute inset-0 bg-gradient-to-b from-pure-black via-[#0a0a0a] to-pure-black" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(255,255,255,0.02)_0%,_transparent_50%)]" />
-        {}
-        <div className="absolute inset-0 opacity-20" suppressHydrationWarning>
-          {mounted && stars.map((i) => {
-            const r1 = seededRand(i + 1)
-            const r2 = seededRand(i + 101)
-            const r3 = seededRand(i + 1001)
-            return (
-              <div
-                key={i}
-                className="absolute w-1 h-1 bg-white rounded-full"
-                style={{
-                  left: `${r1 * 100}%`,
-                  top: `${r2 * 100}%`,
-                  opacity: r3 * 0.5 + 0.3,
-                }}
-              />
-            )
-          })}
-        </div>
-        {}
-        <div className="container mx-auto grid lg:grid-cols-2 gap-8 lg:gap-12 items-center relative z-10">
-          {}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-center lg:text-left space-y-6 md:space-y-8"
-          >
-            {}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="inline-flex"
-            >
-              <Badge className="bg-gradient-to-r from-cliff-white/10 to-cliff-light-gray/10 text-cliff-white border-cliff-white/20 px-3 md:px-4 py-1.5 md:py-2 text-sm backdrop-blur-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-accent-success animate-pulse" />
-                  <span>v2.0.0 Pure Black Edition</span>
-                </div>
-              </Badge>
-            </motion.div>
-            {}
-            <div className="space-y-4">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight responsive-title">
-                <span className="text-gradient-minimal">CLIFF 3D</span>
-                <br />
-                <span className="text-cliff-white">Space System</span>
-              </h1>
-              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-cliff-light-gray max-w-2xl mx-auto lg:mx-0">
-                Kozmik Seviye Akıllı Tahmin Çerçevesi ile uzay bilimlerinde 
-                <span className="text-accent-success font-semibold"> yeni nesil keşif</span> deneyimi
-              </p>
-            </div>
-            {}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
-            >
-              <Link href="/dashboard">
-                <motion.div
-                  whileHover={{ 
-                    scale: 1.05,
-                    boxShadow: "0 15px 40px rgba(255, 255, 255, 0.3)",
-                    y: -2
-                  }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                >
-                  <Button 
-                    size="lg"
-                    className="w-full sm:w-auto bg-gradient-to-r from-cliff-white to-cliff-light-gray text-pure-black hover:from-cliff-light-gray hover:to-cliff-white transition-all duration-600 ease-in-out font-semibold text-base md:text-lg px-6 md:px-8 py-3 md:py-4 tap-target relative overflow-hidden group"
-                  >
-                    Sisteme Giriş Yap
-                    <motion.div
-                      whileHover={{ x: 5 }}
-                      transition={{ type: "spring", stiffness: 400 }}
-                      className="ml-2"
-                    >
-                      <ArrowRight className="h-4 w-4 md:h-5 md:w-5" />
-                    </motion.div>
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-800 ease-in-out" />
-                  </Button>
-                </motion.div>
-              </Link>
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="w-full sm:w-auto border-cliff-white/30 text-cliff-white hover:bg-cliff-white/10 transition-all duration-600 ease-in-out text-base md:text-lg px-6 md:px-8 py-3 md:py-4 tap-target"
-              >
-                Demo İzle
+
+          <div className="hidden md:flex items-center gap-8">
+            <Link href="#features" className="text-sm text-gray-400 hover:text-white transition-colors">Özellikler</Link>
+            <Link href="#simulation" className="text-sm text-gray-400 hover:text-white transition-colors">Simülasyon</Link>
+            <Link href="#ai" className="text-sm text-gray-400 hover:text-white transition-colors">AI Teknolojisi</Link>
+            
+            <Link href="/dashboard">
+              <Button className="bg-white text-black hover:bg-gray-200 rounded-full px-6 font-medium transition-all duration-300 hover:scale-105">
+                Sisteme Gir
+                <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
-            </motion.div>
-            {}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 1.0 }}
-              className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6 pt-8 md:pt-12"
-            >
-              {stats.map((stat, index) => (
-                <motion.div
-                  key={index}
-                  className="text-center"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 1.2 + index * 0.1 }}
-                >
-                  <div className="text-xl md:text-2xl lg:text-3xl font-bold text-gradient-minimal mb-1">
-                    {stat.value}
-                  </div>
-                  <div className="text-xs md:text-sm font-semibold text-cliff-white mb-1">
-                    {stat.label}
-                  </div>
-                  <div className="text-xs text-cliff-light-gray">
-                    {stat.description}
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </motion.div>
-          {}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="relative h-64 sm:h-80 md:h-96 lg:h-full min-h-[400px] lg:min-h-[600px]"
+            </Link>
+          </div>
+
+          <button 
+            className="md:hidden p-2 text-gray-400 hover:text-white"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            {}
-            <div className="relative w-full h-full rounded-2xl overflow-hidden border border-cliff-white/10 bg-pure-black-gradient">
-              {}
-              <div className="absolute top-3 right-3 md:top-4 md:right-4 z-10 bg-pure-black/80 backdrop-blur-md rounded-lg px-2 py-1 md:px-3 md:py-2 border border-cliff-white/10">
-                <div className="flex items-center gap-1 md:gap-2">
-                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 bg-accent-success rounded-full animate-pulse"></div>
-                  <span className="text-xs text-cliff-light-gray">Live 3D</span>
-                </div>
-              </div>
-              {}
-              <EarthPreview className="w-full h-full mobile-3d-optimized" />
-              {}
-              <div className="hidden md:block absolute inset-0 pointer-events-none">
-                <motion.div
-                  className="absolute top-1/4 left-4 bg-pure-black/90 backdrop-blur-md rounded-lg p-3 border border-cliff-white/10 pointer-events-auto"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6, delay: 1.5 }}
-                >
-                  <div className="flex items-center gap-2 text-accent-success">
-                    <Activity className="h-4 w-4" />
-                    <span className="text-sm font-semibold">Real-time Data</span>
-                  </div>
-                  <p className="text-xs text-cliff-light-gray mt-1">NASA API Integration</p>
-                </motion.div>
-                <motion.div
-                  className="absolute bottom-1/4 right-4 bg-pure-black/90 backdrop-blur-md rounded-lg p-3 border border-cliff-white/10 pointer-events-auto"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.6, delay: 1.7 }}
-                >
-                  <div className="flex items-center gap-2 text-accent-info">
-                    <Zap className="h-4 w-4" />
-                    <span className="text-sm font-semibold">AI Powered</span>
-                  </div>
-                  <p className="text-xs text-cliff-light-gray mt-1">Smart Analysis</p>
-                </motion.div>
-              </div>
+            {isMobileMenuOpen ? <X /> : <Menu />}
+          </button>
+        </div>
+      </nav>
+
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 z-40 bg-[#020204] pt-24 px-6 md:hidden"
+          >
+            <div className="flex flex-col gap-6 text-lg">
+              <Link href="#features" onClick={() => setIsMobileMenuOpen(false)}>Özellikler</Link>
+              <Link href="#simulation" onClick={() => setIsMobileMenuOpen(false)}>Simülasyon</Link>
+              <Link href="/dashboard">
+                <Button className="w-full bg-white text-black py-6 text-lg">
+                  Sisteme Gir
+                </Button>
+              </Link>
             </div>
           </motion.div>
-        </div>
-        {}
-        <motion.div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2 hidden md:block"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 2.0 }}
-        >
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="flex flex-col items-center space-y-2 text-cliff-light-gray"
-          >
-            <span className="text-sm">Keşfetmeye devam et</span>
-            <ChevronDown className="h-5 w-5" />
-          </motion.div>
-        </motion.div>
-      </section>
-      {}
-      <section id="features" className="py-16 md:py-24 lg:py-32 px-4 md:px-6 lg:px-8">
-        <div className="container mx-auto">
-          {}
+        )}
+      </AnimatePresence>
+
+      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 px-6">
+        <div className="container mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-12 md:mb-16 lg:mb-20"
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="space-y-8 relative z-10"
           >
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gradient-minimal mb-4 md:mb-6">
-              Gelişmiş Özellikler
-            </h2>
-            <p className="text-base md:text-lg lg:text-xl text-cliff-light-gray max-w-3xl mx-auto">
-              CLIFF 3D Space System, uzay bilimlerinde eğitim ve araştırma için 
-              gereken tüm modern teknolojileri bir arada sunar
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+              <span className="text-xs font-medium text-blue-200">Yenilendi: V2.0 Sürümü Yayında</span>
+            </div>
+            
+            <h1 className="text-5xl lg:text-7xl font-bold leading-[1.1] tracking-tight">
+              Kozmik Tehditleri <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-white">
+                Önceden Görün
+              </span>
+            </h1>
+            
+            <p className="text-lg text-gray-400 max-w-xl leading-relaxed">
+              NASA'nın gerçek zamanlı verileri ve gelişmiş Yapay Zeka modelleri ile gezegenimizi tehdit eden asteroidleri takip edin ve olası çarpışmaları simüle edin.
             </p>
+
+            <div className="flex flex-wrap gap-4 pt-4">
+              <Link href="/dashboard">
+                <Button className="h-12 px-8 rounded-full bg-white text-black hover:bg-gray-200 text-base font-medium group">
+                  Keşfetmeye Başla
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Button variant="outline" className="h-12 px-8 rounded-full border-white/20 text-white hover:bg-white/10 backdrop-blur-sm">
+                Canlı Demoyu İzle
+              </Button>
+            </div>
+
+            <div className="pt-8 border-t border-white/10">
+              <p className="text-sm text-gray-500 mb-4 font-semibold tracking-wider">POWERED BY</p>
+              <div className="flex flex-wrap gap-4 opacity-90 hover:opacity-100 transition-all duration-500">
+                <TechBadge name="GPT-5.1" icon={Brain} />
+                <TechBadge name="Gemini 3.0 Pro" icon={Cpu} />
+                <TechBadge name="Grok 4" icon={Rocket} />
+              </div>
+            </div>
           </motion.div>
-          {}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-            {features.map((feature, index) => (
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1 }}
+            className="relative h-[500px] lg:h-[600px] w-full"
+          >
+            <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 rounded-full blur-[100px] opacity-30 animate-pulse" />
+            <div className="relative h-full w-full rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-black/40 backdrop-blur-sm">
+              <EarthPreview />
+              
+              <motion.div 
+                initial={{ x: 20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="absolute top-8 right-8 p-4 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10 max-w-[200px]"
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-2 h-2 bg-red-500 rounded-full animate-ping" />
+                  <span className="text-xs font-bold text-red-400">KRİTİK UYARI</span>
+                </div>
+                <p className="text-xs text-gray-300">Potansiyel tehlikeli asteroid 2024-XJ yaklaşıyor.</p>
+              </motion.div>
+
+               <motion.div 
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="absolute bottom-8 left-8 p-4 rounded-2xl bg-black/60 backdrop-blur-md border border-white/10"
+              >
+                <div className="flex items-center gap-3">
+                  <Activity className="w-5 h-5 text-green-400" />
+                  <div>
+                    <div className="text-xs text-gray-400">Sistem Durumu</div>
+                    <div className="text-sm font-bold text-green-400">Online & Analiz Ediyor</div>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      <section id="features" className="py-20 border-t border-white/5">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Yeni Nesil Savunma Teknolojisi</h2>
+            <p className="text-gray-400">Sadece izlemiyoruz, en gelişmiş yapay zeka modelleri ile analiz ediyor ve simüle ediyoruz.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {features.map((feature, i) => (
               <motion.div
-                key={index}
+                key={i}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="group"
+                transition={{ delay: i * 0.1 }}
+                className="group relative p-1 rounded-3xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-300 border border-white/5"
               >
-                <Card className="relative overflow-hidden bg-gradient-to-br from-[#0a0a0a] to-[#141414] border border-cliff-white/10 hover:border-cliff-white/20 transition-all duration-300 h-full mobile-card">
-                  {}
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <CardContent className="relative p-6 md:p-8">
-                    <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br ${feature.gradient} flex items-center justify-center mb-5 md:mb-6 group-hover:scale-105 transition-transform duration-300 shadow-lg`}>
-                      <feature.icon className="h-7 w-7 md:h-8 md:w-8 text-white" />
-                    </div>
-                    <h3 className="text-xl md:text-2xl font-bold text-white mb-3 md:mb-4 mobile-text-xl">
-                      {feature.title}
-                    </h3>
-                    <p className="text-sm md:text-base text-cliff-light-gray/90 leading-relaxed mobile-text-sm">
-                      {feature.description}
-                    </p>
-                  </CardContent>
-                </Card>
+                <div className="relative h-full rounded-[22px] p-8 overflow-hidden">
+                  <div className={`absolute top-0 right-0 p-32 rounded-full blur-[80px] opacity-20 ${feature.bg}`} />
+                  
+                  <div className={`w-14 h-14 rounded-2xl ${feature.bg} ${feature.border} border flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                    <feature.icon className={`w-7 h-7 ${feature.color}`} />
+                  </div>
+                  
+                  <h3 className="text-xl font-bold mb-3 text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-400 transition-all">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-400 leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
-      {}
-      <section id="cta" className="py-16 md:py-24 lg:py-32 px-4 md:px-6 lg:px-8">
-        <div className="container mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center"
-          >
-            <Card className="relative overflow-hidden bg-gradient-to-br from-[#0a0a0a] to-[#141414] border-cliff-white/20 max-w-4xl mx-auto shadow-2xl">
-              {}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
-              <CardContent className="p-8 md:p-12 lg:p-16">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gradient-minimal mb-4 md:mb-6 responsive-title">
-                  Uzay Keşfine Hazır mısın?
+
+      <section id="simulation" className="py-24 relative overflow-hidden">
+        <div className="container mx-auto px-6 relative z-10">
+          <div className="bg-[#050508] rounded-[3rem] border border-white/10 p-8 md:p-16 overflow-hidden relative shadow-2xl">
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-red-500/5 to-transparent" />
+            <div className="absolute bottom-0 left-0 w-1/2 h-full bg-gradient-to-r from-blue-500/5 to-transparent" />
+            
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="space-y-8 relative z-10">
+                <Badge className="bg-red-500/20 text-red-300 border-red-500/30 px-4 py-1">YENİ ÖZELLİK</Badge>
+                <h2 className="text-4xl md:text-5xl font-bold">
+                  Etkiyi Hissedin: <br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">
+                    Çarpışma Simülatörü
+                  </span>
                 </h2>
-                <p className="text-base md:text-lg lg:text-xl text-cliff-light-gray/90 mb-8 md:mb-10 max-w-2xl mx-auto leading-relaxed">
-                  CLIFF 3D Space System ile uzayın derinliklerine dalın, 
-                  gerçek zamanlı verilerle eğitim alın ve AI destekli analizlerle geleceği keşfedin.
+                <p className="text-lg text-gray-400">
+                  Bir asteroidin Dünya'ya çarpması durumunda oluşacak etkiyi hesaplayın. Atmosferik giriş, krater boyutu ve enerji salınımını fizik tabanlı motorumuzla görselleştirin.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-                  <Link href="/dashboard" className="flex-1 sm:flex-initial">
-                    <motion.div
-                      whileHover={{ 
-                        scale: 1.03,
-                        y: -2
-                      }}
-                      whileTap={{ scale: 0.98 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    >
-                      <Button 
-                        size="lg"
-                        className="w-full bg-gradient-to-r from-white to-cliff-light-gray text-pure-black hover:from-cliff-light-gray hover:to-white transition-all duration-300 font-semibold text-base md:text-lg px-6 md:px-8 py-3 md:py-4 tap-target shadow-lg hover:shadow-xl"
-                      >
-                        Hemen Başla
-                        <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
-                      </Button>
-                    </motion.div>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </div>
-      </section>
-      {}
-      <footer className="relative border-t border-cliff-white/10 py-8 md:py-12 px-4 md:px-6 lg:px-8 bg-gradient-to-b from-pure-black to-[#0a0a0a]">
-        <div className="container mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <div className="flex items-center space-x-3">
-              <div className="relative">
-                <Shield className="h-6 w-6 text-white" />
-                <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-accent-success rounded-full animate-pulse" />
+                <ul className="space-y-4">
+                  {[
+                    "Fizik tabanlı atmosferik giriş hesaplamaları",
+                    "Dinamik krater ve hasar analizi",
+                    "3D görselleştirme motoru"
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-3 text-gray-300">
+                      <div className="w-1.5 h-1.5 bg-red-400 rounded-full" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="/impact-simulator">
+                  <Button className="mt-4 bg-red-600 hover:bg-red-700 text-white border-0 h-12 px-8 rounded-full shadow-[0_0_20px_rgba(220,38,38,0.3)]">
+                    Simülasyonu Başlat
+                  </Button>
+                </Link>
               </div>
-              <div>
-                <span className="text-base font-bold text-white block">
-                  CLIFF 3D Space System
-                </span>
-                <span className="text-xs text-cliff-light-gray">
-                  Kozmik Seviye Ak�ll� Tahmin �er�evesi
-                </span>
+              
+              <div className="relative h-[400px] rounded-2xl overflow-hidden border border-white/10 group shadow-2xl">
+                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center opacity-60 group-hover:scale-105 transition-transform duration-700" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+                <div className="absolute bottom-6 left-6 right-6">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <div className="text-xs text-red-400 font-mono mb-1">IMPACT VELOCITY</div>
+                      <div className="text-3xl font-bold font-mono">28,000 km/h</div>
+                    </div>
+                    <Activity className="w-8 h-8 text-red-500 animate-pulse" />
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="text-xs md:text-sm text-cliff-light-gray text-center md:text-right">
-              <p className="font-medium">� 2025 CLIFF 3D. Pure Black Edition.</p>
-              <p className="mt-1 text-cliff-light-gray/70">
-                E�itim ve Ara�t�rma i�in NASA API Entegrasyonu
-              </p>
+          </div>
+        </div>
+      </section>
+
+      <footer className="py-12 border-t border-white/5 bg-[#020204]">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-gray-400" />
+              <span className="font-semibold text-gray-400">CLIFF 3D Space System</span>
+            </div>
+            <div className="flex gap-6 text-sm text-gray-500">
+              <Link href="#" className="hover:text-white transition-colors">Gizlilik</Link>
+              <Link href="#" className="hover:text-white transition-colors">Kullanım Şartları</Link>
+              <Link href="#" className="hover:text-white transition-colors">API</Link>
+            </div>
+            <div className="text-sm text-gray-600">
+              &copy; 2025. Powered by Kynux (Berk Erenmemiş).
             </div>
           </div>
         </div>
       </footer>
-      {}
-      <AnimatePresence>
-        {typeof window !== 'undefined' && scrollY > window.innerHeight && (
-          <motion.div
-            initial={{ opacity: 0, y: 100 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 100 }}
-            className="fixed bottom-4 left-4 right-4 md:hidden z-50 safe-area-bottom"
-          >
-            <Link href="/dashboard">
-              <motion.div
-                whileHover={{ 
-                  scale: 1.02,
-                  boxShadow: "0 10px 30px rgba(255, 255, 255, 0.4)"
-                }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 300, damping: 20 }}
-              >
-                <Button className="w-full bg-gradient-to-r from-cliff-white to-cliff-light-gray text-pure-black hover:from-cliff-light-gray hover:to-cliff-white transition-all duration-600 ease-in-out font-semibold text-base py-4 tap-target relative overflow-hidden group">
-                  CLIFF 3D'ye Gir
-                  <motion.div
-                    whileHover={{ x: 4 }}
-                    transition={{ type: "spring", stiffness: 400 }}
-                    className="ml-2"
-                  >
-                    <ArrowRight className="h-5 w-5" />
-                  </motion.div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
-                </Button>
-              </motion.div>
-            </Link>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {}
+
       <FloatingChatButton />
     </div>
   )

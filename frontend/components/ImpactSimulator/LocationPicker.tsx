@@ -40,7 +40,6 @@ export function LocationPicker({
   const markerRef = useRef<any>(null)
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  // Token'ı doğrudan env'den alıyoruz, fallback koymuyoruz ki hatalı token ile deneme yapmasın
   const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
 
   const handleSearch = useCallback(async () => {
@@ -80,11 +79,9 @@ export function LocationPicker({
     }
   }, [searchQuery, handleSearch])
 
-  // Harita Yükleme
   useEffect(() => {
     if (!open) return
     
-    // Önceki haritayı temizle
     if (mapRef.current) {
       mapRef.current.remove()
       mapRef.current = null
@@ -93,7 +90,6 @@ export function LocationPicker({
 
     setMapLoading(true)
 
-    // Container'ın DOM'da render olmasını bekle
     const initMapWithRetry = async (retryCount = 0) => {
       if (!mapContainerRef.current && retryCount < 10) {
         console.warn(`Map container henüz hazır değil, deneme ${retryCount + 1}/10`)
@@ -135,7 +131,6 @@ export function LocationPicker({
 
         console.log('🔍 Map nesnesi oluşturuldu, event listener\'lar bekleniyor...')
 
-        // Style load eventi - harita gerçekten yüklendiğinde tetiklenir
         map.on('styledata', () => {
           console.log('🎨 Harita stili yüklendi')
         })
@@ -143,7 +138,6 @@ export function LocationPicker({
         map.on('load', () => {
           console.log('✅ Harita tamamen yüklendi!')
           setMapLoading(false)
-          // Container boyutunu düzelt
           setTimeout(() => {
             map.resize()
           }, 100)
@@ -155,18 +149,15 @@ export function LocationPicker({
           setMapLoading(false)
         })
 
-        // Marker ekleme
         const marker = new mapboxgl.Marker({ color: '#FF4444', draggable: true })
           .setLngLat([initialLocation?.lng || 28.9784, initialLocation?.lat || 41.0082])
           .addTo(map)
 
-        // Marker sürükleme olayı
         marker.on('dragend', async () => {
           const { lng, lat } = marker.getLngLat()
           await handleLocationUpdate(lng, lat)
         })
 
-        // Harita tıklama olayı
         map.on('click', async (e: any) => {
           const { lng, lat } = e.lngLat
           marker.setLngLat([lng, lat])
@@ -185,10 +176,8 @@ export function LocationPicker({
       }
     }
 
-    // İlk denemeyi başlat
     initMapWithRetry()
 
-    // Cleanup
     return () => {
       if (mapRef.current) {
         console.log('🧹 Harita temizleniyor...')

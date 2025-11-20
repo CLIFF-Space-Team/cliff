@@ -125,7 +125,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="CLIFF - Cosmic Level Intelligent Forecast Framework",
     description="AI-powered comprehensive space and Earth threat monitoring platform.",
-    version="1.0.0",
+    version="1.2.0",
     docs_url="/docs" if settings.ENVIRONMENT == "development" else None,
     redoc_url="/redoc" if settings.ENVIRONMENT == "development" else None,
     lifespan=lifespan,
@@ -193,7 +193,7 @@ async def health_check() -> Dict[str, Any]:
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "version": "1.0.0",
+        "version": "1.2.0",
         "services": {
             "api": "healthy"
         }
@@ -210,7 +210,7 @@ async def root() -> Dict[str, Any]:
     return {
         "message": "CLIFF - Cosmic Level Intelligent Forecast Framework",
         "description": "AI-powered space and Earth threat monitoring platform",
-        "version": "1.0.0",
+        "version": "1.2.0",
         "docs_url": "/docs",
         "health_url": "/health",
         "websocket_url": "/ws"

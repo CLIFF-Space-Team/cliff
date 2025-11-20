@@ -1,4 +1,3 @@
-/** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
   content: [
@@ -52,20 +51,17 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))",
         },
         
-        // 🖤 Pure Black Theme Extensions - Modernized with Better Visibility
         'pure-black': '#0a0a0a',       // Slightly lighter for better visibility
         'almost-black': '#141414',
         'deep-black': '#1a1a1a',
         'charcoal': '#262626',
         
-        // Minimal accent colors for pure black theme
         'accent-success': 'hsl(var(--accent-success))',
         'accent-warning': 'hsl(var(--accent-warning))',
         'accent-danger': 'hsl(var(--accent-danger))',
         'accent-info': 'hsl(var(--accent-info))',
         'accent-ai': 'hsl(var(--accent-ai))',
         
-        // Gray scale for pure black theme
         'gray-950': '#0a0a0a',
         'gray-900': '#141414',
         'gray-850': '#1a1a1a',
@@ -73,7 +69,6 @@ module.exports = {
         'gray-750': '#333333',
         'gray-700': '#404040',
         
-        // Modern gradient colors for Pure Black theme
         'space': {
           50: '#f8fafc',
           100: '#f1f5f9',
@@ -88,14 +83,12 @@ module.exports = {
           950: '#020617',
         },
         
-        // Professional gradient accents
         'gradient': {
           'start': '#ffffff',
           'mid': '#e2e8f0',
           'end': '#cbd5e1',
         },
         
-        // Threat level colors - optimized for black background
         'threat': {
           critical: '#ff4444',
           high: '#ff8800',
@@ -104,7 +97,6 @@ module.exports = {
           none: '#888888',
         },
         
-        // CLIFF specific colors
         'cliff': {
           black: '#000000',
           'almost-black': '#0a0a0a',
@@ -127,7 +119,6 @@ module.exports = {
         mono: ["JetBrains Mono", "Consolas", "Monaco", "Courier New", "monospace"],
       },
       
-      // 🖤 Pure Black Theme Extensions - Modern & Professional
       backgroundImage: {
         'pure-black-gradient': 'linear-gradient(135deg, #0a0a0a 0%, #141414 50%, #1a1a1a 100%)',
         'dark-gradient': 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
@@ -141,7 +132,6 @@ module.exports = {
         `,
       },
       
-      // Enhanced animations for pure black theme
       animation: {
         "fade-in": "fadeIn 0.5s ease-in-out",
         "fade-out": "fadeOut 0.5s ease-in-out",
@@ -244,7 +234,6 @@ module.exports = {
         },
       },
       
-      // Box shadows optimized for pure black theme
       boxShadow: {
         'minimal': '0 1px 3px rgba(255, 255, 255, 0.1)',
         'gentle': '0 4px 6px rgba(255, 255, 255, 0.05)',
@@ -256,7 +245,6 @@ module.exports = {
         'inner-lg': 'inset 0 0 20px rgba(255, 255, 255, 0.1)',
       },
       
-      // Typography enhancements
       fontSize: {
         'xs': ['0.75rem', { lineHeight: '1rem' }],
         'sm': ['0.875rem', { lineHeight: '1.25rem' }],
@@ -273,14 +261,12 @@ module.exports = {
         '9xl': ['8rem', { lineHeight: '1' }],
       },
       
-      // Spacing for pure black theme
       spacing: {
         '18': '4.5rem',
         '88': '22rem',
         '128': '32rem',
       },
       
-      // Z-index layers
       zIndex: {
         '60': '60',
         '70': '70',
@@ -289,7 +275,6 @@ module.exports = {
         '100': '100',
       },
       
-      // Backdrop blur variants
       backdropBlur: {
         'xs': '2px',
         'minimal': '8px',
@@ -297,7 +282,6 @@ module.exports = {
         'strong': '20px',
       },
       
-      // Border radius for pure black theme
       borderRadius: {
         'xs': '0.125rem',
         'sm': '0.25rem',

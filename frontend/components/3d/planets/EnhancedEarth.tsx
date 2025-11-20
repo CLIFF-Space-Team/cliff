@@ -1,8 +1,9 @@
 ﻿'use client'
+
 import React, { useRef, useMemo, useEffect, useState } from 'react'
 import { useFrame, useLoader } from '@react-three/fiber'
 import * as THREE from 'three'
-import { Html } from '@react-three/drei'
+import { Html, QuadraticBezierLine } from '@react-three/drei'
 import {
   createAtmosphericScatteringMaterial,
   updateAtmosphericScattering
@@ -10,6 +11,39 @@ import {
 import { createAuroraMaterial, updateAurora } from '../shaders/AuroraShader'
 import { useEarthEventsStore } from '@/stores/earthEventsStore'
 import { useGIBSEarthTexture } from '@/hooks/use-gibs-texture'
+
+const TR_CATEGORIES: Record<string, string> = {
+  'wildfires': 'Orman Yangını',
+  'volcanoes': 'Volkanik Patlama',
+  'severe storms': 'Şiddetli Fırtına',
+  'floods': 'Sel',
+  'drought': 'Kuraklık',
+  'earthquakes': 'Deprem',
+  'dust and haze': 'Toz ve Pus',
+  'water color': 'Su Rengi',
+  'sea lake ice': 'Deniz/Göl Buzu',
+  'default': 'Doğa Olayı'
+}
+
+const formatDateTR = (dateStr: string) => {
+  try {
+    const date = new Date(dateStr)
+    if (isNaN(date.getTime())) return 'Tarih Bilinmiyor'
+    return date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long' })
+  } catch {
+    return '...'
+  }
+}
+
+function getPositionFromLatLon(lat: number, lon: number, radius: number) {
+  const phi = (90 - lat) * (Math.PI / 180)
+  const theta = (lon + 180) * (Math.PI / 180)
+  const x = -(radius) * Math.sin(phi) * Math.cos(theta)
+  const z = (radius) * Math.sin(phi) * Math.sin(theta)
+  const y = (radius) * Math.cos(phi)
+  return new THREE.Vector3(x, y, z)
+}
+
 interface EnhancedEarthProps {
   position?: [number, number, number]
   scale?: number
@@ -22,96 +56,146 @@ interface EnhancedEarthProps {
   sunPosition?: THREE.Vector3
   nasaTexture?: string
   showEarthEvents?: boolean
+  useGIBS?: boolean
 }
+
+function TurkeyConnections({ events, earthRadius }: { events: any[], earthRadius: number }) {
+  const turkeyPos = useMemo(() => getPositionFromLatLon(39, 35, earthRadius), [earthRadius])
+
+  return (
+    <group>
+      <mesh position={turkeyPos}>
+        <sphereGeometry args={[0.015, 16, 16]} />
+        <meshBasicMaterial color="#00ff88" transparent opacity={0.8} />
+        <Html distanceFactor={12} style={{ pointerEvents: 'none' }}>
+          <div className="flex items-center gap-1 -translate-x-1/2 -translate-y-full mb-2">
+            <div className="w-1.5 h-1.5 bg-[#00ff88] rounded-full animate-pulse shadow-[0_0_8px_#00ff88]" />
+            <span className="text-[8px] font-bold text-[#00ff88] tracking-widest drop-shadow-lg">MERKEZ</span>
+          </div>
+        </Html>
+      </mesh>
+
+      {events.slice(0, 10).map((event, i) => {
+         if (!event.geometry?.[0]?.coordinates) return null
+         const [lon, lat] = event.geometry[0].coordinates
+         const eventPos = getPositionFromLatLon(lat, lon, earthRadius)
+         const midPoint = turkeyPos.clone().add(eventPos).multiplyScalar(0.5).normalize().multiplyScalar(earthRadius * 1.4)
+         
+         const color = event.categories?.[0]?.title === 'Wildfires' ? '#ff5500' : '#00aaff'
+
+         return (
+           <QuadraticBezierLine
+             key={i}
+             start={turkeyPos}
+             end={eventPos}
+             mid={midPoint}
+             color={color}
+             lineWidth={0.8}
+             transparent
+             opacity={0.2}
+           />
+         )
+      })}
+    </group>
+  )
+}
+
 function EarthEventMarker({
   event,
-  earthRef,
   earthScale
 }: {
   event: any,
-  earthRef: React.RefObject<THREE.Mesh>,
   earthScale: number
 }) {
   const markerRef = useRef<THREE.Group>(null)
   const [hovered, setHovered] = useState(false)
-  const [clicked, setClicked] = useState(false)
+  
   const position = useMemo(() => {
-    if (!event.geometry?.[0]?.coordinates) return [0, 0, 0] as [number, number, number]
+    if (!event.geometry?.[0]?.coordinates) return new THREE.Vector3(0, 0, 0)
     const [lng, lat] = event.geometry[0].coordinates
-    const phi = (90 - lat) * (Math.PI / 180)
-    const theta = (lng + 180) * (Math.PI / 180)
-    const radius = earthScale * 1.02 // Slightly above Earth surface
-    const x = radius * Math.sin(phi) * Math.cos(theta)
-    const y = radius * Math.cos(phi)
-    const z = radius * Math.sin(phi) * Math.sin(theta)
-    return [x, y, z] as [number, number, number]
+    return getPositionFromLatLon(lat, lng, earthScale * 1.002)
   }, [event.geometry, earthScale])
+
   const eventColor = useMemo(() => {
     const category = event.categories?.[0]?.title || 'Unknown'
     switch (category.toLowerCase()) {
-      case 'wildfires': return '#FF6B35'
-      case 'volcanoes': return '#D32F2F'
-      case 'severe storms': return '#7B68EE'
-      case 'floods': return '#1E88E5'
-      case 'drought': return '#FFB74D'
-      case 'earthquakes': return '#8D6E63'
-      default: return '#FFA726'
+      case 'wildfires': return '#ff4400'
+      case 'volcanoes': return '#ff0000'
+      case 'earthquakes': return '#ffaa00'
+      case 'severe storms': return '#aa00ff'
+      case 'floods': return '#0088ff'
+      default: return '#00ffaa'
     }
   }, [event.categories])
+
+  const trCategory = TR_CATEGORIES[event.categories?.[0]?.title?.toLowerCase()] || 'Olay'
+
   useFrame((state) => {
     if (markerRef.current) {
-      const scale = 1 + Math.sin(state.clock.elapsedTime * 2) * 0.1
-      markerRef.current.scale.setScalar(hovered ? scale * 1.5 : scale)
+      markerRef.current.lookAt(state.camera.position)
+      const scale = hovered ? 1.2 : 1.0
+      markerRef.current.scale.lerp(new THREE.Vector3(scale, scale, scale), 0.1)
     }
   })
+
   return (
     <group
       ref={markerRef}
       position={position}
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
-      onClick={() => setClicked(!clicked)}
+      onPointerOver={(e) => { e.stopPropagation(); setHovered(true) }}
+      onPointerOut={(e) => { e.stopPropagation(); setHovered(false) }}
     >
-      {}
       <mesh>
-        <sphereGeometry args={[0.05, 16, 16]} />
-        <meshBasicMaterial
-          color={eventColor}
-          transparent
-          opacity={hovered ? 1.0 : 0.8}
-        />
+        <circleGeometry args={[0.012, 16]} />
+        <meshBasicMaterial color={eventColor} toneMapped={false} />
       </mesh>
-      {}
+      
       <mesh>
-        <ringGeometry args={[0.06, 0.12, 16]} />
-        <meshBasicMaterial
-          color={eventColor}
-          transparent
-          opacity={hovered ? 0.6 : 0.3}
-          side={THREE.DoubleSide}
-        />
+        <ringGeometry args={[0.02, 0.025, 32]} />
+        <meshBasicMaterial color={eventColor} transparent opacity={0.6} side={THREE.DoubleSide} toneMapped={false} />
       </mesh>
-      {}
-      {(hovered || clicked) && (
+
+      <mesh position={[0, -0.02, 0]} rotation={[Math.PI/2, 0, 0]}>
+         <cylinderGeometry args={[0.002, 0.002, 0.04, 8]} />
+         <meshBasicMaterial color={eventColor} transparent opacity={0.5} />
+      </mesh>
+
+      {hovered && (
         <Html
-          position={[0, 0.15, 0]}
-          style={{
-            pointerEvents: 'none',
-            userSelect: 'none',
-          }}
+          position={[0, 0.02, 0]}
+          center
+          distanceFactor={6} // Reduced to fix massive scaling issue
+          style={{ pointerEvents: 'none' }}
+          zIndexRange={[100, 0]}
         >
-          <div className="bg-black/90 backdrop-blur-sm rounded-lg p-3 border border-white/20 max-w-xs">
-            <h4 className="text-white font-semibold text-sm mb-1">
-              {event.title || 'Unknown Event'}
-            </h4>
-            <p className="text-orange-400 text-xs mb-2">
-              🏷️ {event.categories?.[0]?.title || 'Unknown'}
-            </p>
-            <p className="text-white/80 text-xs mb-2 line-clamp-3">
-              {event.description || 'No description available'}
-            </p>
-            <div className="text-white/60 text-xs">
-              📅 {new Date(event.created_date).toLocaleDateString('tr-TR')}
+          <div className="flex flex-col items-center">
+            <div className="h-2 w-px bg-white/30 mb-0.5" />
+            
+            <div className="
+              bg-[#0a0a0a]/95 backdrop-blur-md 
+              border border-white/10 rounded-md 
+              p-1.5 shadow-lg shadow-black/60
+              min-w-[100px] max-w-[140px]
+            ">
+              <div className="flex items-center gap-1 mb-1 border-b border-white/5 pb-1">
+                <div className="w-1 h-1 rounded-full animate-pulse" style={{ backgroundColor: eventColor }} />
+                <span className="text-[6px] font-bold text-gray-300 uppercase tracking-wider truncate">
+                  {trCategory}
+                </span>
+              </div>
+              
+              <h4 className="text-white font-medium text-[8px] leading-tight mb-1 line-clamp-2">
+                {event.title}
+              </h4>
+              
+              <div className="flex justify-between items-center">
+                 <span className="text-[6px] text-gray-500 font-mono">
+                   {formatDateTR(event.created_date || event.date)}
+                 </span>
+                 <span className="text-[6px] text-blue-400 bg-blue-500/10 px-0.5 rounded-[1px]">
+                   AKTİF
+                 </span>
+              </div>
             </div>
           </div>
         </Html>
@@ -119,6 +203,7 @@ function EarthEventMarker({
     </group>
   )
 }
+
 export function EnhancedEarth({
   position = [0, 0, 0],
   scale = 1.8,
@@ -133,40 +218,34 @@ export function EnhancedEarth({
   showEarthEvents = true,
   useGIBS = false
 }: EnhancedEarthProps & { useGIBS?: boolean }) {
-  const earthRef = useRef<THREE.Mesh>(null)
+  const earthGroupRef = useRef<THREE.Group>(null)
   const cloudsRef = useRef<THREE.Mesh>(null)
   const atmosphereRef = useRef<THREE.Mesh>(null)
   const auroraRef = useRef<THREE.Mesh>(null)
   const { events, fetchEvents } = useEarthEventsStore()
+
   useEffect(() => {
-    if (showEarthEvents) {
-      fetchEvents()
-    }
+    if (showEarthEvents) fetchEvents()
   }, [showEarthEvents, fetchEvents])
+
   const { texture: gibsTexture } = useGIBSEarthTexture()
   const earthTextureLocal = useLoader(THREE.TextureLoader, nasaTexture)
   const normalMap = useLoader(THREE.TextureLoader, '/textures/earth-normal.jpg')
   const specularMap = useLoader(THREE.TextureLoader, '/textures/earth-specular.jpg')
   const cloudsTexture = useLoader(THREE.TextureLoader, '/textures/earth-clouds.jpg')
   const nightTexture = useLoader(THREE.TextureLoader, '/textures/earth-night.jpg')
+  
   const earthTexture = useGIBS && gibsTexture ? gibsTexture : earthTextureLocal
+
   useEffect(() => {
-    const textures = [earthTexture, normalMap, specularMap, cloudsTexture, nightTexture]
-    textures.forEach(texture => {
-      if (texture) {
-        texture.anisotropy = 16 // Maximum anisotropic filtering
-        texture.colorSpace = THREE.SRGBColorSpace
-        texture.generateMipmaps = true
-        texture.minFilter = THREE.LinearMipmapLinearFilter
-        texture.magFilter = THREE.LinearFilter
-        texture.wrapS = THREE.RepeatWrapping
-        texture.wrapT = THREE.RepeatWrapping
-        if (texture === normalMap) {
-          texture.encoding = THREE.LinearEncoding
-        }
+    [earthTexture, normalMap, specularMap, cloudsTexture, nightTexture].forEach(tex => {
+      if (tex) {
+        tex.anisotropy = 16
+        tex.colorSpace = THREE.SRGBColorSpace
       }
     })
-  }, [earthTexture, normalMap, specularMap, cloudsTexture, nightTexture])
+  }, [earthTexture])
+
   const atmosphereMaterial = useMemo(() => {
     if (!showAtmosphere) return null
     return createAtmosphericScatteringMaterial({
@@ -177,6 +256,7 @@ export function EnhancedEarth({
       scatterStrength: 0.028,
     })
   }, [showAtmosphere, sunPosition, scale])
+
   const auroraMaterial = useMemo(() => {
     if (!showAurora || quality === 'low') return null
     return createAuroraMaterial({
@@ -188,98 +268,22 @@ export function EnhancedEarth({
       polarWidth: 25.0,
     })
   }, [showAurora, quality])
+
   const earthMaterial = useMemo(() => {
-    if (!showCityLights) {
-      return new THREE.MeshStandardMaterial({
-        map: earthTexture,
-        normalMap: normalMap,
-        roughness: 0.8,
-        metalness: 0.1,
-      })
-    }
-    return new THREE.ShaderMaterial({
-      uniforms: {
-        dayTexture: { value: earthTexture },
-        nightTexture: { value: nightTexture },
-        normalMap: { value: normalMap },
-        specularMap: { value: specularMap },
-        sunPosition: { value: sunPosition },
-        cloudTexture: { value: cloudsTexture },
-      },
-      vertexShader: `
-        varying vec2 vUv;
-        varying vec3 vNormal;
-        varying vec3 vPosition;
-        varying vec3 vViewPosition;
-        varying vec3 vWorldNormal;
-        void main() {
-          vUv = uv;
-          vNormal = normalize(normalMatrix * normal);
-          vWorldNormal = normalize((modelMatrix * vec4(normal, 0.0)).xyz);
-          vPosition = (modelMatrix * vec4(position, 1.0)).xyz;
-          vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-          vViewPosition = -mvPosition.xyz;
-          gl_Position = projectionMatrix * mvPosition;
-        }
-      `,
-      fragmentShader: `
-        uniform sampler2D dayTexture;
-        uniform sampler2D nightTexture;
-        uniform sampler2D normalMap;
-        uniform sampler2D specularMap;
-        uniform vec3 sunPosition;
-        varying vec2 vUv;
-        varying vec3 vNormal;
-        varying vec3 vPosition;
-        varying vec3 vViewPosition;
-        varying vec3 vWorldNormal;
-        float fresnel(vec3 viewDir, vec3 normal, float power) {
-          return pow(1.0 - max(dot(viewDir, normal), 0.0), power);
-        }
-        void main() {
-          vec3 sunDir = normalize(sunPosition - vPosition);
-          vec3 viewDir = normalize(vViewPosition);
-          vec3 normalSample = texture2D(normalMap, vUv).xyz * 2.0 - 1.0;
-          normalSample.xy *= 2.5; // Enhanced normal strength
-          vec3 perturbedNormal = normalize(vWorldNormal + normalSample);
-          float sunDot = dot(perturbedNormal, sunDir);
-          float dayNightFactor = smoothstep(-0.15, 0.35, sunDot);
-          float twilightBand = smoothstep(-0.15, 0.0, sunDot) * smoothstep(0.35, 0.1, sunDot);
-          vec4 dayColor = texture2D(dayTexture, vUv);
-          vec4 nightColor = texture2D(nightTexture, vUv);
-          nightColor.rgb *= 3.0;
-          nightColor.rgb += vec3(0.15, 0.12, 0.08); // Warm urban glow
-          vec3 twilightColor = vec3(1.0, 0.6, 0.3) * twilightBand * 0.5;
-          vec4 finalColor = mix(nightColor, dayColor, dayNightFactor);
-          finalColor.rgb += twilightColor;
-          vec4 specular = texture2D(specularMap, vUv);
-          float isOcean = specular.r;
-          if (isOcean > 0.5) {
-            float fresnelFactor = fresnel(viewDir, perturbedNormal, 3.0);
-            vec3 halfDir = normalize(sunDir + viewDir);
-            float specPower = 128.0; // Very sharp water reflections
-            float spec = pow(max(dot(perturbedNormal, halfDir), 0.0), specPower);
-            vec3 oceanSpecular = vec3(1.0) * spec * dayNightFactor * 0.8;
-            vec3 oceanFresnel = vec3(0.2, 0.3, 0.4) * fresnelFactor * dayNightFactor * 0.3;
-            finalColor.rgb += oceanSpecular + oceanFresnel;
-          }
-          float atmosphereFactor = fresnel(viewDir, vNormal, 4.0);
-          vec3 atmosphereColor = vec3(0.5, 0.7, 1.0) * atmosphereFactor * 0.15;
-          finalColor.rgb += atmosphereColor * dayNightFactor;
-          finalColor.rgb = max(finalColor.rgb, dayColor.rgb * 0.05);
-          gl_FragColor = finalColor;
-        }
-      `,
+    return new THREE.MeshStandardMaterial({
+      map: earthTexture,
+      normalMap: normalMap,
+      roughness: 0.6,
+      metalness: 0.1,
     })
-  }, [showCityLights, earthTexture, nightTexture, normalMap, specularMap, sunPosition, cloudsTexture])
+  }, [earthTexture, normalMap])
+
   useFrame((state, delta) => {
-    if (enableRotation) {
-      if (earthRef.current) {
-        earthRef.current.rotation.y += delta * 0.02
-      }
-      if (cloudsRef.current) {
-        cloudsRef.current.rotation.y += delta * 0.024
-      }
+    if (enableRotation && earthGroupRef.current) {
+      earthGroupRef.current.rotation.y += delta * 0.02
+    }
+    if (enableRotation && cloudsRef.current) {
+      cloudsRef.current.rotation.y += delta * 0.024
     }
     if (atmosphereMaterial && atmosphereRef.current) {
       updateAtmosphericScattering(atmosphereMaterial, delta, sunPosition)
@@ -288,14 +292,29 @@ export function EnhancedEarth({
       updateAurora(auroraMaterial, delta)
     }
   })
+
   return (
     <group position={position}>
-      {}
-      <mesh ref={earthRef}>
-        <sphereGeometry args={[scale, 64, 64]} />
-        <primitive object={earthMaterial} attach="material" />
-      </mesh>
-      {}
+      <group ref={earthGroupRef}>
+        <mesh>
+          <sphereGeometry args={[scale, 64, 64]} />
+          <primitive object={earthMaterial} attach="material" />
+        </mesh>
+
+        {showEarthEvents && events.length > 0 && (
+          <>
+            <TurkeyConnections events={events} earthRadius={scale} />
+            {events.slice(0, 40).map((event, index) => (
+              <EarthEventMarker
+                key={`${event.id}-${index}`}
+                event={event}
+                earthScale={scale}
+              />
+            ))}
+          </>
+        )}
+      </group>
+
       {showClouds && (
         <mesh ref={cloudsRef} scale={1.01}>
           <sphereGeometry args={[scale, 64, 64]} />
@@ -304,49 +323,26 @@ export function EnhancedEarth({
             transparent
             opacity={0.4}
             depthWrite={false}
+            side={THREE.DoubleSide}
           />
         </mesh>
       )}
-      {}
-      {showAtmosphere && atmosphereMaterial && quality !== 'low' && (
+
+      {showAtmosphere && atmosphereMaterial && (
         <mesh ref={atmosphereRef} scale={1.08}>
           <sphereGeometry args={[scale, 64, 64]} />
           <primitive object={atmosphereMaterial} attach="material" />
         </mesh>
       )}
-      {}
-      {showAtmosphere && quality === 'low' && (
-        <mesh scale={1.05}>
-          <sphereGeometry args={[scale, 32, 32]} />
-          <meshBasicMaterial
-            color="#87CEEB"
-            transparent
-            opacity={0.15}
-            side={THREE.BackSide}
-          />
-        </mesh>
-      )}
-      {}
-      {showAurora && auroraMaterial && (quality === 'high' || quality === 'ultra') && (
+      
+      {showAurora && auroraMaterial && (
         <mesh ref={auroraRef} scale={1.12}>
           <sphereGeometry args={[scale, 64, 64]} />
           <primitive object={auroraMaterial} attach="material" />
         </mesh>
       )}
-      {}
-      {showEarthEvents && events.length > 0 && (
-        <group>
-          {events.slice(0, 20).map((event, index) => ( // Limit to 20 events for performance
-            <EarthEventMarker
-              key={`${event.id || event.title}-${index}`}
-              event={event}
-              earthRef={earthRef}
-              earthScale={scale}
-            />
-          ))}
-        </group>
-      )}
     </group>
   )
 }
+
 export default EnhancedEarth

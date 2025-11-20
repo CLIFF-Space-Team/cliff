@@ -286,12 +286,14 @@ function AsteroidApproach({
         </>
       ) : (
         <EnhancedAtmosphericEntry
-          asteroidPosition={asteroidPos}
-          targetPosition={targetPos}
+          asteroidPosition={new THREE.Vector3(0, 0, 0)}
+          targetPosition={new THREE.Vector3(0, 0, 1)}
           progress={atmosphereProgress}
           diameter={100}
           velocity={velocity}
           isAnimating={isAnimating}
+          useLocalCoordinates={true}
+          scale={size}
         />
       )}
     </group>
@@ -330,8 +332,6 @@ export function ImpactVisualization3D({
   }, [asteroidParams])
   useFrame((state, delta) => {
     if (!isAnimating) return
-    // Animasyon süresini daha dengeli yap: ~20 saniye yerine ~30-40 saniye
-    // delta * 0.025 ile progress artışını yavaşlat
     const progressIncrement = delta * 0.025 * animationSpeed
     const newProgress = Math.min(animationProgress + progressIncrement, 1)
     setAnimationProgress(newProgress)

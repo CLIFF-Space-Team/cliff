@@ -51,17 +51,14 @@ export function useHorizonsData({
     try {
       console.log(`🛰️ Horizons data fetching for ${objectId}...`)
 
-      // Fetch future positions
       const futurePos = await fetchFuturePositions(objectId, days)
       setEphemeris(futurePos)
 
-      // Fetch uncertainty
       try {
         const unc = await fetchUncertainty(objectId, days)
         setUncertainty(unc)
       } catch (uncError) {
         console.warn('⚠️ Uncertainty fetch failed:', uncError)
-        // Non-critical, continue
       }
 
       console.log(`✅ Horizons data loaded: ${futurePos.count} positions`)
@@ -106,7 +103,6 @@ export function useHorizonsData({
       refresh()
       
       if (enableHybridAnalysis) {
-        // Hybrid analysis biraz daha yavaş, ephemeris'ten sonra çağır
         const timer = setTimeout(() => {
           fetchHybrid()
         }, 1000)
@@ -127,4 +123,3 @@ export function useHorizonsData({
 }
 
 export default useHorizonsData
-

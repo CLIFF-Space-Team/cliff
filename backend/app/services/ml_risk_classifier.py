@@ -75,7 +75,6 @@ class MLRiskClassifier:
         diameter_km = feats.get("diameter_km", 0.05)
         uncert_km = feats.get("uncertainty_km", 0.0)
 
-        # Basit karar ağacı
         if distance_au < 0.00067:  # ~100,000 km
             label = "critical"
         elif distance_au < 0.0033:  # ~500,000 km
@@ -87,7 +86,6 @@ class MLRiskClassifier:
         else:
             label = "minimal"
 
-        # Hız ve çap cezası/bonusu
         if velocity_kms > 30 and label != "critical":
             label = RISK_LABELS[max(RISK_LABELS.index(label) - 1, 0)]
         if diameter_km > 0.5 and label != "critical":

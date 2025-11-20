@@ -1,163 +1,214 @@
 ﻿'use client'
+
 import React, { useRef, useEffect, useState } from 'react'
-import { Globe } from 'lucide-react'
+import { Globe, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
 interface EarthPreviewProps {
   className?: string
 }
+
 const EarthPreview: React.FC<EarthPreviewProps> = ({ className }) => {
-  const [isClient, setIsClient] = useState(false)
-  const [threejsError, setThreejsError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasError, setHasError] = useState(false)
   const mountRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
-    setIsClient(true)
-  }, [])
-  useEffect(() => {
-    if (!isClient || !mountRef.current) return
-    const loadThreeJS = async () => {
+    let scene: any, camera: any, renderer: any
+    let earth: any, clouds: any, atmosphere: any
+    let animationId: number
+    let cleanup: () => void
+
+    const init = async () => {
       try {
+        if (!mountRef.current) return
+
         const THREE = await import('three')
-        const container = mountRef.current!
-        const rect = container.getBoundingClientRect()
-        const size = Math.min(rect.width, rect.height) || 400
-        const scene = new THREE.Scene()
-        const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000)
-        const renderer = new THREE.WebGLRenderer({ 
-          antialias: true,
+        
+        scene = new THREE.Scene()
+        
+        const width = mountRef.current.clientWidth
+        const height = mountRef.current.clientHeight
+        camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000)
+        camera.position.z = 3.5
+
+        renderer = new THREE.WebGLRenderer({ 
+          antialias: true, 
           alpha: true,
-          powerPreference: 'high-performance'
+          powerPreference: "high-performance"
         })
-        renderer.setSize(size, size)
-        renderer.setClearColor(0x000000, 0)
-        renderer.shadowMap.enabled = true
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap
-        container.appendChild(renderer.domElement)
-        const geometry = new THREE.SphereGeometry(1, 64, 64)
+        renderer.setSize(width, height)
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+        mountRef.current.appendChild(renderer.domElement)
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4)
+        scene.add(ambientLight)
+
+        const sunLight = new THREE.DirectionalLight(0xffffff, 1.5)
+        sunLight.position.set(5, 3, 5)
+        scene.add(sunLight)
+
         const textureLoader = new THREE.TextureLoader()
-        const earthTexture = textureLoader.load('/textures/earth-day.jpg')
-        const earthNightTexture = textureLoader.load('/textures/earth-night.jpg')
-        const earthNormalTexture = textureLoader.load('/textures/earth-normal.jpg')
-        const earthSpecularTexture = textureLoader.load('/textures/earth-specular.jpg')
-        const earthCloudsTexture = textureLoader.load('/textures/earth-clouds.jpg')
-        earthTexture.wrapS = earthTexture.wrapT = THREE.RepeatWrapping
-        earthNightTexture.wrapS = earthNightTexture.wrapT = THREE.RepeatWrapping
-        earthNormalTexture.wrapS = earthNormalTexture.wrapT = THREE.RepeatWrapping
-        earthSpecularTexture.wrapS = earthSpecularTexture.wrapT = THREE.RepeatWrapping
-        earthCloudsTexture.wrapS = earthCloudsTexture.wrapT = THREE.RepeatWrapping
-        const earthMaterial = new THREE.MeshPhongMaterial({
-          map: earthTexture,
-          normalMap: earthNormalTexture,
-          specularMap: earthSpecularTexture,
-          shininess: 100,
-          transparent: false
-        })
-        const earth = new THREE.Mesh(geometry, earthMaterial)
-        earth.castShadow = true
-        earth.receiveShadow = true
+        const loadTexture = (path: string) => {
+          return new Promise((resolve, reject) => {
+            textureLoader.load(
+              path, 
+              resolve, 
+              undefined, 
+              (err) => {
+                console.warn(`Failed to load texture: ${path}`, err)
+                resolve(null) 
+              }
+            )
+          })
+        }
+
+        const [
+          dayMap, 
+          normalMap, 
+          specularMap, 
+          cloudsMap
+        ] = await Promise.all([
+          loadTexture('/textures/earth-day.jpg'),
+          loadTexture('/textures/earth-normal.jpg'),
+          loadTexture('/textures/earth-specular.jpg'),
+          loadTexture('/textures/earth-clouds.jpg')
+        ])
+
+        const geometry = new THREE.SphereGeometry(1, 64, 64)
+        let material
+
+        if (dayMap) {
+          material = new THREE.MeshPhongMaterial({
+            map: dayMap,
+            normalMap: normalMap || null,
+            specularMap: specularMap || null,
+            shininess: 15
+          })
+        } else {
+          material = new THREE.MeshPhongMaterial({
+            color: 0x1e40af, // Blue-800
+            emissive: 0x1e3a8a, // Blue-900
+            specular: 0xffffff,
+            shininess: 50,
+            wireframe: false
+          })
+        }
+
+        earth = new THREE.Mesh(geometry, material)
         scene.add(earth)
-        const cloudGeometry = new THREE.SphereGeometry(1.01, 64, 64)
-        const cloudMaterial = new THREE.MeshPhongMaterial({
-          map: earthCloudsTexture,
-          transparent: true,
-          opacity: 0.3,
-          side: THREE.DoubleSide
-        })
-        const clouds = new THREE.Mesh(cloudGeometry, cloudMaterial)
-        scene.add(clouds)
-        const atmosphereGeometry = new THREE.SphereGeometry(1.05, 32, 32)
-        const atmosphereMaterial = new THREE.MeshPhongMaterial({
-          color: 0x87CEEB,
+
+        if (cloudsMap) {
+          const cloudGeo = new THREE.SphereGeometry(1.02, 64, 64)
+          const cloudMat = new THREE.MeshPhongMaterial({
+            map: cloudsMap,
+            transparent: true,
+            opacity: 0.4,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide
+          })
+          clouds = new THREE.Mesh(cloudGeo, cloudMat)
+          scene.add(clouds)
+        }
+
+        const atmoGeo = new THREE.SphereGeometry(1.1, 64, 64)
+        const atmoMat = new THREE.MeshPhongMaterial({
+          color: 0x3b82f6, // Blue-500
           transparent: true,
           opacity: 0.1,
-          side: THREE.BackSide
+          side: THREE.BackSide,
+          blending: THREE.AdditiveBlending
         })
-        const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial)
+        atmosphere = new THREE.Mesh(atmoGeo, atmoMat)
         scene.add(atmosphere)
-        const ambientLight = new THREE.AmbientLight(0x404040, 0.3)
-        scene.add(ambientLight)
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
-        directionalLight.position.set(5, 3, 5)
-        directionalLight.castShadow = true
-        directionalLight.shadow.mapSize.width = 2048
-        directionalLight.shadow.mapSize.height = 2048
-        scene.add(directionalLight)
-        camera.position.set(0, 0, 2.5)
-        let time = 0
-        let animationId: number
+
         const animate = () => {
           animationId = requestAnimationFrame(animate)
-          time += 0.003 // Slower time progression
-          earth.rotation.y += 0.002 // Much slower Y rotation (day/night cycle)
-          earth.rotation.x = Math.sin(time) * 0.1 // Gentle X axis wobble
-          clouds.rotation.y += 0.0025
-          atmosphere.scale.setScalar(1.05 + Math.sin(time * 2) * 0.01)
+          
+          if (earth) {
+            earth.rotation.y += 0.001
+          }
+          if (clouds) {
+            clouds.rotation.y += 0.0013
+          }
+          if (atmosphere) {
+            atmosphere.rotation.y += 0.001
+          }
+
           renderer.render(scene, camera)
         }
+        
         animate()
+        setIsLoading(false)
+
         const handleResize = () => {
           if (!mountRef.current) return
-          const rect = mountRef.current.getBoundingClientRect()
-          const newSize = Math.min(rect.width, rect.height) || 400
-          renderer.setSize(newSize, newSize)
+          const w = mountRef.current.clientWidth
+          const h = mountRef.current.clientHeight
+          camera.aspect = w / h
+          camera.updateProjectionMatrix()
+          renderer.setSize(w, h)
         }
         window.addEventListener('resize', handleResize)
-        return () => {
-          if (animationId) {
-            cancelAnimationFrame(animationId)
-          }
+
+        cleanup = () => {
           window.removeEventListener('resize', handleResize)
-          if (container && renderer.domElement && container.contains(renderer.domElement)) {
-            container.removeChild(renderer.domElement)
+          cancelAnimationFrame(animationId)
+          if (mountRef.current && renderer.domElement) {
+            mountRef.current.removeChild(renderer.domElement)
           }
           geometry.dispose()
-          cloudGeometry.dispose()
-          atmosphereGeometry.dispose()
-          earthMaterial.dispose()
-          cloudMaterial.dispose()
-          atmosphereMaterial.dispose()
-          earthTexture.dispose()
-          earthNightTexture.dispose()
-          earthNormalTexture.dispose()
-          earthSpecularTexture.dispose()
-          earthCloudsTexture.dispose()
+          material.dispose()
+          if (clouds) {
+            clouds.geometry.dispose()
+            clouds.material.dispose()
+          }
+          if (atmosphere) {
+            atmosphere.geometry.dispose()
+            atmosphere.material.dispose()
+          }
           renderer.dispose()
         }
-      } catch (error) {
-        console.warn('Three.js failed to load:', error)
-        setThreejsError(true)
+
+      } catch (err) {
+        console.error("Three.js init error:", err)
+        setHasError(true)
+        setIsLoading(false)
       }
     }
-    let cleanup: (() => void) | undefined
-    loadThreeJS().then(cleanupFn => {
-      if (cleanupFn) cleanup = cleanupFn
-    })
+
+    init()
+
     return () => {
       if (cleanup) cleanup()
     }
-  }, [isClient])
-  if (!isClient || threejsError) {
-    return (
-      <div className={cn(
-        "flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500/20 to-green-500/20 border border-blue-500/30",
-        className
-      )}>
-        <Globe className="w-1/4 h-1/4 text-blue-400 animate-pulse" />
-      </div>
-    )
-  }
+  }, [])
+
   return (
-    <div className={cn("relative group", className)}>
-      {}
-      <div 
-        ref={mountRef}
-        className="w-full h-full rounded-2xl overflow-hidden border-2 border-blue-500/30 group-hover:border-blue-400/50 transition-all duration-300"
-        style={{
-          background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, rgba(0, 0, 0, 0.2) 100%)'
-        }}
-      />
-      {}
-      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 blur-sm group-hover:blur-none transition-all duration-300 -z-10" />
+    <div className={cn("relative w-full h-full flex items-center justify-center", className)}>
+      <div ref={mountRef} className="absolute inset-0 w-full h-full" />
+      
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10">
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+            <span className="text-xs text-blue-400 font-medium">Dünya Yükleniyor...</span>
+          </div>
+        </div>
+      )}
+
+      {hasError && (
+        <div className="flex flex-col items-center justify-center p-6 text-center z-10">
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-600 to-blue-900 shadow-lg shadow-blue-500/20 mb-4 flex items-center justify-center">
+            <Globe className="w-12 h-12 text-white/80" />
+          </div>
+          <p className="text-sm text-gray-400">3D Görüntüleyici Başlatılamadı</p>
+        </div>
+      )}
+      
+      <div className="absolute inset-0 pointer-events-none rounded-3xl border border-white/5 shadow-[inset_0_0_40px_rgba(0,0,0,0.5)]" />
     </div>
   )
 }
+
 export default EarthPreview

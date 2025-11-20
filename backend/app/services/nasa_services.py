@@ -310,11 +310,9 @@ class NASAServices:
     async def get_simple_earth_events(self, limit: int = 10) -> list:
         """Basitleştirilmiş dünya olayları listesi döndürür."""
         try:
-            # EONET API'den olayları çek
             from app.core.database import get_earth_events_collection
             collection = get_earth_events_collection()
             
-            # MongoDB'den en son olayları getir
             cursor = collection.find().sort("event_date", -1).limit(limit)
             events = []
             
@@ -339,12 +337,10 @@ class NASAServices:
             from app.core.database import get_earth_events_collection
             collection = get_earth_events_collection()
             
-            # Filtre oluştur
             query_filter = {}
             if category:
                 query_filter["categories.title"] = category
             
-            # MongoDB'den olayları getir
             cursor = collection.find(query_filter).sort("event_date", -1).limit(limit)
             events = []
             
@@ -359,7 +355,6 @@ class NASAServices:
                     "sources": event.get("sources", [])
                 })
             
-            # Eğer MongoDB'de veri yoksa EONET API'den canlı çek
             if len(events) == 0:
                 logger.info("MongoDB'de event yok, EONET API'den çekiliyor...")
                 try:

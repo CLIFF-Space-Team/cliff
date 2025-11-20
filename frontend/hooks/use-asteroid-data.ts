@@ -105,7 +105,6 @@ export function useAsteroidData({
   const fetchAsteroids = useCallback(async () => {
     try {
       setIsLoading(true)
-      // NASA API'den gerçek asteroid verisi çek
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
       const response = await fetch(`${apiUrl}/api/v1/nasa/asteroids?days=7`)
       
@@ -133,7 +132,6 @@ export function useAsteroidData({
       setIsLoading(false)
     }
   }, [])
-  // Mock functions removed - using only real NASA data
   const refreshAsteroids = useCallback(async () => {
     setIsLoading(true)
     setError(null)

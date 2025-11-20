@@ -1,9 +1,5 @@
 ﻿// CLIFF 3D Solar System - BasitleÅŸtirilmiÅŸ Astronomi Veri Tipleri
-// KullanÄ±cÄ± dostu 3D gÃ¼neÅŸ sistemi gÃ¶sterimi iÃ§in basit veri yapÄ±larÄ±
 
-// ==============================================================================
-// BASIT 3D VECTOR VE TEMEL TÄ°PLER
-// ==============================================================================
 
 export interface SimpleVector3D {
   x: number
@@ -16,9 +12,6 @@ export interface SimpleCoordinates {
   lon: number
 }
 
-// ==============================================================================
-// BASITLEÅTIRILMIÅ ORBÄ°T BÄ°LGÄ°LERÄ°
-// ==============================================================================
 
 export interface SimpleOrbit {
   distance_from_sun: number    // AU cinsinden mesafe
@@ -27,9 +20,6 @@ export interface SimpleOrbit {
   tilt_degrees: number         // Eksen eÄŸimi (derece)
 }
 
-// ==============================================================================
-// BASIT GÃ–KSEL CÄ°SÄ°M Ã–ZELLÄ°KLERÄ°
-// ==============================================================================
 
 export interface SimplePlanetInfo {
   radius_km: number           // YarÄ±Ã§ap (km)
@@ -45,9 +35,6 @@ export interface SimplePlanetInfo {
   }
 }
 
-// ==============================================================================
-// BASÄ°T GÃ–KSEL CÄ°SÄ°M MODELÄ°
-// ==============================================================================
 
 export interface SimpleCelestialBody {
   id: string
@@ -55,32 +42,24 @@ export interface SimpleCelestialBody {
   turkish_name: string        // TÃ¼rkÃ§e isim
   type: 'star' | 'planet' | 'dwarf_planet' | 'moon' | 'asteroid' | 'comet'
   
-  // Temel Ã¶zellikler
   info: SimplePlanetInfo
   orbit: SimpleOrbit
   
-  // GÃ¶rselleÅŸtirme
   color: string              // Ana renk
   texture_url?: string       // Doku dosyasÄ±
   has_clouds?: boolean       // Bulut katmanÄ± var mÄ±?
   
-  // Ä°liÅŸkiler
   parent_id?: string         // Hangi gezegenin uydusu?
   moons?: string[]          // Uydu ID'leri
   
-  // EÄŸitim iÃ§eriÄŸi
   description: string        // KÄ±sa aÃ§Ä±klama
   interesting_facts: string[] // Ä°lginÃ§ bilgiler
   
-  // Tehdit değerlendirmesi (asteroitler için)
   threat_level?: 'Düşük' | 'Orta' | 'Yüksek'
   is_hazardous?: boolean
   orbital_data?: { [key: string]: any }
 }
 
-// ==============================================================================
-// BASIT GÃœNEÅ SÄ°STEMÄ° VERÄ°LERÄ°
-// ==============================================================================
 
 export const SIMPLE_PLANETS: Record<string, SimpleCelestialBody> = {
   sun: {
@@ -357,9 +336,6 @@ export const SIMPLE_PLANETS: Record<string, SimpleCelestialBody> = {
   }
 }
 
-// ==============================================================================
-// TEMEL UYDULAR
-// ==============================================================================
 
 export const SIMPLE_MOONS: Record<string, SimpleCelestialBody> = {
   moon: {
@@ -394,9 +370,6 @@ export const SIMPLE_MOONS: Record<string, SimpleCelestialBody> = {
   }
 }
 
-// ==============================================================================
-// PERFORMANS OPTÄ°MÄ°ZASYONU Ä°Ã‡Ä°N AYARLAR
-// ==============================================================================
 
 export interface SimpleRenderSettings {
   quality: 'low' | 'medium' | 'high'
@@ -414,9 +387,6 @@ export const DEFAULT_RENDER_SETTINGS: SimpleRenderSettings = {
   animation_speed: 1.0
 }
 
-// ==============================================================================
-// KALÄ°TE PRESETS - BASITLEÅTIRILMIÅ
-// ==============================================================================
 
 export interface QualityPreset {
   name: string
@@ -450,9 +420,6 @@ export const QUALITY_PRESETS: Record<string, QualityPreset> = {
   }
 }
 
-// ==============================================================================
-// SABIT DEÄERLER - BASITLEÅTIRILMIÅ
-// ==============================================================================
 
 export const SOLAR_SYSTEM_CONSTANTS = {
   AU_IN_KM: 149597870.7,           // 1 AU = km
@@ -460,15 +427,11 @@ export const SOLAR_SYSTEM_CONSTANTS = {
   LIGHT_SPEED_KMH: 1079252849000,  // IÅŸÄ±k hÄ±zÄ± km/h
   SECONDS_PER_DAY: 86400,          // Bir gÃ¼ndeki saniye
   
-  // 3D gÃ¶sterim iÃ§in Ã¶lÃ§ekler
   DISTANCE_SCALE: 0.1,             // Mesafeleri kÃ¼Ã§Ã¼ltme oranÄ±
   SIZE_SCALE: 1000,                // BoyutlarÄ± bÃ¼yÃ¼tme oranÄ± (gÃ¶rÃ¼nÃ¼r olmasÄ± iÃ§in)
   TIME_SCALE: 365                  // Zaman hÄ±zlandÄ±rma
 } as const
 
-// ==============================================================================
-// KAMERA VE KONTROL AYARLARI
-// ==============================================================================
 
 export interface CameraSettings {
   position: SimpleVector3D
@@ -486,9 +449,6 @@ export const DEFAULT_CAMERA_SETTINGS: CameraSettings = {
   auto_rotate: false
 }
 
-// ==============================================================================
-// UTILITY FUNCTIONS
-// ==============================================================================
 
 export const getTurkishPlanetName = (englishName: string): string => {
   const names: Record<string, string> = {
@@ -522,9 +482,6 @@ export const scaleForDisplay = (realValue: number, scale: number): number => {
   return realValue * scale
 }
 
-// ==============================================================================
-// EXPORT HELPERS
-// ==============================================================================
 
 export type PlanetId = keyof typeof SIMPLE_PLANETS
 export type MoonId = keyof typeof SIMPLE_MOONS
@@ -540,7 +497,6 @@ export const getPlanetsByType = (type: SimpleCelestialBody['type']): SimpleCeles
   return getAllCelestialBodies().filter(body => body.type === type)
 }
 
-// İhtiyaç duyulan alias exportlar - Updated with math constants
 export const ASTRONOMICAL_CONSTANTS = {
   ...SOLAR_SYSTEM_CONSTANTS,
   DEGREES_TO_RADIANS: Math.PI / 180,
@@ -553,23 +509,12 @@ export const ASTRONOMICAL_CONSTANTS = {
 
 export const SOLAR_SYSTEM_DATA = getAllCelestialBodies()
 
-// Geriye dÃ¶nÃ¼k uyumluluk iÃ§in eski tipler
-/**
- * @deprecated Yeni SimpleCelestialBody kullanÄ±n
- */
 export interface CelestialBody extends SimpleCelestialBody {}
 
-/**
- * @deprecated Yeni SimpleOrbit kullanÄ±n  
- */
 export interface OrbitalElements extends SimpleOrbit {}
 
-/**
- * @deprecated Yeni SimplePlanetInfo kullanÄ±n
- */
 export interface PhysicalProperties extends SimplePlanetInfo {}
 
-// Ana export
 export default {
   SIMPLE_PLANETS,
   SIMPLE_MOONS,
@@ -578,14 +523,9 @@ export default {
   QUALITY_PRESETS
 }  
   
-// ==============================================================================   
-// BACKWARD COMPATIBILITY EXPORTS   
-// ==============================================================================   
   
-// Vector3D export for OrbitalMechanicsEngine compatibility   
 export type Vector3D = SimpleVector3D   
   
-// OrbitalElements interface for OrbitalMechanicsEngine   
 export interface OrbitalElements {   
   semiMajorAxis: number   
   eccentricity: number   
@@ -598,7 +538,6 @@ export interface OrbitalElements {
   meanMotion: number   
 }   
   
-// Extended CelestialBody with orbital property   
 export interface CelestialBody extends SimpleCelestialBody {   
   orbital: OrbitalElements   
   physical?: {   
@@ -623,4 +562,3 @@ export interface CelestialBody extends SimpleCelestialBody {
   }
 }   
   
-// Note: ASTRONOMICAL_CONSTANTS is already defined above to avoid duplication

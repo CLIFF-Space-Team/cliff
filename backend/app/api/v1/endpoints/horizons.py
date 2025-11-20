@@ -22,7 +22,6 @@ async def get_ephemeris(
 	"""
 	service = get_horizons_service()
 	
-	# Add semicolon for asteroid lookup
 	horizons_id = object_id if object_id.endswith(';') else f"{object_id};"
 	logger.info(f"Ephemeris requested for {object_id} -> {horizons_id}")
 	
@@ -48,7 +47,6 @@ async def get_future_positions(
 	"""
 	service = get_horizons_service()
 	
-	# Add semicolon for asteroid lookup if not present
 	horizons_id = object_id if object_id.endswith(';') else f"{object_id};"
 	logger.info(f"Future positions requested for {object_id} -> Horizons ID: {horizons_id}")
 	
@@ -66,7 +64,6 @@ async def get_uncertainty_hint(
 	"""
 	service = get_horizons_service()
 	
-	# Add semicolon for asteroid lookup
 	horizons_id = object_id if object_id.endswith(';') else f"{object_id};"
 	
 	return await service.get_basic_uncertainty_hint(object_command=horizons_id, days_ahead=days)
@@ -88,11 +85,9 @@ async def get_hybrid_analysis(
 		
 		logger.info(f"Hybrid analysis requested for {object_id}, {days} days")
 		
-		# Add semicolon for Horizons asteroid lookup
 		horizons_id = object_id if object_id.endswith(';') else f"{object_id};"
 		logger.info(f"Using Horizons ID: {horizons_id}")
 		
-		# 1. Get ephemeris data from Horizons
 		try:
 			logger.info(f"Calling get_future_positions for {horizons_id}")
 			ephemeris = await service.get_future_positions(object_command=horizons_id, days_ahead=days)
@@ -125,10 +120,8 @@ async def get_hybrid_analysis(
 				"note": "Object ID may be invalid for Horizons. Use JPL catalog numbers (e.g., 499=Mars, 301=Moon)"
 			}
 		
-		# 2. Get uncertainty hint
 		uncertainty = await service.get_basic_uncertainty_hint(object_command=horizons_id, days_ahead=days)
 		
-		# 3. Monte Carlo simulation
 		import random
 		import statistics
 		
@@ -136,10 +129,8 @@ async def get_hybrid_analysis(
 		base_delta = uncertainty.get("avg_delta_au", 1.0)
 		fractional_unc = uncertainty.get("seed_fractional_uncertainty", 0.0001)
 		
-		# Generate samples
 		mc_samples = []
 		for _ in range(samples):
-			# Normal distribution around mean
 			sample = random.gauss(base_delta, base_delta * fractional_unc)
 			mc_samples.append(sample * 149597870.7)  # Convert to km
 		
@@ -147,7 +138,6 @@ async def get_hybrid_analysis(
 		mean_km = statistics.mean(mc_samples)
 		std_km = statistics.stdev(mc_samples)
 		
-		# Confidence intervals
 		ci68_lower = mc_samples_sorted[int(samples * 0.16)]
 		ci68_upper = mc_samples_sorted[int(samples * 0.84)]
 		ci95_lower = mc_samples_sorted[int(samples * 0.025)]
@@ -156,15 +146,11 @@ async def get_hybrid_analysis(
 		ci99_upper = mc_samples_sorted[int(samples * 0.995)]
 		worst_case = max(mc_samples)
 		
-		# 4. ML Risk Classification
-		# Simple heuristic-based classification
 		avg_distance_km = mean_km
 		
-		# Calculate risk features
 		distance_factor = 1.0 - min(avg_distance_km / 150000000, 1.0)  # Normalized
 		uncertainty_factor = std_km / mean_km if mean_km > 0 else 0.5
 		
-		# Risk probabilities (heuristic)
 		if distance_factor > 0.9:
 			prob_critical, prob_high, prob_medium, prob_low = 0.7, 0.2, 0.08, 0.02
 			label = "critical"
@@ -180,7 +166,6 @@ async def get_hybrid_analysis(
 		
 		confidence = max(prob_critical, prob_high, prob_medium, prob_low)
 		
-		# Build response
 		return {
 			"success": True,
 			"source": "hybrid",
@@ -226,5 +211,4 @@ async def get_hybrid_analysis(
 			"error": str(e),
 			"object_id": object_id
 		}
-
 

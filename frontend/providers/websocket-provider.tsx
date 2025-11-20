@@ -101,7 +101,6 @@ export function WebSocketProvider({
     heartbeatInterval
   })
 
-  // Handle connection events
   useEffect(() => {
     if (isConnected && !connectTimeRef.current) {
       connectTimeRef.current = new Date()
@@ -112,7 +111,6 @@ export function WebSocketProvider({
     }
   }, [isConnected])
 
-  // Handle reconnection tracking
   useEffect(() => {
     if (reconnectCount > 0) {
       setConnectionHealth(prev => ({
@@ -123,7 +121,6 @@ export function WebSocketProvider({
     }
   }, [reconnectCount])
 
-  // Process incoming messages and alerts
   useEffect(() => {
     if (threatAlerts.length > 0) {
       const latestAlert = threatAlerts[0]
@@ -137,7 +134,6 @@ export function WebSocketProvider({
       setLastMessage(wsMessage)
       messageCountRef.current += 1
 
-      // Add to history if enabled
       if (enableHistory) {
         setMessageHistory(prev => {
           const updated = [wsMessage, ...prev]
@@ -145,7 +141,6 @@ export function WebSocketProvider({
         })
       }
 
-      // Notify subscribers
       const typeSubscribers = subscribers.get('threat_alert')
       if (typeSubscribers) {
         typeSubscribers.forEach(callback => {
@@ -157,7 +152,6 @@ export function WebSocketProvider({
         })
       }
 
-      // Update connection health
       setConnectionHealth(prev => ({
         ...prev,
         messageCount: messageCountRef.current
@@ -165,7 +159,6 @@ export function WebSocketProvider({
     }
   }, [threatAlerts, enableHistory, maxHistorySize, subscribers])
 
-  // Process data updates
   useEffect(() => {
     if (dataUpdates.length > 0) {
       const latestUpdate = dataUpdates[0]
@@ -178,7 +171,6 @@ export function WebSocketProvider({
 
       setLastMessage(wsMessage)
 
-      // Notify subscribers
       const typeSubscribers = subscribers.get('data_update')
       if (typeSubscribers) {
         typeSubscribers.forEach(callback => {
@@ -192,7 +184,6 @@ export function WebSocketProvider({
     }
   }, [dataUpdates, subscribers])
 
-  // Process system status
   useEffect(() => {
     if (systemStatus) {
       const wsMessage: WebSocketMessage = {
@@ -204,7 +195,6 @@ export function WebSocketProvider({
 
       setLastMessage(wsMessage)
 
-      // Notify subscribers
       const typeSubscribers = subscribers.get('system_status')
       if (typeSubscribers) {
         typeSubscribers.forEach(callback => {
@@ -218,7 +208,6 @@ export function WebSocketProvider({
     }
   }, [systemStatus, subscribers])
 
-  // Update connection uptime
   useEffect(() => {
     if (!isConnected || !connectTimeRef.current) return
 
@@ -240,7 +229,6 @@ export function WebSocketProvider({
       client_id: 'cliff_frontend'
     }
 
-    // Fix: Remove JSON.stringify here - let useWebSocket handle serialization
     wsSendMessage(messageToSend)
   }
 
@@ -254,7 +242,6 @@ export function WebSocketProvider({
       return newMap
     })
 
-    // Return unsubscribe function
     return () => {
       setSubscribers(prev => {
         const newMap = new Map(prev)
@@ -270,14 +257,12 @@ export function WebSocketProvider({
     }
   }
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       disconnect()
     }
   }, [disconnect])
 
-  // Map WebSocket connection status to provider status
   const getConnectionStatus = (): WebSocketProviderState['connectionStatus'] => {
     if (isConnecting) return 'connecting'
     if (isConnected) return 'connected'
@@ -313,7 +298,6 @@ export const useWebSocketContext = () => {
   return context
 }
 
-// Hook for subscribing to specific message types
 export const useWebSocketSubscription = (
   type: string, 
   callback: (data: any) => void,
@@ -327,7 +311,6 @@ export const useWebSocketSubscription = (
   }, [type, subscribe, ...dependencies])
 }
 
-// Hook for real-time alerts
 export const useRealTimeAlerts = () => {
   const [alerts, setAlerts] = useState<any[]>([])
   const { subscribe, isConnected } = useWebSocketContext()
@@ -369,7 +352,6 @@ export const useRealTimeAlerts = () => {
   }
 }
 
-// Hook for real-time threat data
 export const useRealTimeThreatData = () => {
   const [threats, setThreats] = useState<any[]>([])
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
@@ -383,7 +365,6 @@ export const useRealTimeThreatData = () => {
 
     const unsubscribeUpdates = subscribe('threat_update', (data) => {
       setThreats(prev => {
-        // Update existing threat or add new one
         const existing = prev.findIndex(t => t.id === data.id)
         if (existing >= 0) {
           const updated = [...prev]
@@ -409,7 +390,6 @@ export const useRealTimeThreatData = () => {
   }
 }
 
-// Connection status component
 export function ConnectionStatus({ className = '' }: { className?: string }) {
   const { isConnected, connectionStatus, connectionHealth } = useWebSocketContext()
 

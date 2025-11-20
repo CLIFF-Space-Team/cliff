@@ -28,7 +28,6 @@ const ChatInterfaceView = React.lazy(() =>
   import("@/components/chat/ModernChatInterface").then(mod => ({ default: mod.default }))
 )
 
-// Wrapper component for chat with close functionality
 const ChatInterfaceWrapper: React.FC = () => {
   const setView = useDashboardStore((state) => state.setView) // FIXED: setView (not setActiveView)
   return (
@@ -45,7 +44,6 @@ const ChatInterfaceWrapper: React.FC = () => {
 const ThreatVisualization3DView = React.lazy(() =>
   import("@/components/dashboard/modern-threat-panel").then(mod => ({ default: mod.ModernThreatPanel }))
 )
-// Create wrapper components for views that need special props
 const viewComponents: Record<ViewType, React.ComponentType<any>> = {
   'earth-events': EarthEventsView,
   'asteroid-info': AsteroidInfoView,

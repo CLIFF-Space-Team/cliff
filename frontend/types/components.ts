@@ -2,7 +2,6 @@ import React from 'react'
 import { VariantProps } from 'class-variance-authority'
 import { SpaceObject } from './api'
 
-// Base Component Types
 export interface BaseComponentProps {
   className?: string
   children?: React.ReactNode
@@ -17,7 +16,6 @@ export interface InteractiveComponentProps extends BaseComponentProps {
   onKeyDown?: (event: React.KeyboardEvent) => void
 }
 
-// UI Component Variant Types
 export interface ButtonVariants {
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' | 'cosmic' | 'danger' | 'success' | 'warning'
   size?: 'default' | 'sm' | 'lg' | 'xl' | 'icon' | 'iconSm' | 'iconLg'
@@ -42,7 +40,6 @@ export interface AlertVariants {
   animation?: 'none' | 'pulse' | 'bounce' | 'glow'
 }
 
-// Button Component Props
 export interface ButtonProps 
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     ButtonVariants {
@@ -51,7 +48,6 @@ export interface ButtonProps
   rightIcon?: React.ReactNode
 }
 
-// Card Component Props
 export interface CardProps 
   extends React.HTMLAttributes<HTMLDivElement>,
     CardVariants {}
@@ -62,7 +58,6 @@ export interface CardDescriptionProps extends React.HTMLAttributes<HTMLParagraph
 export interface CardContentProps extends React.HTMLAttributes<HTMLDivElement> {}
 export interface CardFooterProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-// Specialized Card Props
 export interface ThreatCardProps extends CardProps {
   threatLevel?: 'low' | 'medium' | 'high' | 'critical'
 }
@@ -78,7 +73,6 @@ export interface MetricCardProps extends CardProps {
   icon?: React.ReactNode
 }
 
-// Badge Component Props
 export interface BadgeProps 
   extends React.HTMLAttributes<HTMLDivElement>,
     BadgeVariants {
@@ -107,7 +101,6 @@ export interface NotificationBadgeProps extends Omit<BadgeProps, 'variant' | 'do
   priority?: 'low' | 'medium' | 'high' | 'critical'
 }
 
-// Alert Component Props
 export interface AlertProps 
   extends React.HTMLAttributes<HTMLDivElement>,
     AlertVariants {
@@ -122,7 +115,6 @@ export interface AlertProps
 export interface AlertTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {}
 export interface AlertDescriptionProps extends React.HTMLAttributes<HTMLParagraphElement> {}
 
-// Specialized Alert Props
 export interface ThreatAlertProps extends Omit<AlertProps, 'variant'> {
   threatLevel: 'critical' | 'high' | 'medium' | 'low'
   threatType: string
@@ -143,7 +135,6 @@ export interface CosmicEventAlertProps extends Omit<AlertProps, 'variant'> {
   duration?: string
 }
 
-// Dashboard Component Props
 export interface ThreatOverviewProps {
   className?: string
   compact?: boolean
@@ -173,7 +164,6 @@ export interface SpaceWeatherStationProps {
   refreshInterval?: number
 }
 
-// 3D Visualization Props
 export interface SpaceVisualizationProps {
   className?: string
   width?: number
@@ -188,7 +178,6 @@ export interface SpaceVisualizationProps {
   onObjectHover?: (object: SpaceObject | null) => void
 }
 
-// Form Component Props
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
@@ -233,7 +222,6 @@ export interface SwitchProps {
   description?: string
 }
 
-// Layout Component Props
 export interface ContainerProps extends BaseComponentProps {
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full'
   centerContent?: boolean
@@ -254,7 +242,6 @@ export interface FlexProps extends BaseComponentProps {
   gap?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
 }
 
-// Navigation Component Props
 export interface NavItemProps {
   href?: string
   active?: boolean
@@ -290,7 +277,6 @@ export interface TabItemProps {
   disabled?: boolean
 }
 
-// Modal and Overlay Props
 export interface ModalProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
@@ -324,7 +310,6 @@ export interface PopoverProps {
   align?: 'start' | 'center' | 'end'
 }
 
-// Data Display Props
 export interface TableProps {
   data: any[]
   columns: Array<{
@@ -363,7 +348,6 @@ export interface PaginationProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
-// Chart and Visualization Props
 export interface ChartProps {
   data: any[]
   width?: number
@@ -409,7 +393,6 @@ export interface PieChartProps extends ChartProps {
   outerRadius?: number
 }
 
-// Loading and State Props
 export interface SkeletonProps {
   className?: string
   variant?: 'text' | 'circular' | 'rectangular'
@@ -445,7 +428,6 @@ export interface EmptyStateProps {
   className?: string
 }
 
-// Theme and Provider Props
 export interface ThemeProviderProps {
   children: React.ReactNode
   defaultTheme?: 'dark' | 'light' | 'system'
@@ -467,7 +449,6 @@ export interface QueryProviderProps {
   children: React.ReactNode
 }
 
-// Event Handler Types
 export interface ClickHandler {
   (event: React.MouseEvent<HTMLElement>): void
 }
@@ -484,7 +465,6 @@ export interface FormHandler {
   (event: React.FormEvent<HTMLFormElement>): void
 }
 
-// Animation and Transition Props
 export interface AnimationProps {
   duration?: number
   delay?: number
@@ -509,7 +489,6 @@ export interface TransitionProps {
   onExited?: () => void
 }
 
-// Accessibility Props
 export interface AccessibilityProps {
   'aria-label'?: string
   'aria-labelledby'?: string
@@ -527,7 +506,6 @@ export interface AccessibilityProps {
   tabIndex?: number
 }
 
-// Responsive Props
 export interface ResponsiveValue<T> {
   base?: T
   sm?: T
@@ -539,7 +517,6 @@ export interface ResponsiveValue<T> {
 
 export type ResponsiveProps<T> = T | ResponsiveValue<T>
 
-// Polymorphic Component Props
 export interface PolymorphicProps<T extends React.ElementType> {
   as?: T
   children?: React.ReactNode
@@ -553,10 +530,8 @@ export type PolymorphicComponentProps<
   Props &
   Omit<React.ComponentPropsWithoutRef<T>, keyof (PolymorphicProps<T> & Props)>
 
-// Component Ref Types
 export type ComponentRef<T extends React.ElementType> = React.ComponentRef<T>
 
-// Style System Props
 export interface SpacingProps {
   m?: ResponsiveProps<string | number>
   mx?: ResponsiveProps<string | number>
@@ -606,15 +581,12 @@ export interface LayoutProps {
   zIndex?: ResponsiveProps<string | number>
 }
 
-// Style System Combined Props
 export interface SystemProps extends SpacingProps, ColorProps, TypographyProps, LayoutProps {}
 
-// Forward Ref Types
 export type ForwardRefComponent<T, P = {}> = React.ForwardRefExoticComponent<
   React.PropsWithoutRef<P> & React.RefAttributes<T>
 >
 
-// Generic Component Types
 export interface GenericComponentProps<T = any> extends BaseComponentProps {
   data?: T
   loading?: boolean

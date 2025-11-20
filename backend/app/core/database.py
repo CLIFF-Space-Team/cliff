@@ -34,7 +34,6 @@ async def connect_to_mongo() -> AsyncIOMotorClient:
         logger.info("Attempting MongoDB connection...")
         logger.info(f"MongoDB URL: {settings.MONGODB_URL[:50]}...")
         
-        # Determine if we should use TLS based on the connection URL
         use_tls = settings.MONGODB_URL.startswith("mongodb+srv://") or "ssl=true" in settings.MONGODB_URL.lower()
         
         connection_config = {
@@ -49,7 +48,6 @@ async def connect_to_mongo() -> AsyncIOMotorClient:
             "minPoolSize": 1
         }
         
-        # Only add TLS config if connecting to a remote cluster (MongoDB Atlas)
         if use_tls:
             connection_config.update({
                 "tls": True,

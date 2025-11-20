@@ -1,16 +1,9 @@
-// CLIFF API Types - Basitleştirilmiş Kullanıcı Dostu Versiyon
 
-// =============================================================================
-// BASIT TEHDIT SISTEMLERI - 3 SEVİYELİ
-// =============================================================================
 
 export type ThreatLevel = 'Düşük' | 'Orta' | 'Yüksek'
 export type AlertLevel = 'Düşük' | 'Orta' | 'Yüksek'
 export type Severity = 'Düşük' | 'Orta' | 'Yüksek'
 
-// =============================================================================
-// BASITLEŞTIRILMIŞ ASTEROİT TİPLERİ
-// =============================================================================
 
 export interface SimpleAsteroid {
   id: string
@@ -35,9 +28,6 @@ export interface AsteroidSummary {
   last_updated: string
 }
 
-// =============================================================================
-// BASITLEŞTIRILMIŞ DOĞAL OLAY TİPLERİ
-// =============================================================================
 
 export interface SimpleEarthEvent {
   id: string
@@ -61,9 +51,6 @@ export interface EarthEventSummary {
   last_updated: string
 }
 
-// =============================================================================
-// BASITLEŞTIRILMIŞ UZAY HAVA DURUMU
-// =============================================================================
 
 export interface SimpleSpaceWeather {
   id: string
@@ -87,9 +74,6 @@ export interface SpaceWeatherSummary {
   last_updated: string
 }
 
-// =============================================================================
-// BASITLEŞTIRILMIŞ TEHDIT OZETI
-// =============================================================================
 
 export interface CurrentThreatStatus {
   threat_level: ThreatLevel
@@ -127,9 +111,6 @@ export interface ThreatSummary {
   last_updated: string
 }
 
-// =============================================================================
-// BASIT UYARI SİSTEMİ
-// =============================================================================
 
 export interface SimpleAlert {
   id: string
@@ -141,9 +122,6 @@ export interface SimpleAlert {
   expires_at?: string
 }
 
-// =============================================================================
-// SISTEM DURUMU
-// =============================================================================
 
 export interface SystemStatus {
   timestamp: string
@@ -153,9 +131,6 @@ export interface SystemStatus {
   recommendations: string[]
 }
 
-// =============================================================================
-// API RESPONSE WRAPPER
-// =============================================================================
 
 export interface APIResponse<T> {
   data: T
@@ -171,9 +146,6 @@ export interface APIError {
   timestamp: string
 }
 
-// =============================================================================
-// TEMEL HTTP TİPLERİ - SADELEŞTIRILMIŞ
-// =============================================================================
 
 export interface APIConfig {
   baseURL: string
@@ -192,13 +164,7 @@ export interface PaginatedResponse<T> {
   }
 }
 
-// =============================================================================
-// GERIYE DÖNÜK UYUMLULUK İÇİN ESKİ TİPLER - BASITLEŞTIRILMIŞ
-// =============================================================================
 
-/**
- * @deprecated Yeni SimpleAsteroid kullanın
- */
 export interface AsteroidData {
   id: string
   name: string
@@ -219,9 +185,6 @@ export interface AsteroidData {
   }>
 }
 
-/**
- * @deprecated Yeni SimpleEarthEvent kullanın
- */
 export interface EarthEvent {
   id: string
   title: string
@@ -236,9 +199,6 @@ export interface EarthEvent {
   description?: string
 }
 
-/**
- * @deprecated Yeni SimpleSpaceWeather kullanın
- */
 export interface SpaceObject {
   id: string
   name: string
@@ -248,9 +208,6 @@ export interface SpaceObject {
   distance?: number
 }
 
-// =============================================================================
-// NASA API RESPONSES - MINIMAL
-// =============================================================================
 
 export interface NasaNeoResponse {
   element_count: number
@@ -263,9 +220,6 @@ export interface NasaEonetResponse {
 
 export interface NasaDonkiResponse extends Array<any> {}
 
-// =============================================================================
-// VERİ DÖNÜŞÜMLERİ
-// =============================================================================
 
 export const convertThreatLevel = (oldLevel: string): ThreatLevel => {
   switch (oldLevel?.toUpperCase()) {
@@ -310,9 +264,6 @@ export const getStatusColor = (status: string): string => {
   }
 }
 
-// =============================================================================
-// KATEGORI MAPPINGS
-// =============================================================================
 
 export const EARTH_EVENT_CATEGORIES = {
   'Volcanoes': 'Yanardağ',
@@ -333,9 +284,6 @@ export const SPACE_WEATHER_TYPES = {
   'Geomagnetic Storm': 'Jeomanyetik Fırtına'
 } as const
 
-// =============================================================================
-// UTILITY TİPLERİ
-// =============================================================================
 
 export interface DateRange {
   start: string
@@ -353,9 +301,6 @@ export interface Statistics {
   by_severity: Record<string, number>
 }
 
-// =============================================================================
-// HOOK VE CONTEXT TİPLERİ
-// =============================================================================
 
 export interface ThreatContextValue {
   currentThreat: CurrentThreatStatus | null
@@ -373,9 +318,6 @@ export interface NotificationPreferences {
   types: string[]
 }
 
-// =============================================================================
-// WEBSOCKET TİPLERİ - BASIT
-// =============================================================================
 
 export interface WebSocketMessage {
   type: 'threat_update' | 'alert' | 'status_change'
@@ -383,9 +325,6 @@ export interface WebSocketMessage {
   timestamp: string
 }
 
-// =============================================================================
-// DEFAULT VALUES
-// =============================================================================
 
 export const DEFAULT_THREAT_LEVEL: ThreatLevel = 'Düşük'
 export const DEFAULT_ALERT_LEVEL: AlertLevel = 'Düşük'

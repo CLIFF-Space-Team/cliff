@@ -1,16 +1,10 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
-/**
- * Combines multiple class names and merges Tailwind classes intelligently
- */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-/**
- * Format numbers with appropriate suffixes (K, M, B, T)
- */
 export function formatNumber(num: number, decimals: number = 1): string {
   if (num < 1000) return num.toString()
   
@@ -25,9 +19,6 @@ export function formatNumber(num: number, decimals: number = 1): string {
   return shortValue + suffixes[suffixNum]
 }
 
-/**
- * Format bytes to human readable format
- */
 export function formatBytes(bytes: number, decimals: number = 2): string {
   if (bytes === 0) return '0 Bytes'
   
@@ -40,9 +31,6 @@ export function formatBytes(bytes: number, decimals: number = 2): string {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }
 
-/**
- * Format distance with appropriate units
- */
 export function formatDistance(distance: number, unit: 'km' | 'au' | 'ly' = 'km'): string {
   if (unit === 'km') {
     if (distance < 1000) return `${distance.toFixed(1)} km`
@@ -62,22 +50,15 @@ export function formatDistance(distance: number, unit: 'km' | 'au' | 'ly' = 'km'
   return distance.toString()
 }
 
-/**
- * Format velocity with appropriate units
- */
 export function formatVelocity(velocity: number, unit: 'kms' | 'mph' = 'kms'): string {
   if (unit === 'kms') {
     return `${velocity.toFixed(2)} km/s`
   }
   
-  // Convert km/s to mph
   const mph = velocity * 2236.94
   return `${formatNumber(mph)} mph`
 }
 
-/**
- * Format time duration
- */
 export function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600)
   const minutes = Math.floor((seconds % 3600) / 60)
@@ -94,9 +75,6 @@ export function formatDuration(seconds: number): string {
   return `${secs}s`
 }
 
-/**
- * Format date for display
- */
 export function formatDate(date: Date | string, options?: Intl.DateTimeFormatOptions): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date
   
@@ -112,9 +90,6 @@ export function formatDate(date: Date | string, options?: Intl.DateTimeFormatOpt
   return dateObj.toLocaleDateString('en-US', defaultOptions)
 }
 
-/**
- * Format relative time (e.g., "2 hours ago")
- */
 export function formatRelativeTime(date: Date | string): string {
   const now = new Date()
   const dateObj = typeof date === 'string' ? new Date(date) : date
@@ -129,23 +104,14 @@ export function formatRelativeTime(date: Date | string): string {
   return `${Math.floor(diffInSeconds / 31536000)} years ago`
 }
 
-/**
- * Clamp a number between min and max values
- */
 export function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
 }
 
-/**
- * Linear interpolation between two values
- */
 export function lerp(start: number, end: number, factor: number): number {
   return start + (end - start) * clamp(factor, 0, 1)
 }
 
-/**
- * Map a value from one range to another
- */
 export function mapRange(
   value: number,
   inMin: number,
@@ -156,9 +122,6 @@ export function mapRange(
   return outMin + (outMax - outMin) * ((value - inMin) / (inMax - inMin))
 }
 
-/**
- * Generate a random ID
- */
 export function generateId(length: number = 8): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   let result = ''
@@ -170,9 +133,6 @@ export function generateId(length: number = 8): string {
   return result
 }
 
-/**
- * Debounce function
- */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   delay: number
@@ -185,9 +145,6 @@ export function debounce<T extends (...args: any[]) => any>(
   }
 }
 
-/**
- * Throttle function
- */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
   limit: number
@@ -203,9 +160,6 @@ export function throttle<T extends (...args: any[]) => any>(
   }
 }
 
-/**
- * Deep clone an object
- */
 export function deepClone<T>(obj: T): T {
   if (obj === null || typeof obj !== 'object') return obj
   if (obj instanceof Date) return new Date(obj.getTime()) as unknown as T
@@ -220,9 +174,6 @@ export function deepClone<T>(obj: T): T {
   return obj
 }
 
-/**
- * Check if value is empty (null, undefined, empty string, empty array, empty object)
- */
 export function isEmpty(value: any): boolean {
   if (value === null || value === undefined) return true
   if (typeof value === 'string') return value.trim().length === 0
@@ -231,16 +182,10 @@ export function isEmpty(value: any): boolean {
   return false
 }
 
-/**
- * Sleep function for async operations
- */
 export function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-/**
- * Retry function with exponential backoff
- */
 export async function retry<T>(
   fn: () => Promise<T>,
   maxAttempts: number = 3,
@@ -266,9 +211,6 @@ export async function retry<T>(
   throw lastError!
 }
 
-/**
- * Safe JSON parse with fallback
- */
 export function safeJSONParse<T>(json: string, fallback: T): T {
   try {
     return JSON.parse(json)
@@ -277,23 +219,14 @@ export function safeJSONParse<T>(json: string, fallback: T): T {
   }
 }
 
-/**
- * Convert degrees to radians
- */
 export function degToRad(degrees: number): number {
   return degrees * (Math.PI / 180)
 }
 
-/**
- * Convert radians to degrees
- */
 export function radToDeg(radians: number): number {
   return radians * (180 / Math.PI)
 }
 
-/**
- * Calculate threat level based on various factors
- */
 export function calculateThreatLevel(
   proximity: number, // 0-1 scale
   velocity: number,  // 0-1 scale  
@@ -308,9 +241,6 @@ export function calculateThreatLevel(
   return 'low'
 }
 
-/**
- * Get color for threat level
- */
 export function getThreatColor(level: 'low' | 'medium' | 'high' | 'critical'): string {
   const colors = {
     low: '#10B981',    // green-500
@@ -322,9 +252,6 @@ export function getThreatColor(level: 'low' | 'medium' | 'high' | 'critical'): s
   return colors[level]
 }
 
-/**
- * Format coordinates for display
- */
 export function formatCoordinates(lat: number, lng: number): string {
   const latDir = lat >= 0 ? 'N' : 'S'
   const lngDir = lng >= 0 ? 'E' : 'W'
@@ -332,9 +259,6 @@ export function formatCoordinates(lat: number, lng: number): string {
   return `${Math.abs(lat).toFixed(4)}°${latDir}, ${Math.abs(lng).toFixed(4)}°${lngDir}`
 }
 
-/**
- * Calculate distance between two coordinates (Haversine formula)
- */
 export function calculateDistance(
   lat1: number, 
   lng1: number, 
@@ -356,41 +280,26 @@ export function calculateDistance(
   return R * c
 }
 
-/**
- * Validate email format
- */
 export function isValidEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(email)
 }
 
-/**
- * Capitalize first letter of each word
- */
 export function titleCase(str: string): string {
   return str.replace(/\w\S*/g, (txt) => 
     txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
   )
 }
 
-/**
- * Remove HTML tags from string
- */
 export function stripHtml(html: string): string {
   return html.replace(/<[^>]*>/g, '')
 }
 
-/**
- * Truncate text with ellipsis
- */
 export function truncate(text: string, length: number): string {
   if (text.length <= length) return text
   return text.substring(0, length - 3) + '...'
 }
 
-/**
- * Convert object to query string
- */
 export function objectToQueryString(obj: Record<string, any>): string {
   return Object.entries(obj)
     .filter(([_, value]) => value !== null && value !== undefined)

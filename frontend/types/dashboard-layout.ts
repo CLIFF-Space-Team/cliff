@@ -101,7 +101,6 @@ export interface ResponsiveConfig {
   gridAreas: GridLayoutAreas
 }
 
-// Constants
 export const DASHBOARD_BREAKPOINTS: LayoutResponsiveBreakpoints = {
   mobile: 768,
   tablet: 1024,

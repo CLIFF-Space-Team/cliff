@@ -12,13 +12,11 @@ from fastapi import WebSocket
 from pydantic import BaseModel, Field
 import structlog
 
-# Simple AI Services imports
 from app.services.simple_threat_processor import (
     get_master_threat_orchestrator
 )
 from app.websocket.manager import websocket_manager, WebSocketMessage, ThreatAlert
 
-# Setup logging
 logger = structlog.get_logger(__name__)
 
 
@@ -94,7 +92,6 @@ class AIThreatWebSocketHandler:
         try:
             self.orchestrator = await get_master_threat_orchestrator()
             
-            # Add AI-specific subscription types to main WebSocket manager
             ai_subscriptions = {
                 "ai_analysis_progress": set(),
                 "ai_threat_insights": set(),
@@ -126,7 +123,6 @@ class AIThreatWebSocketHandler:
             
             self.client_subscriptions[client_id].add(session_id)
             
-            # Start progress monitoring for this session if not already started
             if session_id not in self.progress_tasks:
                 task = asyncio.create_task(self._monitor_analysis_progress(session_id))
                 self.progress_tasks[session_id] = task
@@ -147,18 +143,15 @@ class AIThreatWebSocketHandler:
             if session_id in self.active_analysis_sessions:
                 self.active_analysis_sessions[session_id].discard(client_id)
                 
-                # Clean up empty session
                 if not self.active_analysis_sessions[session_id]:
                     del self.active_analysis_sessions[session_id]
                     
-                    # Cancel progress monitoring if no subscribers
                     if session_id in self.progress_tasks:
                         self.progress_tasks[session_id].cancel()
             
             if client_id in self.client_subscriptions:
                 self.client_subscriptions[client_id].discard(session_id)
                 
-                # Clean up empty client subscriptions
                 if not self.client_subscriptions[client_id]:
                     del self.client_subscriptions[client_id]
             
@@ -186,7 +179,6 @@ class AIThreatWebSocketHandler:
             
             subscribers = self.active_analysis_sessions[session_id]
             
-            # Send to all subscribers of this analysis session
             tasks = []
             for client_id in subscribers.copy():
                 if client_id in websocket_manager.active_connections:
@@ -240,7 +232,6 @@ class AIThreatWebSocketHandler:
                 await websocket_manager._broadcast_to_subscribers(message, subscribers)
                 logger.info(f"AI correlation alert broadcast: {correlation.correlation_id} -> {len(subscribers)} clients")
             
-            # If urgent, also create a threat alert
             if correlation.urgent:
                 threat_alert = ThreatAlert(
                     alert_id=f"CORR-{correlation.correlation_id}",
@@ -265,7 +256,6 @@ class AIThreatWebSocketHandler:
         AI analiz özet raporunu broadcast et
         """
         try:
-            # Send to specific analysis subscribers first
             if summary.session_id in self.active_analysis_sessions:
                 progress_message = WebSocketMessage(
                     type="ai_analysis_complete",
@@ -286,7 +276,6 @@ class AIThreatWebSocketHandler:
                 if tasks:
                     await asyncio.gather(*tasks, return_exceptions=True)
             
-            # Also broadcast to general summary report subscribers
             summary_message = WebSocketMessage(
                 type="ai_summary_report",
                 data=summary.dict(),
@@ -395,12 +384,10 @@ class AIThreatWebSocketHandler:
         
         try:
             while session_id in self.active_analysis_sessions:
-                # Get current status from orchestrator
                 if self.orchestrator:
                     status = await self.orchestrator.get_orchestration_status(session_id)
                     
                     if status:
-                        # Create progress update
                         progress = AIAnalysisProgressUpdate(
                             session_id=session_id,
                             current_phase=status.get('current_phase', 'unknown'),
@@ -413,10 +400,8 @@ class AIThreatWebSocketHandler:
                             current_activity=self._get_current_activity(status.get('current_phase'))
                         )
                         
-                        # Broadcast progress
                         await self.broadcast_analysis_progress(session_id, progress)
                         
-                        # If analysis is complete, stop monitoring
                         if status.get('status') in ['completed', 'failed', 'timeout']:
                             logger.info(f"Analysis {session_id} completed, stopping progress monitoring")
                             break
@@ -449,7 +434,6 @@ class AIThreatWebSocketHandler:
             current_phase = status.get('current_phase', '')
             elapsed_time = status.get('elapsed_time', 0)
             
-            # Basit tahmin algoritması
             phase_weights = {
                 'initialization': 0.05,
                 'data_collection': 0.10,
@@ -495,17 +479,10 @@ class AIThreatWebSocketHandler:
         return activities.get(current_phase, 'İşlem devam ediyor...')
 
 
-# =============================================================================
-# GLOBAL AI WEBSOCKET HANDLER INSTANCE
-# =============================================================================
 
-# Global AI WebSocket handler instance
 ai_threat_websocket_handler = AIThreatWebSocketHandler()
 
 
-# =============================================================================
-# INTEGRATION FUNCTIONS
-# =============================================================================
 
 async def initialize_ai_websocket_system():
     """AI WebSocket sistemini başlat"""
@@ -527,9 +504,6 @@ async def cleanup_ai_client(client_id: str):
     await ai_threat_websocket_handler.cleanup_client_subscriptions(client_id)
 
 
-# =============================================================================
-# UTILITY FUNCTIONS FOR AI NOTIFICATIONS
-# =============================================================================
 
 async def notify_analysis_started(session_id: str, analysis_config: Dict[str, Any]):
     """Analiz başlama bildirimi"""
@@ -571,7 +545,6 @@ async def notify_critical_ai_finding(
 ):
     """Kritik AI bulgusu bildirimi"""
     try:
-        # Create AI insight
         insight = AIThreatInsight(
             insight_id=f"CRITICAL-{uuid.uuid4().hex[:8]}",
             threat_id=threat_id,
@@ -583,10 +556,8 @@ async def notify_critical_ai_finding(
             recommendations=details.get("recommendations", [])
         )
         
-        # Broadcast insight
         await ai_threat_websocket_handler.broadcast_ai_insight(insight)
         
-        # If very urgent, create system alert
         if urgency_level == "CRITICAL":
             alert = ThreatAlert(
                 alert_id=f"AI-CRITICAL-{uuid.uuid4().hex[:8]}",
@@ -605,7 +576,6 @@ async def notify_critical_ai_finding(
         logger.error(f"Critical AI finding notification failed: {str(e)}")
 
 
-# Export main components
 __all__ = [
     "AIThreatWebSocketHandler",
     "AIAnalysisProgressUpdate", 
