@@ -65,7 +65,7 @@ const SpaceWeatherStation: React.FC<SpaceWeatherStationProps> = ({
   className,
   showDetails = true,
   autoRefresh = true,
-  refreshInterval = 300000 // 5 minutes
+  refreshInterval = 300000 
 }) => {
   const [spaceWeatherEvents, setSpaceWeatherEvents] = useState<SpaceWeatherEvent[]>([])
   const [solarActivity, setSolarActivity] = useState<SolarActivity | null>(null)

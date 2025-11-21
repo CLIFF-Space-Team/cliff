@@ -423,7 +423,7 @@ export function SpaceAndNatureLoader({
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               willChange: 'opacity, transform',
-              transform: 'translateZ(0)' // Hardware acceleration
+              transform: 'translateZ(0)' 
             }}
             animate={{
               opacity: [0.3, 1, 0.3],

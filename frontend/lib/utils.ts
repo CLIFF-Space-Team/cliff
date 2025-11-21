@@ -228,10 +228,10 @@ export function radToDeg(radians: number): number {
 }
 
 export function calculateThreatLevel(
-  proximity: number, // 0-1 scale
-  velocity: number,  // 0-1 scale  
-  size: number,      // 0-1 scale
-  uncertainty: number = 0 // 0-1 scale
+  proximity: number, 
+  velocity: number,  
+  size: number,      
+  uncertainty: number = 0 
 ): 'low' | 'medium' | 'high' | 'critical' {
   const threatScore = (proximity * 0.4) + (velocity * 0.3) + (size * 0.3) - (uncertainty * 0.1)
   
@@ -243,10 +243,10 @@ export function calculateThreatLevel(
 
 export function getThreatColor(level: 'low' | 'medium' | 'high' | 'critical'): string {
   const colors = {
-    low: '#10B981',    // green-500
-    medium: '#F59E0B', // yellow-500
-    high: '#EF4444',   // red-500
-    critical: '#DC2626' // red-600
+    low: '#10B981',    
+    medium: '#F59E0B', 
+    high: '#EF4444',   
+    critical: '#DC2626' 
   }
   
   return colors[level]
@@ -265,7 +265,7 @@ export function calculateDistance(
   lat2: number, 
   lng2: number
 ): number {
-  const R = 6371 // Earth's radius in kilometers
+  const R = 6371 
   
   const dLat = degToRad(lat2 - lat1)
   const dLng = degToRad(lng2 - lng1)

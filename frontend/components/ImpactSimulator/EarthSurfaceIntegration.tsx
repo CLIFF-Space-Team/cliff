@@ -94,7 +94,7 @@ export function EarthSurfaceIntegration({
         varying float vDistanceFromImpact;
         varying float vDisplacement;
         void main() {
-          vec3 baseColor = vec3(0.45, 0.40, 0.35); // Toprak rengi
+          vec3 baseColor = vec3(0.45, 0.40, 0.35); 
           if (vDisplacement < -0.001) {
             baseColor = mix(baseColor, vec3(0.2, 0.18, 0.15), -vDisplacement * 100.0);
           }

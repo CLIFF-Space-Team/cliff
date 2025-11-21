@@ -27,10 +27,10 @@ export interface SatelliteState {
   orbitalPhase: number
   distanceFromParent: number
   isVisible: boolean
-  librationPhase?: number  // For Moon's libration
+  librationPhase?: number  
 }
 export interface BaseSatelliteComponentProps extends SatelliteComponentProps {
-  satelliteBody: SimpleCelestialBody | any // Allow mock data temporarily
+  satelliteBody: SimpleCelestialBody | any 
   children?: React.ReactNode
 }
 export const BaseSatelliteComponent: React.FC<BaseSatelliteComponentProps> = ({
@@ -108,19 +108,19 @@ export const BaseSatelliteComponent: React.FC<BaseSatelliteComponentProps> = ({
   useFrame((state, delta) => {
     if (!meshRef.current || !groupRef.current) return
     const orbitalPeriod = satelliteBody.orbit?.orbital_period_days || satelliteBody.orbital?.orbitalPeriod || 27.3
-    const orbitSpeed = (2 * Math.PI) / (orbitalPeriod * 24 * 3600) // rad/s
+    const orbitSpeed = (2 * Math.PI) / (orbitalPeriod * 24 * 3600) 
     const newPhase = orbitalPhase + (orbitSpeed * delta * timeScale)
     setOrbitalPhase(newPhase)
     const distance = satelliteBody.orbit?.distance_from_sun || satelliteBody.orbital?.semiMajorAxis || 0.1
     const scaledDistance = distance * 0.01
     const x = scaledDistance * Math.cos(newPhase)
     const z = scaledDistance * Math.sin(newPhase)
-    const y = 0 // Simplified - no inclination for now
+    const y = 0 
     groupRef.current.position.set(x, y, z)
     if (tidallyLocked) {
       meshRef.current.rotation.y = newPhase
       if (satelliteBody.id === 'moon') {
-        const libration = Math.sin(newPhase * 2) * 0.1 // Small oscillation
+        const libration = Math.sin(newPhase * 2) * 0.1 
         meshRef.current.rotation.y += libration
         setSatelliteState(prev => ({
           ...prev,
@@ -195,11 +195,11 @@ function getSatelliteSegments(quality: string, radius: number): number {
     medium: 16,
     low: 8
   }[quality] || 16
-  if (radius > 2000) return baseSegments // Large moons (Moon, Ganymede, Titan)
-  if (radius > 1000) return Math.max(baseSegments * 0.75, 8) // Medium moons
-  return Math.max(baseSegments * 0.5, 6) // Small moons
+  if (radius > 2000) return baseSegments 
+  if (radius > 1000) return Math.max(baseSegments * 0.75, 8) 
+  return Math.max(baseSegments * 0.5, 6) 
 }
 function getScaledSatelliteRadius(satellite: any): number {
   const radius = satellite.info?.radius_km || satellite.physical?.radius || 1000
-  return radius * 0.000005 // Smaller scale factor than planets
+  return radius * 0.000005 
 }

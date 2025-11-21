@@ -136,7 +136,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
               }
             )}
             style={{ 
-              fontSize: '16px' // Prevents zoom on iOS
+              fontSize: '16px' 
             }}
           />
           {}

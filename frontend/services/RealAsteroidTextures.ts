@@ -237,22 +237,22 @@ export class RealAsteroidTextures {
     boulder: { r: number, g: number, b: number }
   } {
     switch (type) {
-      case 'C-type': // Carbonaceous (like Bennu) - dark, carbon-rich
+      case 'C-type': 
         return {
           base: { r: 0.18, g: 0.16, b: 0.14 },
           boulder: { r: 0.22, g: 0.20, b: 0.18 }
         }
-      case 'S-type': // Silicaceous (like Itokawa) - rocky, silicate
+      case 'S-type': 
         return {
           base: { r: 0.45, g: 0.38, b: 0.28 },
           boulder: { r: 0.52, g: 0.44, b: 0.32 }
         }
-      case 'M-type': // Metallic - iron-nickel
+      case 'M-type': 
         return {
           base: { r: 0.55, g: 0.52, b: 0.48 },
           boulder: { r: 0.62, g: 0.58, b: 0.54 }
         }
-      case 'mixed': // Mixed composition
+      case 'mixed': 
         return {
           base: { r: 0.35, g: 0.30, b: 0.25 },
           boulder: { r: 0.42, g: 0.36, b: 0.30 }
@@ -261,9 +261,9 @@ export class RealAsteroidTextures {
   }
   private getAsteroidRoughness(type: AsteroidType): number {
     switch (type) {
-      case 'C-type': return 0.95 // Very rough, porous
-      case 'S-type': return 0.88 // Rocky, moderately rough
-      case 'M-type': return 0.65 // Metallic, smoother
+      case 'C-type': return 0.95 
+      case 'S-type': return 0.88 
+      case 'M-type': return 0.65 
       case 'mixed': return 0.90
     }
   }

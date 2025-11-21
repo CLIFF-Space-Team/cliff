@@ -241,13 +241,13 @@ export const convertThreatLevel = (oldLevel: string): ThreatLevel => {
 export const getThreatColor = (level: ThreatLevel): string => {
   switch (level) {
     case 'Düşük':
-      return '#22c55e' // Yeşil
+      return '#22c55e' 
     case 'Orta':
-      return '#f59e0b' // Turuncu
+      return '#f59e0b' 
     case 'Yüksek':
-      return '#ef4444' // Kırmızı
+      return '#ef4444' 
     default:
-      return '#6b7280' // Gri
+      return '#6b7280' 
   }
 }
 

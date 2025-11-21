@@ -26,7 +26,7 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
   const { geometry, surfaceGeometry, baseRadius } = useMemo(() => {
-    const baseRadius = Math.min(Math.max(data.info.radius_km * 0.15, 1.0), 3.0) // Daha büyük ve görünür
+    const baseRadius = Math.min(Math.max(data.info.radius_km * 0.15, 1.0), 3.0) 
     const baseGeometry = new THREE.IcosahedronGeometry(baseRadius, isMobile ? 3 : 4)
     const positionAttribute = baseGeometry.getAttribute('position')
     const vertex = new THREE.Vector3()
@@ -73,16 +73,16 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
     }
   }, [data.info.radius_km, isMobile])
   const asteroidMaterial = useMemo(() => {
-    const baseColor = data.is_hazardous ? '#A0522D' : '#708090' // Daha gerçekçi renkler
+    const baseColor = data.is_hazardous ? '#A0522D' : '#708090' 
     const material = new THREE.MeshStandardMaterial({
       color: baseColor,
-      roughness: 0.98, // Çok pürüzlü asteroid yüzeyi
-      metalness: 0.02, // Çok düşük metalik içerik
+      roughness: 0.98, 
+      metalness: 0.02, 
       bumpScale: 0.8,
       normalScale: new THREE.Vector2(0.5, 0.5),
     })
     const canvas = document.createElement('canvas')
-    const size = isMobile ? 512 : 1024 // Yüksek kalite tekstür
+    const size = isMobile ? 512 : 1024 
     canvas.width = size
     canvas.height = size
     const ctx = canvas.getContext('2d')!
@@ -107,15 +107,15 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
       )
       const intensity = Math.max(30, Math.min(220, 120 + combinedNoise * 50))
       if (data.is_hazardous) {
-        pixelData[i] = intensity * 0.85      // Red
-        pixelData[i + 1] = intensity * 0.45  // Green  
-        pixelData[i + 2] = intensity * 0.25  // Blue
+        pixelData[i] = intensity * 0.85      
+        pixelData[i + 1] = intensity * 0.45  
+        pixelData[i + 2] = intensity * 0.25  
       } else {
-        pixelData[i] = intensity * 0.75      // Red
-        pixelData[i + 1] = intensity * 0.7   // Green  
-        pixelData[i + 2] = intensity * 0.65  // Blue
+        pixelData[i] = intensity * 0.75      
+        pixelData[i + 1] = intensity * 0.7   
+        pixelData[i + 2] = intensity * 0.65  
       }
-      pixelData[i + 3] = 255               // Alpha
+      pixelData[i + 3] = 255               
     }
     ctx.putImageData(imageData, 0, 0)
     const normalCanvas = document.createElement('canvas')
@@ -131,10 +131,10 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
       const bump2 = Math.sin(x * 0.4) * Math.cos(y * 0.3) * 32 + 128
       const bump3 = Math.sin(x * 0.8) * Math.cos(y * 0.6) * 16 + 128
       const bumpIntensity = (bump1 + bump2 + bump3) / 3
-      normalData[i] = bumpIntensity     // Red (X)
-      normalData[i + 1] = 128           // Green (Y)  
-      normalData[i + 2] = bumpIntensity // Blue (Z)
-      normalData[i + 3] = 255           // Alpha
+      normalData[i] = bumpIntensity     
+      normalData[i + 1] = 128           
+      normalData[i + 2] = bumpIntensity 
+      normalData[i + 3] = 255           
     }
     normalCtx.putImageData(normalImageData, 0, 0)
     const roughnessCanvas = document.createElement('canvas')
@@ -147,10 +147,10 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
       const x = (i / 4) % size
       const y = Math.floor((i / 4) / size)
       const roughness = Math.sin(x * 0.1) * Math.cos(y * 0.08) * 50 + 200
-      roughnessData[i] = roughness      // Red
-      roughnessData[i + 1] = roughness  // Green  
-      roughnessData[i + 2] = roughness  // Blue
-      roughnessData[i + 3] = 255        // Alpha
+      roughnessData[i] = roughness      
+      roughnessData[i + 1] = roughness  
+      roughnessData[i + 2] = roughness  
+      roughnessData[i + 3] = 255        
     }
     roughnessCtx.putImageData(roughnessImageData, 0, 0)
     const texture = new THREE.CanvasTexture(canvas)
@@ -178,13 +178,13 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
       ? parseFloat(data.orbital_data.miss_distance.kilometers)
       : 5000000
     const distance_au = distance_km / 149597870.7
-    let glowColor = '#4A90E2' // Düşük risk - mavi
+    let glowColor = '#4A90E2' 
     let intensity = 0.8
     if (data.is_hazardous) {
-      glowColor = '#FF4444' // Yüksek risk - kırmızı
+      glowColor = '#FF4444' 
       intensity = 1.5
     } else if (distance_au < 0.05) {
-      glowColor = '#FF8800' // Orta risk - turuncu
+      glowColor = '#FF8800' 
       intensity = 1.2
     }
     return new THREE.ShaderMaterial({
@@ -268,11 +268,11 @@ export const Asteroid: React.FC<AsteroidProps> = ({ data, position = [0, 0, 0], 
   }, [clicked, onAsteroidSelect, onCameraFocus, isMobile, data])
   const distance_km = data.orbital_data?.miss_distance?.kilometers
     ? parseFloat(data.orbital_data.miss_distance.kilometers)
-    : 5000000 // Default 5M km
+    : 5000000 
   const distance_au = distance_km / 149597870.7
   const velocity_kms = data.orbital_data?.relative_velocity?.kilometers_per_second
     ? parseFloat(data.orbital_data.relative_velocity.kilometers_per_second)
-    : 15 // Default 15 km/s
+    : 15 
   const threat_level_turkish = data.is_hazardous ? 'YÜKSEK RİSK ⚠️' : 
                               distance_au < 0.05 ? 'ORTA RİSK' : 'DÜŞÜK RİSK'
   return (

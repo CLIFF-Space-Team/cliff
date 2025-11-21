@@ -52,12 +52,12 @@ function SaturnRings({
   return (
     <mesh 
       ref={ringsRef}
-      rotation={[Math.PI / 2 + 0.4, 0, 0]} // Tilt rings
+      rotation={[Math.PI / 2 + 0.4, 0, 0]} 
     >
       <ringGeometry 
         args={[
-          planetScale * 1.5,  // Inner radius
-          planetScale * 2.5,  // Outer radius
+          planetScale * 1.5,  
+          planetScale * 2.5,  
           quality === 'ultra' ? 128 : quality === 'high' ? 64 : 32
         ]} 
       />

@@ -260,8 +260,8 @@ export class USDZMaterialSystem {
         #include <fog_fragment>
         #include <premultiplied_alpha_fragment>
         #include <dithering_fragment>
-        gl_FragColor.rgb = mix(gl_FragColor.rgb, gl_FragColor.rgb * 1.2, 0.1); // Slight brightness boost
-        gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(0.95)); // Gamma adjustment for USDZ quality
+        gl_FragColor.rgb = mix(gl_FragColor.rgb, gl_FragColor.rgb * 1.2, 0.1); 
+        gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(0.95)); 
       }
     `
   }
@@ -358,7 +358,7 @@ export class USDZMaterialSystem {
     if (quality === 'ultra') {
       material.clearcoat = Math.max(material.clearcoat, 0.1)
       material.reflectivity = 0.9
-      material.ior = 1.5 // Index of refraction for realistic reflections
+      material.ior = 1.5 
     }
     this.materialCache.set(cacheKey, material)
     return material
@@ -376,16 +376,16 @@ export class USDZMaterialSystem {
     if (sRGB) {
       texture.colorSpace = THREE.SRGBColorSpace
     }
-    texture.flipY = false // USDZ standard
+    texture.flipY = false 
   }
   createEnvironmentMap(quality: 'low' | 'medium' | 'high' | 'ultra' = 'high'): Promise<THREE.CubeTexture> {
     const urls = [
-      '/textures/environment/space_px.jpg', // positive x
-      '/textures/environment/space_nx.jpg', // negative x
-      '/textures/environment/space_py.jpg', // positive y
-      '/textures/environment/space_ny.jpg', // negative y
-      '/textures/environment/space_pz.jpg', // positive z
-      '/textures/environment/space_nz.jpg', // negative z
+      '/textures/environment/space_px.jpg', 
+      '/textures/environment/space_nx.jpg', 
+      '/textures/environment/space_py.jpg', 
+      '/textures/environment/space_ny.jpg', 
+      '/textures/environment/space_pz.jpg', 
+      '/textures/environment/space_nz.jpg', 
     ]
     return new Promise((resolve, reject) => {
       const envMap = this.cubeTextureLoader.load(urls, 
@@ -438,7 +438,7 @@ export function useUSDZMaterialSystem() {
   }, [])
   useEffect(() => {
     const interval = setInterval(() => {
-      materialSystemRef.current?.updateAnimatedMaterials(0.016) // ~60fps
+      materialSystemRef.current?.updateAnimatedMaterials(0.016) 
     }, 16)
     return () => {
       clearInterval(interval)

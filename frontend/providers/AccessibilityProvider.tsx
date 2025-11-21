@@ -219,7 +219,7 @@ function accessibilityReducer(state: AccessibilityState, action: AccessibilityAc
       
       return {
         ...state,
-        announcements: [...state.announcements, announcement].slice(-5) // Keep last 5
+        announcements: [...state.announcements, announcement].slice(-5) 
       };
     
     case 'CLEAR_ANNOUNCEMENTS':

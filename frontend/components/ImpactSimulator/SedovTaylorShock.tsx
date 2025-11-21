@@ -65,8 +65,8 @@ export function SedovTaylorShock({
           float frontIntensity = 1.0 - smoothstep(0.0, 0.15, shockFront);
           float wave = sin((dist - shockRadius) * 35.0 + time * 8.0) * 0.5 + 0.5;
           vec3 color = mix(
-            vec3(1.0, 0.4, 0.0),  // Turuncu
-            vec3(1.0, 1.0, 0.7),  // Sarı-beyaz
+            vec3(1.0, 0.4, 0.0),  
+            vec3(1.0, 1.0, 0.7),  
             frontIntensity
           );
           float alpha = frontIntensity * wave * progress * 1.5;

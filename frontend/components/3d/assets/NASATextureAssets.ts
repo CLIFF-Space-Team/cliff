@@ -7,13 +7,13 @@
   captureDate?: string
   instrument?: string
   variants: {
-    ultra: string    // 8K+ resolution
-    high: string     // 4K resolution  
-    medium: string   // 2K resolution
-    low: string      // 1K resolution
+    ultra: string    
+    high: string     
+    medium: string   
+    low: string      
   }
   originalResolution: { width: number; height: number }
-  fileSize: { [key: string]: number } // Size in MB for each variant
+  fileSize: { [key: string]: number } 
   colorSpace: 'sRGB' | 'Linear' | 'Rec2020'
   bitDepth: 8 | 16 | 32
   hasAlpha: boolean

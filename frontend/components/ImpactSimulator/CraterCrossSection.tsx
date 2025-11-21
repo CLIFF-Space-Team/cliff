@@ -22,7 +22,7 @@ export function CraterCrossSection({
   visible
 }: CraterCrossSectionProps) {
   const groupRef = useRef<THREE.Group>(null)
-  const scale = 0.001 // Scale factor for visualization
+  const scale = 0.001 
   const diameter = craterDiameter_m * scale
   const depth = craterDepth_m * scale
   const rim = rimHeight_m * scale

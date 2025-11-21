@@ -29,13 +29,13 @@ const ChatInterfaceView = React.lazy(() =>
 )
 
 const ChatInterfaceWrapper: React.FC = () => {
-  const setView = useDashboardStore((state) => state.setView) // FIXED: setView (not setActiveView)
+  const setView = useDashboardStore((state) => state.setView) 
   return (
     <ErrorBoundary fallback={<p className="text-cliff-light-gray p-8">Chat yüklenirken bir hata oluştu.</p>}>
       <Suspense fallback={<DashboardSkeleton />}>
         <ChatInterfaceView 
           isOpen={true} 
-          onClose={() => setView('earth-events')} // Ana sayfaya dön
+          onClose={() => setView('earth-events')} 
         />
       </Suspense>
     </ErrorBoundary>
@@ -50,7 +50,7 @@ const viewComponents: Record<ViewType, React.ComponentType<any>> = {
   'threat-analysis': ThreatAnalysisView,
   '3d-threat-visualization': ThreatVisualization3DView,
   'system-monitor': SystemMonitorView,
-  'chat-interface': ChatInterfaceWrapper as any, // Use wrapper instead of direct component
+  'chat-interface': ChatInterfaceWrapper as any, 
 }
 interface DynamicContentPanelProps {
   className?: string

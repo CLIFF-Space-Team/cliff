@@ -28,8 +28,8 @@ interface InteractiveTooltipProps {
   isVisible: boolean;
   config: TooltipConfig;
   content: TooltipContent;
-  targetPosition?: { x: number; y: number; z: number }; // 3D world position
-  screenPosition?: { x: number; y: number }; // 2D screen position
+  targetPosition?: { x: number; y: number; z: number }; 
+  screenPosition?: { x: number; y: number }; 
   onClose?: () => void;
   onAction?: (action: string, params?: Record<string, any>) => void;
   onInteractionChange?: (isInteracting: boolean) => void;

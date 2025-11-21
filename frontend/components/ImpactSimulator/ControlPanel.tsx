@@ -49,7 +49,7 @@ export function ControlPanel({
         onClose={() => setShowLocationPicker(false)}
         onLocationSelect={(newLocation) => {
           onLocationChange(newLocation)
-          setSelectedLocationIndex(undefined) // Haritadan seçildi, dropdown'u temizle
+          setSelectedLocationIndex(undefined) 
         }}
         initialLocation={location}
       />

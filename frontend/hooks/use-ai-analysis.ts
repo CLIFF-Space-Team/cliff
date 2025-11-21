@@ -73,7 +73,7 @@ export function useAIAnalysis() {
   const [canAnalyze, setCanAnalyze] = useState(true)
   const [timeUntilNext, setTimeUntilNext] = useState<number>(0)
   const { isConnected, sendMessage, lastMessage } = useWebSocket()
-  const ANALYSIS_COOLDOWN = 60 * 60 * 1000 // 1 saat
+  const ANALYSIS_COOLDOWN = 60 * 60 * 1000 
   useEffect(() => {
     const savedTime = localStorage.getItem('cliff_last_analysis_time')
     if (savedTime) {
@@ -168,13 +168,13 @@ export function useAIAnalysis() {
   const handleThreatInsight = useCallback((insight: AIThreatInsight) => {
     setState(prev => ({
       ...prev,
-      recentInsights: [insight, ...prev.recentInsights.slice(0, 49)] // Keep last 50
+      recentInsights: [insight, ...prev.recentInsights.slice(0, 49)] 
     }))
   }, [])
   const handleCorrelationAlert = useCallback((alert: AICorrelationAlert) => {
     setState(prev => ({
       ...prev,
-      correlationAlerts: [alert, ...prev.correlationAlerts.slice(0, 19)] // Keep last 20
+      correlationAlerts: [alert, ...prev.correlationAlerts.slice(0, 19)] 
     }))
   }, [])
   const handleSummaryReport = useCallback((report: AISummaryReport) => {
@@ -322,7 +322,7 @@ export function useAIAnalysis() {
       try {
         const response = await getAnalysisStatus(currentSessionId)
         if (response && response.status) {
-          console.log('Polling Response:', response) // Debug log
+          console.log('Polling Response:', response) 
           const statusData = response.status
           const progress: AIAnalysisProgress = {
             session_id: currentSessionId,
@@ -335,7 +335,7 @@ export function useAIAnalysis() {
             estimated_completion_time: statusData.estimated_completion_time,
             current_activity: statusData.current_activity || 'AI sistem analizi devam ediyor...'
           }
-          console.log('Setting Progress:', progress) // Debug log
+          console.log('Setting Progress:', progress) 
           handleProgressUpdate(progress)
           if (statusData.status === 'completed') {
             console.log('Analysis completed, fetching results...')
@@ -417,7 +417,7 @@ export function useAIAnalysis() {
               } finally {
                 setCurrentSessionId(null)
               }
-            }, 2000) // 2 saniye sonra results al
+            }, 2000) 
           }
         }
       } catch (error) {

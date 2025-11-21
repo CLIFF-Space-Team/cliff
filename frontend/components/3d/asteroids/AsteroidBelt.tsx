@@ -2,7 +2,7 @@
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 const ASTEROID_COUNT = 2000;
-const ASTRONOMICAL_UNIT = 149.6e6 * 0.0000001; // Scaled down
+const ASTRONOMICAL_UNIT = 149.6e6 * 0.0000001; 
 const AsteroidBelt: React.FC = () => {
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
   const asteroidTransforms = useMemo(() => {
@@ -57,10 +57,10 @@ const AsteroidBelt: React.FC = () => {
       const noise3 = Math.sin(x * 0.2) * Math.cos(y * 0.15) * 0.4
       const combinedNoise = noise1 + noise2 + noise3
       const intensity = Math.max(40, Math.min(200, 110 + combinedNoise * 45))
-      pixelData[i] = intensity * 0.7       // Red
-      pixelData[i + 1] = intensity * 0.6   // Green  
-      pixelData[i + 2] = intensity * 0.5   // Blue
-      pixelData[i + 3] = 255               // Alpha
+      pixelData[i] = intensity * 0.7       
+      pixelData[i + 1] = intensity * 0.6   
+      pixelData[i + 2] = intensity * 0.5   
+      pixelData[i + 3] = 255               
     }
     ctx.putImageData(imageData, 0, 0)
     const texture = new THREE.CanvasTexture(canvas)

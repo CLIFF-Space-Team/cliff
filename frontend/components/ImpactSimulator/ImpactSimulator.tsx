@@ -49,7 +49,7 @@ export function ImpactSimulator() {
     setIsAnimating(true)
     setIsPaused(false)
     setAnimationProgress(0)
-    setResetAnimationFlag(prev => !prev) // Toggle flag to trigger reset
+    setResetAnimationFlag(prev => !prev) 
   }
   const handleAnimationComplete = () => {
     setTimeout(() => {
@@ -63,7 +63,7 @@ export function ImpactSimulator() {
     setAnimationProgress(0)
     setIsPaused(false)
     setIsAnimating(true)
-    setResetAnimationFlag(prev => !prev) // Toggle flag to trigger reset
+    setResetAnimationFlag(prev => !prev) 
   }
   return (
     <div className="h-full w-full flex gap-4 p-4">

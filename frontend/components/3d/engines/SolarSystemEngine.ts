@@ -36,7 +36,7 @@ export class SolarSystemEngine {
       enablePerformanceOptimization: config.enablePerformanceOptimization ?? true,
       enableOrbitalPaths: config.enableOrbitalPaths ?? true,
       enableTimeSimulation: config.enableTimeSimulation ?? true,
-      initialTimeScale: config.initialTimeScale ?? 86400, // 1 day per second
+      initialTimeScale: config.initialTimeScale ?? 86400, 
       startDate: config.startDate ?? new Date()
     };
     this.scene = new THREE.Scene();
@@ -59,7 +59,7 @@ export class SolarSystemEngine {
     this.timeChangeListener = ({ time, timeScale }) => {
       this.updateOrbitalPositions(time);
       if (this.config.enableOrbitalPaths && this.orbitalPathsVisualizer) {
-        this.orbitalPathsVisualizer.update(time, 0.016); // Assume 60fps for deltaTime
+        this.orbitalPathsVisualizer.update(time, 0.016); 
       }
     };
     this.timeController.on('time-changed', this.timeChangeListener);
@@ -80,13 +80,13 @@ export class SolarSystemEngine {
       return;
     }
     SOLAR_SYSTEM_DATA.forEach((planetData) => {
-      if (planetData.type === 'star') return; // Skip sun
+      if (planetData.type === 'star') return; 
       const body = this.celestialBodyManager?.getBody(planetData.id);
       if (body && planetData.orbit) {
-        const distance = planetData.orbit.distance_from_sun * 149597870.7; // Convert AU to km
+        const distance = planetData.orbit.distance_from_sun * 149597870.7; 
         const orbitalPeriod = planetData.orbit.orbital_period_days;
         const angle = ((julianDay % orbitalPeriod) / orbitalPeriod) * 2 * Math.PI;
-        const scaleFactor = 0.001; // Adjust scale as needed
+        const scaleFactor = 0.001; 
         body.group.position.set(
           Math.cos(angle) * distance * scaleFactor,
           0,
@@ -150,7 +150,7 @@ export class SolarSystemEngine {
       this.updateOrbitalPositions(this.timeController.getState().currentTime);
       setTimeout(() => {
         this.timeController.setPlaying(true);
-      }, 1000); // Small delay to ensure everything is loaded
+      }, 1000); 
     }
   }
   private async setupScene(): Promise<void> {
@@ -199,12 +199,12 @@ export class SolarSystemEngine {
             ...planetData,
             orbital: {
               semiMajorAxis: planetData.orbit.distance_from_sun,
-              eccentricity: 0.01, // Default value
+              eccentricity: 0.01, 
               inclination: planetData.orbit.tilt_degrees,
-              longitudeOfAscendingNode: 0, // Default value
-              argumentOfPeriapsis: 0, // Default value
-              meanAnomalyAtEpoch: 0, // Default value
-              epoch: 2451545.0, // J2000.0
+              longitudeOfAscendingNode: 0, 
+              argumentOfPeriapsis: 0, 
+              meanAnomalyAtEpoch: 0, 
+              epoch: 2451545.0, 
               orbitalPeriod: planetData.orbit.orbital_period_days,
               meanMotion: 360 / planetData.orbit.orbital_period_days,
               distance_from_sun: planetData.orbit.distance_from_sun,
@@ -215,12 +215,12 @@ export class SolarSystemEngine {
             physical: {
               radius: planetData.info.radius_km,
               mass: planetData.info.mass_relative_to_earth,
-              density: 5.5, // Default value
+              density: 5.5, 
               gravity: planetData.info.gravity_relative_to_earth,
-              escapeVelocity: 11.2, // Default value
+              escapeVelocity: 11.2, 
               rotationPeriod: planetData.orbit.rotation_period_hours,
               axialTilt: planetData.orbit.tilt_degrees,
-              albedo: 0.3 // Default value
+              albedo: 0.3 
             },
             atmosphere: {
               hasAtmosphere: planetData.info.has_atmosphere
@@ -240,7 +240,7 @@ export class SolarSystemEngine {
       sunData = SOLAR_SYSTEM_DATA.find(body => body.type === 'star');
     }
     if (!sunData) return;
-    const geometry = new THREE.SphereGeometry(sunData.info.radius_km * 0.00001, 64, 32); // Scale down significantly
+    const geometry = new THREE.SphereGeometry(sunData.info.radius_km * 0.00001, 64, 32); 
     const material = new THREE.MeshStandardMaterial({
       emissive: new THREE.Color(0xffaa00),
       emissiveIntensity: 0.5,
@@ -304,7 +304,7 @@ export class SolarSystemEngine {
       this.controls.update();
     }
     if (this.celestialBodyManager) {
-      this.celestialBodyManager.update(0.016, performance.now()); // Assume 60fps
+      this.celestialBodyManager.update(0.016, performance.now()); 
     }
     this.renderer.render(this.scene, this.camera);
     this.animationFrameId = requestAnimationFrame(this.render);

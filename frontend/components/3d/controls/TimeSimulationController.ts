@@ -1,12 +1,12 @@
 ﻿import * as THREE from 'three';
 import { EventEmitter } from 'events';
 export interface TimeSimulationState {
-  timeScale: number;         // Speed multiplier (1 = real time, 365.25 = 1 year per day)
-  currentTime: number;       // Current Julian day
-  isPlaying: boolean;        // Animation state
-  realTimeMode: boolean;     // Real time vs simulation mode
-  minTimeScale: number;      // Minimum time scale
-  maxTimeScale: number;      // Maximum time scale
+  timeScale: number;         
+  currentTime: number;       
+  isPlaying: boolean;        
+  realTimeMode: boolean;     
+  minTimeScale: number;      
+  maxTimeScale: number;      
 }
 export interface TimeControlEvents {
   'time-changed': { time: number; timeScale: number };
@@ -28,7 +28,7 @@ export const TIME_SCALE_PRESETS = {
   CENTURY_PER_SECOND: 3155695200
 } as const;
 export class JulianDateUtils {
-  static readonly J2000_EPOCH = 2451545.0; // January 1, 2000, 12:00 TT
+  static readonly J2000_EPOCH = 2451545.0; 
   static readonly SECONDS_PER_DAY = 86400;
   static dateToJulian(date: Date): number {
     const year = date.getFullYear();
@@ -82,8 +82,8 @@ export class TimeSimulationController extends EventEmitter {
   private state: TimeSimulationState;
   private lastUpdateTime: number;
   private animationFrameId?: number;
-  private targetTime?: number; // For smooth transitions
-  private transitionDuration: number = 2000; // ms
+  private targetTime?: number; 
+  private transitionDuration: number = 2000; 
   private transitionStartTime?: number;
   private initialTransitionTime?: number;
   constructor() {
@@ -118,7 +118,7 @@ export class TimeSimulationController extends EventEmitter {
   }
   private update(): void {
     const currentTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
-    const deltaTime = (currentTime - this.lastUpdateTime) / 1000; // Convert to seconds
+    const deltaTime = (currentTime - this.lastUpdateTime) / 1000; 
     this.lastUpdateTime = currentTime;
     if (this.targetTime !== undefined && this.transitionStartTime !== undefined) {
       const elapsed = currentTime - this.transitionStartTime;

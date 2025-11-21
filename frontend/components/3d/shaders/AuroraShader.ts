@@ -3,13 +3,13 @@ export const AuroraShader = {
   uniforms: {
     time: { value: 0.0 },
     intensity: { value: 1.0 },
-    primaryColor: { value: new THREE.Color(0x00ff88) }, // Green
-    secondaryColor: { value: new THREE.Color(0x0088ff) }, // Blue
-    tertiaryColor: { value: new THREE.Color(0x8800ff) }, // Purple
+    primaryColor: { value: new THREE.Color(0x00ff88) }, 
+    secondaryColor: { value: new THREE.Color(0x0088ff) }, 
+    tertiaryColor: { value: new THREE.Color(0x8800ff) }, 
     waveSpeed: { value: 0.5 },
     waveAmplitude: { value: 0.3 },
-    polarLatitude: { value: 65.0 }, // Degrees from equator
-    polarWidth: { value: 25.0 }, // Width of aurora zone
+    polarLatitude: { value: 65.0 }, 
+    polarWidth: { value: 25.0 }, 
     planetRadius: { value: 1.0 },
   },
   vertexShader: `
@@ -75,7 +75,7 @@ export const AuroraShader = {
       float wave1 = fbm(waveCoord);
       float wave2 = fbm(waveCoord * 2.0 + vec2(0.0, time * waveSpeed * 0.5));
       float waves = wave1 * 0.6 + wave2 * 0.4;
-      waves = pow(waves, 1.5); // Enhance contrast
+      waves = pow(waves, 1.5); 
       float curtain = sin(vUv.x * 10.0 + time * waveSpeed) * waveAmplitude;
       waves += curtain * 0.3;
       vec3 color = mix(primaryColor, secondaryColor, wave1);

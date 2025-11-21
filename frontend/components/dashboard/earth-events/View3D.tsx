@@ -33,8 +33,8 @@ export default function View3D() {
           near: 0.1,
           far: 1000
         }}
-        dpr={[1, 2]} // Device pixel ratio for better quality
-        performance={{ min: 0.5 }} // Performance settings
+        dpr={[1, 2]} 
+        performance={{ min: 0.5 }} 
       >
         <Suspense fallback={null}>
           {}

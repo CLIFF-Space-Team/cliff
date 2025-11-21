@@ -118,8 +118,8 @@ export function SphericalShockWave({
     }
     meshRef.current.visible = true
     const earthRadius_km = 6371
-    const maxAngle = (maxRadius_km / earthRadius_km) // Açısal mesafe
-    const currentAngle = maxAngle * Math.pow(adjustedProgress, 0.5) // Sqrt için daha hızlı yayılım
+    const maxAngle = (maxRadius_km / earthRadius_km) 
+    const currentAngle = maxAngle * Math.pow(adjustedProgress, 0.5) 
     materialRef.current.uniforms.time.value = state.clock.elapsedTime
     materialRef.current.uniforms.progress.value = adjustedProgress
     materialRef.current.uniforms.shockRadius.value = currentAngle

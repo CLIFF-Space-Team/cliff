@@ -35,7 +35,7 @@ export function normalizeGLTFNode(scene: THREE.Object3D, targetScale = 1) {
   box.getSize(size)
   const center = new THREE.Vector3()
   box.getCenter(center)
-  scene.position.sub(center) // merkezi orijine getir
+  scene.position.sub(center) 
   const maxDim = Math.max(size.x, size.y, size.z) || 1
   const scale = targetScale / maxDim
   scene.scale.setScalar(scale)

@@ -15,7 +15,7 @@ interface MarsComponentProps extends PlanetComponentProps {
   showSeasonalChanges?: boolean
   dustStormIntensity?: number
   polarIceSize?: number
-  seasonalPhase?: number // 0-1, representing Martian year
+  seasonalPhase?: number 
   showThinAtmosphere?: boolean
   showPhobosDeimos?: boolean
 }
@@ -166,18 +166,18 @@ export const MarsComponent: React.FC<MarsComponentProps> = ({
     }
     if (showPhobosDeimos) {
       if (phobosRef.current) {
-        const phobosAngle = time * 0.3 // Fast orbit
+        const phobosAngle = time * 0.3 
         const phobosDistance = 0.008
         phobosRef.current.position.x = Math.cos(phobosAngle) * phobosDistance
         phobosRef.current.position.z = Math.sin(phobosAngle) * phobosDistance
-        phobosRef.current.rotation.y = phobosAngle // Tidal locking
+        phobosRef.current.rotation.y = phobosAngle 
       }
       if (deimosRef.current) {
-        const deimosAngle = time * 0.1 // Slower orbit
+        const deimosAngle = time * 0.1 
         const deimosDistance = 0.015
         deimosRef.current.position.x = Math.cos(deimosAngle) * deimosDistance
         deimosRef.current.position.z = Math.sin(deimosAngle) * deimosDistance
-        deimosRef.current.rotation.y = deimosAngle // Tidal locking
+        deimosRef.current.rotation.y = deimosAngle 
       }
     }
     if (effectsManager.current) {
@@ -290,13 +290,13 @@ export const MarsComponent: React.FC<MarsComponentProps> = ({
   )
 }
 export function calculateDustStormSeason(marsYear: number): number {
-  const cycle = (marsYear * 0.53) % 1 // Mars year ≈ 1.88 Earth years
+  const cycle = (marsYear * 0.53) % 1 
   return Math.max(0, Math.sin(cycle * Math.PI * 2) - 0.3) * 2
 }
 export function getMarsSeasonalTilt(marsDay: number): number {
-  const marsYear = 687 // Mars year in Earth days
+  const marsYear = 687 
   const seasonPhase = (marsDay % marsYear) / marsYear
-  return Math.sin(seasonPhase * 2 * Math.PI) * 25.19 // Mars axial tilt
+  return Math.sin(seasonPhase * 2 * Math.PI) * 25.19 
 }
 export function calculatePolarIceExtent(season: number, hemisphere: 'north' | 'south'): number {
   const baseSize = 0.05

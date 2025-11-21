@@ -86,9 +86,9 @@ export class OrbitalPathsVisualizer {
       orbitOpacity: 0.3,
       orbitWidth: 1,
       trajectoryOpacity: 0.8,
-      trajectoryLength: 365, // days
+      trajectoryLength: 365, 
       animationSpeed: 1.0,
-      trailFadeTime: 30, // days
+      trailFadeTime: 30, 
       orbitSegments: 128,
       trajectorySegments: 256,
       adaptiveDetail: true,
@@ -221,7 +221,7 @@ export class OrbitalPathsVisualizer {
   private addOrbitalMarkers(body: CelestialBody): void {
     const { semiMajorAxis, eccentricity } = body.orbital
     const periapsisDistance = semiMajorAxis * (1 - eccentricity)
-    const periapsisPosition = this.calculateOrbitalPosition(body, 0) // True anomaly = 0
+    const periapsisPosition = this.calculateOrbitalPosition(body, 0) 
     this.createOrbitalMarker(
       `${body.id}_periapsis`,
       'periapsis',
@@ -229,7 +229,7 @@ export class OrbitalPathsVisualizer {
       body
     )
     const apoapsisDistance = semiMajorAxis * (1 + eccentricity)
-    const apoapsisPosition = this.calculateOrbitalPosition(body, Math.PI) // True anomaly = π
+    const apoapsisPosition = this.calculateOrbitalPosition(body, Math.PI) 
     this.createOrbitalMarker(
       `${body.id}_apoapsis`,
       'apoapsis',
@@ -306,7 +306,7 @@ export class OrbitalPathsVisualizer {
       if (!trajectoryData.mesh.visible) return
       trajectoryData.animationProgress += this.animationDelta * this.config.animationSpeed
       if (trajectoryData.animationProgress > 1) {
-        trajectoryData.animationProgress = 0 // Loop animation
+        trajectoryData.animationProgress = 0 
       }
       const visiblePoints = Math.floor(trajectoryData.points.length * trajectoryData.animationProgress)
       const animatedPoints = trajectoryData.points.slice(0, Math.max(1, visiblePoints))

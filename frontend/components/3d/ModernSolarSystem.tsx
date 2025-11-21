@@ -14,7 +14,7 @@ const ModernSun = React.memo(({ quality = 'high' }: { quality?: 'low' | 'medium'
   const sunRef = useRef<THREE.Mesh>(null)
   const coronaRef = useRef<THREE.Mesh>(null)
   const lastUpdateTime = useRef(0)
-  const updateInterval = useRef(16) // ~60fps
+  const updateInterval = useRef(16) 
   const sunSize = useMemo(() => {
     switch (quality) {
       case 'low': return 2.5
@@ -119,7 +119,7 @@ const starMaterialCache = new Map<string, THREE.PointsMaterial>()
 const StarField = React.memo(({ count = 1000, quality }: { count?: number, quality: 'low' | 'medium' | 'high' }) => {
   const starsRef = useRef<THREE.Points>(null)
   const lastUpdateTime = useRef(0)
-  const updateInterval = useRef(32) // ~30fps for stars
+  const updateInterval = useRef(32) 
   const starCount = useMemo(() => {
     switch (quality) {
       case 'low': return Math.min(count, 300)
@@ -190,7 +190,7 @@ export const ModernSolarSystem = React.memo(({
   const [currentQuality, setCurrentQuality] = useState(quality)
   const { asteroids, isLoading, error } = useAsteroidData({
     autoRefresh: false,
-    refreshInterval: 300000 // 5 dakika
+    refreshInterval: 300000 
   })
   useEffect(() => {
     if (enablePerformanceMode) {

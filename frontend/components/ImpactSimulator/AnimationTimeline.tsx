@@ -33,12 +33,12 @@ export function AnimationTimeline({
   }, TIMELINE_EVENTS[0])
   const currentVelocity = progress < 0.20 ? asteroidVelocity * (1 - progress * 0.1) : 0
   const currentTemperature = progress >= 0.20 && progress < 0.35 
-    ? 7000 - (progress - 0.20) * 33333 // 7000K'den 2000K'ye düşüş
+    ? 7000 - (progress - 0.20) * 33333 
     : progress >= 0.15 && progress < 0.20
-    ? 3000 + (progress - 0.15) * 80000 // Atmosferde ısınma
+    ? 3000 + (progress - 0.15) * 80000 
     : 300
   const currentPressure = progress >= 0.23 && progress < 0.70
-    ? 20 * Math.exp(-(progress - 0.23) * 10) // Exponential decay
+    ? 20 * Math.exp(-(progress - 0.23) * 10) 
     : 0
   return (
     <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 z-20 w-full max-w-4xl px-4">

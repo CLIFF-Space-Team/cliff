@@ -22,7 +22,7 @@ type Props = {
 
 type TimelinePoint = {
   date: string
-  distanceMk: number // million km
+  distanceMk: number 
   lowerMk: number
   upperMk: number
 }

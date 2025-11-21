@@ -95,7 +95,7 @@ export default function FullScreenLayout() {
       })
       tl.to(view3DRef.current, {
         opacity: 0.3,
-        scaleY: 0.6, // Flatten vertically
+        scaleY: 0.6, 
         rotationY: -90,
         duration: 0.8,
         ease: "power2.inOut"

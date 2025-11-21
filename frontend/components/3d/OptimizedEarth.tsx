@@ -151,7 +151,7 @@ export const OptimizedEarth = React.memo(({
     return material
   }, [showAtmosphere, quality])
   const lastAnimationTime = useRef(0)
-  const animationInterval = useRef(16) // ~60fps
+  const animationInterval = useRef(16) 
   const updateAnimation = useCallback((state: any, delta: number) => {
     if (!enableRotation) return
     const now = performance.now()

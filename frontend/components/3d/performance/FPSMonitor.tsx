@@ -63,7 +63,7 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
       const now = performance.now()
       const deltaTime = now - lastTimeRef.current
       frameCountRef.current++
-      const baseFPS = 58 + Math.random() * 8 // 58-66 FPS range
+      const baseFPS = 58 + Math.random() * 8 
       const currentFPS = Math.max(30, Math.min(120, baseFPS))
       const avgFPS = fpsHistory.length > 0 
         ? fpsHistory.reduce((a, b) => a + b, 0) / fpsHistory.length 
@@ -72,7 +72,7 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
         fps: currentFPS,
         averageFPS: avgFPS,
         frameTime: 1000 / currentFPS,
-        memoryUsed: 120 + Math.random() * 50, // MB
+        memoryUsed: 120 + Math.random() * 50, 
         drawCalls: 45 + Math.floor(Math.random() * 20),
         triangles: 850000 + Math.floor(Math.random() * 200000),
         visibleObjects: 12 + Math.floor(Math.random() * 8),
@@ -83,11 +83,11 @@ const FPSMonitor: React.FC<FPSMonitorProps> = ({
       setPerformanceData(newData)
       setFpsHistory(prev => {
         const newHistory = [...prev, currentFPS]
-        return newHistory.slice(-60) // Keep last 60 samples
+        return newHistory.slice(-60) 
       })
       lastTimeRef.current = now
     }
-    intervalRef.current = setInterval(updatePerformance, 250) // 4 times per second
+    intervalRef.current = setInterval(updatePerformance, 250) 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current)

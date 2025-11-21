@@ -9,8 +9,8 @@ interface MoonProps {
 }
 export const Moon = React.memo(({ earthPosition, scale = 0.27, quality = 'high' }: MoonProps) => {
   const moonRef = useRef<THREE.Mesh>(null)
-  const orbitRadius = 4; // Distance from Earth
-  const orbitSpeed = 0.5; // Slower orbit around Earth
+  const orbitRadius = 4; 
+  const orbitSpeed = 0.5; 
   useFrame(({ clock }) => {
     if (moonRef.current) {
       const angle = clock.getElapsedTime() * orbitSpeed;

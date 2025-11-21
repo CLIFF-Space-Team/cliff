@@ -18,7 +18,7 @@ export const SaturnComponent: React.FC<SaturnComponentProps> = ({
 }) => {
   const saturnData = SIMPLE_PLANETS.saturn;
   const saturnRadius = saturnData.info.radius_km / ASTRONOMICAL_CONSTANTS.AU_IN_KM;
-  const saturnTilt = 26.73 * ASTRONOMICAL_CONSTANTS.DEGREES_TO_RADIANS; // Saturn's axial tilt
+  const saturnTilt = 26.73 * ASTRONOMICAL_CONSTANTS.DEGREES_TO_RADIANS; 
   return (
     <BasePlanetComponent
       celestialBody={saturnData}

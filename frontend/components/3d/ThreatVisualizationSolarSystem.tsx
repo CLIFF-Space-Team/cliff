@@ -36,7 +36,7 @@ const useAIThreatData = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            sources: ['nasa_neo', 'nasa_eonet'], // Sadece asteroid ve doğal afetler
+            sources: ['nasa_neo', 'nasa_eonet'], 
             lookback_days: 3,
             include_predictions: true
           })
@@ -112,17 +112,17 @@ const ThreatAsteroids: React.FC<{
     return threats.map((threat, index) => {
       const getSeverityColor = (severity: string) => {
         switch (severity) {
-          case 'CRITICAL': return '#FF1744'  // Kırmızı
-          case 'HIGH': return '#FF9800'      // Turuncu
-          case 'MEDIUM': return '#FFC107'    // Sarı
-          case 'LOW': return '#4CAF50'       // Yeşil
-          default: return '#9E9E9E'          // Gri
+          case 'CRITICAL': return '#FF1744'  
+          case 'HIGH': return '#FF9800'      
+          case 'MEDIUM': return '#FFC107'    
+          case 'LOW': return '#4CAF50'       
+          default: return '#9E9E9E'          
         }
       }
       const scale = 0.3 + (threat.final_risk_score * 1.2)
-      const distance = 15 + (index % 10) * 2 // 15-35 AU arası
-      const angle = (index * 137.5 * Math.PI / 180) % (2 * Math.PI) // Golden angle
-      const height = ((index % 7) - 3) * 0.8 // -2.4 ile +2.4 arası yükseklik
+      const distance = 15 + (index % 10) * 2 
+      const angle = (index * 137.5 * Math.PI / 180) % (2 * Math.PI) 
+      const height = ((index % 7) - 3) * 0.8 
       return {
         threat,
         position: new THREE.Vector3(

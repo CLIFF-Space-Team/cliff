@@ -196,7 +196,7 @@ export class PerformanceManager {
             this.culledObjects.add(object)
           }
         } catch (error) {
-          this.visibleObjects.add(object) // Default to visible if can't determine
+          this.visibleObjects.add(object) 
         }
       }
     })
@@ -221,7 +221,7 @@ export class PerformanceManager {
       if (texture.image) {
         const width = texture.image.width || 1024
         const height = texture.image.height || 1024
-        const bytes = width * height * 4 // RGBA
+        const bytes = width * height * 4 
         textureMemory += bytes
       }
     })
@@ -230,13 +230,13 @@ export class PerformanceManager {
       const normals = geometry.getAttribute('normal')
       const uvs = geometry.getAttribute('uv')
       let bytes = 0
-      if (positions) bytes += positions.count * positions.itemSize * 4 // float32
+      if (positions) bytes += positions.count * positions.itemSize * 4 
       if (normals) bytes += normals.count * normals.itemSize * 4
       if (uvs) bytes += uvs.count * uvs.itemSize * 4
       geometryMemory += bytes
     })
-    this.metrics.textureMemory = textureMemory / (1024 * 1024) // MB
-    this.metrics.geometryMemory = geometryMemory / (1024 * 1024) // MB
+    this.metrics.textureMemory = textureMemory / (1024 * 1024) 
+    this.metrics.geometryMemory = geometryMemory / (1024 * 1024) 
     this.metrics.memoryUsed = this.metrics.textureMemory + this.metrics.geometryMemory
   }
   private checkMemoryUsage(): void {
@@ -288,7 +288,7 @@ export class PerformanceManager {
     }
     else if (performanceRatio > this.config.highPerformanceThreshold) {
       const currentQualityIndex = this.getQualityIndex(this.currentQuality.name)
-      if (currentQualityIndex < 2) { // Max quality index (0-2)
+      if (currentQualityIndex < 2) { 
         const newQuality = this.getQualityByIndex(currentQualityIndex + 1)
         this.setQuality(newQuality)
         this.emit('quality_changed', {

@@ -77,9 +77,9 @@ interface UseThreatDataReturn {
 }
 export function useThreatData({
   apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api',
-  refreshInterval = 30000, // 30 seconds
-  autoRefresh = false, // Geçici olarak kapatıldı
-  cacheTimeout = 60000, // 1 minute
+  refreshInterval = 30000, 
+  autoRefresh = false, 
+  cacheTimeout = 60000, 
 }: UseThreatDataOptions = {}): UseThreatDataReturn {
   const [threatLevel, setThreatLevel] = useState<ThreatLevel | null>(null)
   const [threatsData, setThreatsData] = useState<ThreatsData | null>(null)

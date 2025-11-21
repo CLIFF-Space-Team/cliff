@@ -229,14 +229,14 @@ function AsteroidApproach({
     return { startPos, direction }
   }, [targetPos])
   const asteroidPos = useMemo(() => {
-    const t = progress // 0 to 1
+    const t = progress 
     const initialVelocity = direction.clone().multiplyScalar(-velocity)
     const gravity = targetPos.clone().normalize().multiplyScalar(-0.5)
     const displacement = initialVelocity.clone().multiplyScalar(t)
     const gravityDisplacement = gravity.clone().multiplyScalar(0.5 * t * t)
     const currentPos = startPos.clone().add(displacement).add(gravityDisplacement)
     const linearPos = new THREE.Vector3().lerpVectors(startPos, targetPos, t)
-    const mixFactor = Math.pow(t, 2) // Karesel artış
+    const mixFactor = Math.pow(t, 2) 
     return new THREE.Vector3().lerpVectors(linearPos, currentPos, mixFactor * 0.3)
   }, [startPos, targetPos, direction, progress, velocity])
   const atmosphereProgress = progress > 0.5 ? (progress - 0.5) / 0.5 : 0
@@ -327,7 +327,7 @@ export function ImpactVisualization3D({
     return physics.calculateImpactTimeline(
       asteroidParams.diameter_m,
       asteroidParams.velocity_kms,
-      15 // başlangıç mesafesi km
+      15 
     )
   }, [asteroidParams])
   useFrame((state, delta) => {

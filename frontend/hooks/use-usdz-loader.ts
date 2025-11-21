@@ -8,11 +8,11 @@ interface USDZLoaderOptions {
   enablePerformanceMonitoring?: boolean
 }
 interface USDZModel {
-  scene: any // THREE.Object3D
-  animations: any[] // THREE.AnimationClip[]
-  materials: any[] // THREE.Material[]
-  textures: any[] // THREE.Texture[]
-  boundingBox: any // THREE.Box3
+  scene: any 
+  animations: any[] 
+  materials: any[] 
+  textures: any[] 
+  boundingBox: any 
   memoryUsage: number
 }
 interface USDZLoadResult {
@@ -107,14 +107,14 @@ class USDZProcessor {
   private calculateMemoryUsage(geometry: any, material: any, textures: any[]): number {
     let usage = 0
     const position = geometry.getAttribute('position')
-    if (position) usage += position.count * position.itemSize * 4 // float32
+    if (position) usage += position.count * position.itemSize * 4 
     textures.forEach(texture => {
       if (texture.image) {
         const { width, height } = texture.image
-        usage += width * height * 4 // RGBA
+        usage += width * height * 4 
       }
     })
-    return usage / (1024 * 1024) // MB
+    return usage / (1024 * 1024) 
   }
   dispose(): void {
     this.cache.forEach(model => {
@@ -229,14 +229,14 @@ export function useEnhancedUSDZLoader(
   }
 }
 export function createUSDZMaterial(
-  baseColor: any, // THREE.Color
+  baseColor: any, 
   options: {
     metalness?: number
     roughness?: number
-    emissive?: any // THREE.Color
+    emissive?: any 
     emissiveIntensity?: number
   } = {}
-): Promise<any> { // Return Promise<THREE.MeshStandardMaterial>
+): Promise<any> { 
   return new Promise(async (resolve) => {
     const THREE = await import('three')
     const material = new THREE.MeshStandardMaterial({

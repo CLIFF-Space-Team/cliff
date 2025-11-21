@@ -7,12 +7,12 @@
     velocity_kms: number,
     distance_km: number
   ) {
-    const approachPhase = 0.35      // %35 - Yaklaşma (en uzun faz)
-    const atmospherePhase = 0.10    // %10 - Atmosfere giriş
-    const impactPhase = 0.03        // %3 - Çarpma anı
-    const fireballPhase = 0.15      // %15 - Fireball
-    const shockPhase = 0.30         // %30 - Şok dalgası yayılımı
-    const debrisPhase = 0.20        // %20 - Debris evresi
+    const approachPhase = 0.35      
+    const atmospherePhase = 0.10    
+    const impactPhase = 0.03        
+    const fireballPhase = 0.15      
+    const shockPhase = 0.30         
+    const debrisPhase = 0.20        
     return {
       phases: {
         approach: {
@@ -61,7 +61,7 @@
           description: `Debris fırlatılıyor`
         }
       },
-      totalDuration: 1.0, // Toplam animasyon süresi normalize
+      totalDuration: 1.0, 
       scientificData: {
         approachVelocity: velocity_kms * 1000,
         atmosphereEntryAltitude: 100000,

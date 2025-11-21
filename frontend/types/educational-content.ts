@@ -45,9 +45,9 @@ export interface EducationalContent {
     type: 'nasa' | 'esa' | 'academic' | 'other';
   }>;
   
-  readingTime: number; // minutes
-  complexity: number; // 1-5 scale
-  interactivity: number; // 1-5 scale
+  readingTime: number; 
+  complexity: number; 
+  interactivity: number; 
 }
 
 export interface MissionData {
@@ -57,7 +57,7 @@ export interface MissionData {
   launchDate: Date;
   endDate?: Date;
   status: 'planned' | 'active' | 'completed' | 'failed';
-  target: string; // celestial body ID
+  target: string; 
   
   description: LocalizedContent;
   objectives: LocalizedContent[];
@@ -79,8 +79,8 @@ export interface MissionData {
   educationalContent: EducationalContent[];
   
   spacecraft?: {
-    mass: number; // kg
-    power: number; // watts
+    mass: number; 
+    power: number; 
     instruments: Array<{
       name: string;
       description: LocalizedContent;
@@ -94,15 +94,15 @@ export interface HistoricalEvent {
   title: LocalizedContent;
   date: Date;
   type: 'discovery' | 'first_observation' | 'mission_milestone' | 'scientific_breakthrough';
-  relatedBody: string; // celestial body ID
+  relatedBody: string; 
   
   description: LocalizedContent;
   significance: LocalizedContent;
   discoverer?: string;
-  method: LocalizedContent; // how it was discovered
+  method: LocalizedContent; 
   
   image?: string;
-  coordinates?: { ra: number; dec: number }; // right ascension, declination
+  coordinates?: { ra: number; dec: number }; 
   
   educationalLevel: EducationalLevel;
   culturalImpact: LocalizedContent;
@@ -117,14 +117,14 @@ export interface CelestialComparison {
     bodyId: string;
     value: number;
     unit: string;
-    visualScale?: number; // for 3D representation
+    visualScale?: number; 
   }>;
   
   explanation: LocalizedContent;
   significance: LocalizedContent;
   analogies: Array<{
     description: LocalizedContent;
-    accuracy: number; // 1-5 scale
+    accuracy: number; 
   }>;
   
   visualization: {
@@ -137,8 +137,8 @@ export interface TooltipConfig {
   id: string;
   trigger: InteractionType;
   position: 'auto' | 'top' | 'bottom' | 'left' | 'right' | 'center';
-  delay: number; // milliseconds
-  duration: number; // milliseconds, 0 for persistent
+  delay: number; 
+  duration: number; 
   
   maxWidth: number;
   responsive: boolean;
@@ -183,7 +183,7 @@ export interface TooltipContent {
     icon?: string;
   }>;
   
-  relatedContent?: string[]; // IDs of related educational content
+  relatedContent?: string[]; 
   
   preview?: {
     type: 'image' | '3d_preview' | 'chart';
@@ -242,7 +242,7 @@ export interface PanelTabContent {
     interactiveElements?: Array<{
       type: 'scale_comparison' | 'orbit_visualization' | 'timeline' | 'quiz';
       config: Record<string, any>;
-      position: number; // order in content
+      position: number; 
     }>;
   };
 }
@@ -285,11 +285,11 @@ export interface TourStep {
     position?: { x: number; y: number; z: number };
   };
   
-  duration: number; // seconds, 0 for manual advance
+  duration: number; 
   cameraAnimation: {
     position: { x: number; y: number; z: number };
     target: { x: number; y: number; z: number };
-    duration: number; // seconds
+    duration: number; 
     easing: string;
   };
   
@@ -315,13 +315,13 @@ export interface GuidedTour {
   title: LocalizedContent;
   description: LocalizedContent;
   category: 'beginner' | 'intermediate' | 'advanced' | 'themed';
-  theme?: string; // e.g., "mars_exploration", "outer_planets"
+  theme?: string; 
   
-  estimatedDuration: number; // minutes
+  estimatedDuration: number; 
   steps: TourStep[];
   requirements: {
     minLevel: EducationalLevel;
-    requiredFeatures: string[]; // WebGL, VR, etc.
+    requiredFeatures: string[]; 
   };
   
   completionCriteria: {
@@ -341,7 +341,7 @@ export interface LearningProgress {
   
   viewedContent: Array<{
     contentId: string;
-    viewTime: number; // seconds
+    viewTime: number; 
     completionPercentage: number;
     interactions: number;
     timestamp: Date;
@@ -399,10 +399,10 @@ export interface LiveDataSource {
   name: string;
   type: 'nasa_api' | 'esa_api' | 'ground_station' | 'telescope' | 'spacecraft';
   endpoint: string;
-  updateInterval: number; // seconds
+  updateInterval: number; 
   
   dataMapping: {
-    [key: string]: string; // maps API fields to our data structure
+    [key: string]: string; 
   };
   
   fallback?: {
@@ -412,7 +412,7 @@ export interface LiveDataSource {
   
   validator?: (data: any) => boolean;
   
-  cacheDuration: number; // seconds
+  cacheDuration: number; 
   cacheKey: string;
 }
 

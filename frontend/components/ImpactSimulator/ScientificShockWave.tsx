@@ -19,10 +19,10 @@ export function ScientificShockWave({
   const meshRef = useRef<THREE.Mesh>(null)
   const materialRef = useRef<THREE.ShaderMaterial>(null)
   const EARTH_RADIUS_KM = 6371
-  const RHO_AIR = 1.225 // kg/m³ deniz seviyesi
-  const GAMMA = 1.4 // Hava için özgül ısı oranı
-  const P0 = 101325 // Pa - atmosferik basınç
-  const SOUND_SPEED = 343 // m/s
+  const RHO_AIR = 1.225 
+  const GAMMA = 1.4 
+  const P0 = 101325 
+  const SOUND_SPEED = 343 
   const shaderMaterial = useMemo(() => {
     return new THREE.ShaderMaterial({
       transparent: true,
@@ -51,7 +51,7 @@ export function ScientificShockWave({
         varying float vDistanceFromImpact;
         varying float vShockIntensity;
         const float PI = 3.14159265359;
-        const float EARTH_RADIUS = 6371.0; // km
+        const float EARTH_RADIUS = 6371.0; 
         float greatCircleDistance(vec3 p1, vec3 p2) {
           vec3 n1 = normalize(p1);
           vec3 n2 = normalize(p2);
@@ -67,7 +67,7 @@ export function ScientificShockWave({
           float angularDist = greatCircleDistance(spherePos, impactPos);
           vDistanceFromImpact = angularDist;
           float distFromShock = abs(angularDist - shockRadius);
-          float machNumber = max(1.0, 5.0 * (1.0 - progress * 0.5)); // M sayısı
+          float machNumber = max(1.0, 5.0 * (1.0 - progress * 0.5)); 
           float densityRatio = (2.4 * machNumber * machNumber) / (2.0 + 0.4 * machNumber * machNumber);
           vShockIntensity = exp(-distFromShock * 12.0) * densityRatio;
           float compressionFactor = 0.0;
@@ -125,7 +125,7 @@ export function ScientificShockWave({
           float taylorInstability = sin(vDistanceFromImpact * 50.0 + time * 3.0) * 0.3 + 0.7;
           taylorInstability *= smoothstep(0.2, 0.0, distFromShock);
           float tempRatio = 1.0 + vShockIntensity * 8.0;
-          float effectiveTemp = 300.0 * tempRatio; // Kelvin
+          float effectiveTemp = 300.0 * tempRatio; 
           vec3 baseColor = blackBodyRadiation(effectiveTemp);
           if (vDistanceFromImpact < shockRadius) {
             baseColor = mix(baseColor, vec3(0.7, 0.85, 1.0), 0.3);
@@ -160,8 +160,8 @@ export function ScientificShockWave({
       return
     }
     meshRef.current.visible = true
-    const xi = 1.03 // Sedov similarity parameter
-    const t_seconds = adjustedProgress * 60 // 60 saniye simülasyon
+    const xi = 1.03 
+    const t_seconds = adjustedProgress * 60 
     const R_km = xi * Math.pow((energy_joules * t_seconds * t_seconds) / RHO_AIR, 0.2) / 1000
     const angularRadius = R_km / EARTH_RADIUS_KM
     const shockVelocity_ms = (0.4 * R_km * 1000) / t_seconds

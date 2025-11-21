@@ -86,7 +86,7 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
       oscillator.connect(gainNode)
       gainNode.connect(context.destination)
       const frequencies: Record<string, number[]> = {
-        CRITICAL: [880, 440, 880], // Yüksek alarm
+        CRITICAL: [880, 440, 880], 
         HIGH: [660, 440],
         MEDIUM: [440, 330],
         LOW: [330]
@@ -182,7 +182,7 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
     const connectWebSocket = () => {
       try {
         const wsUrl = process.env.NODE_ENV === "production"
-          ? `wss://${window.location.host}/ws/notifications`
+          ? `wss:
           : "ws://localhost:8000/ws/notifications"
         wsRef.current = new WebSocket(wsUrl)
         wsRef.current.onmessage = (event) => {

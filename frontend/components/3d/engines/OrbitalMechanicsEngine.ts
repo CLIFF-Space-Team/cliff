@@ -5,37 +5,37 @@
   ASTRONOMICAL_CONSTANTS 
 } from '../../../types/astronomical-data'
 export interface OrbitalState {
-  position: Vector3D           // Position in AU
-  velocity: Vector3D           // Velocity in AU/day
-  distance: number             // Distance from parent body in AU
-  trueAnomaly: number          // True anomaly in radians
-  eccentricAnomaly: number     // Eccentric anomaly in radians
-  meanAnomaly: number          // Mean anomaly in radians
-  timeFromPeriapsis: number    // Time from periapsis in days
+  position: Vector3D           
+  velocity: Vector3D           
+  distance: number             
+  trueAnomaly: number          
+  eccentricAnomaly: number     
+  meanAnomaly: number          
+  timeFromPeriapsis: number    
 }
 export interface TrajectoryPoint {
-  time: number                 // Julian day
+  time: number                 
   position: Vector3D
   velocity: Vector3D
   distance: number
-  phase: number               // Orbital phase (0-2π)
+  phase: number               
 }
 export interface OrbitalPrediction {
   bodyId: string
-  startTime: number           // Julian day
-  endTime: number            // Julian day
+  startTime: number           
+  endTime: number            
   trajectory: TrajectoryPoint[]
-  period: number             // Orbital period in days
-  nextPeriapsis: number      // Time of next periapsis
-  nextApoapsis: number       // Time of next apoapsis
+  period: number             
+  nextPeriapsis: number      
+  nextApoapsis: number       
 }
 export class OrbitalMechanicsEngine {
   private static readonly KEPLER_TOLERANCE = 1e-12
   private static readonly MAX_ITERATIONS = 100
   private static readonly CONVERGENCE_FACTOR = 1e-15
-  private static readonly DEFAULT_TIME_STEP = 0.1 // days
-  private static readonly ADAPTIVE_STEP_MIN = 0.001 // days
-  private static readonly ADAPTIVE_STEP_MAX = 1.0 // days
+  private static readonly DEFAULT_TIME_STEP = 0.1 
+  private static readonly ADAPTIVE_STEP_MIN = 0.001 
+  private static readonly ADAPTIVE_STEP_MAX = 1.0 
   private orbitalStatesCache: Map<string, { state: OrbitalState, time: number }>
   private trajectoryCache: Map<string, OrbitalPrediction>
   private calculationCount: number
@@ -62,7 +62,7 @@ export class OrbitalMechanicsEngine {
      const cached = this.orbitalStatesCache.get(cacheKey);
      if (cached && Math.abs(cached.time - julianDay) < 0.000001) {
        this.cacheHits++;
-       frameCache.set(body.id, cached.state); // Populate frame cache
+       frameCache.set(body.id, cached.state); 
        return cached.state;
      }
      this.cacheMisses++;
@@ -196,8 +196,8 @@ export class OrbitalMechanicsEngine {
     trueAnomaly: number,
     eccentricAnomaly: number
   ): Vector3D {
-    const mu = 4 * Math.PI * Math.PI // AU³/year² for solar system
-    const muDaily = mu / (365.25 * 365.25) // Convert to AU³/day²
+    const mu = 4 * Math.PI * Math.PI 
+    const muDaily = mu / (365.25 * 365.25) 
     const velocityMagnitude = Math.sqrt(muDaily * (2 / distance - 1 / orbital.semiMajorAxis))
     const sinE = Math.sin(eccentricAnomaly)
     const cosE = Math.cos(eccentricAnomaly)
@@ -276,10 +276,10 @@ export class OrbitalMechanicsEngine {
     position: Vector3D,
     velocity: Vector3D,
     time: number,
-    centralBodyMass: number = 1.0 // Solar masses
+    centralBodyMass: number = 1.0 
   ): OrbitalElements {
-    const mu = 4 * Math.PI * Math.PI * centralBodyMass // AU³/year²
-    const muDaily = mu / (365.25 * 365.25) // AU³/day²
+    const mu = 4 * Math.PI * Math.PI * centralBodyMass 
+    const muDaily = mu / (365.25 * 365.25) 
     const r = Math.sqrt(position.x * position.x + position.y * position.y + position.z * position.z)
     const v = Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y + velocity.z * velocity.z)
     const energy = v * v / 2 - muDaily / r
@@ -302,10 +302,10 @@ export class OrbitalMechanicsEngine {
     if (n.y < 0) {
       longitudeOfAscendingNode = 360 - longitudeOfAscendingNode
     }
-    const argumentOfPeriapsis = 0 // Would require more complex calculation
-    const meanAnomalyAtEpoch = 0  // Would require more complex calculation
+    const argumentOfPeriapsis = 0 
+    const meanAnomalyAtEpoch = 0  
     const orbitalPeriod = 2 * Math.PI * Math.sqrt(Math.pow(semiMajorAxis, 3) / muDaily)
-    const meanMotion = 360 / orbitalPeriod // degrees/day
+    const meanMotion = 360 / orbitalPeriod 
     return {
       semiMajorAxis,
       eccentricity: eMag,
@@ -326,7 +326,7 @@ export class OrbitalMechanicsEngine {
    body1: CelestialBody,
    body2: CelestialBody,
    startTime: number,
-   searchDuration: number = 365.25, // 1 year
+   searchDuration: number = 365.25, 
    allBodies?: ReadonlyMap<string, CelestialBody>
  ): { time: number, distance: number, relativeVelocity: number } {
     let minDistance = Number.POSITIVE_INFINITY

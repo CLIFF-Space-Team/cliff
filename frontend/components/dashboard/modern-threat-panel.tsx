@@ -93,14 +93,14 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
     noResults: "Kriterlere uygun NEO bulunamadı."
   })
 
-  // Stats Calculation (Global - Not limited to visible page)
+  
   const stats = useMemo(() => {
-    // If we have stats from API response, use them (preferred for accuracy across all pages)
+    
     if (statsData.critical + statsData.high + statsData.medium + statsData.low > 0) {
       return statsData
     }
     
-    // Fallback: calculate from visible items (less accurate if paginated)
+    
     const source = threats.length > 0 ? threats : realNeos.map(n => ({
       threat_level: n.riskLevel.toUpperCase() as any
     }))
@@ -149,7 +149,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
         sort: filters.sort,
       })
 
-      // ... rest of the function
+      
 
       const items: RealNeoThreat[] = (result.items || []).map((it: any) => ({
         neoId: it.neoId,
@@ -165,11 +165,11 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
         palermo: it.palermo,
       }))
 
-  // Deduplicate items based on neoId AND ensure unique keys for rendering
+  
   const uniqueItems = Array.from(new Map(items.map(item => [item.neoId, item])).values());
   setRealNeos(uniqueItems)
   setTotal(result.total || 0)
-  // Reset virtualization when data changes
+  
   setVirt({ start: 0, end: 30, item: 140 })
     } catch (e) {
       console.error('Top NEO çekilemedi:', e)
@@ -208,7 +208,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
   }
 
   useEffect(() => {
-    // Initial data load - parallel fetch for better performance
+    
     const loadInitialData = async () => {
       setIsLoading(true)
       try {
@@ -226,7 +226,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
 
   useEffect(() => {
     if (activeTab === 'overview') {
-      // Don't set full loading state for filter updates to keep UI responsive
+      
       searchAsteroids({
         q: filters.q,
         risk: filters.risks,
@@ -271,12 +271,12 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
     }
   }, [selectedNeoId, activeTab])
 
-  // WebSocket connection (simplified for brevity)
+  
   useEffect(() => {
     const connectWebSocket = () => {
       try {
         const wsUrl = process.env.NODE_ENV === "production"
-          ? `wss://${window.location.host}/ws/threats`
+          ? `wss:
           : "ws://localhost:8000/ws/threats"
         wsRef.current = new WebSocket(wsUrl)
         wsRef.current.onmessage = (event) => {
@@ -315,7 +315,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
           selectedNeoId === neo.neoId && 'ring-1 ring-white/50 shadow-lg shadow-black/50'
         )}
         onClick={(e) => {
-          // Prevent triggering detail view when clicking selection checkbox
+          
           if ((e.target as HTMLElement).closest('input[type="checkbox"]') || (e.target as HTMLElement).closest('.selection-area')) {
             return;
           }
@@ -378,19 +378,19 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
     )
   }
 
-  // Virtual scroll range calculation (simplified)
+  
   useEffect(() => {
     const computeRange = () => {
       if (!scrollContainerRef.current || !listRef.current) return
       const sc = scrollContainerRef.current
-      // Sabit yükseklik kullanımı yerine dinamik hesaplama
-      const item = 140 // Kart yüksekliği + margin (yaklaşık)
+      
+      const item = 140 
       const start = Math.max(0, Math.floor(sc.scrollTop / item))
-      // Görünür alan + tampon
+      
       const visible = Math.ceil(sc.clientHeight / item) + 2 
       const end = Math.min(realNeos.length, start + visible)
       
-      // Gereksiz renderları önlemek için sadece değişim varsa güncelle
+      
       if (start !== virt.start || end !== virt.end) {
         setVirt({ start, end, item })
       }
@@ -414,7 +414,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
   return (
     <div className={cn("flex flex-col h-full bg-pure-black/80 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl", className)}>
       
-      {/* Modern Header */}
+      {}
       <div className="flex-none p-4 border-b border-white/5 bg-gradient-to-r from-white/5 to-transparent">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -450,7 +450,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
           </div>
         </div>
 
-        {/* Stats Grid */}
+        {}
         <div className="grid grid-cols-4 gap-2">
           {[
             { label: "KRİTİK", count: stats.critical, color: "bg-red-500", text: "text-red-500" },
@@ -469,11 +469,11 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
         </div>
       </div>
 
-      {/* Main Content Area - Flexible Height */}
+      {}
       <div className="flex-1 min-h-0 relative">
         <div 
           ref={scrollContainerRef}
-          className="absolute inset-0 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent p-4 space-y-4"
+          className="absolute inset-0 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent"
         >
           <AnimatePresence mode="wait">
             {activeTab === "overview" && (
@@ -482,10 +482,10 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="space-y-4 pb-16" // Added padding bottom for sticky footer
+                className="pb-16 min-h-full" 
               >
-                <div className="flex flex-col gap-3 mb-4">
-                   <div className="flex items-center justify-between">
+                <div className="sticky top-0 z-20 bg-pure-black/95 backdrop-blur-md border-b border-white/5 px-4 py-4 shadow-lg shadow-black/20">
+                   <div className="flex items-center justify-between mb-3">
                       <h3 className="text-sm font-semibold text-white/80 flex items-center gap-2">
                         <Shield className="w-4 h-4 text-cyan-400" />
                         {listTexts.header}
@@ -499,12 +499,13 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                       </div>
                    </div>
                    
-                   {/* FilterBar container with overflow handling */}
+                   {}
                    <div className="w-full overflow-hidden">
                      <FilterBar onApply={() => fetchRealThreats()} />
                    </div>
                 </div>
 
+                <div className="p-4 space-y-4">
                 {realNeos.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-white/30 border border-dashed border-white/10 rounded-xl bg-black/20">
                     <Target className="w-8 h-8 mb-3 opacity-50" />
@@ -519,11 +520,12 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                     </div>
                   </div>
                 )}
+                </div>
               </motion.div>
             )}
 
             {activeTab === "details" && (
-              <motion.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+              <motion.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4 p-4">
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -544,7 +546,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                        <h3 className="text-xl font-bold text-white mb-1">{neoDetail.asteroid?.name}</h3>
                        <div className="flex gap-2 mb-4">
                          <Badge className="bg-white/10 hover:bg-white/20 text-white/70 border-0">ID: {selectedNeoId}</Badge>
-                         {neoDetail.asteroid?.is_potentially_hazardous && (
+                         {neoDetail.asteroid?.is_potentially_hazardous === true && typeof neoDetail.asteroid?.absolute_magnitude_h === 'number' && (
                            <Badge className="bg-red-500/20 text-red-300 border border-red-500/30">TEHLİKELİ</Badge>
                          )}
                        </div>
@@ -648,7 +650,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
 
                     <div className="flex gap-2">
                       <a 
-                        href={`https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=${selectedNeoId}`} 
+                        href={`https:
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="flex-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-200 text-xs py-2 rounded border border-blue-600/30 text-center transition-colors"
@@ -656,7 +658,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                         NASA JPL Detayı ↗
                       </a>
                       <a 
-                        href={`https://cneos.jpl.nasa.gov/sentry/details.html#?des=${selectedNeoId}`} 
+                        href={`https:
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="flex-1 bg-orange-600/20 hover:bg-orange-600/30 text-orange-200 text-xs py-2 rounded border border-orange-600/30 text-center transition-colors"
@@ -670,7 +672,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
             )}
 
             {activeTab === "timeline" && (
-              <motion.div key="timeline" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+              <motion.div key="timeline" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 p-4">
                  <div className="flex justify-between items-center">
                     <h3 className="text-sm font-bold text-white">Yaklaşan Geçişler</h3>
                     <div className="flex bg-white/5 rounded-lg p-0.5">
@@ -710,7 +712,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
         </div>
       </div>
 
-      {/* Sticky Footer Pagination */}
+      {}
       {activeTab === "overview" && (
         <div className="flex-none p-3 border-t border-white/5 bg-black/40 backdrop-blur-md">
           <div className="flex items-center justify-between text-xs">

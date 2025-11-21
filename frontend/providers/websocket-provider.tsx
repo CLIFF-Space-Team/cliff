@@ -95,7 +95,7 @@ export function WebSocketProvider({
     reconnectCount
   } = useWebSocket({
     url,
-    autoConnect: false, // Disable auto connect to prevent connection errors
+    autoConnect: false, 
     reconnectAttempts: maxReconnectAttempts,
     reconnectInterval,
     heartbeatInterval
@@ -317,7 +317,7 @@ export const useRealTimeAlerts = () => {
 
   useEffect(() => {
     const unsubscribeAlert = subscribe('alert', (data) => {
-      setAlerts(prev => [data, ...prev.slice(0, 49)]) // Keep last 50 alerts
+      setAlerts(prev => [data, ...prev.slice(0, 49)]) 
     })
 
     const unsubscribeThreat = subscribe('threat_update', (data) => {

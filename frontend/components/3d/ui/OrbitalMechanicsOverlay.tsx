@@ -102,7 +102,7 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
   const overlayRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>();
   const timeState = useSolarSystemStore(state => state.timeState);
-  const currentLanguage = 'tr'; // FIXME: Should come from a user preferences store
+  const currentLanguage = 'tr'; 
   const celestialBody = useMemo(() => {
     return SOLAR_SYSTEM_DATA[celestialBodyId];
   }, [celestialBodyId]);
@@ -113,9 +113,9 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
     if (!celestialBody || !timeState) return null;
     const orbital = celestialBody.orbital;
     const currentTime = timeState.currentTime;
-    const a = orbital.semiMajorAxis * ASTRONOMICAL_CONSTANTS.AU_IN_KM; // Convert AU to km
+    const a = orbital.semiMajorAxis * ASTRONOMICAL_CONSTANTS.AU_IN_KM; 
     const e = orbital.eccentricity;
-    const n = orbital.meanMotion * Math.PI / 180 / 86400; // Convert degrees/day to radians/second
+    const n = orbital.meanMotion * Math.PI / 180 / 86400; 
     const b = a * Math.sqrt(1 - e * e);
     const currentTimeNum = typeof currentTime === 'number' ? currentTime : new Date(currentTime).getTime() / 86400000;
     const epochNum = typeof orbital.epoch === 'number' ? orbital.epoch : new Date(orbital.epoch).getTime() / 86400000;
@@ -150,7 +150,7 @@ export const OrbitalMechanicsOverlay: React.FC<OrbitalMechanicsOverlayProps> = (
         name: { tr: 'Günberi', en: 'Periapsis' },
         position: periapsis.position,
         type: 'periapsis',
-        date: new Date(), // This would be calculated based on orbital mechanics
+        date: new Date(), 
         velocity: periapsis.velocity,
         distance: periapsis.distance,
         description: { 

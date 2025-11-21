@@ -312,7 +312,7 @@ const PhobosComponent: React.FC<SatelliteComponentProps> = (props) => {
     type: 'moon' as const,
     parentId: 'mars',
     physical: {
-      radius: 11.3, // Irregular shape, using mean radius
+      radius: 11.3, 
       mass: 1.0659e16,
       density: 1.876,
       gravity: 0.0057,
@@ -329,7 +329,7 @@ const PhobosComponent: React.FC<SatelliteComponentProps> = (props) => {
       argumentOfPeriapsis: 0,
       meanAnomalyAtEpoch: 0,
       epoch: 2451545.0,
-      orbitalPeriod: 0.319, // 7.6 hours
+      orbitalPeriod: 0.319, 
       meanMotion: 1128.8445
     },
     atmosphere: { hasAtmosphere: false },
@@ -370,7 +370,7 @@ export const SatelliteSystemComponent: React.FC<SatelliteSystemProps> = ({
       ],
       mars: [
         { id: 'phobos', component: PhobosComponent, name: 'Phobos' },
-        { id: 'deimos', component: PhobosComponent, name: 'Deimos' } // Using Phobos as base for now
+        { id: 'deimos', component: PhobosComponent, name: 'Deimos' } 
       ],
       jupiter: [
         { id: 'io', component: IoComponent, name: 'Io' },

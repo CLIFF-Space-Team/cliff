@@ -432,13 +432,13 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({
   }, [t, formatNumber, state.currentLanguage]);
 
   const formatTime = useCallback((seconds: number): string => {
-    if (seconds >= 31557600) { // Years
+    if (seconds >= 31557600) { 
       const years = seconds / 31557600;
       return `${years.toFixed(1)} ${t('units.years')}`;
-    } else if (seconds >= 86400) { // Days
+    } else if (seconds >= 86400) { 
       const days = seconds / 86400;
       return `${days.toFixed(1)} ${t('units.days')}`;
-    } else if (seconds >= 3600) { // Hours
+    } else if (seconds >= 3600) { 
       const hours = seconds / 3600;
       return `${hours.toFixed(1)} ${t('units.hours')}`;
     } else {

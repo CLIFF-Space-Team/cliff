@@ -34,11 +34,11 @@ interface BackendAsteroid {
 }
 export function useAsteroidData({
   apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '',
-  refreshInterval = 300000, // 5 dakika
-  autoRefresh = false, // Auto-refresh kapalı - manuel refresh
+  refreshInterval = 300000, 
+  autoRefresh = false, 
 }: UseAsteroidDataOptions = {}): UseAsteroidDataReturn {
   const [asteroids, setAsteroids] = useState<SimpleCelestialBody[]>([])
-  const [isLoading, setIsLoading] = useState(true) // true - gerçek veri yüklenene kadar
+  const [isLoading, setIsLoading] = useState(true) 
   const [error, setError] = useState<string | null>(null)
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null)
   const refreshTimer = useRef<NodeJS.Timeout | null>(null)
@@ -76,7 +76,7 @@ export function useAsteroidData({
         surface_temp_celsius: { min: -100, max: -50, average: -75 }
       },
       orbit: {
-        distance_from_sun: distance_km / 149597870.7, // AU'ya çevir
+        distance_from_sun: distance_km / 149597870.7, 
         orbital_period_days: 365 + Math.random() * 1000,
         rotation_period_hours: Math.random() * 48,
         tilt_degrees: Math.random() * 180

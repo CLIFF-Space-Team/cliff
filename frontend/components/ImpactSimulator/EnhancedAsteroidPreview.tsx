@@ -21,7 +21,7 @@ function PremiumAsteroid({ diameter }: { diameter: number }) {
   const rimLightRef = useRef<THREE.Mesh>(null)
   const glowRef = useRef<THREE.PointLight>(null)
   const geometry = useMemo(() => {
-    const geo = new THREE.IcosahedronGeometry(1, 4) // Daha yüksek detay
+    const geo = new THREE.IcosahedronGeometry(1, 4) 
     const positions = geo.getAttribute('position')
     const vertex = new THREE.Vector3()
     for (let i = 0; i < positions.count; i++) {

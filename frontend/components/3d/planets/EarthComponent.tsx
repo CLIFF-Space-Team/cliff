@@ -92,7 +92,7 @@ export const EarthComponent: React.FC<EarthComponentProps> = ({
   ])
   const earthMaterial = useMemo(() => {
     earthDayTexture.wrapS = earthDayTexture.wrapT = THREE.RepeatWrapping
-    earthDayTexture.anisotropy = 16 // High anisotropy for surface detail
+    earthDayTexture.anisotropy = 16 
     earthDayTexture.colorSpace = THREE.SRGBColorSpace
     if (earthNormalTexture) {
       earthNormalTexture.wrapS = earthNormalTexture.wrapT = THREE.RepeatWrapping
@@ -106,23 +106,23 @@ export const EarthComponent: React.FC<EarthComponentProps> = ({
       map: earthDayTexture,
       normalMap: earthNormalTexture,
       roughnessMap: earthSpecularTexture,
-      roughness: 0.7, // More realistic surface roughness
-      metalness: 0.05, // Earth's surface is not metallic
-      normalScale: new THREE.Vector2(1.5, 1.5), // Enhanced normal mapping
+      roughness: 0.7, 
+      metalness: 0.05, 
+      normalScale: new THREE.Vector2(1.5, 1.5), 
     })
     if (showNightLights && earthNightTexture) {
       earthNightTexture.wrapS = earthNightTexture.wrapT = THREE.RepeatWrapping
       earthNightTexture.anisotropy = 8
       material.emissiveMap = earthNightTexture
-      material.emissiveIntensity = 0.3 // Brighter night lights for realism
-      material.emissive = new THREE.Color(0.1, 0.1, 0.05) // Warm light color
+      material.emissiveIntensity = 0.3 
+      material.emissive = new THREE.Color(0.1, 0.1, 0.05) 
     }
     return material
   }, [earthDayTexture, earthNightTexture, earthNormalTexture, earthSpecularTexture, showNightLights])
   const cloudGeometry = useMemo(() => {
     if (!showClouds) return null
     const segments = detail || (qualityLevel === 'ultra' ? 64 : qualityLevel === 'high' ? 32 : 16)
-    const radius = (earthData.radius * 0.001) * 1.008 // Realistic cloud altitude (8km scaled)
+    const radius = (earthData.radius * 0.001) * 1.008 
     return new THREE.SphereGeometry(radius, segments, segments)
   }, [showClouds, qualityLevel, earthData, detail])
   const cloudMaterial = useMemo(() => {
@@ -133,19 +133,19 @@ export const EarthComponent: React.FC<EarthComponentProps> = ({
     return new THREE.MeshStandardMaterial({
       map: earthCloudsTexture,
       transparent: true,
-      opacity: cloudOpacity * 0.8, // Slightly more transparent for realism
+      opacity: cloudOpacity * 0.8, 
       depthWrite: false,
       side: THREE.DoubleSide,
-      alphaTest: 0.1, // Remove fully transparent pixels
-      roughness: 0.9, // Clouds are not reflective
+      alphaTest: 0.1, 
+      roughness: 0.9, 
       metalness: 0.0,
-      emissive: new THREE.Color(0.02, 0.02, 0.02), // Subtle cloud glow
+      emissive: new THREE.Color(0.02, 0.02, 0.02), 
     })
   }, [showClouds, earthCloudsTexture, cloudOpacity])
   const atmosphereGeometry = useMemo(() => {
     if (!showAtmosphere) return null
     const segments = detail || (qualityLevel === 'high' ? 32 : 16)
-    const radius = (earthData.radius * 0.001) * 1.025 // Realistic atmosphere thickness
+    const radius = (earthData.radius * 0.001) * 1.025 
     return new THREE.SphereGeometry(radius, segments, segments)
   }, [showAtmosphere, qualityLevel, earthData, detail])
   const atmosphereMaterial = useMemo(() => {
@@ -156,8 +156,8 @@ export const EarthComponent: React.FC<EarthComponentProps> = ({
       blending: THREE.AdditiveBlending,
       uniforms: {
         time: { value: 0 },
-        atmosphereColor: { value: new THREE.Color(0.4, 0.7, 1.0) }, // Earth's blue atmosphere
-        sunPosition: { value: new THREE.Vector3(5, 0, 0) }, // Sun position for scattering
+        atmosphereColor: { value: new THREE.Color(0.4, 0.7, 1.0) }, 
+        sunPosition: { value: new THREE.Vector3(5, 0, 0) }, 
         intensity: { value: atmosphereIntensity },
         scatteringStrength: { value: 0.8 }
       },
@@ -216,17 +216,17 @@ export const EarthComponent: React.FC<EarthComponentProps> = ({
     return new THREE.MeshStandardMaterial({
       map: moonTexture,
       normalMap: moonNormalTexture,
-      roughness: 0.95, // Moon's surface is very rough
+      roughness: 0.95, 
       metalness: 0.0,
-      normalScale: new THREE.Vector2(2.0, 2.0) // Enhanced lunar surface detail
+      normalScale: new THREE.Vector2(2.0, 2.0) 
     })
   }, [showMoon, moonTexture, moonNormalTexture])
   useFrame((state, delta) => {
     if (cloudsRef.current && showClouds) {
-      cloudsRef.current.rotation.y += delta * 0.025 // Slightly faster than Earth rotation
+      cloudsRef.current.rotation.y += delta * 0.025 
     }
     if (atmosphereRef.current && showAtmosphere && atmosphereMaterial) {
-      atmosphereRef.current.rotation.y += delta * 0.008 // Slow atmospheric circulation
+      atmosphereRef.current.rotation.y += delta * 0.008 
       if ('uniforms' in atmosphereMaterial) {
         const shaderMaterial = atmosphereMaterial as THREE.ShaderMaterial
         shaderMaterial.uniforms.time.value += delta
@@ -239,9 +239,9 @@ export const EarthComponent: React.FC<EarthComponentProps> = ({
       }
     }
     if (moonGroupRef.current && moonMeshRef.current && showMoon && moonData) {
-      const time = state.clock.elapsedTime * 0.05 // Realistic lunar orbital period
-      const moonDistance = 0.015 // Scaled Earth-Moon distance
-      const orbitalInclination = Math.PI * 0.089 // 5.1 degrees scaled
+      const time = state.clock.elapsedTime * 0.05 
+      const moonDistance = 0.015 
+      const orbitalInclination = Math.PI * 0.089 
       moonGroupRef.current.position.x = Math.cos(time) * moonDistance
       moonGroupRef.current.position.z = Math.sin(time) * moonDistance * Math.cos(orbitalInclination)
       moonGroupRef.current.position.y = Math.sin(time) * moonDistance * Math.sin(orbitalInclination)
@@ -406,7 +406,7 @@ export function calculateDayNightTerminator(earthRotation: number): number {
 export function getSeasonalTilt(julianDay: number): number {
   const dayOfYear = (julianDay % 365.25) / 365.25
   const seasonalAngle = dayOfYear * 2 * Math.PI
-  return Math.sin(seasonalAngle) * 23.44 // degrees - actual Earth axial tilt
+  return Math.sin(seasonalAngle) * 23.44 
 }
 export function calculateEarthPhase(sunAngle: number, viewAngle: number): number {
   const angleDiff = Math.abs(sunAngle - viewAngle)

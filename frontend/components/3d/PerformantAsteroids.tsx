@@ -18,26 +18,26 @@ export const PerformantAsteroids: React.FC<PerformantAsteroidsProps> = ({
 }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null)
   
-  // Asteroid verilerini ve başlangıç durumlarını oluştur
+  
   const asteroidData = useMemo(() => {
     const data = []
     const actualCount = Math.max(count, nasaAsteroidsData.length > 0 ? nasaAsteroidsData.length : 50)
 
     for (let i = 0; i < actualCount; i++) {
-      // Yörünge parametreleri
-      const radius = 15 + Math.random() * 25 // 15-40 birim arası mesafe
+      
+      const radius = 15 + Math.random() * 25 
       const angle = (i / actualCount) * Math.PI * 2 + (Math.random() * 0.5)
       
-      // Rastgele yükseklik (y ekseni) - Disk şeklinde dağılım için
+      
       const heightDev = (Math.random() - 0.5) * 2.0
 
-      // Boyutlandırma
-      let scale = 0.4 + Math.random() * 0.6 // Temel boyut
       
-      // Eğer gerçek veri varsa onu kullan
+      let scale = 0.4 + Math.random() * 0.6 
+      
+      
       if (nasaAsteroidsData[i]) {
         const radiusKm = nasaAsteroidsData[i].info.radius_km || 1
-        // Gerçek boyutu sahneye ölçekle (daha görünür olması için logaritmik veya çarpanlı)
+        
         scale = Math.max(0.3, Math.min(2.0, radiusKm * 0.5))
       }
 
@@ -46,9 +46,9 @@ export const PerformantAsteroids: React.FC<PerformantAsteroidsProps> = ({
         initialAngle: angle,
         height: heightDev,
         scale: scale,
-        // Yörünge hızı (uzaktakiler daha yavaş)
-        orbitSpeed: (0.05 / radius) * (0.5 + Math.random() * 0.5) * 0.2, // Çok yavaş
-        // Kendi ekseni etrafında dönüş
+        
+        orbitSpeed: (0.05 / radius) * (0.5 + Math.random() * 0.5) * 0.2, 
+        
         rotationAxis: new THREE.Vector3(Math.random(), Math.random(), Math.random()).normalize(),
         rotationSpeed: (Math.random() - 0.5) * 0.02
       })
@@ -56,23 +56,23 @@ export const PerformantAsteroids: React.FC<PerformantAsteroidsProps> = ({
     return data
   }, [count, nasaAsteroidsData])
 
-  // Geometri ve Materyal (Memoized)
+  
   const { geometry, material } = useMemo(() => {
-    // Geometri: Düşük poligonlu icosahedron (performans için)
+    
     const geo = new THREE.IcosahedronGeometry(1, 1)
     
-    // Materyal: Basit, ışıksız veya standart materyal
+    
     const mat = new THREE.MeshStandardMaterial({
       color: '#8B7355',
       roughness: 0.8,
       metalness: 0.2,
-      flatShading: true // Low-poly görünüm için
+      flatShading: true 
     })
 
     return { geometry: geo, material: mat }
   }, [])
 
-  // Animasyon Döngüsü
+  
   useFrame((state, delta) => {
     if (!meshRef.current) return
 
@@ -80,8 +80,8 @@ export const PerformantAsteroids: React.FC<PerformantAsteroidsProps> = ({
     const dummy = new THREE.Object3D()
 
     asteroidData.forEach((data, i) => {
-      // Yörünge hareketi
-      // Her asteroidin kendi hızına göre açısal ilerlemesi
+      
+      
       const currentAngle = data.initialAngle + (time * data.orbitSpeed)
 
       const x = Math.cos(currentAngle) * data.initialRadius
@@ -89,7 +89,7 @@ export const PerformantAsteroids: React.FC<PerformantAsteroidsProps> = ({
       
       dummy.position.set(x, data.height, z)
       
-      // Kendi ekseni etrafında dönüş
+      
       dummy.rotation.set(
         time * data.rotationSpeed * data.rotationAxis.x,
         time * data.rotationSpeed * data.rotationAxis.y,

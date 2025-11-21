@@ -92,7 +92,7 @@ export default function View2D() {
     mapboxgl.accessToken = MAPBOX_TOKEN
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/dark-v11', // Dark theme
+      style: 'mapbox://styles/mapbox/dark-v11', 
       center: mapCenter,
       zoom: currentZoom,
       projection: 'mercator' as any,

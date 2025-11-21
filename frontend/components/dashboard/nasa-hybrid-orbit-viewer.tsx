@@ -12,7 +12,7 @@ type Props = {
 }
 
 function Scene({ distanceKm, ci95 }: { distanceKm: number; ci95: [number, number] }) {
-  const scale = 10_000_000 // 10M km = 1 unit
+  const scale = 10_000_000 
   const x = distanceKm / scale
   const rLow = Math.max(0, ci95[0] / scale)
   const rHigh = Math.max(0, ci95[1] / scale)

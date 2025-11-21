@@ -1,4 +1,4 @@
-﻿// CLIFF 3D Solar System - BasitleÅŸtirilmiÅŸ Astronomi Veri Tipleri
+﻿
 
 
 export interface SimpleVector3D {
@@ -14,20 +14,20 @@ export interface SimpleCoordinates {
 
 
 export interface SimpleOrbit {
-  distance_from_sun: number    // AU cinsinden mesafe
-  orbital_period_days: number  // YÃ¶rÃ¼nge periyodu (gÃ¼n)
-  rotation_period_hours: number // DÃ¶nÃ¼ÅŸ periyodu (saat)
-  tilt_degrees: number         // Eksen eÄŸimi (derece)
+  distance_from_sun: number    
+  orbital_period_days: number  
+  rotation_period_hours: number 
+  tilt_degrees: number         
 }
 
 
 export interface SimplePlanetInfo {
-  radius_km: number           // YarÄ±Ã§ap (km)
-  mass_relative_to_earth: number  // DÃ¼nya'ya gÃ¶re kÃ¼tle oranÄ±
-  gravity_relative_to_earth: number // DÃ¼nya'ya gÃ¶re yerÃ§ekimi oranÄ±
-  has_atmosphere: boolean     // Atmosferi var mÄ±?
-  has_rings: boolean         // HalkalarÄ± var mÄ±?
-  moon_count: number         // Uydu sayÄ±sÄ±
+  radius_km: number           
+  mass_relative_to_earth: number  
+  gravity_relative_to_earth: number 
+  has_atmosphere: boolean     
+  has_rings: boolean         
+  moon_count: number         
   surface_temp_celsius: {
     min: number
     max: number
@@ -39,21 +39,21 @@ export interface SimplePlanetInfo {
 export interface SimpleCelestialBody {
   id: string
   name: string
-  turkish_name: string        // TÃ¼rkÃ§e isim
+  turkish_name: string        
   type: 'star' | 'planet' | 'dwarf_planet' | 'moon' | 'asteroid' | 'comet'
   
   info: SimplePlanetInfo
   orbit: SimpleOrbit
   
-  color: string              // Ana renk
-  texture_url?: string       // Doku dosyasÄ±
-  has_clouds?: boolean       // Bulut katmanÄ± var mÄ±?
+  color: string              
+  texture_url?: string       
+  has_clouds?: boolean       
   
-  parent_id?: string         // Hangi gezegenin uydusu?
-  moons?: string[]          // Uydu ID'leri
+  parent_id?: string         
+  moons?: string[]          
   
-  description: string        // KÄ±sa aÃ§Ä±klama
-  interesting_facts: string[] // Ä°lginÃ§ bilgiler
+  description: string        
+  interesting_facts: string[] 
   
   threat_level?: 'Düşük' | 'Orta' | 'Yüksek'
   is_hazardous?: boolean
@@ -138,7 +138,7 @@ export const SIMPLE_PLANETS: Record<string, SimpleCelestialBody> = {
     orbit: {
       distance_from_sun: 0.72,
       orbital_period_days: 225,
-      rotation_period_hours: -5832, // Ters dÃ¶nÃ¼ÅŸ
+      rotation_period_hours: -5832, 
       tilt_degrees: 177
     },
     color: '#FFC649',
@@ -292,7 +292,7 @@ export const SIMPLE_PLANETS: Record<string, SimpleCelestialBody> = {
     orbit: {
       distance_from_sun: 19.19,
       orbital_period_days: 30687,
-      rotation_period_hours: -17.2, // Ters dÃ¶nÃ¼ÅŸ
+      rotation_period_hours: -17.2, 
       tilt_degrees: 97.8
     },
     color: '#4FD0E7',
@@ -354,9 +354,9 @@ export const SIMPLE_MOONS: Record<string, SimpleCelestialBody> = {
       surface_temp_celsius: { min: -173, max: 127, average: -23 }
     },
     orbit: {
-      distance_from_sun: 1.0, // DÃ¼nya'nÄ±n etrafÄ±nda
+      distance_from_sun: 1.0, 
       orbital_period_days: 27.3,
-      rotation_period_hours: 655, // AynÄ± yÃ¼zÃ¼ gÃ¶sterir
+      rotation_period_hours: 655, 
       tilt_degrees: 6.7
     },
     color: '#C8C8C8',
@@ -376,7 +376,7 @@ export interface SimpleRenderSettings {
   show_orbits: boolean
   show_labels: boolean
   show_atmosphere: boolean
-  animation_speed: number // 0.1 - 5.0
+  animation_speed: number 
 }
 
 export const DEFAULT_RENDER_SETTINGS: SimpleRenderSettings = {
@@ -390,10 +390,10 @@ export const DEFAULT_RENDER_SETTINGS: SimpleRenderSettings = {
 
 export interface QualityPreset {
   name: string
-  sphere_segments: number    // KÃ¼re geometrisi detayÄ±
-  texture_size: number       // Doku Ã§Ã¶zÃ¼nÃ¼rlÃ¼ÄŸÃ¼
-  effects_enabled: boolean   // Efektler aÃ§Ä±k mÄ±?
-  max_fps: number           // Hedef FPS
+  sphere_segments: number    
+  texture_size: number       
+  effects_enabled: boolean   
+  max_fps: number           
 }
 
 export const QUALITY_PRESETS: Record<string, QualityPreset> = {
@@ -422,14 +422,14 @@ export const QUALITY_PRESETS: Record<string, QualityPreset> = {
 
 
 export const SOLAR_SYSTEM_CONSTANTS = {
-  AU_IN_KM: 149597870.7,           // 1 AU = km
-  EARTH_RADIUS_KM: 6371,           // DÃ¼nya yarÄ±Ã§apÄ±
-  LIGHT_SPEED_KMH: 1079252849000,  // IÅŸÄ±k hÄ±zÄ± km/h
-  SECONDS_PER_DAY: 86400,          // Bir gÃ¼ndeki saniye
+  AU_IN_KM: 149597870.7,           
+  EARTH_RADIUS_KM: 6371,           
+  LIGHT_SPEED_KMH: 1079252849000,  
+  SECONDS_PER_DAY: 86400,          
   
-  DISTANCE_SCALE: 0.1,             // Mesafeleri kÃ¼Ã§Ã¼ltme oranÄ±
-  SIZE_SCALE: 1000,                // BoyutlarÄ± bÃ¼yÃ¼tme oranÄ± (gÃ¶rÃ¼nÃ¼r olmasÄ± iÃ§in)
-  TIME_SCALE: 365                  // Zaman hÄ±zlandÄ±rma
+  DISTANCE_SCALE: 0.1,             
+  SIZE_SCALE: 1000,                
+  TIME_SCALE: 365                  
 } as const
 
 
@@ -501,10 +501,10 @@ export const ASTRONOMICAL_CONSTANTS = {
   ...SOLAR_SYSTEM_CONSTANTS,
   DEGREES_TO_RADIANS: Math.PI / 180,
   RADIANS_TO_DEGREES: 180 / Math.PI,
-  J2000_EPOCH: 2451545.0, // Julian day number for J2000.0 epoch
-  GRAVITATIONAL_CONSTANT: 6.67430e-11, // m^3 kg^-1 s^-2
-  SOLAR_MASS: 1.98847e30, // kg
-  SOLAR_MU: 1.32712442076e20 // Standard gravitational parameter of the Sun (m^3/s^2)
+  J2000_EPOCH: 2451545.0, 
+  GRAVITATIONAL_CONSTANT: 6.67430e-11, 
+  SOLAR_MASS: 1.98847e30, 
+  SOLAR_MU: 1.32712442076e20 
 } as const
 
 export const SOLAR_SYSTEM_DATA = getAllCelestialBodies()

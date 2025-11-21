@@ -53,14 +53,14 @@ export const JupiterComponent: React.FC<JupiterComponentProps> = ({
         const gasGiantMaterial = await materialManager.createGasGiantMaterial('jupiter', {
           bandCount: 8,
           bandColors: [
-            new THREE.Color(0xD2B48C), // Tan
-            new THREE.Color(0xF4A460), // Sandy brown
-            new THREE.Color(0xCD853F), // Peru
-            new THREE.Color(0xDEB887), // Burlywood
-            new THREE.Color(0xF5DEB3), // Wheat
-            new THREE.Color(0xFFE4B5), // Moccasin
-            new THREE.Color(0xFFF8DC), // Cornsilk
-            new THREE.Color(0xFAEBD7)  // Antique white
+            new THREE.Color(0xD2B48C), 
+            new THREE.Color(0xF4A460), 
+            new THREE.Color(0xCD853F), 
+            new THREE.Color(0xDEB887), 
+            new THREE.Color(0xF5DEB3), 
+            new THREE.Color(0xFFE4B5), 
+            new THREE.Color(0xFFF8DC), 
+            new THREE.Color(0xFAEBD7)  
           ],
           stormIntensity,
           windSpeed: bandAnimationSpeed,
@@ -89,11 +89,11 @@ export const JupiterComponent: React.FC<JupiterComponentProps> = ({
   const greatRedSpotGeometry = useMemo(() => {
     if (!showGreatRedSpot) return null
     const spotGeometry = new THREE.EllipseCurve(
-      0, 0,     // center
-      0.15, 0.1, // x radius, y radius
-      0, 2 * Math.PI, // start angle, end angle
-      false,     // clockwise
-      0         // rotation
+      0, 0,     
+      0.15, 0.1, 
+      0, 2 * Math.PI, 
+      false,     
+      0         
     )
     const points = spotGeometry.getPoints(50)
     const spotShape = new THREE.Shape(points)
@@ -139,10 +139,10 @@ export const JupiterComponent: React.FC<JupiterComponentProps> = ({
   const moonMaterials = useMemo(() => {
     return galileanMoons.map((moon, index) => {
       const colors = [
-        new THREE.Color(0xFFFF99), // Io - sulfur yellow
-        new THREE.Color(0xBBBBBB), // Europa - icy white
-        new THREE.Color(0x8B4513), // Ganymede - brownish
-        new THREE.Color(0x696969)  // Callisto - dark gray
+        new THREE.Color(0xFFFF99), 
+        new THREE.Color(0xBBBBBB), 
+        new THREE.Color(0x8B4513), 
+        new THREE.Color(0x696969)  
       ]
       return new THREE.MeshStandardMaterial({
         color: colors[index] || colors[0],
@@ -154,8 +154,8 @@ export const JupiterComponent: React.FC<JupiterComponentProps> = ({
   const magneticFieldGeometry = useMemo(() => {
     if (!showMagneticField || qualityLevel === 'low') return null
     return new THREE.TorusGeometry(
-      jupiterData.info.radius_km * 0.00001 * 3,  // Major radius
-      jupiterData.info.radius_km * 0.00001 * 0.1, // Minor radius
+      jupiterData.info.radius_km * 0.00001 * 3,  
+      jupiterData.info.radius_km * 0.00001 * 0.1, 
       8, 32
     )
   }, [showMagneticField, qualityLevel, jupiterData])
@@ -193,8 +193,8 @@ export const JupiterComponent: React.FC<JupiterComponentProps> = ({
       galileanMoons.forEach((moon, index) => {
         const moonGroup = moonGroupsRef.current[index]
         if (moonGroup) {
-          const orbitSpeed = 0.1 / (index + 1) // Farther moons orbit slower
-          const orbitRadius = 0.02 * (index + 2) // Increasing orbital distances
+          const orbitSpeed = 0.1 / (index + 1) 
+          const orbitRadius = 0.02 * (index + 2) 
           const angle = time * orbitSpeed
           moonGroup.position.x = Math.cos(angle) * orbitRadius
           moonGroup.position.z = Math.sin(angle) * orbitRadius
@@ -305,8 +305,8 @@ export function calculateJupiterStormIntensity(time: number): number {
   return 0.3 + 0.4 * Math.sin(time * 0.001) + 0.3 * Math.sin(time * 0.0031)
 }
 export function getGalileanMoonPosition(moonIndex: number, time: number): THREE.Vector3 {
-  const orbitalPeriods = [1.77, 3.55, 7.15, 16.69] // Io, Europa, Ganymede, Callisto
-  const orbitalDistances = [0.018, 0.025, 0.035, 0.055] // Scaled distances
+  const orbitalPeriods = [1.77, 3.55, 7.15, 16.69] 
+  const orbitalDistances = [0.018, 0.025, 0.035, 0.055] 
   const period = orbitalPeriods[moonIndex]
   const distance = orbitalDistances[moonIndex]
   const angle = (time * 0.01) * (2 * Math.PI / period)
@@ -317,14 +317,14 @@ export function getGalileanMoonPosition(moonIndex: number, time: number): THREE.
   )
 }
 export function getJupiterBandColor(latitude: number): THREE.Color {
-  const normalizedLat = (latitude + 1) * 0.5 // Convert from [-1,1] to [0,1]
+  const normalizedLat = (latitude + 1) * 0.5 
   const bands = [
-    { lat: 0.0, color: new THREE.Color(0xF5DEB3) },  // Equatorial zone
-    { lat: 0.2, color: new THREE.Color(0xDEB887) },  // North belt
-    { lat: 0.4, color: new THREE.Color(0xCD853F) },  // North zone
-    { lat: 0.6, color: new THREE.Color(0xD2B48C) },  // North polar
-    { lat: 0.8, color: new THREE.Color(0xF4A460) },  // Polar regions
-    { lat: 1.0, color: new THREE.Color(0xFFE4B5) }   // Pole
+    { lat: 0.0, color: new THREE.Color(0xF5DEB3) },  
+    { lat: 0.2, color: new THREE.Color(0xDEB887) },  
+    { lat: 0.4, color: new THREE.Color(0xCD853F) },  
+    { lat: 0.6, color: new THREE.Color(0xD2B48C) },  
+    { lat: 0.8, color: new THREE.Color(0xF4A460) },  
+    { lat: 1.0, color: new THREE.Color(0xFFE4B5) }   
   ]
   for (let i = 0; i < bands.length - 1; i++) {
     if (normalizedLat >= bands[i].lat && normalizedLat <= bands[i + 1].lat) {

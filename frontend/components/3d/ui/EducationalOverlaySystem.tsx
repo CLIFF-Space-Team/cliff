@@ -111,7 +111,7 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
     trigger: 'hover',
     position: 'auto',
     delay: 500,
-    duration: 0, // Persistent until dismissed
+    duration: 0, 
     maxWidth: 400,
     responsive: true,
     hideOnScroll: false,
@@ -188,7 +188,7 @@ export const EducationalOverlaySystem: React.FC<EducationalOverlaySystemProps> =
       ...prev,
       selectedCelestialBody: bodyId,
       showInformationPanel: true,
-      showOrbitalOverlay: bodyId !== 'sun' // Don't show orbital overlay for sun
+      showOrbitalOverlay: bodyId !== 'sun' 
     }));
     onBodySelect?.(bodyId);
     if (preferences.announceChanges) {

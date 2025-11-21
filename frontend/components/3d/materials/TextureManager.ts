@@ -55,7 +55,7 @@ export class TextureManager {
   private maxConcurrentLoads: number = 4
   private memoryBudgetMB: number = 1024
   private currentMemoryUsage: number = 0
-  private lruCache: Map<string, number> // LRU timestamp tracking
+  private lruCache: Map<string, number> 
   private metrics: TextureMetrics = {
     totalMemoryMB: 0,
     activeTextures: 0,
@@ -67,7 +67,7 @@ export class TextureManager {
   private atlasTextures: Map<string, THREE.Texture>
   private atlasConfigs: Map<string, any>
   private progressiveLoadEnabled: boolean = true
-  private qualityUpgradeDelay: number = 2000 // ms
+  private qualityUpgradeDelay: number = 2000 
   private constructor() {
     this.loader = new THREE.TextureLoader()
     this.compressedLoader = new THREE.CompressedTextureLoader()
@@ -192,14 +192,14 @@ export class TextureManager {
         (texture) => {
           this.activeLoads.delete(request.id)
           if (request.callback) request.callback(texture)
-          this.processLoadQueue() // Continue processing
+          this.processLoadQueue() 
         },
         undefined,
         (error) => {
           this.activeLoads.delete(request.id)
           console.error(`Failed to load texture: ${request.url}`, error)
           if (request.errorCallback) request.errorCallback(error as Error)
-          this.processLoadQueue() // Continue processing
+          this.processLoadQueue() 
         }
       )
     }
@@ -290,7 +290,7 @@ export class TextureManager {
   }
   private cleanupOldTextures(): void {
     const now = Date.now()
-    const maxAge = 300000 // 5 minutes
+    const maxAge = 300000 
     const entriesToRemove: string[] = []
     this.lruCache.forEach((timestamp, key) => {
       if (now - timestamp > maxAge) {
@@ -339,11 +339,11 @@ export class TextureManager {
     if (!texture.image) return 0
     const width = texture.image.width || 1024
     const height = texture.image.height || 1024
-    const channels = 4 // RGBA
+    const channels = 4 
     const bytesPerChannel = 1
     let memorySize = width * height * channels * bytesPerChannel
     if (texture.generateMipmaps) {
-      memorySize *= 1.33 // Approximately 33% more for mipmaps
+      memorySize *= 1.33 
     }
     return memorySize
   }
@@ -399,7 +399,7 @@ export class TextureManager {
   public async preloadCriticalTextures(configs: { id: string, config: TextureConfig }[]): Promise<void> {
     const promises = configs.map(({ id, config }) => {
       config.priority = 'critical'
-      return this.loadTexture(id, config, 'medium') // Start with medium quality for faster loading
+      return this.loadTexture(id, config, 'medium') 
     })
     await Promise.all(promises)
   }

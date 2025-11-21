@@ -333,7 +333,7 @@ export interface MessageAttachment {
   size?: number
   mimeType?: string
   generatedBy?: 'ai' | 'user'
-  prompt?: string // Orijinal görsel oluşturma prompt'u
+  prompt?: string 
 }
 
 export interface MessageMetadata {

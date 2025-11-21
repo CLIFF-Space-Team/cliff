@@ -12,14 +12,14 @@ interface HeaderEarthSunModelProps {
 }
 const fetchAsteroids = async (): Promise<SimpleCelestialBody[]> => {
   console.log('🚫 Header asteroids API çağrısı engellendi - mock veri modu')
-  return Promise.resolve([]) // Boş array döndür
+  return Promise.resolve([]) 
 }
 const HeaderEarthSunModel: React.FC<HeaderEarthSunModelProps> = ({ showAsteroids = true }) => {
   const { data: asteroidData } = useQuery({
     queryKey: ['header-asteroids'],
     queryFn: fetchAsteroids,
-    refetchInterval: false, // Auto-refetch kapalı
-    enabled: false, // Query tamamen kapalı
+    refetchInterval: false, 
+    enabled: false, 
   })
   return (
     <div 

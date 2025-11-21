@@ -54,7 +54,7 @@ export default function CompareDrawer({ ids, open, onClose }: Props) {
   const radarData = useMemo(() => {
     return items.map((it) => ({
       subject: it.name || it.neoId,
-      diameter: (it.diameter_max_km ?? it.diameter_min_km ?? 0) * 100, // scale
+      diameter: (it.diameter_max_km ?? it.diameter_min_km ?? 0) * 100, 
       probability: (it.impact_probability ?? 0) * 1000,
       velocity: (it.next_approach?.relative_velocity_kms ?? 0) * 3,
       proximity: Math.max(0, 100 - (it.next_approach?.distance_ld ?? 100)),

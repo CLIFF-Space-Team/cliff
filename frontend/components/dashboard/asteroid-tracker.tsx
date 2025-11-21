@@ -198,8 +198,8 @@ const AsteroidListItem = memo(function AsteroidListItem({
     onAsteroidClick(asteroid)
   }, [asteroid, onAsteroidClick])
   console.log('🔧 DEBUG ThreatLevelBadge language issue:', {
-    received: asteroid.threat_level, // İngilizce: 'critical' | 'high' | 'medium' | 'low'
-    expected: 'Türkçe levels' // 'düşük' | 'orta' | 'yüksek' | 'kritik'
+    received: asteroid.threat_level, 
+    expected: 'Türkçe levels' 
   })
   const convertThreatLevelToTurkish = (level: string) => {
     switch (level) {
@@ -389,7 +389,7 @@ const AsteroidTracker: React.FC<AsteroidTrackerProps> = ({
         id: threat.threat_id || `${Date.now()}-${index}`,
         name: threat.title || `NEO-${String(index + 1).padStart(4, '0')}`,
         designation: `${threat.threat_type}-${index + 1}` || 'N/A',
-        estimated_diameter_min: Math.random() * 50 + 10, // Mock data since not in threat structure
+        estimated_diameter_min: Math.random() * 50 + 10, 
         estimated_diameter_max: Math.random() * 100 + 50,
         velocity_km_per_hour: Math.random() * 50000 + 10000,
         velocity_km_per_second: Math.random() * 15 + 5,

@@ -28,7 +28,7 @@ export class PostProcessingManager {
   private config: PostProcessingConfig
   private hdrSettings: HDRSettings
   private frameTime: number = 0
-  private performanceThreshold: number = 16.67 // 60 FPS in ms
+  private performanceThreshold: number = 16.67 
   constructor(
     scene: THREE.Scene,
     camera: THREE.Camera,
@@ -40,7 +40,7 @@ export class PostProcessingManager {
     this.renderer = renderer
     this.config = {
       enableHDR: true,
-      enableBloom: false, // Will be handled by @react-three/postprocessing
+      enableBloom: false, 
       enableColorGrading: true,
       enableAntiAliasing: true,
       bloomStrength: 0.2,

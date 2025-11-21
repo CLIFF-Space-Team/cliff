@@ -61,7 +61,7 @@ interface EarthEventsStore {
   viewMode: '3D' | '2D' | 'transitioning'
   transitionProgress: number
   
-  events: any[] // NASA EONET formatında events
+  events: any[] 
   selectedEvent: any | null
   filteredEvents: any[]
   filters: {
@@ -117,11 +117,11 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
       viewMode: '3D',
       transitionProgress: 0,
       
-      events: [], // No initial data - will load from NASA EONET API
+      events: [], 
       selectedEvent: null,
       filteredEvents: [],
       filters: {},
-      _lastFetchTime: 0, // Rate limiting timestamp
+      _lastFetchTime: 0, 
       
       mapCenter: [0, 0],
       mapZoom: 2,
@@ -429,7 +429,7 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
         }))
         
         try {
-          const response = await fetch(`http://localhost:8000/api/v1/eonet-ai-images/generate`, {
+          const response = await fetch(`http:
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -480,7 +480,7 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
       
       getEventImages: async (eventId: string) => {
         try {
-          const response = await fetch(`http://localhost:8000/api/v1/eonet-ai-images/event/${eventId}`)
+          const response = await fetch(`http:
           
           if (response.ok) {
             const data = await response.json()

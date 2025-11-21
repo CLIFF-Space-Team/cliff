@@ -12,7 +12,7 @@ const createQueryClient = () => {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 5 * 60 * 1000, // 5 minutes default
+        staleTime: 5 * 60 * 1000, 
         refetchOnWindowFocus: true,
         retry: (failureCount, error: any) => {
           if (error?.status >= 400 && error?.status < 500) {
@@ -51,7 +51,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'
-const DISABLE_API_CALLS = true // API çağrılarını devre dışı bırak
+const DISABLE_API_CALLS = true 
 
 const fetchWithAuth = async (endpoint: string, options: RequestInit = {}) => {
   if (DISABLE_API_CALLS) {
@@ -85,8 +85,8 @@ export const useThreatSummaryQuery = () => {
   return useQuery({
     queryKey: ['threat-summary'],
     queryFn: () => fetchWithAuth('/api/v1/threats/summary'),
-    staleTime: 2 * 60 * 1000, // 2 minutes - threats need fresh data
-    refetchInterval: 5 * 60 * 1000, // Auto-refetch every 5 minutes
+    staleTime: 2 * 60 * 1000, 
+    refetchInterval: 5 * 60 * 1000, 
   })
 }
 
@@ -94,7 +94,7 @@ export const useAsteroidThreatsQuery = (limit: number = 50) => {
   return useQuery({
     queryKey: ['asteroid-threats', limit],
     queryFn: () => fetchWithAuth(`/api/v1/threats/asteroids?limit=${limit}`),
-    staleTime: 10 * 60 * 1000, // 10 minutes - asteroid data doesn't change as quickly
+    staleTime: 10 * 60 * 1000, 
     refetchInterval: 10 * 60 * 1000,
   })
 }
@@ -103,7 +103,7 @@ export const useSpaceWeatherQuery = () => {
   return useQuery({
     queryKey: ['space-weather'],
     queryFn: () => fetchWithAuth('/api/v1/threats/space-weather'),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000, 
     refetchInterval: 5 * 60 * 1000,
   })
 }
@@ -112,7 +112,7 @@ export const useEarthEventsQuery = () => {
   return useQuery({
     queryKey: ['earth-events'],
     queryFn: () => fetchWithAuth('/api/v1/threats/earth-events'),
-    staleTime: 15 * 60 * 1000, // 15 minutes - earth events change slower
+    staleTime: 15 * 60 * 1000, 
     refetchInterval: 15 * 60 * 1000,
   })
 }
@@ -133,8 +133,8 @@ export const useNasaDataQuery = (endpoint: string, params: Record<string, any> =
   return useQuery({
     queryKey: ['nasa-data', endpoint, params],
     queryFn: () => fetchWithAuth(url),
-    staleTime: 30 * 60 * 1000, // 30 minutes - NASA data is relatively stable
-    refetchInterval: false, // Don't auto-refetch unless explicitly needed
+    staleTime: 30 * 60 * 1000, 
+    refetchInterval: false, 
   })
 }
 
@@ -142,8 +142,8 @@ export const useSystemStatusQuery = () => {
   return useQuery({
     queryKey: ['system-status'],
     queryFn: () => fetchWithAuth('/api/v1/system/status'),
-    staleTime: 1 * 60 * 1000, // 1 minute
-    refetchInterval: 2 * 60 * 1000, // Check every 2 minutes
+    staleTime: 1 * 60 * 1000, 
+    refetchInterval: 2 * 60 * 1000, 
   })
 }
 
@@ -151,7 +151,7 @@ export const useVoiceModelsQuery = () => {
   return useQuery({
     queryKey: ['voice-models'],
     queryFn: () => fetchWithAuth('/api/v1/voice/models'),
-    staleTime: 60 * 60 * 1000, // 1 hour - models don't change frequently
+    staleTime: 60 * 60 * 1000, 
   })
 }
 

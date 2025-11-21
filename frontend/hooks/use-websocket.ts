@@ -59,7 +59,7 @@ interface UseWebSocketReturn {
 }
 export function useWebSocket({
   url = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/ws',
-  autoConnect = false, // Geçici olarak kapatıldı - backend bağlantı sorunu düzeltilene kadar
+  autoConnect = false, 
   reconnectAttempts = 5,
   reconnectInterval = 3000,
   heartbeatInterval = 30000,
@@ -151,7 +151,7 @@ export function useWebSocket({
         case 'threat_alert':
           const alert = message.data as ThreatAlert
           setThreatAlerts(prev => {
-            const newAlerts = [alert, ...prev.slice(0, 49)] // Keep last 50 alerts
+            const newAlerts = [alert, ...prev.slice(0, 49)] 
             if (alert.severity === 'CRITICAL' || alert.severity === 'HIGH') {
               toast.error(`🚨 ${alert.severity} THREAT: ${alert.title}`, {
                 description: alert.description,
@@ -163,7 +163,7 @@ export function useWebSocket({
           break
         case 'data_update':
           const update = message.data as DataUpdate
-          setDataUpdates(prev => [update, ...prev.slice(0, 99)]) // Keep last 100 updates
+          setDataUpdates(prev => [update, ...prev.slice(0, 99)]) 
           if (update.affects_threat_level) {
             toast.info(`📊 Data Update: ${update.data_type}`, {
               description: `Updated from ${update.source}`,
@@ -270,7 +270,7 @@ export function useWebSocket({
   const disconnect = useCallback(() => {
     console.log(`🔌 [${connectionIdRef.current}] Disconnecting...`)
     clearTimers()
-    currentReconnectAttempt.current = reconnectAttempts // Prevent reconnection
+    currentReconnectAttempt.current = reconnectAttempts 
     if (ws.current) {
       isConnectedRef.current = false
       ws.current.close(1000, 'User disconnect')
@@ -325,7 +325,7 @@ export function useWebSocket({
         clearTimeout(connectTimer)
       }
     }
-  }, [autoConnect, connect]) // Fixed dependencies
+  }, [autoConnect, connect]) 
   useEffect(() => {
     return () => {
       isMountedRef.current = false

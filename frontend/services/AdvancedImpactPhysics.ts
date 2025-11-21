@@ -72,10 +72,10 @@ export interface EjectaEffects {
   vaporizedMass_kg: number
 }
 export class AdvancedImpactPhysics {
-  private readonly EARTH_RADIUS = 6371000 // meters
-  private readonly STANDARD_GRAVITY = 9.81 // m/s²
-  private readonly AIR_DENSITY_SL = 1.225 // kg/m³
-  private readonly SCALE_HEIGHT = 8500 // meters
+  private readonly EARTH_RADIUS = 6371000 
+  private readonly STANDARD_GRAVITY = 9.81 
+  private readonly AIR_DENSITY_SL = 1.225 
+  private readonly SCALE_HEIGHT = 8500 
   calculateAtmosphericEntry(
     projectile: ProjectileProperties,
     target: TargetProperties
@@ -87,12 +87,12 @@ export class AdvancedImpactPhysics {
     const angle = projectile.angle_deg * Math.PI / 180
     const strength = this.estimateAsteroidStrength(rho_p)
     const breakupPressure = strength
-    const q_breakup = 0.5 * rho_a * v * v // dynamic pressure
+    const q_breakup = 0.5 * rho_a * v * v 
     let h_breakup = -this.SCALE_HEIGHT * Math.log(breakupPressure / q_breakup)
     if (h_breakup > 100000) {
-      h_breakup = -1 // No breakup
+      h_breakup = -1 
     }
-    const L = d * Math.sqrt(rho_p / rho_a) // Penetration depth
+    const L = d * Math.sqrt(rho_p / rho_a) 
     let finalVelocity = v
     let impactFraction = 1.0
     let airburstEnergy = 0
@@ -136,10 +136,10 @@ export class AdvancedImpactPhysics {
     const theta = projectile.angle_deg * Math.PI / 180
     const mass = (4/3) * Math.PI * Math.pow(L/2, 3) * rho_p
     const E = 0.5 * mass * v_impact * v_impact * atmosphericEntry.impactEnergy_fraction
-    const mu = 0.55 // Coupling parameter for hard rock
-    const nu = 0.4  // Velocity exponent
-    const C1 = 1.6  // Scaling constant for diameter
-    const C2 = 0.3  // Depth-to-diameter ratio
+    const mu = 0.55 
+    const nu = 0.4  
+    const C1 = 1.6  
+    const C2 = 0.3  
     const f_angle = Math.pow(Math.sin(theta), 1/3)
     const D_tr = C1 * L * Math.pow(
       (rho_p / rho_t), 1/(3*nu)
@@ -147,7 +147,7 @@ export class AdvancedImpactPhysics {
       v_impact * Math.sqrt(rho_p / (g * L * rho_t)), 2*nu/(3*nu)
     ) * f_angle
     const d_tr = C2 * D_tr
-    const D_transition = 3000 // meters for Earth
+    const D_transition = 3000 
     let D_final: number
     let d_final: number
     let hasCentralPeak = false
@@ -190,18 +190,18 @@ export class AdvancedImpactPhysics {
     energy_joules: number,
     altitude_m: number
   ): ThermalEffects {
-    const E_MT = energy_joules / 4.184e15 // Megatons TNT
-    const fireball_maxRadius = 440 * Math.pow(E_MT, 0.4) // meters
-    const fireball_duration = 7.03 * Math.pow(E_MT, 0.44) // seconds
-    const fireball_maxTemp = 6000 + 2000 * Math.pow(E_MT, 0.1) // Kelvin
-    const radiationEfficiency = 0.3 // 30% of energy as thermal radiation
-    const Q = radiationEfficiency * energy_joules / (4 * Math.PI) // J/m²/sr
-    const attenuation = Math.exp(-altitude_m / 8000) // Atmospheric attenuation
-    const r_noIgnition = Math.sqrt(Q / (1.0e5 * attenuation)) / 1000 // km
-    const r_ignitesWood = Math.sqrt(Q / (2.0e5 * attenuation)) / 1000 // km
-    const r_firstDegree = Math.sqrt(Q / (3.0e5 * attenuation)) / 1000 // km
-    const r_secondDegree = Math.sqrt(Q / (5.0e5 * attenuation)) / 1000 // km
-    const r_thirdDegree = Math.sqrt(Q / (1.0e6 * attenuation)) / 1000 // km
+    const E_MT = energy_joules / 4.184e15 
+    const fireball_maxRadius = 440 * Math.pow(E_MT, 0.4) 
+    const fireball_duration = 7.03 * Math.pow(E_MT, 0.44) 
+    const fireball_maxTemp = 6000 + 2000 * Math.pow(E_MT, 0.1) 
+    const radiationEfficiency = 0.3 
+    const Q = radiationEfficiency * energy_joules / (4 * Math.PI) 
+    const attenuation = Math.exp(-altitude_m / 8000) 
+    const r_noIgnition = Math.sqrt(Q / (1.0e5 * attenuation)) / 1000 
+    const r_ignitesWood = Math.sqrt(Q / (2.0e5 * attenuation)) / 1000 
+    const r_firstDegree = Math.sqrt(Q / (3.0e5 * attenuation)) / 1000 
+    const r_secondDegree = Math.sqrt(Q / (5.0e5 * attenuation)) / 1000 
+    const r_thirdDegree = Math.sqrt(Q / (1.0e6 * attenuation)) / 1000 
     return {
       fireball_duration_s: fireball_duration,
       fireball_maxRadius_m: fireball_maxRadius,
@@ -230,12 +230,12 @@ export class AdvancedImpactPhysics {
       } else {
         P_over = 2.7e4 / Math.pow(Z, 2) + 7.0e3 / Math.pow(Z, 3)
       }
-      const P_ambient = 101325 // Pa
+      const P_ambient = 101325 
       const gamma = 1.4
       const windSpeed = Math.sqrt(
         (5 * (P_over / P_ambient + 1)) / (7 * (P_ambient + 7 * P_over / P_ambient))
-      ) * 340 // m/s
-      const soundSpeed = 340 // m/s
+      ) * 340 
+      const soundSpeed = 340 
       const arrivalTime = R / soundSpeed
       results.push({
         distance_m: R,
@@ -250,7 +250,7 @@ export class AdvancedImpactPhysics {
     energy_joules: number,
     distance_km: number
   ): SeismicEffects {
-    const efficiency = 0.001 // 0.1% typical for impacts
+    const efficiency = 0.001 
     const E_seismic = energy_joules * efficiency
     const M_w = (2/3) * Math.log10(E_seismic / 1e4) - 6.0
     const M_L = M_w * 1.05 - 0.15
@@ -267,17 +267,17 @@ export class AdvancedImpactPhysics {
       seismicEnergy_joules: E_seismic,
       feltRadius_km: feltRadius,
       mercalliIntensity: mercalliIntensities,
-      seismicWaveSpeed_ms: 5000, // P-wave velocity in crust
+      seismicWaveSpeed_ms: 5000, 
       groundMotion_ms2: groundMotion
     }
   }
   private estimateAsteroidStrength(density_kgm3: number): number {
     if (density_kgm3 < 1500) {
-      return 1e6 // Weak, porous (C-type)
+      return 1e6 
     } else if (density_kgm3 < 2500) {
-      return 5e6 // Medium strength (S-type)
+      return 5e6 
     } else {
-      return 1e7 // Strong, solid (M-type, iron)
+      return 1e7 
     }
   }
   calculateEjecta(
@@ -288,13 +288,13 @@ export class AdvancedImpactPhysics {
     const D = crater.finalDiameter_m
     const d = crater.finalDepth_m
     const volume = Math.PI * Math.pow(D/2, 2) * d / 3
-    const density = 2700 // Average crustal density
+    const density = 2700 
     const totalMass = volume * density
     const v_ejecta = Math.sqrt(2 * energy_joules / totalMass) * 0.3
     const g = 9.81
-    const maxRange = (v_ejecta * v_ejecta) / g / 1000 // km
-    const meltVolume = Math.pow(D / 1000, 3) * 1e6 // m³
-    const vaporizedMass = totalMass * 0.01 // ~1%
+    const maxRange = (v_ejecta * v_ejecta) / g / 1000 
+    const meltVolume = Math.pow(D / 1000, 3) * 1e6 
+    const vaporizedMass = totalMass * 0.01 
     return {
       totalEjectaMass_kg: totalMass,
       ejectaVelocity_ms: v_ejecta,

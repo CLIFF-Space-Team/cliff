@@ -183,7 +183,7 @@ export class MaterialManager {
           fbm(uv * 2.0 - time * animationSpeed * 0.7) * turbulence * 0.5
         );
         float stormPattern = fbm(turbulentUv * 5.0 + time * animationSpeed * 2.0);
-        vec3 stormColor = vec3(1.2, 0.8, 0.6); // Storm color (orangish)
+        vec3 stormColor = vec3(1.2, 0.8, 0.6); 
         float stormMask = smoothstep(0.6, 0.8, stormPattern) * stormIntensity;
         baseColor = mix(baseColor, stormColor, stormMask);
         float bandEdge = abs(sin(bandPosition * 3.14159)) * 0.3;
@@ -246,7 +246,7 @@ export class MaterialManager {
         vNormal = normalize(normalMatrix * normal);
         vec3 lightDirection = normalize(lightPosition - worldPosition.xyz);
         float ndotl = dot(vNormal, lightDirection);
-        vLightIntensity = smoothstep(-0.2, 0.2, -ndotl); // Inverted for night side
+        vLightIntensity = smoothstep(-0.2, 0.2, -ndotl); 
         gl_Position = projectionMatrix * viewMatrix * worldPosition;
       }
     `
@@ -308,7 +308,7 @@ export class MaterialManager {
           material.normalMap = textureSet.normal
           material.normalScale = new THREE.Vector2(materialConfig.normalScale, materialConfig.normalScale)
         }
-        if (textureSet.specular) material.roughnessMap = textureSet.specular // Specular map as roughness
+        if (textureSet.specular) material.roughnessMap = textureSet.specular 
         if (textureSet.emissive && body.type === 'star') material.emissiveMap = textureSet.emissive
       } catch (error) {
         console.warn(`Failed to load textures for ${id}:`, error)
@@ -360,7 +360,7 @@ export class MaterialManager {
       uniforms: {
         time: { value: 0.0 },
         bandCount: { value: config.bandCount },
-        bandColors: { value: config.bandColors.slice(0, 8) }, // Max 8 bands for uniform array
+        bandColors: { value: config.bandColors.slice(0, 8) }, 
         stormIntensity: { value: config.stormIntensity },
         windSpeed: { value: config.windSpeed },
         turbulence: { value: config.turbulence },
@@ -471,9 +471,9 @@ export class MaterialManager {
         frequency *= 2
       }
       const value = Math.floor((noise + 1) * 0.5 * 255)
-      data[i * 3] = value     // R
-      data[i * 3 + 1] = value // G
-      data[i * 3 + 2] = value // B
+      data[i * 3] = value     
+      data[i * 3 + 1] = value 
+      data[i * 3 + 2] = value 
     }
     const texture = new THREE.DataTexture(data, width, height)
     texture.needsUpdate = true

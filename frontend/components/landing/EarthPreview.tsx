@@ -87,8 +87,8 @@ const EarthPreview: React.FC<EarthPreviewProps> = ({ className }) => {
           })
         } else {
           material = new THREE.MeshPhongMaterial({
-            color: 0x1e40af, // Blue-800
-            emissive: 0x1e3a8a, // Blue-900
+            color: 0x1e40af, 
+            emissive: 0x1e3a8a, 
             specular: 0xffffff,
             shininess: 50,
             wireframe: false
@@ -113,7 +113,7 @@ const EarthPreview: React.FC<EarthPreviewProps> = ({ className }) => {
 
         const atmoGeo = new THREE.SphereGeometry(1.1, 64, 64)
         const atmoMat = new THREE.MeshPhongMaterial({
-          color: 0x3b82f6, // Blue-500
+          color: 0x3b82f6, 
           transparent: true,
           opacity: 0.1,
           side: THREE.BackSide,

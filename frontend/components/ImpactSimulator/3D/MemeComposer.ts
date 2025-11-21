@@ -503,10 +503,10 @@ export class MemeComposer {
           float n = noise(pos + time);
           float dist = length(vPosition);
           float intensity = 1.0 - smoothstep(0.0, 1.2, dist);
-          vec3 coreColor = vec3(1.0, 0.95, 0.8);    // Beyaz-sarı merkez
-          vec3 hotColor = vec3(1.0, 0.7, 0.2);      // Sarı-turuncu
-          vec3 warmColor = vec3(1.0, 0.4, 0.1);     // Turuncu
-          vec3 coolColor = vec3(0.8, 0.2, 0.05);    // Kırmızı
+          vec3 coreColor = vec3(1.0, 0.95, 0.8);    
+          vec3 hotColor = vec3(1.0, 0.7, 0.2);      
+          vec3 warmColor = vec3(1.0, 0.4, 0.1);     
+          vec3 coolColor = vec3(0.8, 0.2, 0.05);    
           vec3 color;
           if (intensity > 0.8) {
             color = mix(hotColor, coreColor, (intensity - 0.8) * 5.0);

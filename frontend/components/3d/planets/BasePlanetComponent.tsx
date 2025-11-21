@@ -109,7 +109,7 @@ export const BasePlanetComponent: React.FC<BasePlanetComponentProps> = ({
     if (celestialBody.parent_id && celestialBody.parent_id !== celestialBody.id) {
       const time = state.clock.elapsedTime * timeScale
       const orbitRadius = celestialBody.orbit.distance_from_sun * SOLAR_SYSTEM_CONSTANTS.DISTANCE_SCALE
-      const orbitSpeed = (2 * Math.PI) / (celestialBody.orbit.orbital_period_days * 0.1) // Speed up for demo
+      const orbitSpeed = (2 * Math.PI) / (celestialBody.orbit.orbital_period_days * 0.1) 
       const angle = time * orbitSpeed
       groupRef.current.position.set(
         orbitRadius * Math.cos(angle),
@@ -124,7 +124,7 @@ export const BasePlanetComponent: React.FC<BasePlanetComponentProps> = ({
       }))
     }
     if (celestialBody.orbit.rotation_period_hours > 0) {
-      const rotationSpeed = (2 * Math.PI) / (celestialBody.orbit.rotation_period_hours * 0.01) // Speed up for demo
+      const rotationSpeed = (2 * Math.PI) / (celestialBody.orbit.rotation_period_hours * 0.01) 
       const rotationDelta = rotationSpeed * delta * timeScale
       meshRef.current.rotation.y += rotationDelta
       const tiltRadians = (celestialBody.orbit.tilt_degrees || 0) * (Math.PI / 180)

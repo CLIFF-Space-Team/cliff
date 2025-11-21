@@ -21,7 +21,7 @@ export class MemeComposer {
     height: number,
     location: ImpactLocation
   ): void {
-    const mapImageUrl = `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${location.lng},${location.lat},12,0/${width}x${height}@2x?access_token=${process.env.NEXT_PUBLIC_MAPBOX_TOKEN || ''}`
+    const mapImageUrl = `https:
     ctx.save()
     ctx.globalAlpha = 0.3
     ctx.fillStyle = '#000'
@@ -127,7 +127,7 @@ export class MemeComposer {
     }
     const baseUrl = typeof window !== 'undefined' 
       ? window.location.origin 
-      : 'http://localhost:3000'
+      : 'http:
     const shareUrl = `${baseUrl}/impact-meme/${shareId}`
     return {
       imageDataUrl,
@@ -145,13 +145,13 @@ export class MemeComposer {
     let url = ''
     switch (platform) {
       case 'twitter':
-        url = `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`
+        url = `https:
         break
       case 'facebook':
-        url = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`
+        url = `https:
         break
       case 'whatsapp':
-        url = `https://wa.me/?text=${encodedText}%20${encodedUrl}`
+        url = `https:
         break
       case 'instagram':
         alert('Instagram için görseli indirin ve Instagram uygulamasından paylaşın')

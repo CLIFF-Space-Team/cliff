@@ -55,7 +55,7 @@ export interface ManagerConfig {
   enableOclusionCulling: boolean
   maxVisibleBodies: number
   cullDistance: number
-  updateFrequency: number // Hz
+  updateFrequency: number 
   memoryBudgetMB: number
   enableDynamicLoading: boolean
 }
@@ -101,10 +101,10 @@ export class CelestialBodyManager {
     this.config = {
       enableLOD: true,
       enableFrustumCulling: true,
-      enableOclusionCulling: false, // Advanced feature for later
+      enableOclusionCulling: false, 
       maxVisibleBodies: 1000,
-      cullDistance: 1000, // AU
-      updateFrequency: 10, // 10 Hz
+      cullDistance: 1000, 
+      updateFrequency: 10, 
       memoryBudgetMB: 512,
       enableDynamicLoading: true,
       ...config
@@ -431,7 +431,7 @@ export class CelestialBodyManager {
     })
     this.performanceMetrics.triangleCount = totalTriangles
     this.performanceMetrics.memoryUsageMB = 
-      (this.geometryCache.size * 0.5 + this.textureCache.size * 2) // Rough estimate
+      (this.geometryCache.size * 0.5 + this.textureCache.size * 2) 
   }
   public getBody(id: string): CelestialBodyInstance | undefined {
     return this.bodies.get(id)

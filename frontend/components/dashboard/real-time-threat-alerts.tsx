@@ -13,7 +13,7 @@ interface ThreatAlert {
   source: string
   risk_score: number
   auto_dismiss?: boolean
-  dismiss_after?: number // saniye
+  dismiss_after?: number 
 }
 interface RealTimeThreatAlertsProps {
   maxAlerts?: number
@@ -46,10 +46,10 @@ export const RealTimeThreatAlerts: React.FC<RealTimeThreatAlertsProps> = ({
       oscillator.connect(gainNode)
       gainNode.connect(context.destination)
       const frequencies = {
-        'CRITICAL': [800, 600, 800, 600], // Acil alarm
-        'HIGH': [600, 400],               // Uyarı tonu
-        'MEDIUM': [400],                  // Bilgi tonu
-        'LOW': [300]                      // Düşük uyarı
+        'CRITICAL': [800, 600, 800, 600], 
+        'HIGH': [600, 400],               
+        'MEDIUM': [400],                  
+        'LOW': [300]                      
       }
       const freq = frequencies[severity as keyof typeof frequencies] || [400]
       let index = 0
@@ -79,7 +79,7 @@ export const RealTimeThreatAlerts: React.FC<RealTimeThreatAlertsProps> = ({
       try {
         setConnectionStatus('connecting')
         const wsUrl = process.env.NODE_ENV === 'production' 
-          ? `wss://${window.location.host}/ws/threats`
+          ? `wss:
           : 'ws://localhost:8000/ws/threats'
         wsRef.current = new WebSocket(wsUrl)
         wsRef.current.onopen = () => {
@@ -104,7 +104,7 @@ export const RealTimeThreatAlerts: React.FC<RealTimeThreatAlertsProps> = ({
                 timestamp: new Date().toLocaleString('tr-TR'),
                 source: data.source || 'CLIFF AI',
                 risk_score: data.risk_score || 100,
-                auto_dismiss: false, // CRITICAL hiç otomatik kapanmaz
+                auto_dismiss: false, 
                 dismiss_after: undefined
               }
               setAlerts(prevAlerts => {

@@ -53,8 +53,8 @@ export const ProceduralAsteroidSystem = React.memo(({
     loadTHREE()
   }, [])
   const { asteroids, isLoading: asteroidsLoading } = useAsteroidData({
-    autoRefresh: false, // Auto-refresh kapalı
-    refreshInterval: 300000 // 5 minutes
+    autoRefresh: false, 
+    refreshInterval: 300000 
   })
   const asteroidGeometry = useMemo(() => {
     if (!THREE) return null
@@ -112,10 +112,10 @@ export const ProceduralAsteroidSystem = React.memo(({
       const crackPattern = Math.sin(x * 0.08 + y * 0.06) * Math.cos(x * 0.09 + y * 0.07)
       const combinedNoise = (noise1 + noise2 + noise3 + noise4) + (veinPattern * 0.3) + (crackPattern * 0.2)
       const intensity = Math.max(40, Math.min(200, 110 + combinedNoise * 45))
-      pixelData[i] = intensity * 0.7       // Red
-      pixelData[i + 1] = intensity * 0.6   // Green  
-      pixelData[i + 2] = intensity * 0.5   // Blue
-      pixelData[i + 3] = 255               // Alpha
+      pixelData[i] = intensity * 0.7       
+      pixelData[i + 1] = intensity * 0.6   
+      pixelData[i + 2] = intensity * 0.5   
+      pixelData[i + 3] = 255               
     }
     ctx.putImageData(imageData, 0, 0)
     const texture = new THREE.CanvasTexture(canvas)
@@ -135,10 +135,10 @@ export const ProceduralAsteroidSystem = React.memo(({
       const y = Math.floor((i / 4) / size)
       const height = Math.sin(x * 0.1) * Math.cos(y * 0.1) + 
                     Math.sin(x * 0.2) * Math.cos(y * 0.2) * 0.5
-      normalData[i] = 128 + height * 127 // R (X normal)
-      normalData[i + 1] = 128 - height * 64 // G (Y normal)
-      normalData[i + 2] = 180 + height * 75 // B (Z normal - pointing out)
-      normalData[i + 3] = 255 // Alpha
+      normalData[i] = 128 + height * 127 
+      normalData[i + 1] = 128 - height * 64 
+      normalData[i + 2] = 180 + height * 75 
+      normalData[i + 3] = 255 
     }
     normalCtx.putImageData(normalImageData, 0, 0)
     const normalMap = new THREE.CanvasTexture(normalCanvas)
@@ -193,12 +193,12 @@ export const ProceduralAsteroidSystem = React.memo(({
       const y = orbitRadius * Math.sin(orbitInclination) * Math.sin(orbitAngle)
       const z = orbitRadius * Math.sin(orbitAngle)
       const estimatedRadius = nasaAsteroid?.info?.radius_km || (0.1 + Math.random() * 2.0)
-      // Daha görünür olması için ölçeği artırdık ve minimum bir boyut belirledik
+      
       const scale = Math.max(Math.min(estimatedRadius / 5, 0.8), 0.25)
       const isNEO = nasaAsteroid?.is_hazardous || Math.random() < 0.05
       const threatLevel = isNEO ? 0.8 + Math.random() * 0.2 : Math.random() * 0.3
-      const baseColor = [0.55, 0.45, 0.33] // Rocky asteroid color
-      const threatColor = threatLevel > 0.5 ? [1.0, 0.4, 0.2] : baseColor // Red for high threat
+      const baseColor = [0.55, 0.45, 0.33] 
+      const threatColor = threatLevel > 0.5 ? [1.0, 0.4, 0.2] : baseColor 
       const color: [number, number, number] = [
         baseColor[0] + (threatColor[0] - baseColor[0]) * threatLevel,
         baseColor[1] + (threatColor[1] - baseColor[1]) * threatLevel,
@@ -213,7 +213,7 @@ export const ProceduralAsteroidSystem = React.memo(({
         ],
         scale: [scale, scale * (0.8 + Math.random() * 0.4), scale],
         color,
-        // Hızları ciddi şekilde düşürdük
+        
         speed: (0.00002 + Math.random() * 0.00005) * 0.1,
         orbitRadius,
         orbitAngle,

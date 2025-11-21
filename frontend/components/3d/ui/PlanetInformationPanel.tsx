@@ -88,7 +88,7 @@ export const PlanetInformationPanel: React.FC<PlanetInformationPanelProps> = ({
     selectObject: state.selectObject,
   }));
   const timeState = useSolarSystemStore(state => state.timeState);
-  const currentLanguage = 'tr'; // FIXME: Should come from a user preferences store
+  const currentLanguage = 'tr'; 
   const celestialBody = useMemo(() => {
     if (!selectedObject) return null;
     return SOLAR_SYSTEM_DATA[selectedObject];

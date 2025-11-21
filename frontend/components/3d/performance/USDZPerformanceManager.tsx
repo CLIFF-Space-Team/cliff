@@ -49,13 +49,13 @@ export class USDZPerformanceManager {
   private frameHistory: number[] = []
   private lastFrameTime = 0
   private performanceHistory: USDZPerformanceMetrics[] = []
-  private renderer?: any // THREE.WebGLRenderer
-  private camera?: any // THREE.Camera
-  private scene?: any // THREE.Scene
+  private renderer?: any 
+  private camera?: any 
+  private scene?: any 
   private lodConfig: USDZLODConfig
   private currentLOD: 'low' | 'medium' | 'high' | 'ultra' = 'high'
   private autoLODEnabled = true
-  private lodObjects: Map<string, any> = new Map() // THREE.Object3D
+  private lodObjects: Map<string, any> = new Map() 
   private readonly PERFORMANCE_TARGETS = {
     targetFPS: 60,
     minAcceptableFPS: 30,
@@ -152,7 +152,7 @@ export class USDZPerformanceManager {
     const currentTime = performance.now()
     const fps = 1 / deltaTime
     this.frameHistory.push(fps)
-    if (this.frameHistory.length > 120) { // Keep 2 seconds at 60fps
+    if (this.frameHistory.length > 120) { 
       this.frameHistory.shift()
     }
     const averageFPS = this.frameHistory.reduce((a, b) => a + b, 0) / this.frameHistory.length
@@ -178,7 +178,7 @@ export class USDZPerformanceManager {
       this.lastPerformanceCheck = currentTime
     }
     this.performanceHistory.push(metrics)
-    if (this.performanceHistory.length > 60) { // Keep 1 minute of history
+    if (this.performanceHistory.length > 60) { 
       this.performanceHistory.shift()
     }
     this.lastFrameTime = currentTime
@@ -333,9 +333,9 @@ export const PerformanceTracker: React.FC<{
   const [canvasReady, setCanvasReady] = useState(false)
   const callbackQueueRef = useRef<USDZPerformanceMetrics[]>([])
   let threeState: any = null
-  let gl: any = null // THREE.WebGLRenderer
-  let camera: any = null // THREE.Camera
-  let scene: any = null // THREE.Scene
+  let gl: any = null 
+  let camera: any = null 
+  let scene: any = null 
   try {
     threeState = useThree()
     if (threeState) {
@@ -374,14 +374,14 @@ export const PerformanceTracker: React.FC<{
       if (callbackQueueRef.current.length > 0 && onMetricsUpdate && typeof onMetricsUpdate === 'function') {
         try {
           const latestMetrics = callbackQueueRef.current[callbackQueueRef.current.length - 1]
-          callbackQueueRef.current = [] // Clear queue
+          callbackQueueRef.current = [] 
           onMetricsUpdate(latestMetrics)
         } catch (error) {
           console.error('❌ Performance metrics callback error:', error)
         }
       }
     }
-    const intervalId = setInterval(processCallbacks, 100) // Process callbacks every 100ms
+    const intervalId = setInterval(processCallbacks, 100) 
     return () => clearInterval(intervalId)
   }, [onMetricsUpdate])
   useFrame((state, delta) => {
@@ -420,7 +420,7 @@ export const PerformanceTracker: React.FC<{
       }
     }
   }, [])
-  return null // Bu component render etmez, sadece performans takibi yapar
+  return null 
 }
 export function useUSDZPerformanceManager() {
   const [metrics, setMetrics] = useState<USDZPerformanceMetrics | null>(null)

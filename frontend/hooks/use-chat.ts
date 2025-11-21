@@ -321,7 +321,7 @@ export function useChat(options: UseChatOptions = {}): ChatHookReturn {
           }
           setMessages(prev => [...prev, imageMessage])
           setIsLoading(false)
-          return // Görüntü oluşturuldu, normal chat akışına devam etme
+          return 
         } else {
           const errorMessage: ChatMessage = {
             id: `${Date.now()}-error`,

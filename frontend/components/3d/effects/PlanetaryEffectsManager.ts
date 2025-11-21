@@ -33,7 +33,7 @@ export interface SaturnEffectConfig {
   hexagonalStormVisible: boolean
   ringCastsShadows: boolean
   titanAtmosphere: boolean
-  spokes: boolean // Ring spokes phenomenon
+  spokes: boolean 
 }
 export class PlanetaryEffectsManager {
   private scene: THREE.Scene
@@ -103,7 +103,7 @@ export class PlanetaryEffectsManager {
       })
       const greatRedSpot = new THREE.Mesh(spotGeometry, spotMaterial)
       greatRedSpot.position.copy(planetMesh.position)
-      greatRedSpot.rotation.y = Math.PI * 0.2 // Position on Jupiter
+      greatRedSpot.rotation.y = Math.PI * 0.2 
       effects.push(greatRedSpot)
       this.scene.add(greatRedSpot)
       this.animatedUniforms.set(`jupiter_spot_rotation`, {

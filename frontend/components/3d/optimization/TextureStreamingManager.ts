@@ -222,7 +222,7 @@ export class TextureStreamingManager {
   }
   private performMemoryManagement(): void {
     const now = performance.now()
-    if (now - this.lastMemoryCheck < 5000) return // Check every 5 seconds
+    if (now - this.lastMemoryCheck < 5000) return 
     this.lastMemoryCheck = now
     this.memoryUsage = this.estimateMemoryUsage()
     this.metrics.memoryUsageMB = this.memoryUsage / (1024 * 1024)
@@ -244,7 +244,7 @@ export class TextureStreamingManager {
     })
     texturesWithDistance
       .sort((a, b) => b.distance - a.distance)
-      .slice(0, Math.ceil(texturesWithDistance.length * 0.3)) // Unload 30% of distant textures
+      .slice(0, Math.ceil(texturesWithDistance.length * 0.3)) 
       .forEach(({id}) => {
         const texture = this.loadedTextures.get(id)
         if (texture) {
@@ -259,7 +259,7 @@ export class TextureStreamingManager {
       if (texture.image) {
         const width = texture.image.width || 1024
         const height = texture.image.height || 1024
-        usage += width * height * 4 // RGBA
+        usage += width * height * 4 
       }
     })
     return usage
@@ -268,7 +268,7 @@ export class TextureStreamingManager {
     if (!this.config.enableAdaptiveQuality) return
     const monitor = () => {
       const now = performance.now()
-      if (now - this.lastPerformanceCheck > 2000) { // Check every 2 seconds
+      if (now - this.lastPerformanceCheck > 2000) { 
         this.adjustQualityBasedOnPerformance()
         this.lastPerformanceCheck = now
       }
@@ -279,7 +279,7 @@ export class TextureStreamingManager {
   private adjustQualityBasedOnPerformance(): void {
     const averageFrameTime = this.performanceHistory.length > 0 ? 
       this.performanceHistory.reduce((a, b) => a + b, 0) / this.performanceHistory.length : 16.67
-    const targetFrameTime = 16.67 // 60 FPS
+    const targetFrameTime = 16.67 
     if (averageFrameTime > targetFrameTime * 1.5) {
       this.decreaseQuality()
     } else if (averageFrameTime < targetFrameTime * 0.8) {
@@ -309,8 +309,8 @@ export class TextureStreamingManager {
       this.loadTimes.shift()
     }
     if (fileSize > 0) {
-      const bandwidth = (fileSize * 8) / (loadTime / 1000) // bits per second
-      this.bandwidthSamples.push(bandwidth / 1000000) // Mbps
+      const bandwidth = (fileSize * 8) / (loadTime / 1000) 
+      this.bandwidthSamples.push(bandwidth / 1000000) 
       if (this.bandwidthSamples.length > 50) {
         this.bandwidthSamples.shift()
       }
@@ -318,7 +318,7 @@ export class TextureStreamingManager {
   }
   private updateMetrics(): void {
     const now = performance.now()
-    if (now - this.lastMetricsUpdate < 1000) return // Update every second
+    if (now - this.lastMetricsUpdate < 1000) return 
     this.lastMetricsUpdate = now
     this.metrics.activeStreams = this.activeStreams.size
     this.metrics.pendingRequests = this.streamingQueue.length
@@ -344,7 +344,7 @@ export class TextureStreamingManager {
     planetIds.forEach(planetId => {
       const distance = this.planetPositions.get(planetId)?.distanceTo(this.cameraPosition) || Infinity
       if (distance < this.config.preloadDistance) {
-        this.requestTextureStream(planetId, 'primary', 0.5) // Lower priority for preloading
+        this.requestTextureStream(planetId, 'primary', 0.5) 
       }
     })
   }

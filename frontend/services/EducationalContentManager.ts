@@ -131,7 +131,7 @@ export class EducationalContentManager {
         sources: [
           {
             name: 'IAU Guidelines',
-            url: 'https://www.iau.org/',
+            url: 'https:
             type: 'academic'
           }
         ]

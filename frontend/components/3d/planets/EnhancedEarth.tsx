@@ -164,7 +164,7 @@ function EarthEventMarker({
         <Html
           position={[0, 0.02, 0]}
           center
-          distanceFactor={6} // Reduced to fix massive scaling issue
+          distanceFactor={6} 
           style={{ pointerEvents: 'none' }}
           zIndexRange={[100, 0]}
         >

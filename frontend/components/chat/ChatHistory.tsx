@@ -88,7 +88,7 @@ const ChatHistory: React.FC<ChatHistoryProps> = ({
   useEffect(() => {
     if (groupByDate) {
       const dates = Object.keys(groupedMessages)
-      setExpandedDates(new Set(dates.slice(0, 3))) // Expand first 3 dates by default
+      setExpandedDates(new Set(dates.slice(0, 3))) 
     }
   }, [groupedMessages, groupByDate])
   const toggleDateGroup = (dateKey: string) => {

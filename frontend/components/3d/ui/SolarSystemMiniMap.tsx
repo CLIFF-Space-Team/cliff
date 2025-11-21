@@ -86,7 +86,7 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
   const animationRef = useRef<number>();
   const timeState = useSolarSystemStore(state => state.timeState);
   const engineState = useSolarSystemStore(state => state.engineState);
-  const currentLanguage = 'tr'; // FIXME: Should come from a user preferences store
+  const currentLanguage = 'tr'; 
   const celestialPositions = useMemo((): CelestialPosition[] => {
     if (!timeState) return [];
     const positions: CelestialPosition[] = [];
@@ -111,22 +111,22 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
         id: bodyId,
         name: bodyData.name,
         position: { x: position.x, y: position.y },
-        screenPosition: { x: 0, y: 0 }, // Will be calculated in render
+        screenPosition: { x: 0, y: 0 }, 
         distance,
         velocity: calculateOrbitalVelocity(bodyData, distance),
         color: bodyData.color,
         size: Math.max(2, Math.min(6, Math.log(bodyData.info.radius_km / 1000) + 2)),
         type: bodyData.type,
-        isVisible: distance < 50 // Only show bodies within 50 AU
+        isVisible: distance < 50 
       });
     });
     Object.entries(SIMPLE_MOONS).forEach(([moonId, moonData]) => {
       if (!moonData.parent_id) return;
       const parentPos = positions.find(p => p.id === moonData.parent_id);
       if (!parentPos) return;
-      const timeValue = currentTime.getTime() / 1000; // Convert to seconds
-      const moonAngle = (timeValue * 0.0001) % (2 * Math.PI); // Simplified rotation
-      const moonDistance = 0.2; // AU from parent (simplified)
+      const timeValue = currentTime.getTime() / 1000; 
+      const moonAngle = (timeValue * 0.0001) % (2 * Math.PI); 
+      const moonDistance = 0.2; 
       positions.push({
         id: moonId,
         name: moonData.name,
@@ -136,19 +136,19 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
         },
         screenPosition: { x: 0, y: 0 },
         distance: moonDistance,
-        velocity: 1.0, // Simplified velocity
+        velocity: 1.0, 
         color: moonData.color,
         size: 2,
         type: moonData.type,
-        isVisible: zoom > 2 // Only show moons when zoomed in
+        isVisible: zoom > 2 
       });
     });
     return positions;
   }, [timeState]);
   const calculateOrbitalPosition = useCallback((body: SimpleCelestialBody, currentTime: Date): { x: number; y: number } => {
     const orbit = body.orbit;
-    const a = orbit.distance_from_sun; // AU
-    const period = orbit.orbital_period_days; // days
+    const a = orbit.distance_from_sun; 
+    const period = orbit.orbital_period_days; 
     const julianDay = currentTime.getTime() / (1000 * 60 * 60 * 24) + 2440587.5;
     const angle = ((julianDay % period) / period) * 2 * Math.PI;
     return {
@@ -158,8 +158,8 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
   }, []);
   const calculateOrbitalVelocity = useCallback((body: SimpleCelestialBody, distance: number): number => {
     const circumference = 2 * Math.PI * body.orbit.distance_from_sun * ASTRONOMICAL_CONSTANTS.AU_IN_KM;
-    const period = body.orbit.orbital_period_days * 24 * 3600; // Convert to seconds
-    return circumference / period; // km/s
+    const period = body.orbit.orbital_period_days * 24 * 3600; 
+    return circumference / period; 
   }, []);
   const getCanvasDimensions = () => {
     const baseSize = isExpanded ? 300 : (config.size === 'small' ? 150 : config.size === 'medium' ? 200 : 250);
@@ -168,7 +168,7 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
   const worldToScreen = useCallback((worldPos: { x: number; y: number }, canvasSize: { width: number; height: number }) => {
     const centerX = canvasSize.width / 2;
     const centerY = canvasSize.height / 2;
-    const scale = zoom * Math.min(canvasSize.width, canvasSize.height) / 100; // Scale factor
+    const scale = zoom * Math.min(canvasSize.width, canvasSize.height) / 100; 
     return {
       x: centerX + (worldPos.x - center.x) * scale,
       y: centerY + (worldPos.y - center.y) * scale
@@ -238,7 +238,7 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
   const drawOrbitalPaths = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
     Object.entries(SOLAR_SYSTEM_DATA).forEach(([bodyId, bodyData]) => {
       if (bodyId === 'sun') return;
-      ctx.strokeStyle = `${bodyData.color}33`; // Semi-transparent
+      ctx.strokeStyle = `${bodyData.color}33`; 
       ctx.lineWidth = 1;
       ctx.beginPath();
       const a = bodyData.orbit.distance_from_sun;
@@ -293,7 +293,7 @@ export const SolarSystemMiniMap: React.FC<SolarSystemMiniMapProps> = ({
     }
   };
   const drawScaleBar = (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-    const scaleLength = 50; // pixels
+    const scaleLength = 50; 
     const scaleWorldLength = scaleLength / (zoom * Math.min(width, height) / 100);
     ctx.strokeStyle = '#ffffff';
     ctx.fillStyle = '#ffffff';

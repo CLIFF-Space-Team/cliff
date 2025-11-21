@@ -271,7 +271,7 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
 
       setIsTyping(false)
       
-      // Create a placeholder AI message
+      
       const aiMessageId = (Date.now() + 1).toString()
       const aiMessage: Message = {
         id: aiMessageId,
@@ -306,9 +306,9 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
             try {
               const data = JSON.parse(dataStr);
               
-              // Handle different message types
+              
               if (data.type === 'done') {
-                // Stream completed
+                
                 continue;
               }
               
@@ -317,14 +317,14 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
               }
               
               if (data.content) {
-                // Accumulate content based on type
+                
                 if (data.type === 'thought') {
                   thoughtBuffer += data.content;
                 } else if (data.type === 'content') {
                   contentBuffer += data.content;
                 }
 
-                // Update message in real-time
+                
                 setMessages(prev => prev.map(msg => 
                   msg.id === aiMessageId 
                     ? { 
@@ -347,7 +347,7 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
         }
       }
       
-      // If no content was received at all, show error
+      
       if (!contentBuffer && !thoughtBuffer) {
         throw new Error('Yanıt alınamadı');
       }

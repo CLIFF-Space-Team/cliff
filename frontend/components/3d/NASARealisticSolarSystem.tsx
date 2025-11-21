@@ -244,7 +244,7 @@ export function NASARealisticSolarSystem({
   enableRotation = true,
   displayMode = 'full'
 }: NASARealisticSolarSystemProps) {
-  const [showFPSMonitor] = useState(true) // Enable FPS monitoring for performance tracking
+  const [showFPSMonitor] = useState(true) 
   const shadowsEnabled = quality !== 'low'
   const reflectionsEnabled = quality !== 'low'
   const setQuality = useDashboardStore((s) => s.setQuality)
@@ -259,7 +259,7 @@ export function NASARealisticSolarSystem({
       return {
         position: [15, 10, 20] as [number, number, number],
         fov: 45,
-        target: [0, 0, 0] as [number, number, number], // Focus on Earth
+        target: [0, 0, 0] as [number, number, number], 
         minDistance: 5,
         maxDistance: 50
       }

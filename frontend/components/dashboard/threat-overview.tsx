@@ -38,7 +38,7 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
       if (!isAnalysisRunning && !latestSummary) {
         startAnalysis()
       }
-    }, 2000) // 2 saniye sonra otomatik başlat
+    }, 2000) 
     return () => clearTimeout(timer)
   }, [startAnalysis, isAnalysisRunning, latestSummary])
   const aiInsights = useMemo(() => {
@@ -85,7 +85,7 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
       message: 'Tüm izleme sistemleri optimal çalışıyor. Veri akışı stabil.',
       confidence: 0.95
     })
-    return insights.slice(0, 3) // En fazla 3 insight
+    return insights.slice(0, 3) 
   }, [recentInsights, comprehensiveAssessment])
   const threatMetrics = useMemo(() => {
     if (!comprehensiveAssessment && !threatLevel) return null
@@ -163,7 +163,7 @@ const ThreatOverview: React.FC<ThreatOverviewProps> = ({
           severity: maxSeverity
         }
       })
-      .slice(0, 5) // Maksimum 5 tür göster
+      .slice(0, 5) 
   }, [comprehensiveAssessment])
   const lastUpdated = lastRefresh
   if (isLoading && !threatMetrics) {
