@@ -1,4 +1,4 @@
-from __future__ import annotations
+ï»¿from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Query, Path
@@ -17,7 +17,7 @@ from app.services.risk_engine import compute_risk_levels
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/asteroids", tags=["Asteroid Threats"])
 def _clean_mongo_doc(doc):
-    """MongoDB dökümanýndaki ObjectId ve datetime'ý serialize et"""
+    
     if doc is None:
         return None
     if isinstance(doc, list):
@@ -57,7 +57,7 @@ async def detail(neo_id: str) -> JSONResponse:
         }
         return JSONResponse(result)
     except Exception as e:
-        logger.error("Detail hatasý", neo_id=neo_id, error=str(e), exc_info=True)
+        logger.error("Detail hatasÄ±", neo_id=neo_id, error=str(e), exc_info=True)
         return JSONResponse({"error": str(e)}, status_code=500)
 @router.get("/overview")
 async def overview() -> JSONResponse:
@@ -109,7 +109,7 @@ async def events():
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 @router.post("/sync")
 async def sync_now() -> JSONResponse:
-    """Manuel veri yükleme (NeoWs + Sentry + normalize + risk hesaplama)"""
+    
     try:
         r1 = await ingest_neows_feed(7)
         r2 = await ingest_sentry_once()
@@ -117,7 +117,7 @@ async def sync_now() -> JSONResponse:
         r4 = await compute_risk_levels()
         return JSONResponse({"success": True, "neows": r1, "sentry": r2, "normalize": r3, "risk": r4})
     except Exception as e:
-        logger.error("Sync hatasý", error=str(e))
+        logger.error("Sync hatasÄ±", error=str(e))
         return JSONResponse({"success": False, "error": str(e)}, status_code=500)
 def _risk_weight_expr():
     return {
@@ -245,11 +245,11 @@ def _build_search_pipeline(
     return pipeline
 @router.get("/search")
 async def search(
-    q: Optional[str] = Query(None, description="NEO adý/ID arama"),
+    q: Optional[str] = Query(None, description="NEO adÄ±/ID arama"),
     risk: Optional[List[str]] = Query(None, description="risk seviyeleri"),
     min_diameter_km: Optional[float] = Query(None, ge=0),
     max_diameter_km: Optional[float] = Query(None, ge=0),
-    max_ld: Optional[float] = Query(None, ge=0, description="Maks. Ay uzaklýðý (LD)"),
+    max_ld: Optional[float] = Query(None, ge=0, description="Maks. Ay uzaklÄ±ÄŸÄ± (LD)"),
     window_days: int = Query(30, ge=0, le=365),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -289,10 +289,10 @@ async def search(
             }
         )
     except Exception as e:
-        logger.error("Search hatasý", error=str(e), exc_info=True)
+        logger.error("Search hatasÄ±", error=str(e), exc_info=True)
         return JSONResponse({"error": str(e)}, status_code=500)
 @router.get("/compare")
-async def compare(ids: str = Query(..., description="Virgülle ayrýlmýþ NEO ID listesi")) -> JSONResponse:
+async def compare(ids: str = Query(..., description="VirgÃ¼lle ayrÄ±lmÄ±ÅŸ NEO ID listesi")) -> JSONResponse:
     try:
         id_list = [i.strip() for i in ids.split(",") if i.strip()]
         if not id_list:
@@ -350,5 +350,5 @@ async def compare(ids: str = Query(..., description="Virgülle ayrýlmýþ NEO ID li
             items.append(doc)
         return JSONResponse({"items": _clean_mongo_doc(items)})
     except Exception as e:
-        logger.error("Compare hatasý", error=str(e), exc_info=True)
+        logger.error("Compare hatasÄ±", error=str(e), exc_info=True)
         return JSONResponse({"error": str(e)}, status_code=500)

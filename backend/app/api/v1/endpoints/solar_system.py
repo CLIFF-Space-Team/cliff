@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+﻿from fastapi import APIRouter
 from typing import List
 from app.models.celestial_body import CelestialBody
 from app.services.solar_system_service import get_all_celestial_bodies

@@ -1,77 +1,77 @@
-from beanie import Document
+ï»¿from beanie import Document
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 class SimpleThreatResponse(BaseModel):
-    """Basit tehdit yanýtý - 3 seviyeli sistem"""
-    threat_level: str = Field(..., description="Tehdit seviyesi: Düþük, Orta, Yüksek")
+    
+    threat_level: str = Field(..., description="Tehdit seviyesi: DÃ¼ÅŸÃ¼k, Orta, YÃ¼ksek")
     color: str = Field(..., description="Renk kodu")
-    description: str = Field(..., description="Durum açýklamasý")
-    confidence: float = Field(..., description="Güvenilirlik (0-1)")
-    last_updated: datetime = Field(..., description="Son güncelleme")
+    description: str = Field(..., description="Durum aÃ§Ä±klamasÄ±")
+    confidence: float = Field(..., description="GÃ¼venilirlik (0-1)")
+    last_updated: datetime = Field(..., description="Son gÃ¼ncelleme")
 class SimpleAlert(BaseModel):
-    """Basit uyarý modeli"""
-    id: str = Field(..., description="Uyarý ID")
-    level: str = Field(..., description="Uyarý seviyesi: Düþük, Orta, Yüksek")
-    title: str = Field(..., description="Uyarý baþlýðý")
-    message: str = Field(..., description="Uyarý mesajý")
-    type: str = Field(..., description="Uyarý türü: asteroid, earth_event, space_weather")
-    created_at: datetime = Field(default_factory=datetime.utcnow, description="Oluþturulma zamaný")
-    expires_at: Optional[datetime] = Field(None, description="Geçerlilik süresi")
+    
+    id: str = Field(..., description="UyarÄ± ID")
+    level: str = Field(..., description="UyarÄ± seviyesi: DÃ¼ÅŸÃ¼k, Orta, YÃ¼ksek")
+    title: str = Field(..., description="UyarÄ± baÅŸlÄ±ÄŸÄ±")
+    message: str = Field(..., description="UyarÄ± mesajÄ±")
+    type: str = Field(..., description="UyarÄ± tÃ¼rÃ¼: asteroid, earth_event, space_weather")
+    created_at: datetime = Field(default_factory=datetime.utcnow, description="OluÅŸturulma zamanÄ±")
+    expires_at: Optional[datetime] = Field(None, description="GeÃ§erlilik sÃ¼resi")
 class ThreatStatistics(BaseModel):
-    """Tehdit istatistikleri"""
-    total_asteroids: int = Field(default=0, description="Toplam asteroit sayýsý")
-    hazardous_asteroids: int = Field(default=0, description="Tehlikeli asteroit sayýsý")
-    active_earth_events: int = Field(default=0, description="Aktif doðal olay sayýsý")
-    space_weather_events: int = Field(default=0, description="Uzay hava olayý sayýsý")
-    threat_distribution: Dict[str, int] = Field(default_factory=dict, description="Tehdit daðýlýmý")
+    
+    total_asteroids: int = Field(default=0, description="Toplam asteroit sayÄ±sÄ±")
+    hazardous_asteroids: int = Field(default=0, description="Tehlikeli asteroit sayÄ±sÄ±")
+    active_earth_events: int = Field(default=0, description="Aktif doÄŸal olay sayÄ±sÄ±")
+    space_weather_events: int = Field(default=0, description="Uzay hava olayÄ± sayÄ±sÄ±")
+    threat_distribution: Dict[str, int] = Field(default_factory=dict, description="Tehdit daÄŸÄ±lÄ±mÄ±")
 class SimplifiedThreatAssessment(Document):
-    """Basitleþtirilmiþ tehdit deðerlendirmesi - MongoDB"""
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Deðerlendirme zamaný")
-    overall_level: str = Field(..., description="Genel seviye: Düþük, Orta, Yüksek")
-    confidence: float = Field(default=0.8, description="Güvenilirlik")
-    statistics: ThreatStatistics = Field(..., description="Ýstatistikler")
-    recommendations: List[str] = Field(default_factory=list, description="Öneriler")
-    data_sources: List[str] = Field(default_factory=list, description="Kullanýlan veri kaynaklarý")
-    next_assessment: datetime = Field(..., description="Sonraki deðerlendirme")
+    
+    timestamp: datetime = Field(default_factory=datetime.utcnow, description="DeÄŸerlendirme zamanÄ±")
+    overall_level: str = Field(..., description="Genel seviye: DÃ¼ÅŸÃ¼k, Orta, YÃ¼ksek")
+    confidence: float = Field(default=0.8, description="GÃ¼venilirlik")
+    statistics: ThreatStatistics = Field(..., description="Ä°statistikler")
+    recommendations: List[str] = Field(default_factory=list, description="Ã–neriler")
+    data_sources: List[str] = Field(default_factory=list, description="KullanÄ±lan veri kaynaklarÄ±")
+    next_assessment: datetime = Field(..., description="Sonraki deÄŸerlendirme")
     class Settings:
         name = "simplified_threat_assessments"
 class SimpleAlertDocument(Document):
-    """Basit uyarý dokümaný - MongoDB"""
-    alert_id: str = Field(..., description="Uyarý ID")
-    level: str = Field(..., description="Seviye: Düþük, Orta, Yüksek")
-    title: str = Field(..., description="Baþlýk")
+    
+    alert_id: str = Field(..., description="UyarÄ± ID")
+    level: str = Field(..., description="Seviye: DÃ¼ÅŸÃ¼k, Orta, YÃ¼ksek")
+    title: str = Field(..., description="BaÅŸlÄ±k")
     message: str = Field(..., description="Mesaj")
-    alert_type: str = Field(..., description="Tür")
-    created_at: datetime = Field(default_factory=datetime.utcnow, description="Oluþturulma")
-    expires_at: Optional[datetime] = Field(None, description="Geçerlilik")
+    alert_type: str = Field(..., description="TÃ¼r")
+    created_at: datetime = Field(default_factory=datetime.utcnow, description="OluÅŸturulma")
+    expires_at: Optional[datetime] = Field(None, description="GeÃ§erlilik")
     acknowledged: bool = Field(default=False, description="Okundu mu?")
     source_data: Optional[Dict[str, Any]] = Field(None, description="Kaynak veri")
     class Settings:
         name = "simple_alerts"
 class ThreatLevelResponse(BaseModel):
-    """Geriye dönük uyumluluk için - basitleþtirilmiþ"""
+    
     overall_threat_level: str = Field(..., description="Genel tehdit seviyesi")
     risk_score: float = Field(default=50.0, description="Risk skoru (0-100)")
-    active_threats_count: int = Field(default=0, description="Aktif tehdit sayýsý")
-    last_updated: datetime = Field(default_factory=datetime.utcnow, description="Son güncelleme")
-    data_sources: List[str] = Field(default_factory=list, description="Veri kaynaklarý")
-    confidence_score: float = Field(default=0.8, description="Güvenilirlik")
+    active_threats_count: int = Field(default=0, description="Aktif tehdit sayÄ±sÄ±")
+    last_updated: datetime = Field(default_factory=datetime.utcnow, description="Son gÃ¼ncelleme")
+    data_sources: List[str] = Field(default_factory=list, description="Veri kaynaklarÄ±")
+    confidence_score: float = Field(default=0.8, description="GÃ¼venilirlik")
 class ThreatDetail(BaseModel):
-    """Basitleþtirilmiþ tehdit detayý"""
+    
     threat_id: str = Field(..., description="Tehdit ID")
-    threat_type: str = Field(..., description="Tehdit türü")
-    severity: str = Field(..., description="Önem: Düþük, Orta, Yüksek")
-    title: str = Field(..., description="Baþlýk")
-    description: str = Field(..., description="Açýklama")
-    impact_probability: float = Field(default=0.1, description="Etki olasýlýðý")
-    time_to_impact: Optional[str] = Field(None, description="Etki zamaný")
-    recommended_actions: List[str] = Field(default_factory=list, description="Öneriler")
-    data_source: str = Field(default="CLIFF", description="Veri kaynaðý")
+    threat_type: str = Field(..., description="Tehdit tÃ¼rÃ¼")
+    severity: str = Field(..., description="Ã–nem: DÃ¼ÅŸÃ¼k, Orta, YÃ¼ksek")
+    title: str = Field(..., description="BaÅŸlÄ±k")
+    description: str = Field(..., description="AÃ§Ä±klama")
+    impact_probability: float = Field(default=0.1, description="Etki olasÄ±lÄ±ÄŸÄ±")
+    time_to_impact: Optional[str] = Field(None, description="Etki zamanÄ±")
+    recommended_actions: List[str] = Field(default_factory=list, description="Ã–neriler")
+    data_source: str = Field(default="CLIFF", description="Veri kaynaÄŸÄ±")
     coordinates: Optional[Dict[str, float]] = Field(None, description="Koordinatlar")
     ai_analysis: Optional[Dict[str, Any]] = Field(None, description="AI analizi")
 class ComprehensiveAssessment(Document):
-    """Basitleþtirilmiþ kapsamlý deðerlendirme"""
+    
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     overall_risk: ThreatLevelResponse = Field(...)
     active_threats: List[ThreatDetail] = Field(default_factory=list)
@@ -82,9 +82,9 @@ class ComprehensiveAssessment(Document):
     class Settings:
         name = "comprehensive_assessments"
 class ThreatAlert(Document):
-    """Basitleþtirilmiþ tehdit uyarýsý"""
+    
     alert_id: str = Field(...)
-    alert_level: str = Field(..., description="Seviye: INFO, WARNING, CRITICAL -> Düþük, Orta, Yüksek")
+    alert_level: str = Field(..., description="Seviye: INFO, WARNING, CRITICAL -> DÃ¼ÅŸÃ¼k, Orta, YÃ¼ksek")
     message: str = Field(...)
     threat_details: ThreatDetail = Field(...)
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -92,69 +92,69 @@ class ThreatAlert(Document):
     class Settings:
         name = "threat_alerts"
 class CurrentThreatResponse(BaseModel):
-    """Güncel tehdit durumu yanýtý"""
-    threat_level: str = Field(..., description="Düþük, Orta, Yüksek")
+    
+    threat_level: str = Field(..., description="DÃ¼ÅŸÃ¼k, Orta, YÃ¼ksek")
     color: str = Field(..., description="Hex renk kodu")
-    description: str = Field(..., description="Durum açýklamasý")
-    active_threats: Dict[str, int] = Field(..., description="Aktif tehdit sayýlarý")
-    recommendations: List[str] = Field(..., description="Öneriler")
-    last_updated: str = Field(..., description="Son güncelleme (ISO format)")
-    confidence: float = Field(..., description="Güvenilirlik")
+    description: str = Field(..., description="Durum aÃ§Ä±klamasÄ±")
+    active_threats: Dict[str, int] = Field(..., description="Aktif tehdit sayÄ±larÄ±")
+    recommendations: List[str] = Field(..., description="Ã–neriler")
+    last_updated: str = Field(..., description="Son gÃ¼ncelleme (ISO format)")
+    confidence: float = Field(..., description="GÃ¼venilirlik")
 class ThreatSummaryResponse(BaseModel):
-    """Tehdit özeti yanýtý"""
+    
     overall_status: str = Field(..., description="normal, watch, elevated")
-    high_priority_threats: List[Dict[str, Any]] = Field(..., description="Yüksek öncelik")
-    medium_priority_threats: List[Dict[str, Any]] = Field(..., description="Orta öncelik")
-    statistics: Dict[str, Any] = Field(..., description="Ýstatistikler")
-    last_updated: str = Field(..., description="Son güncelleme")
+    high_priority_threats: List[Dict[str, Any]] = Field(..., description="YÃ¼ksek Ã¶ncelik")
+    medium_priority_threats: List[Dict[str, Any]] = Field(..., description="Orta Ã¶ncelik")
+    statistics: Dict[str, Any] = Field(..., description="Ä°statistikler")
+    last_updated: str = Field(..., description="Son gÃ¼ncelleme")
 class AsteroidThreatResponse(BaseModel):
-    """Asteroit tehdit yanýtý"""
+    
     asteroids: List[Dict[str, Any]] = Field(..., description="Asteroit listesi")
-    total_count: int = Field(..., description="Toplam sayý")
-    hazardous_count: int = Field(..., description="Tehlikeli sayý")
-    threat_distribution: Dict[str, int] = Field(..., description="Tehdit daðýlýmý")
-    last_updated: str = Field(..., description="Son güncelleme")
+    total_count: int = Field(..., description="Toplam sayÄ±")
+    hazardous_count: int = Field(..., description="Tehlikeli sayÄ±")
+    threat_distribution: Dict[str, int] = Field(..., description="Tehdit daÄŸÄ±lÄ±mÄ±")
+    last_updated: str = Field(..., description="Son gÃ¼ncelleme")
 class EarthEventResponse(BaseModel):
-    """Doðal olay yanýtý"""
+    
     events: List[Dict[str, Any]] = Field(..., description="Olay listesi")
-    total_count: int = Field(..., description="Toplam sayý")
-    severity_distribution: Dict[str, int] = Field(..., description="Önem daðýlýmý")
-    category_distribution: Dict[str, int] = Field(..., description="Kategori daðýlýmý")
-    last_updated: str = Field(..., description="Son güncelleme")
+    total_count: int = Field(..., description="Toplam sayÄ±")
+    severity_distribution: Dict[str, int] = Field(..., description="Ã–nem daÄŸÄ±lÄ±mÄ±")
+    category_distribution: Dict[str, int] = Field(..., description="Kategori daÄŸÄ±lÄ±mÄ±")
+    last_updated: str = Field(..., description="Son gÃ¼ncelleme")
 class SpaceWeatherResponse(BaseModel):
-    """Uzay hava durumu yanýtý"""
+    
     events: List[Dict[str, Any]] = Field(..., description="Olay listesi")
-    total_count: int = Field(..., description="Toplam sayý")
-    intensity_distribution: Dict[str, int] = Field(..., description="Þiddet daðýlýmý")
-    recent_high_activity: int = Field(..., description="Son yüksek aktivite")
+    total_count: int = Field(..., description="Toplam sayÄ±")
+    intensity_distribution: Dict[str, int] = Field(..., description="Åžiddet daÄŸÄ±lÄ±mÄ±")
+    recent_high_activity: int = Field(..., description="Son yÃ¼ksek aktivite")
     current_condition: str = Field(..., description="Mevcut durum")
-    last_updated: str = Field(..., description="Son güncelleme")
+    last_updated: str = Field(..., description="Son gÃ¼ncelleme")
 def convert_old_severity_to_new(old_severity: str) -> str:
-    """Eski seviye sistemini yeniye çevir"""
+    
     mapping = {
-        "LOW": "Düþük",
+        "LOW": "DÃ¼ÅŸÃ¼k",
         "MODERATE": "Orta", 
-        "HIGH": "Yüksek",
-        "CRITICAL": "Yüksek",
-        "INFO": "Düþük",
+        "HIGH": "YÃ¼ksek",
+        "CRITICAL": "YÃ¼ksek",
+        "INFO": "DÃ¼ÅŸÃ¼k",
         "WARNING": "Orta",
-        "CRITICAL": "Yüksek"
+        "CRITICAL": "YÃ¼ksek"
     }
-    return mapping.get(old_severity.upper(), "Düþük")
+    return mapping.get(old_severity.upper(), "DÃ¼ÅŸÃ¼k")
 def get_threat_color(level: str) -> str:
-    """Tehdit seviyesine göre renk"""
+    
     colors = {
-        "Düþük": "#22c55e",    # Yeþil
-        "Orta": "#f59e0b",     # Sarý/Turuncu
-        "Yüksek": "#ef4444"    # Kýrmýzý
+        "DÃ¼ÅŸÃ¼k": "#22c55e",    # YeÅŸil
+        "Orta": "#f59e0b",     # SarÄ±/Turuncu
+        "YÃ¼ksek": "#ef4444"    # KÄ±rmÄ±zÄ±
     }
     return colors.get(level, "#22c55e")
 def calculate_simple_risk_score(level: str, threat_count: int = 0) -> float:
-    """Basit risk skoru hesaplama"""
+    
     base_scores = {
-        "Düþük": 25.0,
+        "DÃ¼ÅŸÃ¼k": 25.0,
         "Orta": 50.0,
-        "Yüksek": 75.0
+        "YÃ¼ksek": 75.0
     }
     base = base_scores.get(level, 25.0)
     adjustment = min(threat_count * 2.0, 20.0)

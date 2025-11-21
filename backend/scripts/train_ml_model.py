@@ -1,4 +1,4 @@
-import json
+﻿import json
 import math
 import os
 from typing import Dict, List, Tuple
@@ -39,8 +39,8 @@ def build_dataset_from_sentry(rows: List[Dict]) -> Tuple[np.ndarray, np.ndarray]
                 moid_au,             # distance_au yerine moid
                 v_inf,               # velocity_kms
                 0.0,                 # diameter_km (bilinmiyor)
-                180.0,               # time_to_approach_days (yaklaşık)
-                5.0,                 # observation_count (yaklaşık)
+                180.0,               # time_to_approach_days (yaklaÅŸÄ±k)
+                5.0,                 # observation_count (yaklaÅŸÄ±k)
                 h_mag,               # h_magnitude
                 0.0,                 # uncertainty_km
             ]

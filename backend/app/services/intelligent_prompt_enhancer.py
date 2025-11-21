@@ -1,4 +1,4 @@
-import asyncio
+ï»¿import asyncio
 import hashlib
 import logging
 import json
@@ -17,7 +17,7 @@ from app.services.openai_compatible_service import (
 logger = structlog.get_logger(__name__)
 
 class PromptCategory(str, Enum):
-    """Prompt kategorileri"""
+    
     SPACE = "space"
     NATURE = "nature" 
     FANTASY = "fantasy"
@@ -31,7 +31,7 @@ class PromptCategory(str, Enum):
     GENERAL = "general"
 
 class PromptStyle(str, Enum):
-    """Prompt stilleri"""
+    
     PHOTOREALISTIC = "photorealistic"
     ARTISTIC = "artistic"
     CINEMATIC = "cinematic"
@@ -45,7 +45,7 @@ class PromptStyle(str, Enum):
 
 @dataclass
 class PromptAnalysis:
-    """Prompt analiz sonuçlarý"""
+    
     original_input: str
     detected_category: PromptCategory
     detected_style: Optional[PromptStyle]
@@ -56,17 +56,17 @@ class PromptAnalysis:
     processing_time_ms: int
 
 class PromptEnhancementRequest(BaseModel):
-    """Prompt geliþtirme isteði"""
-    user_input: str = Field(..., description="Kullanýcýnýn basit input'u")
+    
+    user_input: str = Field(..., description="KullanÄ±cÄ±nÄ±n basit input'u")
     preferred_style: Optional[PromptStyle] = Field(default=None, description="Tercih edilen stil")
-    creativity_level: float = Field(default=0.8, ge=0.0, le=1.0, description="Yaratýcýlýk seviyesi")
+    creativity_level: float = Field(default=0.8, ge=0.0, le=1.0, description="YaratÄ±cÄ±lÄ±k seviyesi")
     detail_level: str = Field(default="medium", description="Detay seviyesi: low, medium, high")
     target_category: Optional[PromptCategory] = Field(default=None, description="Hedef kategori")
     include_technical: bool = Field(default=True, description="Teknik detaylar dahil edilsin mi")
     use_cache: bool = Field(default=True, description="Cache kullan")
 
 class PromptEnhancementResponse(BaseModel):
-    """Prompt geliþtirme yanýtý"""
+    
     success: bool
     original_input: str
     enhanced_prompt: Optional[str] = None
@@ -79,10 +79,7 @@ class PromptEnhancementResponse(BaseModel):
     timestamp: str = Field(default_factory=lambda: datetime.now().isoformat())
 
 class IntelligentPromptEnhancer:
-    """
-    Akýllý Prompt Geliþtirme Servisi
-    Grok-4-fast-reasoning ile prompt analizi ve geliþtirme
-    """
+    
     def __init__(self):
         self.chat_service = openai_compatible_service
         self.cache: Dict[str, Dict[str, Any]] = {}
@@ -91,52 +88,16 @@ class IntelligentPromptEnhancer:
         logger.info("Intelligent Prompt Enhancer initialized")
 
     def _create_system_prompt(self) -> str:
-        """Sistem prompt'u oluþtur"""
-        return """Sen uzman bir AI prompt mühendisisin. Görevin kullanýcýlarýn basit açýklamalarýný alýp, yüksek kaliteli resim üretimi için optimize edilmiþ detaylý promptlar oluþturmak.
-
-KÝPLÝK KURALLARI:
-1. Kullanýcýnýn input'unu analiz et ve ana kategorisini belirle
-2. Görsel kaliteyi artýracak teknik detaylar ekle
-3. Sanatsal ve estetik öðeleri geliþtir
-4. Kompozisyon ve ýþýklandýrma öneriler
-5. Resim kalitesini artýracak anahtar kelimeler kullan
-
-PROMPT YAPISI:
-- Ana konu açýklamasý
-- Görsel stil ve atmosfer
-- Teknik kalite belirteçleri
-- Kompozisyon detaylarý
-- Renk paleti önerileri
-- Profesyonel fotoðraf/sanat terimleri
-
-ÖRNEKLERÝ ÇIKARIMLARI YAKALA:
-Basit: "kedi"
-Geliþmiþ: "Majestic orange tabby cat with striking green eyes, sitting gracefully on a weathered wooden windowsill, soft natural lighting filtering through vintage lace curtains, shallow depth of field, professional pet photography, warm golden hour lighting, detailed fur texture, peaceful expression, cozy indoor atmosphere, canon 85mm lens aesthetic, high resolution, photorealistic"
-
-Basit: "uzay"
-Geliþmiþ: "Breathtaking deep space vista with swirling nebulae in vibrant purples and blues, distant galaxies scattered across the cosmic void, brilliant stars creating lens flares, ethereal cosmic dust clouds, sense of infinite scale and wonder, astrophotography style, ultra-high resolution, dramatic contrast between light and shadow, celestial beauty, Hubble telescope quality"
-
-Yanýtýný SADECE aþaðýdaki JSON formatýnda ver, baþka bir þey yazma:
-{
-  "enhanced_prompt": "geliþtirilmiþ prompt",
-  "analysis": {
-    "category": "kategori",
-    "style": "stil",
-    "key_elements": ["öðe1", "öðe2"],
-    "mood": ["ruh hali1", "ruh hali2"],
-    "technical_aspects": ["teknik1", "teknik2"]
-  },
-  "confidence": 0.95,
-  "suggestions": ["öneri1", "öneri2"]
-}"""
+        
+        return 
 
     def _generate_cache_key(self, request: PromptEnhancementRequest) -> str:
-        """Cache anahtarý oluþtur"""
+        
         cache_data = f"{request.user_input}_{request.preferred_style}_{request.detail_level}_{request.creativity_level}"
         return hashlib.md5(cache_data.encode()).hexdigest()
 
     def _is_cache_valid(self, cache_key: str) -> bool:
-        """Cache geçerliliði kontrolü"""
+        
         if cache_key not in self.cache:
             return False
         cached_time = datetime.fromisoformat(self.cache[cache_key]['timestamp'])
@@ -144,24 +105,12 @@ Yanýtýný SADECE aþaðýdaki JSON formatýnda ver, baþka bir þey yazma:
         return datetime.now() < expiry_time
 
     def _create_enhancement_prompt(self, request: PromptEnhancementRequest) -> str:
-        """Geliþtirme prompt'u oluþtur"""
-        user_prompt = f"""
-Kullanýcý Input: "{request.user_input}"
-Geliþtirme Parametreleri:
-- Tercih edilen stil: {request.preferred_style or 'otomatik belirle'}
-- Yaratýcýlýk seviyesi: {request.creativity_level}/1.0
-- Detay seviyesi: {request.detail_level}
-- Hedef kategori: {request.target_category or 'otomatik belirle'}
-- Teknik detay: {'evet' if request.include_technical else 'hayýr'}
-
-Bu input'u analiz edip yüksek kaliteli resim üretimi için optimize edilmiþ detaylý prompt oluþtur. Yanýtýný yukarýdaki JSON formatýnda ver.
-"""
+        
+        user_prompt = f
         return user_prompt.strip()
 
     async def enhance_prompt(self, request: PromptEnhancementRequest) -> PromptEnhancementResponse:
-        """
-        Ana prompt geliþtirme fonksiyonu
-        """
+        
         start_time = datetime.now()
         cache_key = self._generate_cache_key(request)
 
@@ -244,7 +193,7 @@ Bu input'u analiz edip yüksek kaliteli resim üretimi için optimize edilmiþ detay
                 return PromptEnhancementResponse(
                     success=False,
                     original_input=request.user_input,
-                    error_message="AI boþ yanýt döndürdü",
+                    error_message="AI boÅŸ yanÄ±t dÃ¶ndÃ¼rdÃ¼",
                     processing_time_ms=processing_time
                 )
 
@@ -259,9 +208,7 @@ Bu input'u analiz edip yüksek kaliteli resim üretimi için optimize edilmiþ detay
             )
 
     async def quick_enhance(self, user_input: str, style: Optional[str] = None) -> str:
-        """
-        Hýzlý prompt geliþtirme
-        """
+        
         request = PromptEnhancementRequest(
             user_input=user_input,
             preferred_style=PromptStyle(style) if style else None,
@@ -275,9 +222,7 @@ Bu input'u analiz edip yüksek kaliteli resim üretimi için optimize edilmiþ detay
             return f"High quality, detailed image of {user_input}, professional photography, best quality, ultra-realistic, 8k resolution"
 
     async def batch_enhance(self, inputs: List[str]) -> List[PromptEnhancementResponse]:
-        """
-        Toplu prompt geliþtirme
-        """
+        
         tasks = []
         for user_input in inputs:
             request = PromptEnhancementRequest(user_input=user_input)
@@ -300,9 +245,7 @@ Bu input'u analiz edip yüksek kaliteli resim üretimi için optimize edilmiþ detay
         return processed_results
 
     def get_prompt_examples(self) -> Dict[str, Dict[str, str]]:
-        """
-        Örnek promptlar
-        """
+        
         return {
             "space": {
                 "simple": "uzay",
@@ -323,14 +266,14 @@ Bu input'u analiz edip yüksek kaliteli resim üretimi için optimize edilmiþ detay
         }
 
     def clear_cache(self) -> int:
-        """Cache temizle"""
+        
         count = len(self.cache)
         self.cache.clear()
         logger.info(f"Cleared {count} cached prompts")
         return count
 
     def get_cache_stats(self) -> Dict[str, Any]:
-        """Cache istatistikleri"""
+        
         return {
             "cached_prompts": len(self.cache),
             "cache_ttl_hours": self.cache_ttl_hours,
@@ -341,17 +284,17 @@ Bu input'u analiz edip yüksek kaliteli resim üretimi için optimize edilmiþ detay
 intelligent_prompt_enhancer = IntelligentPromptEnhancer()
 
 async def get_prompt_enhancer() -> IntelligentPromptEnhancer:
-    """Dependency injection için servis instance"""
+    
     return intelligent_prompt_enhancer
 
 async def enhance_user_prompt(user_input: str, style: Optional[str] = None) -> str:
-    """Hýzlý prompt geliþtirme fonksiyonu"""
+    
     return await intelligent_prompt_enhancer.quick_enhance(user_input, style)
 
 def get_available_styles() -> List[str]:
-    """Mevcut stilleri listele"""
+    
     return [style.value for style in PromptStyle]
 
 def get_available_categories() -> List[str]:
-    """Mevcut kategorileri listele"""
+    
     return [cat.value for cat in PromptCategory]

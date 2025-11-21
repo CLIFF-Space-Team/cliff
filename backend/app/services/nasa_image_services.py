@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 import aiohttp
 import ssl
 import json
@@ -10,7 +10,7 @@ from collections import Counter
 logger = logging.getLogger(__name__)
 @dataclass
 class NASAImageData:
-    """NASA image data structure"""
+    
     nasa_id: str
     title: str
     description: Optional[str]
@@ -28,7 +28,7 @@ class NASAImageData:
     description_508: Optional[str]  # Accessibility description
 @dataclass  
 class ImageSearchParams:
-    """Image search parameters"""
+    
     query: Optional[str] = None
     center: Optional[str] = None  # NASA center filter
     description: Optional[str] = None
@@ -44,7 +44,7 @@ class ImageSearchParams:
     page_size: int = 100
 @dataclass
 class ImageCollectionStats:
-    """Image collection statistics"""
+    
     total_hits: int
     returned_items: int
     media_types: Dict[str, int]
@@ -52,12 +52,12 @@ class ImageCollectionStats:
     keywords_frequency: Dict[str, int]
     date_range: Dict[str, str]
 class RateLimiter:
-    """Simple rate limiter"""
+    
     def __init__(self, requests_per_second: float = 2):
         self.requests_per_second = requests_per_second
         self.last_request_time = 0
     async def acquire(self):
-        """Ensure rate limit is respected"""
+        
         current_time = asyncio.get_event_loop().time()
         time_since_last_request = current_time - self.last_request_time
         min_interval = 1.0 / self.requests_per_second
@@ -65,7 +65,7 @@ class RateLimiter:
             await asyncio.sleep(min_interval - time_since_last_request)
         self.last_request_time = asyncio.get_event_loop().time()
 class NASAImageLibraryService:
-    """NASA Image Library API service"""
+    
     def __init__(self):
         self.base_url = "https://images-api.nasa.gov"
         self.search_endpoint = "/search"
@@ -91,7 +91,7 @@ class NASAImageLibraryService:
             'Referer': 'https://images.nasa.gov/'
         }
     async def _make_request(self, session: aiohttp.ClientSession, url: str, params: Optional[Dict] = None) -> Dict[str, Any]:
-        """Make HTTP request with CloudFront-friendly approach"""
+        
         await self.rate_limiter.acquire()
         try:
             async with session.get(url, params=params, headers=self.headers) as response:
@@ -124,7 +124,7 @@ class NASAImageLibraryService:
                 'status_code': 500
             }
     def _build_search_params(self, search_params: ImageSearchParams) -> Dict[str, str]:
-        """Build API search parameters"""
+        
         params = {}
         if search_params.query:
             params['q'] = search_params.query
@@ -152,7 +152,7 @@ class NASAImageLibraryService:
         params['page_size'] = str(min(search_params.page_size, 100))  # API limit
         return params
     def _parse_image_item(self, item: Dict[str, Any]) -> Optional[NASAImageData]:
-        """Parse single image item from API response"""
+        
         try:
             data = item.get('data', [{}])[0]  # First data item
             links = item.get('links', [])
@@ -213,7 +213,7 @@ class NASAImageLibraryService:
             logger.warning(f"Failed to parse image item: {str(e)}")
             return None
     async def search_images(self, search_params: ImageSearchParams) -> Dict[str, Any]:
-        """Search NASA Image Library"""
+        
         try:
             connector = aiohttp.TCPConnector(ssl=self.ssl_context)
             timeout = aiohttp.ClientTimeout(total=30)
@@ -250,7 +250,7 @@ class NASAImageLibraryService:
             logger.error(f"Search images error: {str(e)}")
             return {'success': False, 'error': str(e)}
     async def get_popular_space_images(self, limit: int = 50) -> Dict[str, Any]:
-        """Get popular space and astronomy images"""
+        
         search_params = ImageSearchParams(
             query="space",
             media_type="image",
@@ -262,7 +262,7 @@ class NASAImageLibraryService:
             result['search_type'] = 'Popular Space Images'
         return result
     async def get_earth_images(self, limit: int = 30) -> Dict[str, Any]:
-        """Get Earth observation images"""
+        
         search_params = ImageSearchParams(
             query="Earth",
             keywords="planet,observation,satellite",
@@ -275,7 +275,7 @@ class NASAImageLibraryService:
             result['search_type'] = 'Earth Images'
         return result
     async def get_mars_images(self, limit: int = 30) -> Dict[str, Any]:
-        """Get Mars mission images"""
+        
         search_params = ImageSearchParams(
             query="Mars",
             keywords="rover,surface,planet",
@@ -288,7 +288,7 @@ class NASAImageLibraryService:
             result['search_type'] = 'Mars Images'
         return result
     async def get_asteroid_images(self, limit: int = 20) -> Dict[str, Any]:
-        """Get asteroid and NEO images"""
+        
         search_params = ImageSearchParams(
             query="asteroid",
             keywords="near earth object,NEO,impact,space rock",
@@ -301,7 +301,7 @@ class NASAImageLibraryService:
             result['search_type'] = 'Asteroid Images'
         return result
     async def get_hubble_images(self, limit: int = 40) -> Dict[str, Any]:
-        """Get Hubble Space Telescope images"""
+        
         search_params = ImageSearchParams(
             query="Hubble",
             keywords="telescope,space,galaxy,nebula,star",
@@ -314,7 +314,7 @@ class NASAImageLibraryService:
             result['search_type'] = 'Hubble Images'
         return result
     async def get_recent_images(self, days_back: int = 30, limit: int = 50) -> Dict[str, Any]:
-        """Get recently added images"""
+        
         end_year = datetime.now().year
         start_year = end_year - (days_back // 365) - 1
         search_params = ImageSearchParams(
@@ -330,7 +330,7 @@ class NASAImageLibraryService:
             result['search_type'] = 'Recent Images'
         return result
     async def get_image_details(self, nasa_id: str) -> Dict[str, Any]:
-        """Get detailed information about a specific image"""
+        
         try:
             connector = aiohttp.TCPConnector(ssl=self.ssl_context)
             timeout = aiohttp.ClientTimeout(total=30)
@@ -352,7 +352,7 @@ class NASAImageLibraryService:
             logger.error(f"Get image details error: {str(e)}")
             return {'success': False, 'error': str(e)}
     def calculate_collection_stats(self, images: List[NASAImageData]) -> ImageCollectionStats:
-        """Calculate statistics from image collection"""
+        
         try:
             if not images:
                 return ImageCollectionStats(
@@ -394,7 +394,7 @@ class NASAImageLibraryService:
             )
 _nasa_image_service_instance = None
 def get_nasa_image_service() -> NASAImageLibraryService:
-    """Get NASA image service singleton"""
+    
     global _nasa_image_service_instance
     if _nasa_image_service_instance is None:
         _nasa_image_service_instance = NASAImageLibraryService()

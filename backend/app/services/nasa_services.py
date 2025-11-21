@@ -1,4 +1,4 @@
-import asyncio
+ï»¿import asyncio
 import json
 import ssl
 from datetime import datetime, timedelta
@@ -70,7 +70,7 @@ class NASAServices:
         self._last_request_time = datetime.now()
     async def health_check(self) -> Dict[str, Any]:
         try:
-            logger.info("NASA services health check baþlýyor...")
+            logger.info("NASA services health check baÅŸlÄ±yor...")
             health_data = {
                 "timestamp": datetime.utcnow().isoformat() + "Z",
                 "nasa_api_key_configured": bool(settings.NASA_API_KEY),
@@ -123,15 +123,15 @@ class NASAServices:
                         "endpoint": endpoint["name"],
                         "error": str(e)
                     })
-                    logger.error(f"{endpoint['name']} test baþarýsýz: {str(e)}")
+                    logger.error(f"{endpoint['name']} test baÅŸarÄ±sÄ±z: {str(e)}")
             health_data["overall_health"] = "healthy" if health_data["successful_endpoints"] > 0 else "degraded"
-            logger.info("NASA services health check tamamlandý", 
+            logger.info("NASA services health check tamamlandÄ±", 
                        health=health_data["overall_health"],
                        successful=health_data["successful_endpoints"],
                        failed=health_data["failed_endpoints"])
             return health_data
         except Exception as e:
-            logger.error(f"Health check baþarýsýz: {str(e)}")
+            logger.error(f"Health check baÅŸarÄ±sÄ±z: {str(e)}")
             return {
                 "timestamp": datetime.utcnow().isoformat() + "Z",
                 "overall_health": "unhealthy",
@@ -164,14 +164,14 @@ class NASAServices:
                     logger.error(f"NEO Feed error {response.status}: {error_text}")
                     return {"error": f"HTTP {response.status}", "status": "failed"}
                 data = await response.json()
-                logger.info(f"NEO Feed baþarýlý: {start_date} - {end_date}")
+                logger.info(f"NEO Feed baÅŸarÄ±lÄ±: {start_date} - {end_date}")
                 return {
                     "status": "success",
                     "data": data,
                     "element_count": data.get("element_count", 0)
                 }
         except Exception as e:
-            logger.error(f"NEO Feed çekme hatasý: {str(e)}")
+            logger.error(f"NEO Feed Ã§ekme hatasÄ±: {str(e)}")
             return {"error": str(e), "status": "failed"}
     async def get_neo_by_id(self, asteroid_id: str) -> Dict[str, Any]:
         try:
@@ -187,13 +187,13 @@ class NASAServices:
                     logger.error(f"NEO by ID error {response.status}: {error_text}")
                     return {"error": f"HTTP {response.status}", "status": "failed"}
                 data = await response.json()
-                logger.info(f"NEO detayý baþarýlý: {asteroid_id}")
+                logger.info(f"NEO detayÄ± baÅŸarÄ±lÄ±: {asteroid_id}")
                 return {
                     "status": "success",
                     "data": data
                 }
         except Exception as e:
-            logger.error(f"NEO ID çekme hatasý: {str(e)}")
+            logger.error(f"NEO ID Ã§ekme hatasÄ±: {str(e)}")
             return {"error": str(e), "status": "failed"}
     async def get_sentry_data(self, all_data: bool = True) -> Dict[str, Any]:
         try:
@@ -207,14 +207,14 @@ class NASAServices:
                     return {"error": f"HTTP {response.status}", "status": "failed"}
                 data = await response.json()
                 count = len(data.get("data", []))
-                logger.info(f"Sentry data baþarýlý: {count} risk objesi")
+                logger.info(f"Sentry data baÅŸarÄ±lÄ±: {count} risk objesi")
                 return {
                     "status": "success",
                     "data": data,
                     "count": count
                 }
         except Exception as e:
-            logger.error(f"Sentry data çekme hatasý: {str(e)}")
+            logger.error(f"Sentry data Ã§ekme hatasÄ±: {str(e)}")
             return {"error": str(e), "status": "failed"}
     async def get_close_approach_data(
         self,
@@ -242,14 +242,14 @@ class NASAServices:
                     return {"error": f"HTTP {response.status}", "status": "failed"}
                 data = await response.json()
                 count = len(data.get("data", []))
-                logger.info(f"Close approach data baþarýlý: {count} yaklaþma")
+                logger.info(f"Close approach data baÅŸarÄ±lÄ±: {count} yaklaÅŸma")
                 return {
                     "status": "success",
                     "data": data,
                     "count": count
                 }
         except Exception as e:
-            logger.error(f"Close approach data çekme hatasý: {str(e)}")
+            logger.error(f"Close approach data Ã§ekme hatasÄ±: {str(e)}")
             return {"error": str(e), "status": "failed"}
     async def get_apod(self, date: Optional[str] = None) -> Dict[str, Any]:
         try:
@@ -265,16 +265,16 @@ class NASAServices:
                     logger.error(f"APOD error {response.status}: {error_text}")
                     return {"error": f"HTTP {response.status}", "status": "failed"}
                 data = await response.json()
-                logger.info(f"APOD baþarýlý: {date or 'bugün'}")
+                logger.info(f"APOD baÅŸarÄ±lÄ±: {date or 'bugÃ¼n'}")
                 return {
                     "status": "success",
                     "data": data
                 }
         except Exception as e:
-            logger.error(f"APOD çekme hatasý: {str(e)}")
+            logger.error(f"APOD Ã§ekme hatasÄ±: {str(e)}")
             return {"error": str(e), "status": "failed"}
     async def get_simple_asteroids(self, days_ahead: int = 7) -> list:
-        """Basitleþtirilmiþ asteroid listesi döndürür."""
+        
         try:
             feed_result = await self.get_neo_feed(
                 start_date=datetime.now().strftime('%Y-%m-%d'),
@@ -282,7 +282,7 @@ class NASAServices:
             )
             
             if feed_result.get("status") != "success":
-                logger.warning("NEO feed baþarýsýz, boþ liste döndürülüyor")
+                logger.warning("NEO feed baÅŸarÄ±sÄ±z, boÅŸ liste dÃ¶ndÃ¼rÃ¼lÃ¼yor")
                 return []
             
             data = feed_result.get("data", {})
@@ -301,14 +301,14 @@ class NASAServices:
                         "velocity_kms": float(obj.get("close_approach_data", [{}])[0].get("relative_velocity", {}).get("kilometers_per_second", 0))
                     })
             
-            logger.info(f"Simple asteroids listesi hazýrlandý: {len(asteroids)} asteroid")
+            logger.info(f"Simple asteroids listesi hazÄ±rlandÄ±: {len(asteroids)} asteroid")
             return asteroids
         except Exception as e:
-            logger.error(f"Simple asteroids hazýrlama hatasý: {str(e)}")
+            logger.error(f"Simple asteroids hazÄ±rlama hatasÄ±: {str(e)}")
             return []
 
     async def get_simple_earth_events(self, limit: int = 10) -> list:
-        """Basitleþtirilmiþ dünya olaylarý listesi döndürür."""
+        
         try:
             from app.core.database import get_earth_events_collection
             collection = get_earth_events_collection()
@@ -325,14 +325,14 @@ class NASAServices:
                     "coordinates": event.get("geometry", [{}])[0].get("coordinates") if event.get("geometry") else None
                 })
             
-            logger.info(f"Simple earth events listesi hazýrlandý: {len(events)} olay")
+            logger.info(f"Simple earth events listesi hazÄ±rlandÄ±: {len(events)} olay")
             return events
         except Exception as e:
-            logger.error(f"Simple earth events hazýrlama hatasý: {str(e)}")
+            logger.error(f"Simple earth events hazÄ±rlama hatasÄ±: {str(e)}")
             return []
 
     async def get_earth_events(self, limit: int = 100, category: Optional[str] = None) -> Dict[str, Any]:
-        """Dünya olaylarýný detaylý olarak döndürür."""
+        
         try:
             from app.core.database import get_earth_events_collection
             collection = get_earth_events_collection()
@@ -356,7 +356,7 @@ class NASAServices:
                 })
             
             if len(events) == 0:
-                logger.info("MongoDB'de event yok, EONET API'den çekiliyor...")
+                logger.info("MongoDB'de event yok, EONET API'den Ã§ekiliyor...")
                 try:
                     session = await self._get_session()
                     eonet_url = "https://eonet.gsfc.nasa.gov/api/v3/events"
@@ -378,18 +378,18 @@ class NASAServices:
                                     "geometry": event.get("geometry", []),
                                     "sources": event.get("sources", [])
                                 })
-                            logger.info(f"EONET API'den {len(eonet_events)} event çekildi")
+                            logger.info(f"EONET API'den {len(eonet_events)} event Ã§ekildi")
                 except Exception as eonet_error:
-                    logger.warning(f"EONET API çaðrýsý baþarýsýz: {str(eonet_error)}")
+                    logger.warning(f"EONET API Ã§aÄŸrÄ±sÄ± baÅŸarÄ±sÄ±z: {str(eonet_error)}")
             
-            logger.info(f"Earth events listesi hazýrlandý: {len(events)} olay (kategori: {category})")
+            logger.info(f"Earth events listesi hazÄ±rlandÄ±: {len(events)} olay (kategori: {category})")
             return {
                 "status": "success",
                 "count": len(events),
                 "events": events
             }
         except Exception as e:
-            logger.error(f"Earth events çekme hatasý: {str(e)}")
+            logger.error(f"Earth events Ã§ekme hatasÄ±: {str(e)}")
             return {
                 "status": "failed",
                 "error": str(e),
@@ -442,10 +442,10 @@ class SimplifiedNASAServices:
             response.raise_for_status()
             data = response.json()
             await self.cache.set(cache_key, data)
-            logger.info(f"NEO feed çekildi: {days} gün, {data.get('element_count', 0)} element")
+            logger.info(f"NEO feed Ã§ekildi: {days} gÃ¼n, {data.get('element_count', 0)} element")
             return data
         except Exception as e:
-            logger.error(f"NEO feed hatasý: {str(e)}")
+            logger.error(f"NEO feed hatasÄ±: {str(e)}")
             raise
     async def get_sentry_summary(self) -> Dict[str, Any]:
         cache_key = "sentry_summary"
@@ -459,10 +459,10 @@ class SimplifiedNASAServices:
             response.raise_for_status()
             data = response.json()
             await self.cache.set(cache_key, data)
-            logger.info(f"Sentry summary çekildi: {data.get('count', 0)} obje")
+            logger.info(f"Sentry summary Ã§ekildi: {data.get('count', 0)} obje")
             return data
         except Exception as e:
-            logger.error(f"Sentry summary hatasý: {str(e)}")
+            logger.error(f"Sentry summary hatasÄ±: {str(e)}")
             raise
     async def get_close_approaches(self, days: int = 60) -> Dict[str, Any]:
         cache_key = f"close_approaches_{days}"
@@ -483,10 +483,10 @@ class SimplifiedNASAServices:
             response.raise_for_status()
             data = response.json()
             await self.cache.set(cache_key, data)
-            logger.info(f"Close approaches çekildi: {days} gün, {data.get('count', 0)} yaklaþým")
+            logger.info(f"Close approaches Ã§ekildi: {days} gÃ¼n, {data.get('count', 0)} yaklaÅŸÄ±m")
             return data
         except Exception as e:
-            logger.error(f"Close approaches hatasý: {str(e)}")
+            logger.error(f"Close approaches hatasÄ±: {str(e)}")
             raise
 simplified_nasa_services = SimplifiedNASAServices()
 

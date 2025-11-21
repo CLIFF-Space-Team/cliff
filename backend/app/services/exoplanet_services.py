@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 import aiohttp
 import ssl
 import json
@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger(__name__)
 @dataclass
 class ExoplanetData:
-    """Exoplanet data structure"""
+    
     name: str
     host_star: str
     discovery_method: str
@@ -24,7 +24,7 @@ class ExoplanetData:
     publication_date: Optional[str]
     @property
     def is_potentially_habitable(self) -> bool:
-        """Check if planet is potentially habitable"""
+        
         if not all([self.equilibrium_temperature_k, self.planet_radius_earth]):
             return False
         temp_ok = 200 <= self.equilibrium_temperature_k <= 350  # Liquid water range
@@ -32,7 +32,7 @@ class ExoplanetData:
         return temp_ok and size_ok
 @dataclass  
 class ExoplanetStatistics:
-    """Exoplanet collection statistics"""
+    
     total_planets: int
     total_systems: int
     discovery_methods: Dict[str, int]
@@ -45,7 +45,7 @@ class ExoplanetStatistics:
     nearest_distance_parsecs: Optional[float]
     farthest_distance_parsecs: Optional[float]
 class ExoplanetArchiveService:
-    """NASA Exoplanet Archive API service"""
+    
     def __init__(self):
         self.base_url = "https://exoplanetarchive.ipac.caltech.edu"
         self.endpoints = {
@@ -59,7 +59,7 @@ class ExoplanetArchiveService:
         self.max_requests_per_second = 2
         self.last_request_time = 0
     async def _make_request(self, session: aiohttp.ClientSession, url: str, params: Dict[str, Any]) -> Dict[str, Any]:
-        """Make rate-limited API request"""
+        
         try:
             current_time = datetime.now().timestamp()
             time_since_last = current_time - self.last_request_time
@@ -85,7 +85,7 @@ class ExoplanetArchiveService:
             logger.error(f"Request error: {str(e)}")
             return {'success': False, 'error': str(e)}
     def _parse_csv_response(self, csv_text: str) -> Dict[str, Any]:
-        """Parse CSV response to structured data"""
+        
         try:
             lines = csv_text.strip().split('\n')
             if len(lines) < 2:
@@ -111,7 +111,7 @@ class ExoplanetArchiveService:
             logger.error(f"CSV parsing error: {str(e)}")
             return {'success': False, 'error': f'CSV parse error: {str(e)}'}
     async def get_confirmed_exoplanets(self, limit: int = 100, discovery_year_min: Optional[int] = None) -> Dict[str, Any]:
-        """Get confirmed exoplanets from NASA archive"""
+        
         try:
             connector = aiohttp.TCPConnector(ssl=self.ssl_context)
             async with aiohttp.ClientSession(connector=connector) as session:
@@ -152,7 +152,7 @@ class ExoplanetArchiveService:
             logger.error(f"Get confirmed exoplanets error: {str(e)}")
             return {'success': False, 'error': str(e)}
     def _parse_exoplanet_row(self, row: Dict[str, str]) -> Optional[ExoplanetData]:
-        """Parse single exoplanet data row"""
+        
         try:
             def safe_float(value: str) -> Optional[float]:
                 try:
@@ -199,7 +199,7 @@ class ExoplanetArchiveService:
             logger.warning(f"Failed to parse exoplanet row: {str(e)}")
             return None
     async def get_habitable_candidates(self, limit: int = 50) -> Dict[str, Any]:
-        """Get potentially habitable exoplanet candidates"""
+        
         try:
             all_exoplanets_response = await self.get_confirmed_exoplanets(limit=limit * 3)
             if not all_exoplanets_response.get('success'):
@@ -226,7 +226,7 @@ class ExoplanetArchiveService:
             logger.error(f"Get habitable candidates error: {str(e)}")
             return {'success': False, 'error': str(e)}
     async def get_recent_discoveries(self, days_back: int = 365, limit: int = 100) -> Dict[str, Any]:
-        """Get recently discovered exoplanets"""
+        
         try:
             current_year = datetime.now().year
             min_year = current_year - (days_back // 365) - 1
@@ -242,7 +242,7 @@ class ExoplanetArchiveService:
             logger.error(f"Get recent discoveries error: {str(e)}")
             return {'success': False, 'error': str(e)}
     def calculate_statistics(self, exoplanets: List[ExoplanetData]) -> ExoplanetStatistics:
-        """Calculate statistics from exoplanet data"""
+        
         try:
             if not exoplanets:
                 return ExoplanetStatistics(
@@ -298,7 +298,7 @@ class ExoplanetArchiveService:
             )
 _exoplanet_service_instance = None
 def get_exoplanet_service() -> ExoplanetArchiveService:
-    """Get exoplanet service singleton"""
+    
     global _exoplanet_service_instance
     if _exoplanet_service_instance is None:
         _exoplanet_service_instance = ExoplanetArchiveService()

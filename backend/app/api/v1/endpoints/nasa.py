@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Any
+﻿from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Depends, Query, Path
 from fastapi.responses import JSONResponse
 from datetime import datetime, timedelta
@@ -16,10 +16,7 @@ async def get_asteroids_simplified(
     days: int = Query(7, ge=1, le=30, description="Days ahead to fetch"),
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
-    """
-    ?? Simplified Asteroids List
-    Get list of NEO asteroids for the next N days
-    """
+    
     try:
         logger.info(f"Simplified asteroids requested: {days} days")
         asteroids = await nasa_services.get_simple_asteroids(days_ahead=days)
@@ -41,10 +38,7 @@ async def get_neo_feed(
     end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
-    """
-    ?? Near-Earth Object Feed
-    Get NEO data for date range (max 7 days)
-    """
+    
     try:
         logger.info(f"NEO feed requested: {start_date} to {end_date}")
         if not start_date:
@@ -70,10 +64,7 @@ async def lookup_neo_by_id(
     neo_id: str = Path(..., description="NEO reference ID"),
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
-    """
-    ?? NEO Lookup by ID
-    Get detailed information about specific NEO
-    """
+    
     try:
         logger.info(f"NEO lookup requested: {neo_id}")
         neo_data = await nasa_services.get_neo_by_id(neo_id)
@@ -98,10 +89,7 @@ async def get_close_approach_data(
     limit: int = Query(100, le=1000, description="Maximum results to return"),
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
-    """
-    ??? Close Approach Data (CAD)
-    Get asteroid/comet close approach data to Earth
-    """
+    
     try:
         logger.info(f"CAD data requested with limit: {limit}")
         params = {}
@@ -139,10 +127,7 @@ async def get_fireball_data(
     limit: int = Query(100, le=1000, description="Maximum results to return"),
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
-    """
-    ?? Fireball Data
-    Get fireball and bolide events detected by government sensors
-    """
+    
     try:
         logger.info(f"Fireball data requested with limit: {limit}")
         params = {}
@@ -173,10 +158,7 @@ async def get_scout_data(
     plot: bool = Query(False, description="Include plot data"),
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
-    """
-    ?? Scout Data
-    Get Scout system data for newly discovered asteroids
-    """
+    
     try:
         logger.info(f"Scout data requested for tdes: {tdes}")
         scout_data = await nasa_services.get_scout_data(tdes=tdes, plot=plot)
@@ -202,10 +184,7 @@ async def get_nhats_data(
     spk: Optional[str] = Query(None, description="SPK-ID"),
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
-    """
-    ?? NHATS - Near-Earth Object Human Space Flight Accessible Targets Study
-    Get data on asteroids accessible for human space missions
-    """
+    
     try:
         logger.info("NHATS data requested")
         params = {}
@@ -241,10 +220,7 @@ async def get_exoplanets(
     discovery_year_min: Optional[int] = Query(None, description="Minimum discovery year"),
     exoplanet_services: ExoplanetArchiveService = Depends(get_exoplanet_service)
 ) -> JSONResponse:
-    """
-    ?? Exoplanet Data
-    Get exoplanet discoveries and data from NASA Exoplanet Archive
-    """
+    
     try:
         logger.info(f"Exoplanet data requested: limit={limit}")
         exoplanet_data = await exoplanet_services.get_confirmed_exoplanets(
@@ -269,10 +245,7 @@ async def get_habitable_exoplanets(
     limit: int = Query(50, le=500, description="Maximum results to return"),
     exoplanet_services: ExoplanetArchiveService = Depends(get_exoplanet_service)
 ) -> JSONResponse:
-    """
-    ?? Potentially Habitable Exoplanets
-    Get potentially habitable exoplanets in the habitable zone
-    """
+    
     try:
         logger.info(f"Habitable exoplanet data requested: limit={limit}")
         habitable_data = await exoplanet_services.get_habitable_candidates(limit=limit)
@@ -293,10 +266,7 @@ async def search_nasa_images(
     limit: int = Query(100, le=500, description="Maximum results to return"),
     nasa_image_services: NASAImageLibraryService = Depends(get_nasa_image_service)
 ) -> JSONResponse:
-    """
-    ?? NASA Image Search
-    Search NASA image and video library
-    """
+    
     try:
         logger.info(f"NASA image search: '{query}' (media_type={media_type}, limit={limit})")
         search_results = await nasa_image_services.search_images(
@@ -322,10 +292,7 @@ async def get_astronomy_picture_of_day(
     hd: bool = Query(True, description="Retrieve high definition image"),
     nasa_image_services: NASAImageLibraryService = Depends(get_nasa_image_service)
 ) -> JSONResponse:
-    """
-    ??? Astronomy Picture of the Day (APOD)
-    Get NASA's Astronomy Picture of the Day
-    """
+    
     try:
         logger.info(f"APOD requested for date: {date or 'today'}")
         apod_data = await nasa_image_services.get_apod(date=date, hd=hd)
@@ -345,10 +312,7 @@ async def get_satellite_tle(
     satellite_id: str = Path(..., description="Satellite NORAD ID or name"),
     tle_service: TLEService = Depends(get_tle_service)
 ) -> JSONResponse:
-    """
-    ??? Satellite TLE Data
-    Get Two-Line Element data for specific satellite
-    """
+    
     try:
         logger.info(f"TLE data requested for satellite: {satellite_id}")
         tle_data = await tle_service.get_satellite_tle(satellite_id)
@@ -367,10 +331,7 @@ async def get_tle_by_category(
     category: str = Path(..., description="Satellite category (e.g., stations, weather, amateur)"),
     tle_service: TLEService = Depends(get_tle_service)
 ) -> JSONResponse:
-    """
-    ?? TLE by Category
-    Get TLE data for satellite category
-    """
+    
     try:
         logger.info(f"TLE category data requested: {category}")
         tle_data = await tle_service.get_tle_by_category(category)
@@ -388,10 +349,7 @@ async def get_tle_by_category(
 async def get_space_weather(
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
-    """
-    ?? Space Weather Data
-    Get current space weather conditions and forecasts
-    """
+    
     try:
         logger.info("Space weather data requested")
         space_weather = await nasa_services.get_space_weather_data()
@@ -410,10 +368,7 @@ async def get_earth_events(
     category: Optional[str] = Query(None, description="Event category filter"),
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
-    """
-    ?? Earth Natural Events
-    Get natural events on Earth from EONET (Earth Observatory Natural Event Tracker)
-    """
+    
     try:
         logger.info(f"Earth events requested: limit={limit}, category={category}")
         earth_events = await nasa_services.get_earth_events(limit=limit, category=category)
@@ -434,10 +389,7 @@ async def get_earth_events(
 async def nasa_services_status(
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
-    """
-    ?? NASA Services Status
-    Check status of all NASA API endpoints and services
-    """
+    
     try:
         logger.info("NASA services status check requested")
         status_data = await nasa_services.health_check()

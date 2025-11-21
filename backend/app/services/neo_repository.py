@@ -1,55 +1,80 @@
-from __future__ import annotations
-from typing import List, Optional
-from datetime import datetime
+import logging
 import structlog
-from motor.motor_asyncio import AsyncIOMotorCollection
+from typing import Any
+from datetime import datetime
 from app.core.database import get_collection
-from app.models.neo_models import Neo, CloseApproach, RiskAssessment
+from pymongo import ASCENDING, DESCENDING, TEXT, IndexModel
+
 logger = structlog.get_logger(__name__)
-def _neos() -> AsyncIOMotorCollection:
-    return get_collection("asteroids")
-def _approaches() -> AsyncIOMotorCollection:
-    return get_collection("close_approaches")
-def _risks() -> AsyncIOMotorCollection:
-    return get_collection("risk_assessments")
-async def ensure_indexes() -> None:
-    """Gerekli indeksleri oluþturur (idempotent)."""
-    await _neos().create_index("neo_id", unique=True, name="idx_neo_id")
-    await _neos().create_index("name", name="idx_name")
-    await _neos().create_index("is_potentially_hazardous", name="idx_hazard")
-    await _approaches().create_index([("neo_id", 1), ("timestamp", -1)], name="idx_approach_neo_time")
-    await _approaches().create_index("distance_ld", name="idx_distance_ld")
-    await _risks().create_index([("neo_id", 1), ("updated_at", -1)], name="idx_risk_neo_time")
-    await _risks().create_index("risk_level", name="idx_risk_level")
-async def upsert_neo(doc: Neo) -> None:
-    await _neos().update_one({"neo_id": doc.neo_id}, {"$set": doc.model_dump()}, upsert=True)
-async def insert_close_approaches(docs: List[CloseApproach]) -> None:
-    if not docs:
-        return
+
+async def ensure_indexes():
     try:
-        await _approaches().insert_many([d.model_dump() for d in docs], ordered=False)
+        col = get_collection("asteroids")
+        
+        indexes = [
+            IndexModel([("neo_id", ASCENDING)], unique=True),
+            IndexModel([("name", TEXT)]),
+            IndexModel([("is_potentially_hazardous", ASCENDING)]),
+            IndexModel([("last_updated", DESCENDING)])
+        ]
+        
+        await col.create_indexes(indexes)
+        logger.info("Asteroid indexes created")
+        
     except Exception as e:
-        for d in docs:
-            try:
-                await _approaches().update_one(
-                    {"neo_id": d.neo_id, "timestamp": d.timestamp},
-                    {"$set": d.model_dump()},
-                    upsert=True
-                )
-            except Exception:
-                pass
-async def upsert_risk(doc: RiskAssessment) -> None:
-    await _risks().update_one(
-        {"neo_id": doc.neo_id, "source": doc.source},
-        {"$set": doc.model_dump()},
-        upsert=True,
+        logger.error("Failed to create indexes", error=str(e))
+
+async def upsert_neo(neo_data: Any):
+    if hasattr(neo_data, "model_dump"):
+        neo_data = neo_data.model_dump()
+
+    col = get_collection("asteroids")
+    neo_id = neo_data.get("neo_id")
+    
+    if not neo_id:
+        return
+        
+    neo_data["last_updated"] = datetime.utcnow()
+    
+    await col.update_one(
+        {"neo_id": neo_id},
+        {"$set": neo_data},
+        upsert=True
     )
-async def get_all_risks() -> List[Dict]:
-    """Tüm risk kayýtlarýný tek seferde al"""
-    return [doc async for doc in _risks().find({})]
-async def get_all_asteroids() -> List[Dict]:
-    """Tüm asteroit kayýtlarýný tek seferde al"""
-    return [doc async for doc in _neos().find({})]
-async def get_all_approaches() -> List[Dict]:
-    """Tüm yaklaþma kayýtlarýný tek seferde al"""
-    return [doc async for doc in _approaches().find({})]
+
+async def upsert_risk(risk_data: Any):
+    if hasattr(risk_data, "model_dump"):
+        risk_data = risk_data.model_dump()
+
+    col = get_collection("risk_assessments")
+    neo_id = risk_data.get("neo_id")
+    
+    if not neo_id:
+        return
+        
+    risk_data["last_updated"] = datetime.utcnow()
+    
+    await col.update_one(
+        {"neo_id": neo_id, "source": risk_data.get("source", "sentry")},
+        {"$set": risk_data},
+        upsert=True
+    )
+
+async def insert_close_approaches(approaches: list):
+    if not approaches:
+        return
+        
+    col = get_collection("close_approaches")
+    # Bulk write optimization could be added here
+    for approach in approaches:
+        # Create a unique key for idempotency
+        key = {
+            "neo_id": approach.get("neo_id"),
+            "timestamp": approach.get("timestamp")
+        }
+        await col.update_one(
+            key,
+            {"$set": approach},
+            upsert=True
+        )
+

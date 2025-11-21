@@ -1,4 +1,4 @@
-import httpx
+﻿import httpx
 from typing import List, Dict, Optional
 from app.core.config import settings
 class OpenAICompatibleService:
@@ -44,7 +44,7 @@ class OpenAICompatibleService:
 		return str(content)
 	
 	async def _stream_completion(self, url: str, payload: Dict[str, object]):
-		"""Stream chat completion response"""
+		
 		async with httpx.AsyncClient(timeout=120) as client:
 			async with client.stream("POST", url, json=payload, headers=self._headers()) as response:
 				response.raise_for_status()

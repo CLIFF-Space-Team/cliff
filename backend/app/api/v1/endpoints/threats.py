@@ -1,4 +1,4 @@
-import asyncio
+ï»¿import asyncio
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, Path
@@ -14,48 +14,46 @@ from app.models.threat import SimpleThreatResponse, SimpleAlert
 logger = structlog.get_logger(__name__)
 router = APIRouter()
 async def get_nasa_service() -> NASAServices:
-    """NASA Services dependency injection"""
+    
     return NASAServices()
 async def get_simplified_nasa_service() -> SimplifiedNASAServices:
-    """Simplified NASA Services dependency injection"""
+    
     return get_simplified_nasa_services()
 @router.get("/alerts")
 async def get_threat_alerts(
-    limit: int = Query(20, ge=1, le=100, description="Maksimum alert sayısı"),
+    limit: int = Query(20, ge=1, le=100, description="Maksimum alert sayÄ±sÄ±"),
     severity: Optional[str] = Query(None, description="Severity filter"),
     nasa_services: SimplifiedNASAServices = Depends(get_simplified_nasa_services)
 ) -> List[Dict[str, Any]]:
-    """
-    Aktif tehdit alertlerini al
-    """
+    
     try:
-        logger.info(f"Tehdit alertleri alınıyor (limit: {limit})...")
+        logger.info(f"Tehdit alertleri alÄ±nÄ±yor (limit: {limit})...")
         alerts = []
         try:
             asteroids = await nasa_services.get_simple_asteroids(days_ahead=7)
-            for ast in asteroids[:5]:  # İlk 5 asteroit
+            for ast in asteroids[:5]:  # Ä°lk 5 asteroit
                 is_hazardous = ast.get("is_hazardous", False)
                 if is_hazardous:
                     alert_level = "CRITICAL" if is_hazardous else "WARNING"
                     alerts.append({
                         "alert_id": f"asteroid-{ast.get('id', 'unknown')}",
                         "alert_level": alert_level,
-                        "message": f"Asteroit {ast.get('name', 'Bilinmeyen')} yaklaşıyor",
+                        "message": f"Asteroit {ast.get('name', 'Bilinmeyen')} yaklaÅŸÄ±yor",
                         "threat_details": {
                             "threat_id": ast.get('id', 'unknown'),
                             "threat_type": "asteroid", 
                             "severity": "CRITICAL" if is_hazardous else "MODERATE",
                             "title": f"Asteroit: {ast.get('name', 'Bilinmeyen')}",
-                            "description": f"{ast.get('close_approach_date', 'Bilinmeyen')} tarihinde {ast.get('miss_distance_km', 0):,.0f} km mesafeden geçecek",
+                            "description": f"{ast.get('close_approach_date', 'Bilinmeyen')} tarihinde {ast.get('miss_distance_km', 0):,.0f} km mesafeden geÃ§ecek",
                             "impact_probability": 0.1 if is_hazardous else 0.01,
-                            "recommended_actions": ["Yakın takip", "Güvenlik değerlendirmesi"],
+                            "recommended_actions": ["YakÄ±n takip", "GÃ¼venlik deÄŸerlendirmesi"],
                             "data_source": "NASA NEO API"
                         },
                         "created_at": datetime.utcnow().isoformat(),
                         "expires_at": (datetime.utcnow() + timedelta(days=1)).isoformat()
                     })
         except Exception as e:
-            logger.warning(f"Asteroit alertleri alınamadı: {str(e)}")
+            logger.warning(f"Asteroit alertleri alÄ±namadÄ±: {str(e)}")
         try:
             events = await nasa_services.get_simple_earth_events(limit=5)
             for event in events:
@@ -75,14 +73,14 @@ async def get_threat_alerts(
                         "title": event.get('title', 'Bilinmeyen'),
                         "description": f"Kategori: {category}",
                         "impact_probability": 0.8 if is_critical else 0.4,
-                        "recommended_actions": ["Bölge takibi", "Erken uyarı"],
+                        "recommended_actions": ["BÃ¶lge takibi", "Erken uyarÄ±"],
                         "data_source": "NASA EONET"
                     },
                     "created_at": datetime.utcnow().isoformat(),
                     "expires_at": (datetime.utcnow() + timedelta(days=2)).isoformat()
                 })
         except Exception as e:
-            logger.warning(f"Doğal olay alertleri alınamadı: {str(e)}")
+            logger.warning(f"DoÄŸal olay alertleri alÄ±namadÄ±: {str(e)}")
         if severity:
             severity_map = {"critical": "CRITICAL", "warning": "WARNING", "info": "INFO"}
             target_severity = severity_map.get(severity.lower())
@@ -90,25 +88,23 @@ async def get_threat_alerts(
                 alerts = [a for a in alerts if a["alert_level"] == target_severity]
         alerts.sort(key=lambda x: x["created_at"], reverse=True)
         alerts = alerts[:limit]
-        logger.info(f"Tehdit alertleri hazırlandı: {len(alerts)} adet")
+        logger.info(f"Tehdit alertleri hazÄ±rlandÄ±: {len(alerts)} adet")
         return alerts
     except Exception as e:
-        logger.error(f"Tehdit alertleri alınamadı: {str(e)}")
+        logger.error(f"Tehdit alertleri alÄ±namadÄ±: {str(e)}")
         return []
 @router.get("/current")
 async def get_current_threat_level(
     nasa_services: SimplifiedNASAServices = Depends(get_simplified_nasa_services)
 ) -> Dict[str, Any]:
-    """
-    Güncel tehdit seviyesini al - Basit 3 seviyeli sistem
-    """
+    
     try:
-        logger.info("Güncel tehdit seviyesi alınıyor...")
+        logger.info("GÃ¼ncel tehdit seviyesi alÄ±nÄ±yor...")
         summary = await nasa_services.get_simple_threat_summary()
         color_map = {
-            "Düşük": "#22c55e",    # Yeşil
-            "Orta": "#f59e0b",     # Sarı
-            "Yüksek": "#ef4444"    # Kırmızı
+            "DÃ¼ÅŸÃ¼k": "#22c55e",    # YeÅŸil
+            "Orta": "#f59e0b",     # SarÄ±
+            "YÃ¼ksek": "#ef4444"    # KÄ±rmÄ±zÄ±
         }
         response = {
             "threat_level": summary.overall_level,
@@ -126,11 +122,11 @@ async def get_current_threat_level(
         logger.info(f"Tehdit seviyesi: {summary.overall_level}")
         return response
     except Exception as e:
-        logger.error(f"Tehdit seviyesi alınamadı: {str(e)}")
+        logger.error(f"Tehdit seviyesi alÄ±namadÄ±: {str(e)}")
         return {
-            "threat_level": "Düşük",
+            "threat_level": "DÃ¼ÅŸÃ¼k",
             "color": "#22c55e",
-            "description": "Sistem geçici olarak kullanılamıyor",
+            "description": "Sistem geÃ§ici olarak kullanÄ±lamÄ±yor",
             "active_threats": {"asteroids": 0, "earth_events": 0, "space_weather": 0},
             "recommendations": ["Daha sonra tekrar deneyin"],
             "last_updated": datetime.utcnow().isoformat(),
@@ -140,11 +136,9 @@ async def get_current_threat_level(
 async def get_threat_summary(
     nasa_services: SimplifiedNASAServices = Depends(get_simplified_nasa_services)
 ) -> Dict[str, Any]:
-    """
-    Basit tehdit özeti
-    """
+    
     try:
-        logger.info("Tehdit özeti hazırlanıyor...")
+        logger.info("Tehdit Ã¶zeti hazÄ±rlanÄ±yor...")
         asteroids, earth_events = await asyncio.gather(
             nasa_services.get_simple_asteroids(days_ahead=7),
             nasa_services.get_simple_earth_events(limit=10),
@@ -163,8 +157,8 @@ async def get_threat_summary(
                 high_priority.append({
                     "type": "asteroid",
                     "title": f"Asteroit: {ast.get('name', 'Bilinmeyen')}",
-                    "description": f"{ast.get('close_approach_date', 'Bilinmeyen')} tarihinde yaklaşacak",
-                    "level": "Yüksek"
+                    "description": f"{ast.get('close_approach_date', 'Bilinmeyen')} tarihinde yaklaÅŸacak",
+                    "level": "YÃ¼ksek"
                 })
         for event in earth_events:
             category = event.get("category", "Unknown")
@@ -173,8 +167,8 @@ async def get_threat_summary(
                 high_priority.append({
                     "type": "earth_event",
                     "title": f"{category}: {event.get('title', 'Bilinmeyen')[:50]}",
-                    "description": "Kritik doğal olay",
-                    "level": "Yüksek"
+                    "description": "Kritik doÄŸal olay",
+                    "level": "YÃ¼ksek"
                 })
             else:
                 medium_priority.append({
@@ -188,7 +182,7 @@ async def get_threat_summary(
         elif len(high_priority) >= 1:
             overall_status = "watch"
         
-        logger.info(f"Tehdit özeti hazırlandı: {len(asteroids)} asteroid, {len(earth_events)} event, {len(high_priority)} high priority")
+        logger.info(f"Tehdit Ã¶zeti hazÄ±rlandÄ±: {len(asteroids)} asteroid, {len(earth_events)} event, {len(high_priority)} high priority")
         
         summary = {
             "overall_status": overall_status,
@@ -202,10 +196,10 @@ async def get_threat_summary(
             },
             "last_updated": datetime.utcnow().isoformat()
         }
-        logger.info(f"Tehdit özeti hazırlandı: {overall_status} durumu")
+        logger.info(f"Tehdit Ã¶zeti hazÄ±rlandÄ±: {overall_status} durumu")
         return summary
     except Exception as e:
-        logger.error(f"Tehdit özeti hazırlanamadı: {str(e)}")
+        logger.error(f"Tehdit Ã¶zeti hazÄ±rlanamadÄ±: {str(e)}")
         return {
             "overall_status": "error",
             "high_priority_threats": [],
@@ -215,16 +209,14 @@ async def get_threat_summary(
         }
 @router.get("/asteroids")
 async def get_asteroid_threats(
-    limit: int = Query(10, ge=1, le=50, description="Maksimum asteroit sayısı"),
+    limit: int = Query(10, ge=1, le=50, description="Maksimum asteroit sayÄ±sÄ±"),
     nasa_services: SimplifiedNASAServices = Depends(get_simplified_nasa_services)
 ) -> Dict[str, Any]:
-    """
-    Basit asteroit tehditleri listesi
-    """
+    
     try:
-        logger.info(f"Asteroit tehditleri alınıyor (limit: {limit})...")
-        asteroids = await nasa_services.get_simple_asteroids(days_ahead=7)  # 30'dan 7'ye düşür
-        asteroids.sort(key=lambda x: {"Yüksek": 3, "Orta": 2, "Düşük": 1}.get(x.threat_level, 0), reverse=True)
+        logger.info(f"Asteroit tehditleri alÄ±nÄ±yor (limit: {limit})...")
+        asteroids = await nasa_services.get_simple_asteroids(days_ahead=7)  # 30'dan 7'ye dÃ¼ÅŸÃ¼r
+        asteroids.sort(key=lambda x: {"YÃ¼ksek": 3, "Orta": 2, "DÃ¼ÅŸÃ¼k": 1}.get(x.threat_level, 0), reverse=True)
         limited_asteroids = asteroids[:limit]
         asteroid_list = []
         for ast in limited_asteroids:
@@ -245,16 +237,16 @@ async def get_asteroid_threats(
             "total_count": len(asteroids),
             "hazardous_count": sum(1 for a in asteroids if a.is_hazardous),
             "threat_distribution": {
-                "high": sum(1 for a in asteroids if a.threat_level == "Yüksek"),
+                "high": sum(1 for a in asteroids if a.threat_level == "YÃ¼ksek"),
                 "medium": sum(1 for a in asteroids if a.threat_level == "Orta"),
-                "low": sum(1 for a in asteroids if a.threat_level == "Düşük")
+                "low": sum(1 for a in asteroids if a.threat_level == "DÃ¼ÅŸÃ¼k")
             },
             "last_updated": datetime.utcnow().isoformat()
         }
-        logger.info(f"Asteroit listesi hazırlandı: {len(asteroid_list)} adet")
+        logger.info(f"Asteroit listesi hazÄ±rlandÄ±: {len(asteroid_list)} adet")
         return response
     except Exception as e:
-        logger.error(f"Asteroit tehditleri alınamadı: {str(e)}")
+        logger.error(f"Asteroit tehditleri alÄ±namadÄ±: {str(e)}")
         return {
             "asteroids": [],
             "total_count": 0,
@@ -264,16 +256,14 @@ async def get_asteroid_threats(
         }
 @router.get("/earth-events")
 async def get_earth_event_threats(
-    limit: int = Query(15, ge=1, le=50, description="Maksimum olay sayısı"),
+    limit: int = Query(15, ge=1, le=50, description="Maksimum olay sayÄ±sÄ±"),
     nasa_services: SimplifiedNASAServices = Depends(get_simplified_nasa_services)
 ) -> Dict[str, Any]:
-    """
-    Basit doğal olay tehditleri
-    """
+    
     try:
-        logger.info(f"Doğal olay tehditleri alınıyor (limit: {limit})...")
+        logger.info(f"DoÄŸal olay tehditleri alÄ±nÄ±yor (limit: {limit})...")
         events = await nasa_services.get_simple_earth_events(limit=limit)
-        events.sort(key=lambda x: {"Yüksek": 3, "Orta": 2, "Düşük": 1}.get(x.severity, 0), reverse=True)
+        events.sort(key=lambda x: {"YÃ¼ksek": 3, "Orta": 2, "DÃ¼ÅŸÃ¼k": 1}.get(x.severity, 0), reverse=True)
         event_list = []
         for event in events:
             event_info = {
@@ -293,17 +283,17 @@ async def get_earth_event_threats(
             "events": event_list,
             "total_count": len(events),
             "severity_distribution": {
-                "high": sum(1 for e in events if e.severity == "Yüksek"),
+                "high": sum(1 for e in events if e.severity == "YÃ¼ksek"),
                 "medium": sum(1 for e in events if e.severity == "Orta"),
-                "low": sum(1 for e in events if e.severity == "Düşük")
+                "low": sum(1 for e in events if e.severity == "DÃ¼ÅŸÃ¼k")
             },
             "category_distribution": category_counts,
             "last_updated": datetime.utcnow().isoformat()
         }
-        logger.info(f"Doğal olay listesi hazırlandı: {len(event_list)} adet")
+        logger.info(f"DoÄŸal olay listesi hazÄ±rlandÄ±: {len(event_list)} adet")
         return response
     except Exception as e:
-        logger.error(f"Doğal olay tehditleri alınamadı: {str(e)}")
+        logger.error(f"DoÄŸal olay tehditleri alÄ±namadÄ±: {str(e)}")
         return {
             "events": [],
             "total_count": 0,
@@ -315,11 +305,9 @@ async def get_earth_event_threats(
 async def get_space_weather_threats(
     nasa_services: SimplifiedNASAServices = Depends(get_simplified_nasa_services)
 ) -> Dict[str, Any]:
-    """
-    Basit uzay hava durumu tehditleri
-    """
+    
     try:
-        logger.info("Uzay hava durumu tehditleri alınıyor...")
+        logger.info("Uzay hava durumu tehditleri alÄ±nÄ±yor...")
         weather_list = []
         response = {
             "events": weather_list,
@@ -333,10 +321,10 @@ async def get_space_weather_threats(
             "current_condition": "NORMAL",  # Default condition
             "last_updated": datetime.utcnow().isoformat()
         }
-        logger.info(f"Uzay hava durumu listesi hazırlandı: {len(weather_list)} adet")
+        logger.info(f"Uzay hava durumu listesi hazÄ±rlandÄ±: {len(weather_list)} adet")
         return response
     except Exception as e:
-        logger.error(f"Uzay hava durumu tehditleri alınamadı: {str(e)}")
+        logger.error(f"Uzay hava durumu tehditleri alÄ±namadÄ±: {str(e)}")
         return {
             "events": [],
             "total_count": 0,
@@ -347,15 +335,13 @@ async def get_space_weather_threats(
         }
 @router.get("/asteroids/browse/")
 async def browse_asteroids(
-    page: int = Query(0, ge=0, description="Sayfa numarası (0'dan başlar)"),
+    page: int = Query(0, ge=0, description="Sayfa numarasÄ± (0'dan baÅŸlar)"),
     size: int = Query(20, ge=1, le=20, description="Sayfa boyutu"),
     nasa_services: SimplifiedNASAServices = Depends(get_simplified_nasa_services)
 ) -> Dict[str, Any]:
-    """
-    Asteroit veritabanını tara - NEO Browse API
-    """
+    
     try:
-        logger.info(f"Asteroit tarama başlatılıyor (sayfa: {page}, boyut: {size})")
+        logger.info(f"Asteroit tarama baÅŸlatÄ±lÄ±yor (sayfa: {page}, boyut: {size})")
         result = await nasa_services.browse_asteroids(page=page, size=size)
         formatted_asteroids = []
         for asteroid in result["asteroids"]:
@@ -376,43 +362,41 @@ async def browse_asteroids(
             "retrieved_at": datetime.utcnow().isoformat(),
             "total_in_page": len(formatted_asteroids)
         }
-        logger.info(f"Asteroit tarama tamamlandı: {len(formatted_asteroids)} adet (sayfa {page})")
+        logger.info(f"Asteroit tarama tamamlandÄ±: {len(formatted_asteroids)} adet (sayfa {page})")
         return response
     except Exception as e:
-        logger.error(f"Asteroit tarama hatası: {str(e)}")
+        logger.error(f"Asteroit tarama hatasÄ±: {str(e)}")
         return {
             "asteroids": [],
             "pagination": {"page": page, "size": size, "total_elements": 0, "total_pages": 0},
             "navigation_links": {},
-            "error": "Asteroit tarama başarısız",
-            "message": "Teknik bir sorun oluştu",
+            "error": "Asteroit tarama baÅŸarÄ±sÄ±z",
+            "message": "Teknik bir sorun oluÅŸtu",
             "retrieved_at": datetime.utcnow().isoformat(),
             "total_in_page": 0
         }
 @router.get("/nasa/apod")
 async def get_astronomy_picture(
-    date: Optional[str] = Query(None, description="Tarih (YYYY-MM-DD formatında, boş bırakılırsa bugün)"),
+    date: Optional[str] = Query(None, description="Tarih (YYYY-MM-DD formatÄ±nda, boÅŸ bÄ±rakÄ±lÄ±rsa bugÃ¼n)"),
     nasa_services: SimplifiedNASAServices = Depends(get_simplified_nasa_services)
 ) -> Dict[str, Any]:
-    """
-    NASA Astronomy Picture of the Day - Günün Astronomi Resmi
-    """
+    
     try:
-        logger.info(f"APOD verisi isteniyor (tarih: {date or 'bugün'})")
+        logger.info(f"APOD verisi isteniyor (tarih: {date or 'bugÃ¼n'})")
         apod_data = await nasa_services.get_astronomy_picture_of_day(date=date)
         response = {
             "apod": apod_data,
             "retrieved_at": datetime.utcnow().isoformat(),
             "status": "success"
         }
-        logger.info(f"APOD verisi döndürüldü: {apod_data['title']}")
+        logger.info(f"APOD verisi dÃ¶ndÃ¼rÃ¼ldÃ¼: {apod_data['title']}")
         return response
     except Exception as e:
-        logger.error(f"APOD verisi alınamadı: {str(e)}")
+        logger.error(f"APOD verisi alÄ±namadÄ±: {str(e)}")
         return {
             "apod": {
-                "title": "APOD Verisi Alınamadı",
-                "explanation": "Teknik sorun nedeniyle günün astronomi resmi alınamadı",
+                "title": "APOD Verisi AlÄ±namadÄ±",
+                "explanation": "Teknik sorun nedeniyle gÃ¼nÃ¼n astronomi resmi alÄ±namadÄ±",
                 "date": date or datetime.utcnow().strftime("%Y-%m-%d"),
                 "media_type": "error",
                 "url": "",
@@ -421,18 +405,16 @@ async def get_astronomy_picture(
             },
             "retrieved_at": datetime.utcnow().isoformat(),
             "status": "error",
-            "message": "APOD verisi alınamadı"
+            "message": "APOD verisi alÄ±namadÄ±"
         }
 @router.get("/nasa/earth-images")
 async def get_earth_images(
-    date: Optional[str] = Query(None, description="Tarih (YYYY-MM-DD formatında, boş bırakılırsa dün)"),
+    date: Optional[str] = Query(None, description="Tarih (YYYY-MM-DD formatÄ±nda, boÅŸ bÄ±rakÄ±lÄ±rsa dÃ¼n)"),
     nasa_services: SimplifiedNASAServices = Depends(get_simplified_nasa_services)
 ) -> Dict[str, Any]:
-    """
-    NASA EPIC - Dünya'nın uzaydan görüntüleri
-    """
+    
     try:
-        logger.info(f"EPIC Dünya görüntüleri isteniyor (tarih: {date or 'dün'})")
+        logger.info(f"EPIC DÃ¼nya gÃ¶rÃ¼ntÃ¼leri isteniyor (tarih: {date or 'dÃ¼n'})")
         earth_images = await nasa_services.get_earth_images(date=date)
         response = {
             "earth_images": earth_images,
@@ -441,29 +423,27 @@ async def get_earth_images(
             "retrieved_at": datetime.utcnow().isoformat(),
             "status": "success" if earth_images else "no_data"
         }
-        logger.info(f"EPIC görüntüler döndürüldü: {len(earth_images)} adet")
+        logger.info(f"EPIC gÃ¶rÃ¼ntÃ¼ler dÃ¶ndÃ¼rÃ¼ldÃ¼: {len(earth_images)} adet")
         return response
     except Exception as e:
-        logger.error(f"EPIC verisi alınamadı: {str(e)}")
+        logger.error(f"EPIC verisi alÄ±namadÄ±: {str(e)}")
         return {
             "earth_images": [],
             "total_images": 0,
             "date": date or (datetime.utcnow() - timedelta(days=1)).strftime("%Y-%m-%d"),
             "retrieved_at": datetime.utcnow().isoformat(),
             "status": "error",
-            "message": "Dünya görüntüleri alınamadı"
+            "message": "DÃ¼nya gÃ¶rÃ¼ntÃ¼leri alÄ±namadÄ±"
         }
 @router.get("/nasa/mars-photos")
 async def get_mars_rover_photos(
     rover: str = Query("curiosity", description="Mars gezgini (curiosity, opportunity, spirit)"),
-    sol: int = Query(1000, ge=1, description="Sol (Mars günü)"),
+    sol: int = Query(1000, ge=1, description="Sol (Mars gÃ¼nÃ¼)"),
     nasa_services: SimplifiedNASAServices = Depends(get_simplified_nasa_services)
 ) -> Dict[str, Any]:
-    """
-    NASA Mars Rover Photos - Mars gezgini fotoğrafları
-    """
+    
     try:
-        logger.info(f"Mars Rover fotoğrafları isteniyor ({rover}, sol {sol})")
+        logger.info(f"Mars Rover fotoÄŸraflarÄ± isteniyor ({rover}, sol {sol})")
         mars_photos = await nasa_services.get_mars_rover_photos(rover=rover.lower(), sol=sol)
         response = {
             "mars_photos": mars_photos,
@@ -473,10 +453,10 @@ async def get_mars_rover_photos(
             "retrieved_at": datetime.utcnow().isoformat(),
             "status": "success" if mars_photos else "no_data"
         }
-        logger.info(f"Mars fotoğrafları döndürüldü: {len(mars_photos)} adet ({rover})")
+        logger.info(f"Mars fotoÄŸraflarÄ± dÃ¶ndÃ¼rÃ¼ldÃ¼: {len(mars_photos)} adet ({rover})")
         return response
     except Exception as e:
-        logger.error(f"Mars Rover verisi alınamadı: {str(e)}")
+        logger.error(f"Mars Rover verisi alÄ±namadÄ±: {str(e)}")
         return {
             "mars_photos": [],
             "total_photos": 0,
@@ -484,18 +464,16 @@ async def get_mars_rover_photos(
             "sol": sol,
             "retrieved_at": datetime.utcnow().isoformat(),
             "status": "error",
-            "message": f"Mars gezgini ({rover}) fotoğrafları alınamadı"
+            "message": f"Mars gezgini ({rover}) fotoÄŸraflarÄ± alÄ±namadÄ±"
         }
 @router.post("/refresh", status_code=202)
 async def refresh_threat_data(
     background_tasks: BackgroundTasks,
     nasa_services: SimplifiedNASAServices = Depends(get_simplified_nasa_services)
 ) -> Dict[str, Any]:
-    """
-    Tehdit verilerini yenile - Basit versiyon
-    """
+    
     try:
-        logger.info("Tehdit verileri yenilenmeye başlanıyor...")
+        logger.info("Tehdit verileri yenilenmeye baÅŸlanÄ±yor...")
         background_tasks.add_task(_refresh_data_background, nasa_services)
         return {
             "message": "Tehdit verileri arka planda yenileniyor",
@@ -504,70 +482,67 @@ async def refresh_threat_data(
             "estimated_completion": (datetime.utcnow() + timedelta(minutes=2)).isoformat()
         }
     except Exception as e:
-        logger.error(f"Veri yenileme başlatılamadı: {str(e)}")
-        raise HTTPException(status_code=500, detail="Veri yenileme başlatılamadı")
+        logger.error(f"Veri yenileme baÅŸlatÄ±lamadÄ±: {str(e)}")
+        raise HTTPException(status_code=500, detail="Veri yenileme baÅŸlatÄ±lamadÄ±")
 def _get_level_description(level: str) -> str:
-    """Seviye açıklaması"""
+    
     descriptions = {
-        "Düşük": "Normal koşullar. Rutin gözlem devam ediyor.",
-        "Orta": "Artmış aktivite gözlemleniyor. Dikkatli takip gerekli.",
-        "Yüksek": "Yüksek riskli durumlar tespit edildi. Yakın takip öneriliyor."
+        "DÃ¼ÅŸÃ¼k": "Normal koÅŸullar. Rutin gÃ¶zlem devam ediyor.",
+        "Orta": "ArtmÄ±ÅŸ aktivite gÃ¶zlemleniyor. Dikkatli takip gerekli.",
+        "YÃ¼ksek": "YÃ¼ksek riskli durumlar tespit edildi. YakÄ±n takip Ã¶neriliyor."
     }
     return descriptions.get(level, "Bilinmeyen durum")
 def _calculate_duration(start_time: datetime) -> str:
-    """Süre hesaplama"""
+    
     duration = datetime.utcnow() - start_time
     if duration.days > 0:
-        return f"{duration.days} gün önce"
+        return f"{duration.days} gÃ¼n Ã¶nce"
     elif duration.seconds > 3600:
         hours = duration.seconds // 3600
-        return f"{hours} saat önce"
+        return f"{hours} saat Ã¶nce"
     elif duration.seconds > 60:
         minutes = duration.seconds // 60
-        return f"{minutes} dakika önce"
+        return f"{minutes} dakika Ã¶nce"
     else:
-        return "Az önce"
+        return "Az Ã¶nce"
 def _assess_space_weather_condition(events: List) -> str:
-    """Uzay hava durumu genel değerlendirmesi"""
+    
     if not events:
         return "Sakin"
-    high_count = sum(1 for e in events if e.intensity == "Yüksek")
+    high_count = sum(1 for e in events if e.intensity == "YÃ¼ksek")
     recent_high = sum(1 for e in events 
-                     if e.intensity == "Yüksek" and 
+                     if e.intensity == "YÃ¼ksek" and 
                      (datetime.utcnow() - e.start_time).days <= 1)
     if recent_high >= 2:
-        return "Çok Aktif"
+        return "Ã‡ok Aktif"
     elif high_count >= 1 or recent_high >= 1:
         return "Aktif"
     else:
         return "Sakin"
 async def _refresh_data_background(nasa_services: SimplifiedNASAServices):
-    """Arka plan veri yenileme"""
+    
     try:
-        logger.info("BACKGROUND: Veri yenileme başladı")
+        logger.info("BACKGROUND: Veri yenileme baÅŸladÄ±")
         summary = await nasa_services.get_simple_threat_summary()
-        logger.info(f"BACKGROUND: Veri yenileme tamamlandı - {summary.overall_level} seviye")
+        logger.info(f"BACKGROUND: Veri yenileme tamamlandÄ± - {summary.overall_level} seviye")
     except Exception as e:
-        logger.error(f"BACKGROUND: Veri yenileme hatası: {str(e)}")
+        logger.error(f"BACKGROUND: Veri yenileme hatasÄ±: {str(e)}")
 @router.get("/asteroids/close-approaches", 
-           summary="Asteroid Yaklaşım Verileri",
-           description="JPL SSD CAD API - Asteroid ve komet yaklaşım verileri")
+           summary="Asteroid YaklaÅŸÄ±m Verileri",
+           description="JPL SSD CAD API - Asteroid ve komet yaklaÅŸÄ±m verileri")
 async def get_close_approaches(
-    limit: int = Query(20, ge=1, le=100, description="Maksimum sonuç sayısı"),
-    days_ahead: int = Query(60, ge=1, le=365, description="Gelecekteki gün sayısı"),
+    limit: int = Query(20, ge=1, le=100, description="Maksimum sonuÃ§ sayÄ±sÄ±"),
+    days_ahead: int = Query(60, ge=1, le=365, description="Gelecekteki gÃ¼n sayÄ±sÄ±"),
     nasa_service: NASAServices = Depends(get_full_nasa_service)
 ):
-    """
-    Dünya'ya yaklaşan asteroid ve kometlerin verilerini döndürür
-    0.05 AU (Astronomical Unit) mesafeden daha yakın yaklaşımları listeler
-    """
+    
     try:
-        logger.info(f"CAD API - Yaklaşım verileri alınıyor (limit: {limit}, {days_ahead} gün)")
+        logger.info(f"CAD API - YaklaÅŸÄ±m verileri alÄ±nÄ±yor (limit: {limit}, {days_ahead} gÃ¼n)")
         result = await nasa_service.get_close_approach_data(limit, days_ahead)
         if not result.get('success'):
             raise HTTPException(
                 status_code=503,
-                detail=f"CAD API hatası: {result.get('error', 'Bilinmeyen hata')}"
+                detail=f"CAD API hatasÄ±: {result.get('error', 'Bilinmeyen hata')}"
             )
         return {
             "status": "success",
@@ -579,25 +554,23 @@ async def get_close_approaches(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"CAD API endpoint hatası: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Sunucu hatası: {str(e)}")
+        logger.error(f"CAD API endpoint hatasÄ±: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Sunucu hatasÄ±: {str(e)}")
 @router.get("/asteroids/impact-risk", 
-           summary="Çarpma Risk Değerlendirmesi",
-           description="CNEOS Sentry API - Dünya çarpma risk analizi")
+           summary="Ã‡arpma Risk DeÄŸerlendirmesi",
+           description="CNEOS Sentry API - DÃ¼nya Ã§arpma risk analizi")
 async def get_impact_risk(
-    mode: str = Query('S', regex="^[SOVR]$", description="S=özet, O=detay, V=sanal çarpıcı, R=kaldırılan"),
+    mode: str = Query('S', regex="^[SOVR]$", description="S=Ã¶zet, O=detay, V=sanal Ã§arpÄ±cÄ±, R=kaldÄ±rÄ±lan"),
     nasa_service: NASAServices = Depends(get_full_nasa_service)
 ):
-    """
-    CNEOS Sentry sisteminden çarpma risk değerlendirmelerini döndürür
-    """
+    
     try:
-        logger.info(f"Sentry API - Risk değerlendirmesi alınıyor (mode: {mode})")
+        logger.info(f"Sentry API - Risk deÄŸerlendirmesi alÄ±nÄ±yor (mode: {mode})")
         result = await nasa_service.get_sentry_risk_data(mode)
         if not result.get('success'):
             raise HTTPException(
                 status_code=503,
-                detail=f"Sentry API hatası: {result.get('error', 'Bilinmeyen hata')}"
+                detail=f"Sentry API hatasÄ±: {result.get('error', 'Bilinmeyen hata')}"
             )
         return {
             "status": "success",
@@ -606,34 +579,32 @@ async def get_impact_risk(
             "mode": mode,
             "source": result.get('source', 'CNEOS Sentry'),
             "description": {
-                'S': 'Özet tablo',
-                'O': 'Nesne detayları',
-                'V': 'Sanal çarpıcı verisi', 
-                'R': 'Kaldırılmış nesneler'
+                'S': 'Ã–zet tablo',
+                'O': 'Nesne detaylarÄ±',
+                'V': 'Sanal Ã§arpÄ±cÄ± verisi', 
+                'R': 'KaldÄ±rÄ±lmÄ±ÅŸ nesneler'
             }.get(mode, 'Bilinmeyen mod')
         }
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Sentry API endpoint hatası: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Sunucu hatası: {str(e)}")
+        logger.error(f"Sentry API endpoint hatasÄ±: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Sunucu hatasÄ±: {str(e)}")
 @router.get("/asteroids/real-time-tracking", 
-           summary="Gerçek Zamanlı Takip",
-           description="CNEOS Scout API - Anlık NEO takip verileri")
+           summary="GerÃ§ek ZamanlÄ± Takip",
+           description="CNEOS Scout API - AnlÄ±k NEO takip verileri")
 async def get_real_time_tracking(
-    limit: int = Query(10, ge=1, le=50, description="Maksimum sonuç sayısı"),
+    limit: int = Query(10, ge=1, le=50, description="Maksimum sonuÃ§ sayÄ±sÄ±"),
     nasa_service: NASAServices = Depends(get_full_nasa_service)
 ):
-    """
-    CNEOS Scout sisteminden gerçek zamanlı NEO takip verilerini döndürür
-    """
+    
     try:
-        logger.info(f"Scout API - Gerçek zamanlı takip verisi alınıyor (limit: {limit})")
+        logger.info(f"Scout API - GerÃ§ek zamanlÄ± takip verisi alÄ±nÄ±yor (limit: {limit})")
         result = await nasa_service.get_scout_data(limit)
         if not result.get('success'):
             raise HTTPException(
                 status_code=503,
-                detail=f"Scout API hatası: {result.get('error', 'Bilinmeyen hata')}"
+                detail=f"Scout API hatasÄ±: {result.get('error', 'Bilinmeyen hata')}"
             )
         return {
             "status": "success",
@@ -641,30 +612,28 @@ async def get_real_time_tracking(
             "count": result.get('count', 0),
             "source": result.get('source', 'CNEOS Scout'),
             "parameters": {"limit": limit},
-            "note": "Gerçek zamanlı NEO yörünge ve çarpma risk verileri"
+            "note": "GerÃ§ek zamanlÄ± NEO yÃ¶rÃ¼nge ve Ã§arpma risk verileri"
         }
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Scout API endpoint hatası: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Sunucu hatası: {str(e)}")
+        logger.error(f"Scout API endpoint hatasÄ±: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Sunucu hatasÄ±: {str(e)}")
 @router.get("/asteroids/fireball-events", 
-           summary="Meteor Çarpma Olayları",
-           description="JPL Fireball API - Atmosferik meteor çarpma verileri")
+           summary="Meteor Ã‡arpma OlaylarÄ±",
+           description="JPL Fireball API - Atmosferik meteor Ã§arpma verileri")
 async def get_fireball_events(
-    limit: int = Query(20, ge=1, le=100, description="Maksimum sonuç sayısı"),
+    limit: int = Query(20, ge=1, le=100, description="Maksimum sonuÃ§ sayÄ±sÄ±"),
     nasa_service: NASAServices = Depends(get_full_nasa_service)
 ):
-    """
-    US Hükümeti sensörlerinden atmosferik meteor çarpma verilerini döndürür
-    """
+    
     try:
-        logger.info(f"Fireball API - Meteor çarpma verileri alınıyor (limit: {limit})")
+        logger.info(f"Fireball API - Meteor Ã§arpma verileri alÄ±nÄ±yor (limit: {limit})")
         result = await nasa_service.get_fireball_data(limit)
         if not result.get('success'):
             raise HTTPException(
                 status_code=503,
-                detail=f"Fireball API hatası: {result.get('error', 'Bilinmeyen hata')}"
+                detail=f"Fireball API hatasÄ±: {result.get('error', 'Bilinmeyen hata')}"
             )
         return {
             "status": "success",
@@ -672,30 +641,28 @@ async def get_fireball_events(
             "count": result.get('count', 0),
             "source": result.get('source', 'US Government Sensors'),
             "parameters": {"limit": limit},
-            "note": "Atmosferik meteor çarpma olayları ve enerji verileri"
+            "note": "Atmosferik meteor Ã§arpma olaylarÄ± ve enerji verileri"
         }
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Fireball API endpoint hatası: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Sunucu hatası: {str(e)}")
+        logger.error(f"Fireball API endpoint hatasÄ±: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Sunucu hatasÄ±: {str(e)}")
 @router.get("/asteroids/human-accessible", 
-           summary="İnsan Erişilebilir NEO'lar",
-           description="CNEOS NHATS API - Uzay misyonları için erişilebilir asteroidler")
+           summary="Ä°nsan EriÅŸilebilir NEO'lar",
+           description="CNEOS NHATS API - Uzay misyonlarÄ± iÃ§in eriÅŸilebilir asteroidler")
 async def get_human_accessible_neos(
-    limit: int = Query(20, ge=1, le=100, description="Maksimum sonuç sayısı"),
+    limit: int = Query(20, ge=1, le=100, description="Maksimum sonuÃ§ sayÄ±sÄ±"),
     nasa_service: NASAServices = Depends(get_full_nasa_service)
 ):
-    """
-    İnsan uzay misyonları için erişilebilir Near Earth Objects'i döndürür
-    """
+    
     try:
-        logger.info(f"NHATS API - Erişilebilir NEO verileri alınıyor (limit: {limit})")
+        logger.info(f"NHATS API - EriÅŸilebilir NEO verileri alÄ±nÄ±yor (limit: {limit})")
         result = await nasa_service.get_nhats_data(limit)
         if not result.get('success'):
             raise HTTPException(
                 status_code=503,
-                detail=f"NHATS API hatası: {result.get('error', 'Bilinmeyen hata')}"
+                detail=f"NHATS API hatasÄ±: {result.get('error', 'Bilinmeyen hata')}"
             )
         return {
             "status": "success",
@@ -703,54 +670,49 @@ async def get_human_accessible_neos(
             "count": result.get('count', 0),
             "source": result.get('source', 'CNEOS NHATS'),
             "parameters": {"limit": limit},
-            "note": "İnsan uzay misyonları için değerlendirilen erişilebilir asteroidler"
+            "note": "Ä°nsan uzay misyonlarÄ± iÃ§in deÄŸerlendirilen eriÅŸilebilir asteroidler"
         }
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"NHATS API endpoint hatası: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Sunucu hatası: {str(e)}")
+        logger.error(f"NHATS API endpoint hatasÄ±: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Sunucu hatasÄ±: {str(e)}")
 @router.get("/asteroids/{asteroid_id}/orbital-analysis", 
-           summary="Detaylı Yörünge Analizi",
-           description="Asteroid için kapsamlı yörünge mekaniği hesaplaması")
+           summary="DetaylÄ± YÃ¶rÃ¼nge Analizi",
+           description="Asteroid iÃ§in kapsamlÄ± yÃ¶rÃ¼nge mekaniÄŸi hesaplamasÄ±")
 async def get_asteroid_orbital_analysis(
-    asteroid_id: str = Path(..., description="Asteroid ID (örn: 2021277)"),
+    asteroid_id: str = Path(..., description="Asteroid ID (Ã¶rn: 2021277)"),
     nasa_service: NASAServices = Depends(get_full_nasa_service)
 ):
-    """
-    Belirli bir asteroid için detaylı yörünge mekaniği analizi
-    NEO, CAD ve Sentry verilerini birleştirerek kapsamlı hesaplama yapar
-    """
+    
     try:
-        logger.info(f"Asteroid {asteroid_id} için yörünge analizi başlatılıyor")
+        logger.info(f"Asteroid {asteroid_id} iÃ§in yÃ¶rÃ¼nge analizi baÅŸlatÄ±lÄ±yor")
         result = await nasa_service.calculate_asteroid_orbital_mechanics(asteroid_id)
         if not result.get('success'):
             raise HTTPException(
                 status_code=404,
-                detail=f"Asteroid {asteroid_id} için yörünge analizi yapılamadı: {result.get('error', 'Veri bulunamadı')}"
+                detail=f"Asteroid {asteroid_id} iÃ§in yÃ¶rÃ¼nge analizi yapÄ±lamadÄ±: {result.get('error', 'Veri bulunamadÄ±')}"
             )
         return {
             "status": "success",
             "asteroid_id": asteroid_id,
             "orbital_data": result['data'],
             "calculation_method": result.get('calculation_method', 'SSD/CNEOS Combined'),
-            "note": "NEO, CAD ve Sentry API'lerinden birleştirilmiş analiz"
+            "note": "NEO, CAD ve Sentry API'lerinden birleÅŸtirilmiÅŸ analiz"
         }
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Asteroid {asteroid_id} yörünge analizi hatası: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Sunucu hatası: {str(e)}")
+        logger.error(f"Asteroid {asteroid_id} yÃ¶rÃ¼nge analizi hatasÄ±: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Sunucu hatasÄ±: {str(e)}")
 @router.get("/asteroids/{asteroid_id}")
 async def get_asteroid_by_id(
     asteroid_id: str,
     nasa_services: SimplifiedNASAServices = Depends(get_simplified_nasa_services)
 ) -> Dict[str, Any]:
-    """
-    Belirli bir asteroiti ID ile sorgula - NEO Lookup API
-    """
+    
     try:
-        logger.info(f"Asteroit detayı isteniyor: {asteroid_id}")
+        logger.info(f"Asteroit detayÄ± isteniyor: {asteroid_id}")
         if not asteroid_id.isdigit():
             raise HTTPException(
                 status_code=400,
@@ -760,7 +722,7 @@ async def get_asteroid_by_id(
         if not asteroid:
             raise HTTPException(
                 status_code=404,
-                detail=f"Asteroit {asteroid_id} bulunamadı"
+                detail=f"Asteroit {asteroid_id} bulunamadÄ±"
             )
         response = {
             "asteroid": {
@@ -776,13 +738,13 @@ async def get_asteroid_by_id(
             },
             "retrieved_at": datetime.utcnow().isoformat()
         }
-        logger.info(f"Asteroit detayı döndürüldü: {asteroid.name}")
+        logger.info(f"Asteroit detayÄ± dÃ¶ndÃ¼rÃ¼ldÃ¼: {asteroid.name}")
         return response
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Asteroit detayı alınamadı ({asteroid_id}): {str(e)}")
+        logger.error(f"Asteroit detayÄ± alÄ±namadÄ± ({asteroid_id}): {str(e)}")
         raise HTTPException(
             status_code=500, 
-            detail="Asteroit detayı alınırken sunucu hatası oluştu"
+            detail="Asteroit detayÄ± alÄ±nÄ±rken sunucu hatasÄ± oluÅŸtu"
         )

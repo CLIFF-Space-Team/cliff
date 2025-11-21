@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, Path
+﻿from fastapi import APIRouter, HTTPException, Depends, Path
 from typing import Dict, Any, List, Optional
 from pydantic import BaseModel
 import structlog
@@ -35,10 +35,7 @@ async def generate_asteroid_image(
     image_request: Dict[str, Any] = None,
     image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> AsteroidImageResponse:
-    """
-    ?? Generate artistic AI image for asteroid
-    Creates beautiful, fantastical visualizations using AI
-    """
+    
     try:
         logger.info(f"?? Image generation requested for asteroid {asteroid_id}")
         
@@ -87,10 +84,7 @@ async def get_asteroid_image(
     style: str = "mystical",
     image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> Dict[str, Any]:
-    """
-    ??? Get cached asteroid image if available
-    (Cache implementation removed for simplicity, generating new)
-    """
+    
     return {
         "success": False,
         "message": "Cache system updated, please generate new image",
@@ -99,9 +93,7 @@ async def get_asteroid_image(
 
 @router.get("/styles")
 async def get_available_styles() -> Dict[str, List[str]]:
-    """
-    ?? Get available artistic styles for asteroid images
-    """
+    
     styles = ["mystical", "ancient", "ethereal", "crystalline", "cosmic", "fantasy", "enchanted", "celestial"]
     return {
         "success": True,
@@ -130,21 +122,14 @@ async def generate_asteroid_image_with_data(
     style_preference: str = "mystical",
     image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> AsteroidImageResponse:
-    """
-    ?? Generate asteroid image with full asteroid data
-    """
+    
     try:
         logger.info(f"?? Advanced image generation for {asteroid_name} ({asteroid_id})")
         
         hazardous_desc = "menacing, glowing red warning aura" if is_hazardous else "peaceful, stable orbit"
         size_desc = "massive world-eater size" if diameter_km > 1.0 else "small rocky fragment"
         
-        prompt = f"""
-        Detailed artistic visualization of asteroid {asteroid_name}.
-        Characteristics: {size_desc}, {hazardous_desc}, moving at {velocity_kms} km/s.
-        Distance: {distance_au} AU from Earth.
-        Style: {style_preference}, cinematic lighting, photorealistic textures, 8k resolution, deep space background.
-        """
+        prompt = f
         
         request = ImageGenerationRequest(
             prompt=prompt.strip(),
@@ -173,9 +158,7 @@ async def generate_asteroid_image_with_data(
 
 @router.delete("/cache/clear")
 async def clear_image_cache() -> Dict[str, Any]:
-    """
-    ??? Clear asteroid image cache (Placeholder)
-    """
+    
     return {
         "success": True,
         "message": "Cache cleared (No-op)",
@@ -184,9 +167,7 @@ async def clear_image_cache() -> Dict[str, Any]:
 
 @router.get("/cache/stats")
 async def get_cache_stats() -> Dict[str, Any]:
-    """
-    ?? Get cache statistics (Placeholder)
-    """
+    
     return {
         "success": True,
         "cache_stats": {"cached_items": 0}

@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 import aiohttp
 import ssl
 import re
@@ -10,7 +10,7 @@ import math
 logger = logging.getLogger(__name__)
 @dataclass
 class TLEData:
-    """TLE data structure"""
+    
     name: str
     catalog_number: str  # NORAD catalog number
     classification: str  # U=unclassified, C=classified, S=secret
@@ -40,7 +40,7 @@ class TLEData:
     tle_line2: str
 @dataclass
 class SatellitePosition:
-    """Satellite position at a given time"""
+    
     satellite_name: str
     catalog_number: str
     timestamp: datetime
@@ -54,7 +54,7 @@ class SatellitePosition:
     range: Optional[float] = None  # km from observer
 @dataclass
 class TLEStatistics:
-    """Statistics for TLE data collection"""
+    
     total_satellites: int
     by_country: Dict[str, int]
     by_orbit_type: Dict[str, int]
@@ -65,7 +65,7 @@ class TLEStatistics:
     fastest_orbit: str
     most_eccentric: str
 class TLEService:
-    """TLE (Two-Line Element) API service"""
+    
     def __init__(self):
         self.celestrak_base = "https://celestrak.org"
         self.norad_elements = "/NORAD/elements"
@@ -100,7 +100,7 @@ class TLEService:
         self.EARTH_RADIUS = 6371.0  # km
         self.EARTH_MU = 398600.4418  # km^3/s^2
     def parse_tle_lines(self, name: str, line1: str, line2: str) -> Optional[TLEData]:
-        """Parse TLE format lines into structured data"""
+        
         try:
             name = name.strip()
             line1 = line1.strip()
@@ -201,7 +201,7 @@ class TLEService:
             logger.error(f"Error parsing TLE for {name}: {str(e)}")
             return None
     async def fetch_tle_group(self, group_name: str) -> Dict[str, Any]:
-        """Fetch TLE data for a specific satellite group"""
+        
         try:
             url = f"{self.celestrak_base}{self.norad_elements}/{group_name}.txt"
             connector = aiohttp.TCPConnector(ssl=self.ssl_context)
@@ -244,7 +244,7 @@ class TLEService:
                 'group': group_name
             }
     async def get_iss_tle(self) -> Dict[str, Any]:
-        """Get current TLE for International Space Station"""
+        
         try:
             url = f"{self.celestrak_base}{self.norad_elements}/gp.php?CATNR=25544&FORMAT=tle"
             connector = aiohttp.TCPConnector(ssl=self.ssl_context)
@@ -281,7 +281,7 @@ class TLEService:
                 'error': str(e)
             }
     async def get_satellite_by_norad(self, norad_id: int) -> Dict[str, Any]:
-        """Get TLE for specific satellite by NORAD catalog number"""
+        
         try:
             url = f"{self.celestrak_base}{self.norad_elements}/gp.php?CATNR={norad_id}&FORMAT=tle"
             connector = aiohttp.TCPConnector(ssl=self.ssl_context)
@@ -319,22 +319,22 @@ class TLEService:
                 'error': str(e)
             }
     async def get_starlink_satellites(self) -> Dict[str, Any]:
-        """Get all Starlink satellites"""
+        
         return await self.fetch_tle_group('starlink')
     async def get_weather_satellites(self) -> Dict[str, Any]:
-        """Get weather satellites"""
+        
         return await self.fetch_tle_group('weather')
     async def get_active_satellites(self) -> Dict[str, Any]:
-        """Get all active satellites"""
+        
         return await self.fetch_tle_group('active')
     async def get_space_stations(self) -> Dict[str, Any]:
-        """Get space stations (ISS, Tiangong, etc.)"""
+        
         return await self.fetch_tle_group('stations')
     async def get_visual_satellites(self) -> Dict[str, Any]:
-        """Get satellites visible to naked eye"""
+        
         return await self.fetch_tle_group('visual')
     def calculate_statistics(self, satellites: List[TLEData]) -> TLEStatistics:
-        """Calculate statistics from satellite collection"""
+        
         if not satellites:
             return TLEStatistics(
                 total_satellites=0,
@@ -388,7 +388,7 @@ class TLEService:
         )
 _tle_service_instance = None
 def get_tle_service() -> TLEService:
-    """Get TLE service singleton"""
+    
     global _tle_service_instance
     if _tle_service_instance is None:
         _tle_service_instance = TLEService()

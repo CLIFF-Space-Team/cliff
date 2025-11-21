@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Any
+﻿from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
 from datetime import datetime
@@ -23,10 +23,7 @@ async def cliff_ai_mentor_chat(
     request: MentorChatRequest,
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> MentorChatResponse:
-    """
-    ?? CLIFF-AI Mentor Chat - Intelligent Space Science Tutor
-    NASA Challenge signature feature for personalized learning
-    """
+    
     try:
         if not request.message.strip():
             raise HTTPException(status_code=400, detail="Message cannot be empty")
@@ -70,10 +67,7 @@ async def generate_educational_content(
     request: EducationalContentRequest,
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> EducationalContentResponse:
-    """
-    ?? AI-Powered Educational Content Generation
-    Create personalized space science learning materials
-    """
+    
     try:
         if not request.topic.strip():
             raise HTTPException(status_code=400, detail="Topic is required")
@@ -88,10 +82,7 @@ async def generate_ai_quiz(
     request: QuizGenerationRequest,
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> QuizGenerationResponse:
-    """
-    ?? AI-Generated Quiz System
-    Create intelligent assessments for space science learning
-    """
+    
     try:
         if not request.topic.strip():
             raise HTTPException(status_code=400, detail="Quiz topic is required")
@@ -108,10 +99,7 @@ async def evaluate_quiz_responses(
     request: Dict[str, Any],
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> Dict[str, Any]:
-    """
-    ? AI-Powered Quiz Evaluation
-    Intelligent assessment with detailed feedback
-    """
+    
     try:
         student_answers = request.get("answers", [])
         quiz_questions = request.get("questions", [])
@@ -162,10 +150,7 @@ async def create_personalized_learning_path(
     request: PersonalizedLearningRequest,
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> PersonalizedLearningResponse:
-    """
-    ?? Personalized Learning Path Creation
-    AI-adaptive curriculum for individual learning needs
-    """
+    
     try:
         if not request.student_id.strip():
             raise HTTPException(status_code=400, detail="Student ID is required")
@@ -182,10 +167,7 @@ async def analyze_student_progress(
     request: Dict[str, Any],
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> Dict[str, Any]:
-    """
-    ?? Student Progress Analysis
-    AI-powered learning analytics and insights
-    """
+    
     try:
         student_id = request.get("student_id")
         progress_data = request.get("progress_data", {})
@@ -207,10 +189,7 @@ async def generate_adaptive_content(
     request: Dict[str, Any],
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> Dict[str, Any]:
-    """
-    ?? Adaptive Content Generation
-    Dynamic content adjustment based on student performance
-    """
+    
     try:
         student_performance = request.get("performance_data", {})
         current_topic = request.get("topic", "")
@@ -241,10 +220,7 @@ async def generate_adaptive_content(
 async def educational_ai_system_status(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> Dict[str, Any]:
-    """
-    ?? Educational AI System Status
-    Monitor AI services and capabilities
-    """
+    
     try:
         system_status = {
             "gemini_pro_model": settings.GEMINI_PRO_MODEL,
@@ -281,10 +257,7 @@ async def nasa_challenge_demo_showcase(
     request: Dict[str, Any],
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> Dict[str, Any]:
-    """
-    ?? NASA Challenge Demo Showcase
-    Demonstrate all AI capabilities in one endpoint
-    """
+    
     try:
         demo_topic = request.get("topic", "Mars Exploration")
         student_name = request.get("student_name", "Demo Student")
@@ -344,10 +317,7 @@ async def nasa_challenge_demo_showcase(
         raise HTTPException(status_code=500, detail=f"Demo showcase failed: {str(e)}")
 @router.get("/health")
 async def educational_ai_health_check() -> Dict[str, Any]:
-    """
-    ?? Educational AI Health Check
-    Quick system health verification
-    """
+    
     return {
         "status": "healthy",
         "service": "CLIFF Educational AI",
@@ -359,10 +329,7 @@ async def educational_ai_health_check() -> Dict[str, Any]:
 async def test_vertex_ai_connection(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> Dict[str, Any]:
-    """
-    ?? Vertex AI API Connection Diagnostics (beta.vertexapis.com)
-    Test the Vertex AI API connection and authentication
-    """
+    
     try:
         logger.info("?? Starting Vertex AI connection diagnostics...")
         connection_test = await ai_services.test_gemini_api_connection()
@@ -411,10 +378,7 @@ async def test_vertex_ai_connection(
         }
 @router.post("/diagnostics/database-health")
 async def test_database_connection() -> Dict[str, Any]:
-    """
-    ?? Database Health Diagnostics
-    Test MongoDB connection and SSL issues
-    """
+    
     try:
         logger.info("?? Starting database health diagnostics...")
         from app.core.database import check_database_health, get_connection_status
@@ -462,10 +426,7 @@ async def test_database_connection() -> Dict[str, Any]:
 async def system_diagnostics_overview(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> Dict[str, Any]:
-    """
-    ?? Complete System Diagnostics Overview
-    Comprehensive system health check for NASA Challenge demo
-    """
+    
     try:
         logger.info("?? Running complete system diagnostics...")
         diagnostics = {

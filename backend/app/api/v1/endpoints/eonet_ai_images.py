@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Any
+﻿from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Depends, Query, Path, BackgroundTasks
 from fastapi.responses import JSONResponse
 from datetime import datetime
@@ -18,10 +18,7 @@ async def generate_eonet_event_images(
     request: EONETImageRequest,
     eonet_generator: EONETAIImageGenerator = Depends(get_eonet_ai_generator)
 ) -> JSONResponse:
-    """
-    ?? Generate AI Images for EONET Event
-    Create contextual AI images for natural disaster events
-    """
+    
     try:
         logger.info(f"EONET AI image generation requested for event: {request.event_context.get('id', 'unknown')}")
         response = await eonet_generator.generate_event_images(request)
@@ -50,10 +47,7 @@ async def get_event_images(
     event_id: str = Path(..., description="EONET event ID"),
     eonet_generator: EONETAIImageGenerator = Depends(get_eonet_ai_generator)
 ) -> JSONResponse:
-    """
-    ??? Get Generated Images for EONET Event
-    Retrieve cached AI-generated images for specific event
-    """
+    
     try:
         logger.info(f"Retrieving EONET images for event: {event_id}")
         cached_images = await eonet_generator.get_event_images_by_id(event_id)
@@ -95,10 +89,7 @@ async def generate_images_for_existing_event(
     nasa_services: NASAServices = Depends(get_nasa_services),
     eonet_generator: EONETAIImageGenerator = Depends(get_eonet_ai_generator)
 ) -> JSONResponse:
-    """
-    ?? Generate Images for Existing EONET Event
-    Fetch event data and generate AI images
-    """
+    
     try:
         logger.info(f"Generating images for existing EONET event: {event_id}")
         events_response = await nasa_services.get_earth_events(limit=1000)
@@ -147,10 +138,7 @@ async def batch_generate_for_recent_events(
     nasa_services: NASAServices = Depends(get_nasa_services),
     eonet_generator: EONETAIImageGenerator = Depends(get_eonet_ai_generator)
 ) -> JSONResponse:
-    """
-    ?? Batch Generate Images for Recent Events
-    Generate AI images for multiple recent EONET events
-    """
+    
     try:
         logger.info(f"Batch generating images for {limit} recent EONET events")
         events_response = await nasa_services.get_earth_events(limit=limit, category=category)
@@ -198,10 +186,7 @@ async def batch_generate_for_recent_events(
 async def get_eonet_ai_stats(
     eonet_generator: EONETAIImageGenerator = Depends(get_eonet_ai_generator)
 ) -> JSONResponse:
-    """
-    ?? EONET AI Image Generator Statistics
-    Get service statistics and supported features
-    """
+    
     try:
         stats = eonet_generator.get_service_stats()
         return JSONResponse(content={
@@ -217,10 +202,7 @@ async def clear_event_cache(
     event_id: str = Path(..., description="EONET event ID"),
     eonet_generator: EONETAIImageGenerator = Depends(get_eonet_ai_generator)
 ) -> JSONResponse:
-    """
-    ??? Clear Cache for Event
-    Remove cached images for specific event
-    """
+    
     try:
         cache_key = eonet_generator._get_cache_key(event_id)
         if cache_key in eonet_generator.image_cache:

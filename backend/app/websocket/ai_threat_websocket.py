@@ -1,7 +1,4 @@
-"""
-🧠 AI Threat Analysis WebSocket Handler
-Yeni AI destekli tehdit analiz sistemi için WebSocket real-time bildirimleri
-"""
+﻿
 
 import asyncio
 import json
@@ -21,7 +18,7 @@ logger = structlog.get_logger(__name__)
 
 
 class AIAnalysisProgressUpdate(BaseModel):
-    """AI analiz ilerleme güncellemesi"""
+    
     session_id: str = Field(..., description="Analysis session ID")
     current_phase: str = Field(..., description="Current analysis phase")
     progress_percentage: float = Field(..., description="Progress percentage (0-100)")
@@ -34,7 +31,7 @@ class AIAnalysisProgressUpdate(BaseModel):
 
 
 class AIThreatInsight(BaseModel):
-    """AI tehdit analizi insight'ı"""
+    
     insight_id: str = Field(..., description="Unique insight ID")
     threat_id: str = Field(..., description="Related threat ID")
     insight_type: str = Field(..., description="Type of insight")
@@ -47,7 +44,7 @@ class AIThreatInsight(BaseModel):
 
 
 class AICorrelationAlert(BaseModel):
-    """AI korelasyon uyarısı"""
+    
     correlation_id: str = Field(..., description="Correlation ID")
     primary_threat_id: str = Field(..., description="Primary threat ID")
     related_threat_ids: List[str] = Field(..., description="Related threat IDs")
@@ -60,7 +57,7 @@ class AICorrelationAlert(BaseModel):
 
 
 class AISummaryReport(BaseModel):
-    """AI analiz özet raporu"""
+    
     session_id: str = Field(..., description="Analysis session ID")
     analysis_completion_time: datetime = Field(..., description="Analysis completion time")
     total_threats_analyzed: int = Field(..., description="Total threats analyzed")
@@ -74,10 +71,7 @@ class AISummaryReport(BaseModel):
 
 
 class AIThreatWebSocketHandler:
-    """
-    🧠 AI Tehdit Analizi WebSocket Handler
-    Master Orchestrator ile entegre real-time bildirimler
-    """
+    
     
     def __init__(self):
         self.orchestrator: Optional[MasterThreatOrchestrator] = None
@@ -88,7 +82,7 @@ class AIThreatWebSocketHandler:
         logger.info("AI Threat WebSocket Handler initialized")
     
     async def initialize(self):
-        """Initialize AI WebSocket handler"""
+        
         try:
             self.orchestrator = await get_master_threat_orchestrator()
             
@@ -109,9 +103,7 @@ class AIThreatWebSocketHandler:
             raise
     
     async def subscribe_to_analysis(self, client_id: str, session_id: str) -> bool:
-        """
-        Client'i belirli bir AI analiz session'ına abone et
-        """
+        
         try:
             if session_id not in self.active_analysis_sessions:
                 self.active_analysis_sessions[session_id] = set()
@@ -136,9 +128,7 @@ class AIThreatWebSocketHandler:
             return False
     
     async def unsubscribe_from_analysis(self, client_id: str, session_id: str) -> bool:
-        """
-        Client'i AI analiz session'ından abonelikten çıkar
-        """
+        
         try:
             if session_id in self.active_analysis_sessions:
                 self.active_analysis_sessions[session_id].discard(client_id)
@@ -163,9 +153,7 @@ class AIThreatWebSocketHandler:
             return False
     
     async def broadcast_analysis_progress(self, session_id: str, progress: AIAnalysisProgressUpdate):
-        """
-        AI analiz ilerlemesini broadcast et
-        """
+        
         try:
             if session_id not in self.active_analysis_sessions:
                 logger.debug(f"No subscribers for analysis {session_id}")
@@ -196,9 +184,7 @@ class AIThreatWebSocketHandler:
             logger.error(f"Analysis progress broadcast failed: {str(e)}")
     
     async def broadcast_ai_insight(self, insight: AIThreatInsight):
-        """
-        AI insight'ı broadcast et
-        """
+        
         try:
             message = WebSocketMessage(
                 type="ai_threat_insight",
@@ -216,9 +202,7 @@ class AIThreatWebSocketHandler:
             logger.error(f"AI insight broadcast failed: {str(e)}")
     
     async def broadcast_correlation_alert(self, correlation: AICorrelationAlert):
-        """
-        AI korelasyon uyarısını broadcast et
-        """
+        
         try:
             message = WebSocketMessage(
                 type="ai_correlation_alert",
@@ -252,9 +236,7 @@ class AIThreatWebSocketHandler:
             logger.error(f"AI correlation alert broadcast failed: {str(e)}")
     
     async def broadcast_summary_report(self, summary: AISummaryReport):
-        """
-        AI analiz özet raporunu broadcast et
-        """
+        
         try:
             if summary.session_id in self.active_analysis_sessions:
                 progress_message = WebSocketMessage(
@@ -292,9 +274,7 @@ class AIThreatWebSocketHandler:
             logger.error(f"AI summary report broadcast failed: {str(e)}")
     
     async def handle_ai_message(self, client_id: str, message_data: Dict[str, Any]):
-        """
-        AI spesifik mesajları handle et
-        """
+        
         try:
             message_type = message_data.get("type")
             
@@ -361,9 +341,7 @@ class AIThreatWebSocketHandler:
             await websocket_manager._send_to_client(client_id, error_response)
     
     async def cleanup_client_subscriptions(self, client_id: str):
-        """
-        Client disconnect olduğunda temizlik yap
-        """
+        
         try:
             if client_id in self.client_subscriptions:
                 session_ids = self.client_subscriptions[client_id].copy()
@@ -377,9 +355,7 @@ class AIThreatWebSocketHandler:
             logger.error(f"Client AI subscription cleanup failed: {str(e)}")
     
     async def _monitor_analysis_progress(self, session_id: str):
-        """
-        Belirli bir analiz session'ının ilerlemesini izle
-        """
+        
         logger.info(f"Starting progress monitoring for analysis: {session_id}")
         
         try:
@@ -414,7 +390,7 @@ class AIThreatWebSocketHandler:
             logger.error(f"Progress monitoring error for {session_id}: {str(e)}")
     
     def _calculate_progress_percentage(self, current_phase: str) -> float:
-        """İlerleme yüzdesini hesapla"""
+        
         phase_progress = {
             'initialization': 5.0,
             'data_collection': 15.0,
@@ -429,7 +405,7 @@ class AIThreatWebSocketHandler:
         return phase_progress.get(current_phase, 0.0)
     
     def _estimate_completion_time(self, status: Dict[str, Any]) -> Optional[str]:
-        """Tahmini tamamlanma zamanı"""
+        
         try:
             current_phase = status.get('current_phase', '')
             elapsed_time = status.get('elapsed_time', 0)
@@ -464,19 +440,19 @@ class AIThreatWebSocketHandler:
             return None
     
     def _get_current_activity(self, current_phase: str) -> str:
-        """Güncel aktivite açıklaması"""
+        
         activities = {
-            'initialization': 'Sistem başlatılıyor ve bağlantılar kuriliyor...',
-            'data_collection': 'NASA, ESA ve SpaceX kaynaklarından veri toplanıyor...',
-            'threat_analysis': 'AI ile tehdit analizi yapılıyor...',
-            'priority_calculation': 'Öncelik skorları hesaplanıyor...',
-            'risk_assessment': 'Risk değerlendirmesi gerçekleştiriliyor...',
-            'correlation_analysis': 'Tehditler arası korelasyonlar tespit ediliyor...',
-            'ai_enhancement': 'AI ile stratejik öngörüler geliştiriliyor...',
-            'finalization': 'Analiz sonuçları hazırlanıyor...',
-            'complete': 'Analiz tamamlandı!'
+            'initialization': 'Sistem baÅŸlatÄ±lÄ±yor ve baÄŸlantÄ±lar kuriliyor...',
+            'data_collection': 'NASA, ESA ve SpaceX kaynaklarÄ±ndan veri toplanÄ±yor...',
+            'threat_analysis': 'AI ile tehdit analizi yapÄ±lÄ±yor...',
+            'priority_calculation': 'Ã–ncelik skorlarÄ± hesaplanÄ±yor...',
+            'risk_assessment': 'Risk deÄŸerlendirmesi gerÃ§ekleÅŸtiriliyor...',
+            'correlation_analysis': 'Tehditler arasÄ± korelasyonlar tespit ediliyor...',
+            'ai_enhancement': 'AI ile stratejik Ã¶ngÃ¶rÃ¼ler geliÅŸtiriliyor...',
+            'finalization': 'Analiz sonuÃ§larÄ± hazÄ±rlanÄ±yor...',
+            'complete': 'Analiz tamamlandÄ±!'
         }
-        return activities.get(current_phase, 'İşlem devam ediyor...')
+        return activities.get(current_phase, 'Ä°ÅŸlem devam ediyor...')
 
 
 
@@ -485,7 +461,7 @@ ai_threat_websocket_handler = AIThreatWebSocketHandler()
 
 
 async def initialize_ai_websocket_system():
-    """AI WebSocket sistemini başlat"""
+    
     try:
         await ai_threat_websocket_handler.initialize()
         logger.info("AI WebSocket system initialized successfully")
@@ -495,18 +471,18 @@ async def initialize_ai_websocket_system():
 
 
 async def handle_ai_websocket_message(client_id: str, message_data: Dict[str, Any]):
-    """AI WebSocket mesajlarını handle et"""
+    
     await ai_threat_websocket_handler.handle_ai_message(client_id, message_data)
 
 
 async def cleanup_ai_client(client_id: str):
-    """AI client temizliği yap"""
+    
     await ai_threat_websocket_handler.cleanup_client_subscriptions(client_id)
 
 
 
 async def notify_analysis_started(session_id: str, analysis_config: Dict[str, Any]):
-    """Analiz başlama bildirimi"""
+    
     try:
         if session_id in ai_threat_websocket_handler.active_analysis_sessions:
             message = WebSocketMessage(
@@ -543,7 +519,7 @@ async def notify_critical_ai_finding(
     details: Dict[str, Any], 
     urgency_level: str = "HIGH"
 ):
-    """Kritik AI bulgusu bildirimi"""
+    
     try:
         insight = AIThreatInsight(
             insight_id=f"CRITICAL-{uuid.uuid4().hex[:8]}",

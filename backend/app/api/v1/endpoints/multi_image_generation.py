@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+﻿from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from typing import Dict, Any, List, Optional
 import structlog
 from datetime import datetime
@@ -19,14 +19,7 @@ async def generate_image_batch(
     multi_service: MultiImageGenerator = Depends(get_multi_image_service),
     background_tasks: BackgroundTasks = BackgroundTasks()
 ) -> MultiImageResponse:
-    """
-    ?? Generate multiple professional-grade images from content analysis
-    Automatically produces 4 high-quality, contextually appropriate images:
-    - Hero Image: Main visual representation
-    - Detail Image: Close-up/macro detail
-    - Context Image: Environmental/wide view  
-    - Artistic Image: Creative interpretation
-    """
+    
     try:
         logger.info(f"?? Multi-image generation request: {request.content[:50]}...")
         if not request.content or not request.content.strip():
@@ -73,15 +66,7 @@ async def analyze_content_for_visuals(
     request: Dict[str, Any],
     multi_service: MultiImageGenerator = Depends(get_multi_image_service)
 ) -> Dict[str, Any]:
-    """
-    ?? Analyze content for visual generation potential
-    Provides detailed analysis of content including:
-    - Main theme identification
-    - Visual element extraction
-    - Mood and atmosphere analysis
-    - Technical requirements
-    - Composition suggestions
-    """
+    
     try:
         content = request.get("content", "").strip()
         content_type = request.get("content_type")
@@ -143,9 +128,7 @@ async def analyze_content_for_visuals(
         }
 @router.get("/supported-options")
 async def get_supported_options() -> Dict[str, Any]:
-    """
-    ?? Get all supported content types, styles, and composition options
-    """
+    
     return {
         "success": True,
         "supported_options": {
@@ -221,10 +204,7 @@ async def quick_generate_images(
     request: Dict[str, Any],
     multi_service: MultiImageGenerator = Depends(get_multi_image_service)
 ) -> MultiImageResponse:
-    """
-    ? Quick generation with smart defaults
-    Simplified interface for fast multi-image generation with intelligent defaults
-    """
+    
     try:
         content = request.get("content", "").strip()
         if not content:
@@ -261,9 +241,7 @@ async def quick_generate_images(
 async def get_multi_image_service_status(
     multi_service: MultiImageGenerator = Depends(get_multi_image_service)
 ) -> Dict[str, Any]:
-    """
-    ?? Get multi-image generation service status and statistics
-    """
+    
     try:
         logger.info("?? Checking multi-image generation service status...")
         stats = multi_service.get_service_stats()
@@ -338,9 +316,7 @@ async def test_multi_image_generation(
     request: Optional[Dict[str, Any]] = None,
     multi_service: MultiImageGenerator = Depends(get_multi_image_service)
 ) -> Dict[str, Any]:
-    """
-    ?? Test multi-image generation with sample content
-    """
+    
     try:
         test_contents = [
             "A magnificent space station orbiting Earth with solar panels gleaming in sunlight",
@@ -416,9 +392,7 @@ async def test_multi_image_generation(
         }
 @router.get("/health")
 async def health_check() -> Dict[str, Any]:
-    """
-    ?? Multi-image generation service health check
-    """
+    
     return {
         "status": "healthy",
         "service": "Multi-Image Generation API",

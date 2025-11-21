@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
@@ -9,10 +9,7 @@ from app.services.nasa_horizons_service import get_nasa_horizons_service
 
 
 def _parse_horizons_result(ephem: Dict[str, Any]) -> list[dict]:
-    """
-    Horizons API format=json döndüğünde ephem['result'] metin tablosudur.
-    $$SOE ... $$EOE arasındaki satırlardan delta ve deldot alanlarını çıkarır.
-    """
+    
     raw = ephem.get("result") or ""
     if not isinstance(raw, str) or "$$SOE" not in raw:
         data = ephem.get("data")
@@ -49,7 +46,7 @@ def _parse_horizons_result(ephem: Dict[str, Any]) -> list[dict]:
             if len(parts) < 12:
                 continue
             try:
-                delta_au = float(parts[-5])  # delta çoğu zaman sondan 5.
+                delta_au = float(parts[-5])  # delta Ã§oÄŸu zaman sondan 5.
                 deldot_kms = float(parts[-4])
             except Exception:
                 continue
@@ -68,7 +65,7 @@ async def analyze_target(
     days_ahead: int = 30,
     step: str = "1 d",
 ) -> Dict[str, Any]:
-    """NASA Horizons + MC + ML hibrit analizi."""
+    
     horizons = get_nasa_horizons_service()
     mc = get_monte_carlo_engine()
     ml = get_ml_risk_classifier()
@@ -98,7 +95,7 @@ async def analyze_target(
     features = {
         "distance_au": float(last_row.get("delta_au", 1.0)),
         "velocity_kms": float(last_row.get("deldot_kms", 20.0)),
-        "diameter_km": 0.0,  # Bilinmiyorsa 0.0, UI/endpoint üzerinden sağlanabilir
+        "diameter_km": 0.0,  # Bilinmiyorsa 0.0, UI/endpoint Ã¼zerinden saÄŸlanabilir
         "time_to_approach_days": float(days_ahead),
         "observation_count": 0.0,  # Bilinmiyorsa 0
         "h_magnitude": 0.0,
@@ -107,11 +104,11 @@ async def analyze_target(
     ml_pred = ml.predict(features)
 
     explanation = (
-        f"NASA Horizons verilerine göre nominal en yakın mesafe ~{nominal_distances_km[-1]:,.0f} km. "
-        f"Monte Carlo (10k) sonucunda %95 aralık {mc_summary.ci95_km[0]:,.0f} - {mc_summary.ci95_km[1]:,.0f} km. "
-        f"ML sınıflandırma: {ml_pred.label} (güven: {ml_pred.confidence:.2f})."
+        f"NASA Horizons verilerine gÃ¶re nominal en yakÄ±n mesafe ~{nominal_distances_km[-1]:,.0f} km. "
+        f"Monte Carlo (10k) sonucunda %95 aralÄ±k {mc_summary.ci95_km[0]:,.0f} - {mc_summary.ci95_km[1]:,.0f} km. "
+        f"ML sÄ±nÄ±flandÄ±rma: {ml_pred.label} (gÃ¼ven: {ml_pred.confidence:.2f})."
         if nominal_distances_km
-        else "NASA Horizons verisi yetersiz görünüyor."
+        else "NASA Horizons verisi yetersiz gÃ¶rÃ¼nÃ¼yor."
     )
 
     return {

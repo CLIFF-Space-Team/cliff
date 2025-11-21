@@ -1,4 +1,4 @@
-import asyncio
+ï»¿import asyncio
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Tuple
@@ -44,7 +44,7 @@ from .multi_source_data_integrator import (
 from .unified_ai_service import unified_ai_service, UnifiedChatRequest
 logger = structlog.get_logger(__name__)
 class OrchestrationPhase(str, Enum):
-    """Orkestrasyon fazlarý"""
+    
     INITIALIZATION = "initialization"
     DATA_COLLECTION = "data_collection"
     THREAT_ANALYSIS = "threat_analysis"
@@ -56,7 +56,7 @@ class OrchestrationPhase(str, Enum):
     COMPLETE = "complete"
     ERROR = "error"
 class ProcessingStatus(str, Enum):
-    """Ýþleme durumu"""
+    
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -64,7 +64,7 @@ class ProcessingStatus(str, Enum):
     TIMEOUT = "timeout"
 @dataclass
 class OrchestrationMetrics:
-    """Orkestrasyon metrikleri"""
+    
     total_processing_time: float = 0.0
     data_collection_time: float = 0.0
     threat_analysis_time: float = 0.0
@@ -87,7 +87,7 @@ class OrchestrationMetrics:
     cache_hit_ratio: float = 0.0
 @dataclass
 class ComprehensiveThreatAssessment:
-    """Kapsamlý tehdit deðerlendirmesi"""
+    
     threat_id: str
     source_data: NormalizedThreatData
     ai_analysis: Optional[ThreatAnalysisResult] = None
@@ -105,7 +105,7 @@ class ComprehensiveThreatAssessment:
     action_items: List[str] = field(default_factory=list)
     monitoring_flags: List[str] = field(default_factory=list)
     def to_dict(self) -> Dict[str, Any]:
-        """Dictionary formatýna çevir"""
+        
         return {
             'threat_id': self.threat_id,
             'source': self.source_data.source.value,
@@ -129,7 +129,7 @@ class ComprehensiveThreatAssessment:
             'last_updated': self.last_updated.isoformat()
         }
     def get_priority_numeric(self) -> float:
-        """Numeric priority value"""
+        
         priority_map = {
             PriorityLevel.CRITICAL: 1.0,
             PriorityLevel.HIGH: 0.8,
@@ -140,7 +140,7 @@ class ComprehensiveThreatAssessment:
         return priority_map.get(self.final_priority, 0.5)
 @dataclass
 class OrchestrationResult:
-    """Orkestrasyon sonucu"""
+    
     session_id: str
     start_time: datetime
     end_time: datetime
@@ -153,7 +153,7 @@ class OrchestrationResult:
     errors: List[str] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
     def get_summary(self) -> Dict[str, Any]:
-        """Özet bilgi"""
+        
         return {
             'session_id': self.session_id,
             'status': self.status.value,
@@ -170,7 +170,7 @@ class OrchestrationResult:
             'warnings_count': len(self.warnings)
         }
     def get_top_threats(self, limit: int = 10) -> List[Dict[str, Any]]:
-        """En yüksek öncelikli tehditleri döndür"""
+        
         sorted_assessments = sorted(
             self.comprehensive_assessments,
             key=lambda x: (x.get_priority_numeric(), x.final_risk_score),
@@ -178,10 +178,7 @@ class OrchestrationResult:
         )
         return [assessment.to_dict() for assessment in sorted_assessments[:limit]]
 class MasterThreatOrchestrator:
-    """
-    ?? Ana tehdit analizi koordinatörü
-    Tüm AI servislerini koordine eden master system
-    """
+    
     def __init__(self):
         self.threat_processor = intelligent_threat_processor
         self.priority_engine = realtime_priority_engine
@@ -199,7 +196,7 @@ class MasterThreatOrchestrator:
         self.executor = ThreadPoolExecutor(max_workers=5)
         logger.info("Master Threat Orchestrator initialized")
     async def initialize_connections(self):
-        """Baðlantýlarý baþlat"""
+        
         try:
             if redis_available:
                 try:
@@ -223,9 +220,7 @@ class MasterThreatOrchestrator:
         include_predictions: bool = True,
         session_id: Optional[str] = None
     ) -> OrchestrationResult:
-        """
-        ?? Kapsamlý tehdit analizi gerçekleþtir
-        """
+        
         if not session_id:
             session_id = f"analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         orchestration_start = datetime.now()
@@ -295,7 +290,7 @@ class MasterThreatOrchestrator:
         normalized_threats: List[NormalizedThreatData],
         result: OrchestrationResult
     ) -> List[ComprehensiveThreatAssessment]:
-        """Paralel AI analizi gerçekleþtir"""
+        
         comprehensive_assessments = []
         try:
             semaphore = asyncio.Semaphore(self.max_parallel_processing)
@@ -328,7 +323,7 @@ class MasterThreatOrchestrator:
         threat_data: NormalizedThreatData,
         semaphore: asyncio.Semaphore
     ) -> ComprehensiveThreatAssessment:
-        """Tek tehdit analizi"""
+        
         async with semaphore:
             try:
                 assessment = ComprehensiveThreatAssessment(
@@ -375,7 +370,7 @@ class MasterThreatOrchestrator:
         normalized_threats: List[NormalizedThreatData],
         assessments: List[ComprehensiveThreatAssessment]
     ) -> Optional[CorrelationAnalysis]:
-        """Korelasyon analizi gerçekleþtir"""
+        
         try:
             threat_dicts = [assessment.source_data.to_dict() for assessment in assessments]
             correlation_analysis = await self.correlation_engine.analyze_threat_correlations(threat_dicts)
@@ -390,7 +385,7 @@ class MasterThreatOrchestrator:
         assessments: List[ComprehensiveThreatAssessment],
         correlation_analysis: CorrelationAnalysis
     ):
-        """Assessment'leri korelasyon bilgisiyle güncelle"""
+        
         try:
             assessment_map = {a.threat_id: a for a in assessments}
             for correlation in correlation_analysis.significant_correlations:
@@ -416,34 +411,10 @@ class MasterThreatOrchestrator:
         except Exception as e:
             logger.error(f"Correlation update error: {str(e)}")
     async def _perform_ai_enhancement(self, result: OrchestrationResult):
-        """AI ile analizi geliþtir"""
+        
         try:
             analysis_summary = self._prepare_analysis_summary(result)
-            prompt = f"""
-CLIFF Tehdit Analizi Uzmaný olarak, bu kapsamlý analizi deðerlendir:
-GENEL DURUM:
-- Toplam Tehdit: {len(result.comprehensive_assessments)}
-- Yüksek Öncelik: {result.metrics.high_priority_threats}
-- Kritik Risk: {result.metrics.critical_risks}
-- Anlamlý Korelasyon: {result.metrics.significant_correlations}
-DETAY ANALÝZ:
-{analysis_summary}
-Lütfen þunlarý deðerlendir:
-1. Genel risk durumu ve trend
-2. En kritik tehditlere odaklanma önerileri
-3. Önleme/hafifletme stratejileri
-4. Sistem iyileþtirme önerileri
-5. Acil eylem gerektiren durumlar
-JSON formatýnda yanýt ver:
-{{
-    "overall_risk_level": "low/medium/high/critical",
-    "key_concerns": ["concern1", "concern2"],
-    "immediate_actions": ["action1", "action2"],
-    "strategic_recommendations": ["rec1", "rec2"],
-    "system_improvements": ["improvement1", "improvement2"],
-    "monitoring_priorities": ["priority1", "priority2"]
-}}
-"""
+            prompt = f
             request = UnifiedChatRequest(
                 messages=[{"role": "user", "content": prompt}],
                 model="gemini-2.5-pro",
@@ -462,20 +433,20 @@ JSON formatýnda yanýt ver:
             result.warnings.append(error_msg)
             logger.warning(error_msg)
     def _prepare_analysis_summary(self, result: OrchestrationResult) -> str:
-        """Analiz özetini hazýrla"""
+        
         try:
             summary_parts = []
             top_threats = result.get_top_threats(5)
             for i, threat in enumerate(top_threats, 1):
                 summary_parts.append(
                     f"{i}. {threat['threat_type'].upper()} - {threat['title']} "
-                    f"(Risk: {threat['final_risk_score']:.2f}, Öncelik: {threat['final_priority']})"
+                    f"(Risk: {threat['final_risk_score']:.2f}, Ã–ncelik: {threat['final_priority']})"
                 )
             return "\n".join(summary_parts)
         except Exception:
-            return "Analiz özeti oluþturulamadý"
+            return "Analiz Ã¶zeti oluÅŸturulamadÄ±"
     def _parse_ai_insights(self, ai_content: str) -> Dict[str, Any]:
-        """AI insights'ý parse et"""
+        
         try:
             start_idx = ai_content.find('{')
             end_idx = ai_content.rfind('}') + 1
@@ -488,7 +459,7 @@ JSON formatýnda yanýt ver:
             logger.warning(f"AI insights parse error: {str(e)}")
             return {}
     async def _finalize_comprehensive_analysis(self, result: OrchestrationResult):
-        """Kapsamlý analizi finalize et"""
+        
         try:
             self._calculate_final_metrics(result)
             self._generate_action_items(result)
@@ -503,7 +474,7 @@ JSON formatýnda yanýt ver:
         assessments: List[ComprehensiveThreatAssessment],
         result: OrchestrationResult
     ):
-        """Tehdit daðýlýmýný hesapla"""
+        
         try:
             high_priority_count = 0
             critical_risk_count = 0
@@ -521,7 +492,7 @@ JSON formatýnda yanýt ver:
         except Exception as e:
             logger.error(f"Threat distribution calculation error: {str(e)}")
     def _calculate_final_metrics(self, result: OrchestrationResult):
-        """Final metrikleri hesapla"""
+        
         try:
             result.metrics.total_processing_time = (result.end_time - result.start_time).total_seconds()
             if result.comprehensive_assessments:
@@ -533,12 +504,12 @@ JSON formatýnda yanýt ver:
         except Exception as e:
             logger.error(f"Final metrics calculation error: {str(e)}")
     def _generate_action_items(self, result: OrchestrationResult):
-        """Eylem öðelerini oluþtur"""
+        
         try:
             for assessment in result.comprehensive_assessments:
                 action_items = []
                 if assessment.final_priority == PriorityLevel.CRITICAL:
-                    action_items.append("Ýmmediat monitoring and tracking required")
+                    action_items.append("Ä°mmediat monitoring and tracking required")
                 if assessment.final_risk_score >= 0.8:
                     action_items.append("Risk mitigation strategies must be activated")
                 if assessment.correlation_strength > 0.6:
@@ -549,7 +520,7 @@ JSON formatýnda yanýt ver:
         except Exception as e:
             logger.error(f"Action items generation error: {str(e)}")
     def _generate_monitoring_flags(self, assessment: ComprehensiveThreatAssessment) -> List[str]:
-        """Monitoring flag'leri oluþtur"""
+        
         flags = []
         try:
             if assessment.overall_confidence > 0.8:
@@ -567,7 +538,7 @@ JSON formatýnda yanýt ver:
             pass
         return flags
     async def _cache_result(self, result: OrchestrationResult):
-        """Sonucu cache'le"""
+        
         try:
             if self.redis_client:
                 cache_key = f"orchestration_result:{result.session_id}"
@@ -586,7 +557,7 @@ JSON formatýnda yanýt ver:
         except Exception as e:
             logger.warning(f"Result caching error: {str(e)}")
     async def _finalize_result(self, result: OrchestrationResult) -> OrchestrationResult:
-        """Sonucu finalize et"""
+        
         result.end_time = datetime.now()
         if result.status == ProcessingStatus.IN_PROGRESS:
             result.status = ProcessingStatus.COMPLETED
@@ -596,7 +567,7 @@ JSON formatýnda yanýt ver:
         self.result_cache[result.session_id] = result
         return result
     async def get_orchestration_status(self, session_id: str) -> Optional[Dict[str, Any]]:
-        """Orkestrasyon durumunu al"""
+        
         try:
             if session_id in self.active_sessions:
                 result = self.active_sessions[session_id]
@@ -623,7 +594,7 @@ JSON formatýnda yanýt ver:
             logger.error(f"Status retrieval error: {str(e)}")
             return None
     def _calculate_progress_percentage(self, current_phase: OrchestrationPhase) -> float:
-        """Ýlerleme yüzdesini hesapla"""
+        
         phase_progress = {
             OrchestrationPhase.INITIALIZATION: 0.0,
             OrchestrationPhase.DATA_COLLECTION: 20.0,
@@ -638,7 +609,7 @@ JSON formatýnda yanýt ver:
         }
         return phase_progress.get(current_phase, 0.0)
     async def get_system_health(self) -> Dict[str, Any]:
-        """Sistem saðlýðýný kontrol et"""
+        
         try:
             health_status = {
                 'orchestrator_status': 'healthy',
@@ -665,7 +636,7 @@ JSON formatýnda yanýt ver:
                 'error': str(e)
             }
     async def cleanup_old_sessions(self, max_age_hours: int = 24):
-        """Eski session'larý temizle"""
+        
         try:
             cutoff_time = datetime.now() - timedelta(hours=max_age_hours)
             sessions_to_remove = []
@@ -679,7 +650,7 @@ JSON formatýnda yanýt ver:
             logger.error(f"Session cleanup error: {str(e)}")
 master_threat_orchestrator = MasterThreatOrchestrator()
 async def get_master_threat_orchestrator() -> MasterThreatOrchestrator:
-    """Dependency injection için"""
+    
     if redis_available and not master_threat_orchestrator.redis_client:
         await master_threat_orchestrator.initialize_connections()
     return master_threat_orchestrator

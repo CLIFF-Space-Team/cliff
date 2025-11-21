@@ -1,4 +1,4 @@
-from app.models.celestial_body import CelestialBody
+﻿from app.models.celestial_body import CelestialBody
 SOLAR_SYSTEM_DATA = [
     {
         "name": "Mercury", "type": "Planet", "mass": "0.330 x 10^24 kg", 

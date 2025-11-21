@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+﻿from fastapi import APIRouter
 from app.api.v1.endpoints import (
     threats,
     asteroids,
@@ -76,9 +76,7 @@ api_v1_router.add_api_route(
 )
 @api_v1_router.get("/ws/info", tags=["WebSocket"])
 async def get_ws_info():
-    """
-    Get information and statistics about the WebSocket manager.
-    """
+    
     return websocket_manager.get_stats()
 api_v1_router.include_router(
     image_generation.router,

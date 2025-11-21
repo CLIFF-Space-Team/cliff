@@ -1,4 +1,4 @@
-import asyncio
+ï»¿import asyncio
 import httpx
 from typing import Dict, List, Optional, Any
 from datetime import datetime
@@ -35,10 +35,7 @@ class ImageGenerationResponse(BaseModel):
     timestamp: str
     suggestions: Optional[List[str]] = None
 class EnhancedImageService:
-    """
-    Enhanced Cortex AI Image Generation Service
-    Powered by Grok-4-fast-reasoning for intelligent prompt enhancement
-    """
+    
     def __init__(self):
         self.api_key = settings.CORTEX_IMAGE_API_KEY or "sk-1a67670ecba1415cb332ec77880e0caa"
         self.api_url = "https://cortexapi.net/v1/chat/completions"
@@ -55,16 +52,14 @@ class EnhancedImageService:
         }
         logger.info("Enhanced Image Generation Service initialized with intelligent prompt enhancement")
     async def detect_image_request(self, message: str) -> Dict[str, Any]:
-        """
-        Geliþmiþ görsel talebi tespiti
-        """
+        
         image_keywords = [
-            "görsel oluþtur", "resim yap", "fotoðraf çek", "görsel çiz", "çiz",
-            "göster", "oluþtur", "yap", "tasarla", "görsel", "resim", "fotoðraf", 
-            "çizim", "illüstrasyon", "þekil", "diyagram",
+            "gÃ¶rsel oluÅŸtur", "resim yap", "fotoÄŸraf Ã§ek", "gÃ¶rsel Ã§iz", "Ã§iz",
+            "gÃ¶ster", "oluÅŸtur", "yap", "tasarla", "gÃ¶rsel", "resim", "fotoÄŸraf", 
+            "Ã§izim", "illÃ¼strasyon", "ÅŸekil", "diyagram",
             "create image", "generate picture", "draw", "visualize", "show me",
             "imagine", "picture of", "illustration", "artwork", "design",
-            "uzay gemisi çiz", "mars yüzeyi", "galaksi göster", "nebula", 
+            "uzay gemisi Ã§iz", "mars yÃ¼zeyi", "galaksi gÃ¶ster", "nebula", 
             "robot", "astronot", "uzay", "space", "planet", "star",
             "solar system", "spacecraft", "galaxy", "universe",
             "paint", "sketch", "render", "artistic", "creative", "fantasy",
@@ -82,16 +77,16 @@ class EnhancedImageService:
                     confidence_boost += 0.1
         has_intent = len(detected_keywords) > 0
         category_keywords = {
-            "space": ["uzay", "space", "mars", "dünya", "earth", "güneþ", "sun", "ay", "moon", 
-                     "gezegen", "planet", "yýldýz", "star", "galaksi", "galaxy", "nebula",
-                     "asteroid", "kuyruklu yýldýz", "comet", "uzay gemisi", "spacecraft",
+            "space": ["uzay", "space", "mars", "dÃ¼nya", "earth", "gÃ¼neÅŸ", "sun", "ay", "moon", 
+                     "gezegen", "planet", "yÄ±ldÄ±z", "star", "galaksi", "galaxy", "nebula",
+                     "asteroid", "kuyruklu yÄ±ldÄ±z", "comet", "uzay gemisi", "spacecraft",
                      "astronot", "astronaut", "uzay istasyonu", "space station"],
-            "nature": ["doða", "nature", "orman", "forest", "aðaç", "tree", "çiçek", "flower",
-                      "deniz", "sea", "göl", "lake", "dað", "mountain", "hayvan", "animal"],
-            "fantasy": ["ejder", "dragon", "büyücü", "wizard", "peri", "fairy", "unicorn",
+            "nature": ["doÄŸa", "nature", "orman", "forest", "aÄŸaÃ§", "tree", "Ã§iÃ§ek", "flower",
+                      "deniz", "sea", "gÃ¶l", "lake", "daÄŸ", "mountain", "hayvan", "animal"],
+            "fantasy": ["ejder", "dragon", "bÃ¼yÃ¼cÃ¼", "wizard", "peri", "fairy", "unicorn",
                        "magic", "magical", "fantasy", "mythical", "legendary"],
-            "portrait": ["portre", "portrait", "yüz", "face", "kiþi", "person", "insan", "human"],
-            "object": ["nesne", "object", "araç", "vehicle", "makine", "machine", "alet", "tool"]
+            "portrait": ["portre", "portrait", "yÃ¼z", "face", "kiÅŸi", "person", "insan", "human"],
+            "object": ["nesne", "object", "araÃ§", "vehicle", "makine", "machine", "alet", "tool"]
         }
         detected_category = "general"
         category_confidence = 0.0
@@ -103,11 +98,11 @@ class EnhancedImageService:
                     detected_category = category
                     category_confidence = current_confidence
         style_keywords = {
-            "photorealistic": ["gerçekçi", "realistic", "photorealistic", "photo", "real"],
+            "photorealistic": ["gerÃ§ekÃ§i", "realistic", "photorealistic", "photo", "real"],
             "artistic": ["sanatsal", "artistic", "painting", "art", "creative"],
             "cinematic": ["sinematik", "cinematic", "movie", "film", "dramatic"],
             "fantasy": ["fantastik", "fantasy", "magical", "mystical", "dreamy"],
-            "futuristic": ["fütüristik", "futuristic", "sci-fi", "cyberpunk", "modern"],
+            "futuristic": ["fÃ¼tÃ¼ristik", "futuristic", "sci-fi", "cyberpunk", "modern"],
             "vintage": ["eski", "vintage", "retro", "classic", "antique"]
         }
         detected_style = None
@@ -138,9 +133,7 @@ class EnhancedImageService:
     async def enhance_prompt_with_ai(self, prompt: str, context: Dict[str, Any] = None,
                                    style: Optional[str] = None, creativity_level: float = 0.8,
                                    detail_level: str = "high") -> Dict[str, Any]:
-        """
-        AI ile akýllý prompt geliþtirme
-        """
+        
         try:
             start_time = datetime.now()
             enhancement_request = PromptEnhancementRequest(
@@ -156,7 +149,7 @@ class EnhancedImageService:
                     try:
                         enhancement_request.target_category = PromptCategory(context["detected_category"])
                     except ValueError:
-                        pass  # Geçersiz kategori, otomatik belirlenmesi için býrak
+                        pass  # GeÃ§ersiz kategori, otomatik belirlenmesi iÃ§in bÄ±rak
             logger.info(f"Enhancing prompt with AI: {prompt[:50]}...")
             enhancement_response = await self.prompt_enhancer.enhance_prompt(enhancement_request)
             enhancement_time = int((datetime.now() - start_time).total_seconds() * 1000)
@@ -196,9 +189,7 @@ class EnhancedImageService:
             }
     async def fallback_prompt_enhancement(self, prompt: str, context: Dict[str, Any] = None,
                                         style: Optional[str] = None) -> str:
-        """
-        Fallback prompt geliþtirme (AI baþarýsýz olursa)
-        """
+        
         quality_enhancers = [
             "high quality", "detailed", "professional", "8k resolution", 
             "ultra-realistic", "best quality", "masterpiece"
@@ -230,33 +221,31 @@ class EnhancedImageService:
                     "enchanted setting"
                 ])
         translations = {
-            "uzay gemisi": "spacecraft", "mars yüzeyi": "mars surface", 
-            "ay yüzeyi": "lunar surface", "uzay istasyonu": "space station",
+            "uzay gemisi": "spacecraft", "mars yÃ¼zeyi": "mars surface", 
+            "ay yÃ¼zeyi": "lunar surface", "uzay istasyonu": "space station",
             "astronot": "astronaut", "galaksi": "galaxy", "nebula": "nebula",
-            "kara delik": "black hole", "güneþ sistemi": "solar system",
-            "gezegen": "planet", "yýldýz": "star", "kuyruklu yýldýz": "comet",
-            "orman": "forest", "aðaç": "tree", "çiçek": "flower",
-            "deniz": "ocean", "göl": "lake", "dað": "mountain",
-            "hayvan": "animal", "kedi": "cat", "köpek": "dog",
-            "ejder": "dragon", "büyücü": "wizard", "peri": "fairy",
-            "unicorn": "unicorn", "büyülü": "magical",
-            "güzel": "beautiful", "büyük": "large", "küçük": "small",
-            "renkli": "colorful", "parlak": "bright", "karanlýk": "dark"
+            "kara delik": "black hole", "gÃ¼neÅŸ sistemi": "solar system",
+            "gezegen": "planet", "yÄ±ldÄ±z": "star", "kuyruklu yÄ±ldÄ±z": "comet",
+            "orman": "forest", "aÄŸaÃ§": "tree", "Ã§iÃ§ek": "flower",
+            "deniz": "ocean", "gÃ¶l": "lake", "daÄŸ": "mountain",
+            "hayvan": "animal", "kedi": "cat", "kÃ¶pek": "dog",
+            "ejder": "dragon", "bÃ¼yÃ¼cÃ¼": "wizard", "peri": "fairy",
+            "unicorn": "unicorn", "bÃ¼yÃ¼lÃ¼": "magical",
+            "gÃ¼zel": "beautiful", "bÃ¼yÃ¼k": "large", "kÃ¼Ã§Ã¼k": "small",
+            "renkli": "colorful", "parlak": "bright", "karanlÄ±k": "dark"
         }
         enhanced_prompt = prompt.lower()
         for tr_word, en_word in translations.items():
             enhanced_prompt = enhanced_prompt.replace(tr_word, en_word)
         final_enhancements = []
-        final_enhancements.extend(quality_enhancers[:3])  # Ýlk 3 kalite artýrýcý
+        final_enhancements.extend(quality_enhancers[:3])  # Ä°lk 3 kalite artÄ±rÄ±cÄ±
         if style and style in style_enhancers:
             final_enhancements.append(style_enhancers[style])
-        final_enhancements.extend(context_enhancers[:2])  # Ýlk 2 context artýrýcý
+        final_enhancements.extend(context_enhancers[:2])  # Ä°lk 2 context artÄ±rÄ±cÄ±
         final_prompt = f"{enhanced_prompt}, {', '.join(final_enhancements)}"
         return final_prompt.strip()
     async def generate_image(self, request: ImageGenerationRequest) -> ImageGenerationResponse:
-        """
-        Geliþmiþ görsel oluþturma
-        """
+        
         try:
             start_time = datetime.now()
             self.metrics["total_generations"] += 1
@@ -376,7 +365,7 @@ class EnhancedImageService:
                 timestamp=datetime.now().isoformat()
             )
     def _update_metrics(self, success: bool, generation_time_ms: int, enhancement_time_ms: int):
-        """Metrics güncelle"""
+        
         if success:
             self.metrics["successful_generations"] += 1
         else:
@@ -393,14 +382,12 @@ class EnhancedImageService:
                     new_enh_avg = ((current_enh_avg * (enh_count - 1)) + enhancement_time_ms) / enh_count
                     self.metrics["average_enhancement_time_ms"] = int(new_enh_avg)
     async def test_api_connection(self) -> Dict[str, Any]:
-        """
-        API baðlantýsýný test et
-        """
+        
         try:
             test_request = ImageGenerationRequest(
                 prompt="test image of a simple star",
                 model=self.default_model,
-                enhance_prompt=False  # Test için basit tutalaim
+                enhance_prompt=False  # Test iÃ§in basit tutalaim
             )
             logger.info("Testing Enhanced Image API connection...")
             response = await self.generate_image(test_request)
@@ -426,7 +413,7 @@ class EnhancedImageService:
                 "prompt_enhancer_available": bool(self.prompt_enhancer)
             }
     def get_metrics(self) -> Dict[str, Any]:
-        """Performans metriklerini al"""
+        
         success_rate = 0.0
         enhancement_usage_rate = 0.0
         if self.metrics["total_generations"] > 0:
@@ -439,25 +426,25 @@ class EnhancedImageService:
             "cache_stats": self.prompt_enhancer.get_cache_stats()
         }
     def get_available_styles(self) -> List[str]:
-        """Mevcut stilleri al"""
+        
         return [style.value for style in PromptStyle]
     def get_available_categories(self) -> List[str]:
-        """Mevcut kategorileri al"""
+        
         return [category.value for category in PromptCategory]
     async def cleanup(self):
-        """Temizlik iþlemleri"""
+        
         if self.http_client:
             await self.http_client.aclose()
 enhanced_image_service = EnhancedImageService()
 async def get_enhanced_image_service() -> EnhancedImageService:
-    """Get enhanced image service for dependency injection"""
+    
     return enhanced_image_service
 async def cleanup_enhanced_image_service():
-    """Cleanup enhanced image service on app shutdown"""
+    
     await enhanced_image_service.cleanup()
 async def generate_enhanced_image(prompt: str, style: Optional[str] = None,
                                 enhance: bool = True) -> ImageGenerationResponse:
-    """Hýzlý görsel oluþturma fonksiyonu"""
+    
     request = ImageGenerationRequest(
         prompt=prompt,
         style=style,

@@ -1,4 +1,4 @@
-import asyncio
+ï»¿import asyncio
 import hashlib
 import json
 from typing import Dict, List, Optional, Any, Tuple
@@ -37,7 +37,7 @@ from app.services.performance_optimizer import (
 )
 logger = structlog.get_logger(__name__)
 class ContentType(str, Enum):
-    """Ýçerik türleri"""
+    
     SCIENTIFIC = "scientific"
     ARTISTIC = "artistic"
     EDUCATIONAL = "educational"
@@ -49,13 +49,13 @@ class ContentType(str, Enum):
     ABSTRACT = "abstract"
     DOCUMENTARY = "documentary"
 class ImagePurpose(str, Enum):
-    """Görsel amacý"""
-    HERO = "hero"  # Ana görsel
-    DETAIL = "detail"  # Detay görseli
-    CONTEXT = "context"  # Baðlam görseli
-    ARTISTIC = "artistic"  # Sanatsal görsel
+    
+    HERO = "hero"  # Ana gÃ¶rsel
+    DETAIL = "detail"  # Detay gÃ¶rseli
+    CONTEXT = "context"  # BaÄŸlam gÃ¶rseli
+    ARTISTIC = "artistic"  # Sanatsal gÃ¶rsel
 class CompositionStyle(str, Enum):
-    """Kompozisyon stileri"""
+    
     CINEMATIC = "cinematic"
     DOCUMENTARY = "documentary"
     ARTISTIC = "artistic"
@@ -64,7 +64,7 @@ class CompositionStyle(str, Enum):
     EDITORIAL = "editorial"
 @dataclass
 class ContentAnalysis:
-    """Ýçerik analiz sonuçlarý"""
+    
     main_theme: str
     content_type: ContentType
     key_concepts: List[str]
@@ -76,20 +76,20 @@ class ContentAnalysis:
     suggested_compositions: List[CompositionStyle]
     confidence_score: float
 class MultiImageRequest(BaseModel):
-    """Çoklu görsel üretim isteði"""
-    content: str = Field(..., description="Ana içerik/metin")
-    content_type: Optional[ContentType] = Field(default=None, description="Ýçerik türü")
+    
+    content: str = Field(..., description="Ana iÃ§erik/metin")
+    content_type: Optional[ContentType] = Field(default=None, description="Ä°Ã§erik tÃ¼rÃ¼")
     target_audience: str = Field(default="general", description="Hedef kitle")
-    visual_style: Optional[PromptStyle] = Field(default=None, description="Görsel stil")
+    visual_style: Optional[PromptStyle] = Field(default=None, description="GÃ¶rsel stil")
     composition_style: Optional[CompositionStyle] = Field(default=None, description="Kompozisyon stili")
-    creativity_level: float = Field(default=0.8, ge=0.0, le=1.0, description="Yaratýcýlýk seviyesi")
+    creativity_level: float = Field(default=0.8, ge=0.0, le=1.0, description="YaratÄ±cÄ±lÄ±k seviyesi")
     quality_level: str = Field(default="high", description="Kalite seviyesi")
-    image_count: int = Field(default=4, ge=1, le=8, description="Üretilecek görsel sayýsý")
+    image_count: int = Field(default=4, ge=1, le=8, description="Ãœretilecek gÃ¶rsel sayÄ±sÄ±")
     include_variations: bool = Field(default=True, description="Varyasyonlar dahil edilsin mi")
     professional_grade: bool = Field(default=True, description="Profesyonel kalite")
-    context_aware: bool = Field(default=True, description="Baðlam farkýndalýðý")
+    context_aware: bool = Field(default=True, description="BaÄŸlam farkÄ±ndalÄ±ÄŸÄ±")
 class GeneratedImageInfo(BaseModel):
-    """Üretilen görsel bilgisi"""
+    
     image_url: str
     title: str
     description: str
@@ -102,7 +102,7 @@ class GeneratedImageInfo(BaseModel):
     original_prompt: str
     enhanced_prompt: str
 class MultiImageResponse(BaseModel):
-    """Çoklu görsel üretim yanýtý"""
+    
     success: bool
     content_analysis: Optional[Dict[str, Any]] = None
     generated_images: List[GeneratedImageInfo] = Field(default_factory=list)
@@ -116,9 +116,7 @@ class MultiImageResponse(BaseModel):
     error_message: Optional[str] = None
     timestamp: str = Field(default_factory=lambda: datetime.now().isoformat())
 class MultiImageGenerator:
-    """
-    Kapsamlý AI-tabanlý çoklu görsel üretim sistemi
-    """
+    
     def __init__(self):
         self.image_service: Optional[EnhancedImageService] = None
         self.prompt_enhancer: Optional[IntelligentPromptEnhancer] = None
@@ -181,16 +179,14 @@ class MultiImageGenerator:
         }
         logger.info("Multi-Image Generator initialized with professional composition system")
     async def initialize(self):
-        """Servisleri initialize et"""
+        
         self.image_service = await get_enhanced_image_service()
         self.prompt_enhancer = await get_prompt_enhancer()
         self.advanced_composer = await get_advanced_composer()
         self.performance_optimizer = await get_performance_optimizer()
         logger.info("Multi-Image Generator services initialized with advanced composition and performance optimization")
     async def analyze_content(self, content: str, content_type: Optional[ContentType] = None) -> ContentAnalysis:
-        """
-        Ýçeriði AI ile analiz et ve görsel konseptlerini belirle
-        """
+        
         cache_key = hashlib.md5(f"{content}_{content_type}".encode()).hexdigest()
         if cache_key in self.analysis_cache:
             cached_analysis = self.analysis_cache[cache_key]
@@ -240,43 +236,13 @@ class MultiImageGenerator:
             logger.error(f"Content analysis error: {str(e)}")
             return self._create_fallback_analysis(content, content_type)
     def _get_analysis_system_prompt(self) -> str:
-        """Ýçerik analizi sistem prompt'u"""
-        return """Sen uzman bir görsel konsept analisti ve yaratýcý direktörüsün. Görevin verilen içeriði analiz edip, profesyonel kalitede görsel üretimi için detaylý konseptler oluþturmak.
-GÖREV:
-1. Ana temayý belirle
-2. Ýçerik türünü kategorize et
-3. Anahtar kavramlarý çýkar
-4. Görsel öðeleri tanýmla
-5. Ruh hali ve atmosferi belirle
-6. Teknik gereksinimleri listele
-7. Hedef kitleyi analiz et
-8. Kompozisyon önerilerini sun
-Ýçerik Türleri: scientific, artistic, educational, commercial, narrative, technical, space, nature, abstract, documentary
-Kompozisyon Stilleri: cinematic, documentary, artistic, scientific, commercial, editorial
-Yanýtýný þu JSON formatýnda ver:
-{
-  "main_theme": "ana tema",
-  "content_type": "içerik türü",
-  "key_concepts": ["kavram1", "kavram2", "kavram3"],
-  "visual_elements": ["görsel öðe1", "görsel öðe2"],
-  "mood_descriptors": ["ruh hali1", "ruh hali2"],
-  "technical_aspects": ["teknik gereksinim1", "teknik gereksinim2"],
-  "target_audience": "hedef kitle",
-  "complexity_level": "basit/orta/karmaþýk",
-  "suggested_compositions": ["stil1", "stil2"],
-  "confidence_score": 0.95
-}"""
+        
+        return 
     def _create_content_analysis_prompt(self, content: str, content_type: Optional[ContentType]) -> str:
-        """Ýçerik analiz prompt'u oluþtur"""
-        return f"""
-Aþaðýdaki içeriði analiz et ve profesyonel görsel üretimi için detaylý konseptler oluþtur:
-ÝÇERÝK: "{content}"
-{f"Belirtilen Ýçerik Türü: {content_type.value}" if content_type else "Ýçerik Türü: Otomatik belirle"}
-Bu içeriði kapsamlý bir þekilde analiz et ve 4 farklý profesyonel görsel için gerekli tüm bilgileri saðla.
-Görsel üretiminde kullanýlacak anahtar kavramlarý, atmosferi, teknik gereksinimleri ve kompozisyon önerilerini detaylandýr.
-"""
+        
+        return f
     def _create_fallback_analysis(self, content: str, content_type: Optional[ContentType]) -> ContentAnalysis:
-        """Fallback içerik analizi"""
+        
         return ContentAnalysis(
             main_theme="General Content",
             content_type=content_type or ContentType.ARTISTIC,
@@ -291,9 +257,7 @@ Görsel üretiminde kullanýlacak anahtar kavramlarý, atmosferi, teknik gereksiniml
         )
     async def generate_prompt_variations(self, base_analysis: ContentAnalysis, 
                                        image_count: int = 4) -> List[Tuple[str, ImagePurpose, str]]:
-        """
-        Ýçerik analizine göre çeþitli prompt varyasyonlarý oluþtur
-        """
+        
         try:
             image_purposes = [ImagePurpose.HERO, ImagePurpose.DETAIL, ImagePurpose.CONTEXT, ImagePurpose.ARTISTIC]
             if image_count > 4:
@@ -311,7 +275,7 @@ Görsel üretiminde kullanýlacak anahtar kavramlarý, atmosferi, teknik gereksiniml
             logger.error(f"Prompt variation generation error: {str(e)}")
             return [(f"Professional high-quality image of {base_analysis.main_theme}", ImagePurpose.HERO, "Hero image")] * image_count
     def _create_purpose_specific_prompt(self, analysis: ContentAnalysis, purpose: ImagePurpose, index: int) -> str:
-        """Purpose'a özel prompt oluþtur"""
+        
         base_elements = {
             "theme": analysis.main_theme,
             "key_concepts": ", ".join(analysis.key_concepts[:3]),
@@ -327,7 +291,7 @@ Görsel üretiminde kullanýlacak anahtar kavramlarý, atmosferi, teknik gereksiniml
         return purpose_templates.get(purpose, base_elements['theme'])
     async def _enhance_with_professional_techniques(self, base_prompt: str, purpose: ImagePurpose,
                                                   composition_style: CompositionStyle) -> str:
-        """Professional fotoðrafçýlýk teknikleri ile enhance et - Advanced Composer kullanarak"""
+        
         try:
             if self.advanced_composer:
                 enhancement_result = await self.advanced_composer.enhance_with_advanced_composition(
@@ -352,9 +316,7 @@ Görsel üretiminde kullanýlacak anahtar kavramlarý, atmosferi, teknik gereksiniml
             logger.error(f"Advanced enhancement error: {str(e)}, using fallback")
             return f"{base_prompt}, professional photography, high quality, award-winning composition"
     async def generate_multiple_images(self, request: MultiImageRequest) -> MultiImageResponse:
-        """
-        Ana çoklu görsel üretim fonksiyonu - Performance Optimized
-        """
+        
         start_time = datetime.now()
         self.metrics["total_requests"] += 1
         try:
@@ -372,7 +334,7 @@ Görsel üretiminde kullanýlacak anahtar kavramlarý, atmosferi, teknik gereksiniml
                 self.performance_optimizer.record_error()
             return await self._handle_generation_error(e, request, start_time)
     async def _generate_with_monitoring(self, request: MultiImageRequest, start_time: datetime) -> MultiImageResponse:
-        """Performance monitoring ile görsel üretimi"""
+        
         try:
             content_analysis = await self.analyze_content(request.content, request.content_type)
             logger.info(f"Content analysis completed - Theme: {content_analysis.main_theme}, Confidence: {content_analysis.confidence_score:.2f}")
@@ -449,8 +411,8 @@ Görsel üretiminde kullanýlacak anahtar kavramlarý, atmosferi, teknik gereksiniml
                 total_processing_time_ms=int((datetime.now() - start_time).total_seconds() * 1000)
             )
     async def _handle_generation_error(self, error: Exception, request: MultiImageRequest, start_time: datetime) -> MultiImageResponse:
-        """Hata durumlarýný handle eder"""
-        self.metrics["total_requests"] += 1  # Hatalý da olsa request sayýsýna dahil
+        
+        self.metrics["total_requests"] += 1  # HatalÄ± da olsa request sayÄ±sÄ±na dahil
         logger.error(f"Multi-image generation failed: {str(error)}")
         return MultiImageResponse(
             success=False,
@@ -460,7 +422,7 @@ Görsel üretiminde kullanýlacak anahtar kavramlarý, atmosferi, teknik gereksiniml
     async def _generate_single_image_with_metadata(self, image_request: ImageGenerationRequest,
                                                  purpose: ImagePurpose, description: str,
                                                  original_prompt: str) -> Optional[GeneratedImageInfo]:
-        """Tek görsel üret ve metadata ile birlikte döndür"""
+        
         try:
             start_time = datetime.now()
             response = await self.image_service.generate_image(image_request)
@@ -492,7 +454,7 @@ Görsel üretiminde kullanýlacak anahtar kavramlarý, atmosferi, teknik gereksiniml
             logger.error(f"Single image generation error for {purpose.value}: {str(e)}")
             return None
     def _extract_composition_elements(self, prompt: str) -> List[str]:
-        """Prompt'tan kompozisyon öðelerini çýkar"""
+        
         composition_keywords = [
             "cinematic", "dramatic", "professional", "composition", "lighting",
             "depth of field", "rule of thirds", "leading lines", "symmetry",
@@ -503,10 +465,10 @@ Görsel üretiminde kullanýlacak anahtar kavramlarý, atmosferi, teknik gereksiniml
         for keyword in composition_keywords:
             if keyword in prompt_lower:
                 found_elements.append(keyword)
-        return found_elements[:5]  # Ýlk 5 öðe
+        return found_elements[:5]  # Ä°lk 5 Ã¶ÄŸe
     def _calculate_quality_metrics(self, generated_images: List[GeneratedImageInfo], 
                                  content_analysis: ContentAnalysis) -> Dict[str, Any]:
-        """Kalite metrikleri hesapla"""
+        
         if not generated_images:
             return {"overall_quality_score": 0.0}
         total_score = 0.0
@@ -529,7 +491,7 @@ Görsel üretiminde kullanýlacak anahtar kavramlarý, atmosferi, teknik gereksiniml
         }
     def _generate_suggestions(self, content_analysis: ContentAnalysis,
                             successful: int, failed: int) -> List[str]:
-        """Ýyileþtirme önerileri oluþtur"""
+        
         suggestions = []
         if content_analysis.confidence_score < 0.7:
             suggestions.append("Consider providing more specific content description for better analysis")
@@ -543,9 +505,9 @@ Görsel üretiminde kullanýlacak anahtar kavramlarý, atmosferi, teknik gereksiniml
             "Professional grade mode ensures commercial-quality results",
             "Try different composition styles for various use cases"
         ])
-        return suggestions[:4]  # En fazla 4 öneri
+        return suggestions[:4]  # En fazla 4 Ã¶neri
     def get_service_stats(self) -> Dict[str, Any]:
-        """Servis istatistikleri"""
+        
         return {
             **self.metrics,
             "cache_size": len(self.analysis_cache),
@@ -556,14 +518,14 @@ Görsel üretiminde kullanýlacak anahtar kavramlarý, atmosferi, teknik gereksiniml
             "composition_techniques_count": sum(len(techs) for techs in self.composition_techniques.values())
         }
     async def cleanup(self):
-        """Temizlik iþlemleri"""
+        
         self.analysis_cache.clear()
         if self.image_service:
             await self.image_service.cleanup()
 multi_image_generator = MultiImageGenerator()
 async def get_multi_image_service() -> MultiImageGenerator:
-    """Dependency injection için service instance"""
+    
     return multi_image_generator
 async def cleanup_multi_image_service():
-    """App shutdown için temizlik"""
+    
     await multi_image_generator.cleanup()

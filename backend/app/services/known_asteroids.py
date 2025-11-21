@@ -1,7 +1,4 @@
-"""
-Bilinen büyük ve tehlikeli asteroidler listesi
-Horizons API'de mevcut olan asteroidler
-"""
+﻿
 
 KNOWN_HAZARDOUS_ASTEROIDS = {
     "99942": {
@@ -63,17 +60,17 @@ HORIZONS_AVAILABLE_NEOS = [
 ]
 
 def is_horizons_available(asteroid_id: str) -> bool:
-    """Asteroid'in Horizons'da olup olmadığını kontrol et"""
+    
     asteroid_id_clean = asteroid_id.strip().split()[0]  # "99942 (2004 MN4)" -> "99942"
     
     return asteroid_id_clean in HORIZONS_AVAILABLE_NEOS or asteroid_id_clean in KNOWN_HAZARDOUS_ASTEROIDS
 
 def get_asteroid_info(asteroid_id: str) -> dict | None:
-    """Asteroid bilgisini döndür"""
+    
     return KNOWN_HAZARDOUS_ASTEROIDS.get(asteroid_id)
 
 def format_for_horizons(asteroid_id: str) -> str:
-    """Asteroid ID'yi Horizons formatına çevir"""
+    
     if len(asteroid_id) > 7:
         return None
     

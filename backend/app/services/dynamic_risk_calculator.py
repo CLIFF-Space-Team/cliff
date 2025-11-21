@@ -1,4 +1,4 @@
-import asyncio
+ï»¿import asyncio
 import math
 import logging
 from datetime import datetime, timedelta
@@ -20,42 +20,42 @@ from .unified_ai_service import unified_ai_service, UnifiedChatRequest
 from ..core.config import settings
 logger = structlog.get_logger(__name__)
 class RiskLevel(str, Enum):
-    """Risk seviyeleri"""
+    
     MINIMAL = "minimal"        # 0.0-0.2
     LOW = "low"               # 0.2-0.4  
     MODERATE = "moderate"     # 0.4-0.6
     HIGH = "high"             # 0.6-0.8
     CRITICAL = "critical"     # 0.8-1.0
 class RiskCategory(str, Enum):
-    """Risk kategorileri"""
+    
     PHYSICAL_IMPACT = "physical_impact"
     INFRASTRUCTURE_DAMAGE = "infrastructure_damage" 
     COMMUNICATION_DISRUPTION = "communication_disruption"
     ECONOMIC_IMPACT = "economic_impact"
     ENVIRONMENTAL_DAMAGE = "environmental_damage"
 class TemporalTrend(str, Enum):
-    """Zamansal eðilimler"""
-    RAPIDLY_INCREASING = "rapidly_increasing"    # >20% artýþ/gün
-    INCREASING = "increasing"                    # 5-20% artýþ/gün
-    STABLE = "stable"                           # -5% ile +5% arasý
-    DECREASING = "decreasing"                   # 5-20% azalýþ/gün
-    RAPIDLY_DECREASING = "rapidly_decreasing"   # >20% azalýþ/gün
+    
+    RAPIDLY_INCREASING = "rapidly_increasing"    # >20% artÄ±ÅŸ/gÃ¼n
+    INCREASING = "increasing"                    # 5-20% artÄ±ÅŸ/gÃ¼n
+    STABLE = "stable"                           # -5% ile +5% arasÄ±
+    DECREASING = "decreasing"                   # 5-20% azalÄ±ÅŸ/gÃ¼n
+    RAPIDLY_DECREASING = "rapidly_decreasing"   # >20% azalÄ±ÅŸ/gÃ¼n
 @dataclass
 class ConfidenceInterval:
-    """Güvenilirlik aralýðý"""
+    
     lower_bound: float
     upper_bound: float
     confidence_level: float  # 0.90, 0.95, 0.99
     mean_value: float
     def width(self) -> float:
-        """Aralýk geniþliði"""
+        
         return self.upper_bound - self.lower_bound
     def contains(self, value: float) -> bool:
-        """Deðer aralýðýn içinde mi?"""
+        
         return self.lower_bound <= value <= self.upper_bound
 @dataclass
 class RiskFactorAnalysis:
-    """Risk faktörü analizi"""
+    
     factor_name: str
     weight: float  # 0.0-1.0
     raw_score: float
@@ -69,7 +69,7 @@ class RiskFactorAnalysis:
     source_reliability: float
 @dataclass
 class RiskAssessment:
-    """Kapsamlý risk deðerlendirmesi"""
+    
     threat_id: str
     overall_risk_score: float  # 0.0-1.0
     risk_level: RiskLevel
@@ -85,18 +85,18 @@ class RiskAssessment:
     expires_at: datetime = field(default_factory=lambda: datetime.now() + timedelta(hours=1))
     version: str = "1.0"
     def is_expired(self) -> bool:
-        """Risk deðerlendirmesi süresi dolmuþ mu?"""
+        
         return datetime.now() > self.expires_at
     def get_category_breakdown(self) -> Dict[str, float]:
-        """Kategori bazýnda risk daðýlýmý"""
+        
         return {category.value: score for category, score in self.category_scores.items()}
 class RiskEvolutionModeler:
-    """Risk evrimi modelleme sistemi"""
+    
     def __init__(self):
         self.historical_window = 168  # 7 days in hours
         self.prediction_horizon = 72  # 3 days ahead
     def model_temporal_evolution(self, historical_scores: List[Tuple[datetime, float]]) -> Dict[str, Any]:
-        """Zamansal evrim modellemesi"""
+        
         try:
             if len(historical_scores) < 3:
                 return self._fallback_evolution_model()
@@ -137,7 +137,7 @@ class RiskEvolutionModeler:
             logger.error(f"Evolution modeling error: {str(e)}")
             return self._fallback_evolution_model()
     def _calculate_recent_slope(self, x_values: List[float], y_values: List[float]) -> float:
-        """Son deðerlerin eðimini hesapla"""
+        
         if len(x_values) < 2:
             return 0.0
         n = len(x_values)
@@ -151,7 +151,7 @@ class RiskEvolutionModeler:
         slope = (n * sum_xy - sum_x * sum_y) / denominator
         return slope
     def _classify_trend(self, slope: float) -> TemporalTrend:
-        """Eðimi trend kategorisine çevir"""
+        
         daily_change = slope * 24  # Convert hourly to daily
         if daily_change > 0.2:
             return TemporalTrend.RAPIDLY_INCREASING
@@ -164,7 +164,7 @@ class RiskEvolutionModeler:
         else:
             return TemporalTrend.STABLE
     def _calculate_r_squared(self, x_values: List[float], y_values: List[float], poly_func) -> float:
-        """R-squared deðeri hesapla"""
+        
         try:
             y_mean = statistics.mean(y_values)
             ss_tot = sum((y - y_mean) ** 2 for y in y_values)
@@ -176,7 +176,7 @@ class RiskEvolutionModeler:
         except Exception:
             return 0.0
     def _fallback_evolution_model(self) -> Dict[str, Any]:
-        """Fallback evrim modeli"""
+        
         return {
             'trend': TemporalTrend.STABLE,
             'volatility': 0.1,
@@ -186,7 +186,7 @@ class RiskEvolutionModeler:
             'model_type': 'fallback'
         }
 class AdaptiveScoringAlgorithm:
-    """Adaptif skorlama algoritmasý"""
+    
     def __init__(self):
         self.data_ranges = {}
         self.base_weights = {
@@ -197,7 +197,7 @@ class AdaptiveScoringAlgorithm:
             'uncertainty': 0.15
         }
     def calculate_adaptive_score(self, threat_data: Dict, context: Dict) -> Tuple[float, Dict[str, float]]:
-        """Adaptif skor hesaplama"""
+        
         try:
             factors = self._extract_risk_factors(threat_data)
             adjusted_weights = self._adjust_weights_by_context(context)
@@ -214,7 +214,7 @@ class AdaptiveScoringAlgorithm:
             logger.error(f"Adaptive scoring error: {str(e)}")
             return 0.5, {}
     def _extract_risk_factors(self, threat_data: Dict) -> Dict[str, float]:
-        """Risk faktörlerini çýkar"""
+        
         factors = {}
         severity = threat_data.get('severity', 'MEDIUM')
         factors['severity'] = self._normalize_severity(severity)
@@ -226,7 +226,7 @@ class AdaptiveScoringAlgorithm:
         factors['uncertainty'] = 1.0 - confidence  # Higher uncertainty = higher risk
         return factors
     def _adjust_weights_by_context(self, context: Dict) -> Dict[str, float]:
-        """Context'e göre aðýrlýklarý ayarla"""
+        
         weights = self.base_weights.copy()
         threat_type = context.get('threat_type', 'unknown')
         if threat_type == 'asteroid':
@@ -243,7 +243,7 @@ class AdaptiveScoringAlgorithm:
             weights = {k: v / total_weight for k, v in weights.items()}
         return weights
     def _apply_adaptive_adjustments(self, base_score: float, threat_data: Dict, context: Dict) -> float:
-        """Adaptif ayarlamalarý uygula"""
+        
         adjusted_score = base_score
         confidence = threat_data.get('confidence_score', 0.5)
         if confidence > 0.8:
@@ -260,16 +260,16 @@ class AdaptiveScoringAlgorithm:
                 adjusted_score *= 1.05
         return max(0.0, min(1.0, adjusted_score))
     def _normalize_severity(self, severity: str) -> float:
-        """Severity'yi normalize et"""
+        
         severity_map = {
-            'LOW': 0.2, 'DÜÞÜK': 0.2,
+            'LOW': 0.2, 'DÃœÅžÃœK': 0.2,
             'MEDIUM': 0.5, 'ORTA': 0.5,
-            'HIGH': 0.8, 'YÜKSEK': 0.8,
-            'CRITICAL': 1.0, 'KRÝTÝK': 1.0
+            'HIGH': 0.8, 'YÃœKSEK': 0.8,
+            'CRITICAL': 1.0, 'KRÄ°TÄ°K': 1.0
         }
         return severity_map.get(severity.upper(), 0.5)
     def _calculate_time_factor(self, time_to_impact_hours: Optional[float]) -> float:
-        """Zaman faktörü hesapla"""
+        
         if time_to_impact_hours is None:
             return 0.5
         if time_to_impact_hours <= 0:
@@ -278,9 +278,7 @@ class AdaptiveScoringAlgorithm:
         time_factor = 1.0 / (1.0 + normalized_time)  # Inverse relationship
         return time_factor
 class DynamicRiskCalculator:
-    """
-    ?? Ana dinamik risk hesaplama sistemi
-    """
+    
     def __init__(self):
         self.ai_service = unified_ai_service
         self.evolution_modeler = RiskEvolutionModeler()
@@ -291,9 +289,7 @@ class DynamicRiskCalculator:
         self.default_confidence_level = 0.95
         logger.info("Dynamic Risk Calculator initialized")
     async def calculate_comprehensive_risk(self, threat_data: Dict) -> RiskAssessment:
-        """
-        ?? Kapsamlý risk deðerlendirmesi
-        """
+        
         threat_id = threat_data.get('threat_id', f"risk_{int(datetime.now().timestamp())}")
         logger.info(f"Calculating comprehensive risk for {threat_id}")
         try:
@@ -336,7 +332,7 @@ class DynamicRiskCalculator:
             logger.error(f"Risk calculation error for {threat_id}: {str(e)}")
             return self._create_fallback_assessment(threat_data, threat_id)
     async def _ai_risk_enhancement(self, threat_data: Dict, base_risk: float) -> Dict[str, Any]:
-        """AI ile risk deðerlendirmesi geliþtirme"""
+        
         try:
             risk_context = {
                 'base_risk_score': base_risk,
@@ -348,25 +344,7 @@ class DynamicRiskCalculator:
                     'confidence': threat_data.get('confidence_score', 0.5)
                 }
             }
-            prompt = f"""
-CLIFF Risk Analisti olarak bu tehdit için risk deðerlendirmesi yap:
-Base Risk Score: {base_risk:.3f}
-Tehdit Özeti: {risk_context['threat_summary']}
-Þunlarý analiz et:
-1. Risk skorunda ayarlama gerekli mi? (artýr/azalt/koru)
-2. Hangi önemli risk faktörleri gözden kaçmýþ?
-3. Bu tehdit tipine özel riskler var mý?
-4. Belirsizlik faktörleri nasýl deðerlendirilmeli?
-5. Cascading effect (domino etkisi) riski?
-JSON formatýnda yanýt ver:
-{{
-    "adjustment_factor": 0.9-1.1 arasý çarpan,
-    "key_risks": ["risk1", "risk2"],
-    "uncertainty_assessment": "low/medium/high",
-    "cascading_risk": true/false,
-    "confidence_in_analysis": 0.0-1.0 arasý
-}}
-"""
+            prompt = f
             request = UnifiedChatRequest(
                 messages=[{"role": "user", "content": prompt}],
                 model="gemini-2.5-pro",
@@ -392,7 +370,7 @@ JSON formatýnda yanýt ver:
             logger.error(f"AI risk enhancement error: {str(e)}")
             return self._fallback_ai_enhancement()
     async def _analyze_risk_factors(self, threat_data: Dict) -> List[RiskFactorAnalysis]:
-        """Risk faktörlerini analiz et"""
+        
         risk_factors = []
         try:
             factors_config = [
@@ -452,7 +430,7 @@ JSON formatýnda yanýt ver:
             logger.error(f"Risk factor analysis error: {str(e)}")
             return []
     def _calculate_category_scores(self, threat_data: Dict, risk_factors: List[RiskFactorAnalysis]) -> Dict[RiskCategory, float]:
-        """Kategori bazýnda risk skorlarý"""
+        
         category_scores = {}
         threat_type = threat_data.get('threat_type', 'unknown')
         if threat_type == 'asteroid':
@@ -480,7 +458,7 @@ JSON formatýnda yanýt ver:
             category_scores[RiskCategory.ENVIRONMENTAL_DAMAGE] = env_score
         return category_scores
     async def _analyze_temporal_evolution(self, threat_data: Dict) -> Dict[str, Any]:
-        """Zamansal evrim analizi"""
+        
         try:
             historical_scores = [
                 (datetime.now() - timedelta(hours=24), 0.4),
@@ -493,7 +471,7 @@ JSON formatýnda yanýt ver:
             logger.error(f"Temporal evolution analysis error: {str(e)}")
             return {'trend': 'stable', 'volatility': 0.1, 'predictions': {}}
     def _quantify_uncertainty(self, threat_data: Dict, base_risk: float, risk_factors: List[RiskFactorAnalysis]) -> ConfidenceInterval:
-        """Belirsizlik ölçümü"""
+        
         try:
             data_uncertainty = 1.0 - threat_data.get('confidence_score', 0.5)
             factor_uncertainties = [1.0 - rf.confidence for rf in risk_factors]
@@ -519,7 +497,7 @@ JSON formatýnda yanýt ver:
                 mean_value=base_risk
             )
     def _combine_risk_components(self, base_risk: float, ai_enhancement: Dict, evolution_analysis: Dict, confidence_interval: ConfidenceInterval) -> float:
-        """Risk bileþenlerini birleþtir"""
+        
         combined_risk = base_risk
         ai_factor = ai_enhancement.get('adjustment_factor', 1.0)
         combined_risk *= ai_factor
@@ -540,7 +518,7 @@ JSON formatýnda yanýt ver:
             combined_risk *= 1.05
         return max(0.0, min(1.0, combined_risk))
     def _parse_ai_risk_response(self, response_text: str) -> Dict[str, Any]:
-        """AI risk response'unu parse et"""
+        
         try:
             import json
             start_idx = response_text.find('{')
@@ -560,7 +538,7 @@ JSON formatýnda yanýt ver:
                 'confidence_in_analysis': 0.5
             }
     def _fallback_ai_enhancement(self) -> Dict[str, Any]:
-        """Fallback AI enhancement"""
+        
         return {
             'adjustment_factor': 1.0,
             'key_risks': ['ai_analysis_unavailable'],
@@ -570,19 +548,19 @@ JSON formatýnda yanýt ver:
             'enhanced_by_ai': False
         }
     def _convert_string_to_score(self, value: str) -> float:
-        """String deðerleri skora çevir"""
+        
         if isinstance(value, (int, float)):
             return float(value)
         value_lower = value.lower()
         score_map = {
-            'low': 0.25, 'düþük': 0.25,
+            'low': 0.25, 'dÃ¼ÅŸÃ¼k': 0.25,
             'medium': 0.5, 'orta': 0.5,
-            'high': 0.75, 'yüksek': 0.75,
+            'high': 0.75, 'yÃ¼ksek': 0.75,
             'critical': 1.0, 'kritik': 1.0
         }
         return score_map.get(value_lower, 0.5)
     def _assess_data_quality(self, threat_data: Dict, value_key: str) -> str:
-        """Veri kalitesi deðerlendirmesi"""
+        
         if value_key not in threat_data:
             return 'poor'
         source_reliability = self._calculate_source_reliability(threat_data)
@@ -595,7 +573,7 @@ JSON formatýnda yanýt ver:
         else:
             return 'poor'
     def _calculate_source_reliability(self, threat_data: Dict) -> float:
-        """Kaynak güvenilirliði hesapla"""
+        
         data_source = threat_data.get('data_source', 'unknown').lower()
         reliability_scores = {
             'nasa': 0.95,
@@ -608,13 +586,13 @@ JSON formatýnda yanýt ver:
         }
         return reliability_scores.get(data_source, 0.5)
     def _estimate_factor_trend(self, factor_name: str, current_value: float) -> TemporalTrend:
-        """Faktör trend tahmini - basit versiyon"""
+        
         if factor_name == 'time_criticality':
             return TemporalTrend.INCREASING  # Time criticality generally increases
         else:
             return TemporalTrend.STABLE
     def _calculate_factor_confidence(self, threat_data: Dict, value_key: str) -> float:
-        """Faktör güvenilirliði hesapla"""
+        
         base_confidence = threat_data.get('confidence_score', 0.5)
         if value_key in threat_data:
             source_reliability = self._calculate_source_reliability(threat_data)
@@ -622,7 +600,7 @@ JSON formatýnda yanýt ver:
         else:
             return base_confidence * 0.5  # Lower confidence for missing data
     def _extract_ml_risk_indicators(self, threat_data: Dict, risk_factors: List[RiskFactorAnalysis]) -> List[str]:
-        """ML risk göstergelerini çýkar"""
+        
         indicators = []
         volatilities = [rf.volatility for rf in risk_factors]
         avg_volatility = statistics.mean(volatilities) if volatilities else 0.0
@@ -639,7 +617,7 @@ JSON formatýnda yanýt ver:
             indicators.append('high_uncertainty')
         return indicators
     def _categorize_risk_level(self, risk_score: float) -> RiskLevel:
-        """Risk skorunu seviyeye çevir"""
+        
         if risk_score >= 0.8:
             return RiskLevel.CRITICAL
         elif risk_score >= 0.6:
@@ -651,7 +629,7 @@ JSON formatýnda yanýt ver:
         else:
             return RiskLevel.MINIMAL
     def _create_fallback_assessment(self, threat_data: Dict, threat_id: str) -> RiskAssessment:
-        """Fallback risk assessment"""
+        
         base_risk = 0.5
         return RiskAssessment(
             threat_id=threat_id,
@@ -679,7 +657,7 @@ JSON formatýnda yanýt ver:
         )
 dynamic_risk_calculator = DynamicRiskCalculator()
 def get_dynamic_risk_calculator() -> DynamicRiskCalculator:
-    """Dependency injection için"""
+    
     return dynamic_risk_calculator
 __all__ = [
     'DynamicRiskCalculator',

@@ -1,4 +1,4 @@
-import asyncio
+ï»¿import asyncio
 import time
 import psutil
 import gc
@@ -10,7 +10,7 @@ import structlog
 logger = structlog.get_logger(__name__)
 @dataclass
 class PerformanceMetrics:
-    """Performans metrikleri"""
+    
     cpu_usage: float = 0.0
     memory_usage: float = 0.0
     active_connections: int = 0
@@ -21,7 +21,7 @@ class PerformanceMetrics:
     timestamp: datetime = field(default_factory=datetime.now)
 @dataclass
 class OptimizationConfig:
-    """Optimizasyon konfigürasyonu"""
+    
     enable_caching: bool = True
     enable_compression: bool = True
     enable_connection_pooling: bool = True
@@ -30,10 +30,7 @@ class OptimizationConfig:
     memory_cleanup_threshold: float = 85.0
     cpu_throttle_threshold: float = 80.0
 class PerformanceOptimizer:
-    """
-    Performans Optimizasyon Servisi
-    Sistem kaynaklarını izler ve optimizasyonlar yapar
-    """
+    
     def __init__(self, config: OptimizationConfig = None):
         self.config = config or OptimizationConfig()
         self.metrics_history: list[PerformanceMetrics] = []
@@ -44,13 +41,13 @@ class PerformanceOptimizer:
         self.thread_pool = ThreadPoolExecutor(max_workers=4)
         logger.info(f"Performance Optimizer initialized with {self.config.max_concurrent_generations} max concurrent generations")
     async def acquire_generation_slot(self) -> bool:
-        """Görsel üretim slot'u al"""
+        
         try:
             cpu_percent = psutil.cpu_percent(interval=0.1)
             memory_percent = psutil.virtual_memory().percent
             if cpu_percent > self.config.cpu_throttle_threshold:
                 logger.warning(f"CPU usage high ({cpu_percent}%), throttling requests")
-                await asyncio.sleep(0.5)  # Kısa bekleme
+                await asyncio.sleep(0.5)  # KÄ±sa bekleme
                 return False
             if memory_percent > self.config.memory_cleanup_threshold:
                 logger.warning(f"Memory usage high ({memory_percent}%), forcing cleanup")
@@ -61,29 +58,29 @@ class PerformanceOptimizer:
             logger.error(f"Error acquiring generation slot: {str(e)}")
             return False
     def release_generation_slot(self):
-        """Görsel üretim slot'unu serbest bırak"""
+        
         try:
             self.generation_semaphore.release()
         except Exception as e:
             logger.error(f"Error releasing generation slot: {str(e)}")
     async def force_memory_cleanup(self):
-        """Zorla bellek temizliği"""
+        
         logger.info("Performing memory cleanup...")
         collected = gc.collect()
         memory_info = psutil.virtual_memory()
         logger.info(f"Memory cleanup completed: {collected} objects collected")
         logger.info(f"Memory usage after cleanup: {memory_info.percent}%")
     def record_request_time(self, response_time_ms: int):
-        """İstek süresini kaydet"""
+        
         self.request_times.append(response_time_ms)
         self.total_requests += 1
         if len(self.request_times) > 1000:
             self.request_times = self.request_times[-1000:]
     def record_error(self):
-        """Hata kaydı"""
+        
         self.error_count += 1
     def get_current_metrics(self) -> PerformanceMetrics:
-        """Mevcut performans metriklerini al"""
+        
         try:
             cpu_usage = psutil.cpu_percent()
             memory_usage = psutil.virtual_memory().percent
@@ -107,7 +104,7 @@ class PerformanceOptimizer:
             logger.error(f"Error getting performance metrics: {str(e)}")
             return PerformanceMetrics()
     def get_optimization_recommendations(self) -> list[str]:
-        """Optimizasyon önerileri al"""
+        
         recommendations = []
         current_metrics = self.get_current_metrics()
         if current_metrics.cpu_usage > 70:
@@ -122,7 +119,7 @@ class PerformanceOptimizer:
             recommendations.append("High request volume detected. Consider implementing rate limiting.")
         return recommendations
     async def optimize_system_resources(self) -> Dict[str, Any]:
-        """Sistem kaynaklarını optimize et"""
+        
         logger.info("Starting system resource optimization...")
         optimization_results = {
             "timestamp": datetime.now().isoformat(),
@@ -149,7 +146,7 @@ class PerformanceOptimizer:
             optimization_results["error"] = str(e)
         return optimization_results
     def get_performance_report(self) -> Dict[str, Any]:
-        """Detaylı performans raporu"""
+        
         current_metrics = self.get_current_metrics()
         if len(self.metrics_history) >= 10:
             recent_metrics = self.metrics_history[-10:]
@@ -182,7 +179,7 @@ class PerformanceOptimizer:
         }
         return report
     def _determine_system_status(self, metrics: PerformanceMetrics) -> str:
-        """Sistem durumunu belirle"""
+        
         if metrics.cpu_usage > 90 or metrics.memory_usage > 90 or metrics.error_rate > 10:
             return "critical"
         elif metrics.cpu_usage > 70 or metrics.memory_usage > 70 or metrics.error_rate > 5:
@@ -192,16 +189,16 @@ class PerformanceOptimizer:
         else:
             return "healthy"
     async def cleanup(self):
-        """Temizlik işlemleri"""
+        
         if hasattr(self, 'thread_pool'):
             self.thread_pool.shutdown(wait=True)
         logger.info("Performance Optimizer cleanup completed")
 performance_optimizer = PerformanceOptimizer()
 async def get_performance_optimizer() -> PerformanceOptimizer:
-    """Dependency injection için"""
+    
     return performance_optimizer
 class GenerationSlotManager:
-    """Görsel üretim slot yönetimi için context manager"""
+    
     def __init__(self, optimizer: PerformanceOptimizer):
         self.optimizer = optimizer
         self.acquired = False
@@ -214,7 +211,7 @@ class GenerationSlotManager:
         if self.acquired:
             self.optimizer.release_generation_slot()
 async def with_performance_monitoring(func, *args, **kwargs):
-    """Performans izleme ile fonksiyon çalıştır"""
+    
     start_time = time.time()
     try:
         result = await func(*args, **kwargs)
@@ -225,7 +222,7 @@ async def with_performance_monitoring(func, *args, **kwargs):
         performance_optimizer.record_error()
         raise e
 def get_system_resources() -> Dict[str, Any]:
-    """Sistem kaynaklarını al"""
+    
     return {
         "cpu": {
             "usage_percent": psutil.cpu_percent(),

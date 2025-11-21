@@ -1,4 +1,4 @@
-import asyncio
+ï»¿import asyncio
 import math
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional, Tuple
@@ -8,7 +8,7 @@ from enum import Enum
 import numpy as np
 logger = logging.getLogger(__name__)
 class ThreatLevel(Enum):
-    """Threat level classification"""
+    
     MINIMAL = "minimal"      # > 7.5M km, low velocity
     LOW = "low"             # 1-7.5M km, normal velocity
     MODERATE = "moderate"   # 0.5-1M km, high velocity
@@ -16,7 +16,7 @@ class ThreatLevel(Enum):
     CRITICAL = "critical"   # < 0.1M km, extreme velocity
 @dataclass
 class AsteroidData:
-    """Asteroid data structure"""
+    
     id: str
     name: str
     designation: str
@@ -25,7 +25,7 @@ class AsteroidData:
     estimated_diameter_km: Optional[float] = None
 @dataclass
 class OrbitalElements:
-    """Orbital elements for asteroid"""
+    
     semi_major_axis: Optional[float] = None     # AU
     eccentricity: Optional[float] = None        # 0-1
     inclination: Optional[float] = None         # degrees
@@ -38,7 +38,7 @@ class OrbitalElements:
     orbital_period: Optional[float] = None      # years
 @dataclass
 class CloseApproachData:
-    """Close approach data structure"""
+    
     approach_date: datetime
     distance_km: float
     distance_au: float
@@ -48,7 +48,7 @@ class CloseApproachData:
     uncertainty: Optional[str] = None
 @dataclass
 class RiskAssessment:
-    """Risk assessment results"""
+    
     threat_level: ThreatLevel
     impact_probability: float              # 0-1
     impact_energy_megatons: Optional[float] = None
@@ -56,7 +56,7 @@ class RiskAssessment:
     time_to_impact: Optional[timedelta] = None
     monitoring_priority: int = 1           # 1-5 scale
 class OrbitalMechanicsEngine:
-    """Advanced orbital mechanics calculation engine"""
+    
     AU_TO_KM = 149597870.7           # Astronomical Unit to kilometers
     EARTH_RADIUS_KM = 6371.0         # Earth's radius
     GRAVITATIONAL_CONSTANT = 6.67430e-11  # m^3 kg^-1 s^-2
@@ -66,7 +66,7 @@ class OrbitalMechanicsEngine:
         self.calculation_cache: Dict[str, Any] = {}
         self.last_calculation_time = datetime.now()
     def parse_cad_data(self, cad_response: Dict[str, Any]) -> List[CloseApproachData]:
-        """CAD API yanýtýný parse et"""
+        
         approaches = []
         try:
             data = cad_response.get('data', [])
@@ -98,15 +98,15 @@ class OrbitalMechanicsEngine:
                     )
                     approaches.append(approach)
                 except (ValueError, IndexError, TypeError) as e:
-                    logger.warning(f"CAD data row parse hatasý: {e}")
+                    logger.warning(f"CAD data row parse hatasÄ±: {e}")
                     continue
-            logger.info(f"CAD verisi parse edildi: {len(approaches)} yaklaþým")
+            logger.info(f"CAD verisi parse edildi: {len(approaches)} yaklaÅŸÄ±m")
             return approaches
         except Exception as e:
-            logger.error(f"CAD data parse hatasý: {e}")
+            logger.error(f"CAD data parse hatasÄ±: {e}")
             return []
     def julian_to_datetime(self, julian_date: float) -> datetime:
-        """Julian Date'i datetime'a çevir"""
+        
         try:
             mjd = julian_date - 2400000.5
             epoch = datetime(1858, 11, 17)  # MJD epoch
@@ -115,7 +115,7 @@ class OrbitalMechanicsEngine:
             days_ahead = max(0, julian_date - 2460000)  # Rough estimation
             return datetime.now() + timedelta(days=days_ahead)
     def calculate_orbital_elements(self, approach_data: CloseApproachData) -> OrbitalElements:
-        """Yaklaþým verilerinden orbital elementleri hesapla"""
+        
         try:
             distance_au = approach_data.distance_au
             velocity_kms = approach_data.velocity_kms
@@ -140,11 +140,11 @@ class OrbitalMechanicsEngine:
                 epoch=datetime.now()
             )
         except Exception as e:
-            logger.error(f"Orbital elements hesaplama hatasý: {e}")
+            logger.error(f"Orbital elements hesaplama hatasÄ±: {e}")
             return OrbitalElements()
     def assess_threat_level(self, approach_data: CloseApproachData, 
                            diameter_km: Optional[float] = None) -> RiskAssessment:
-        """Threat level deðerlendirmesi"""
+        
         try:
             distance_km = approach_data.distance_km
             velocity_kms = approach_data.velocity_kms
@@ -168,7 +168,7 @@ class OrbitalMechanicsEngine:
             energy_megatons = None
             damage_radius = None
             if diameter_km:
-                density = 2.5e12  # kg/km³ (typical asteroid density)
+                density = 2.5e12  # kg/kmÂ³ (typical asteroid density)
                 mass_kg = density * (4/3) * math.pi * (diameter_km/2)**3
                 velocity_ms = velocity_kms * 1000
                 kinetic_energy_joules = 0.5 * mass_kg * velocity_ms**2
@@ -200,7 +200,7 @@ class OrbitalMechanicsEngine:
                 monitoring_priority=priority
             )
         except Exception as e:
-            logger.error(f"Threat assessment hatasý: {e}")
+            logger.error(f"Threat assessment hatasÄ±: {e}")
             return RiskAssessment(
                 threat_level=ThreatLevel.LOW,
                 impact_probability=0.001,
@@ -209,7 +209,7 @@ class OrbitalMechanicsEngine:
     def calculate_comprehensive_analysis(self, cad_data: Dict[str, Any], 
                                        fireball_data: Dict[str, Any],
                                        asteroid_diameter_km: Optional[float] = None) -> Dict[str, Any]:
-        """Kapsamlý asteroid analizi"""
+        
         try:
             start_time = datetime.now()
             approaches = self.parse_cad_data(cad_data)
@@ -268,20 +268,20 @@ class OrbitalMechanicsEngine:
                 'recommendations': self.generate_recommendations(risk_assessment, orbital_elements)
             }
         except Exception as e:
-            logger.error(f"Comprehensive analysis hatasý: {e}")
+            logger.error(f"Comprehensive analysis hatasÄ±: {e}")
             return {
                 'success': False,
                 'error': str(e),
                 'timestamp': datetime.now().isoformat()
             }
     def analyze_fireball_context(self, fireball_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Fireball verilerini analiz et (historical context)"""
+        
         try:
             if not fireball_data.get('success'):
-                return {'analysis': 'Fireball verisi mevcut deðil'}
+                return {'analysis': 'Fireball verisi mevcut deÄŸil'}
             data = fireball_data.get('data', {}).get('data', [])
             if not data:
-                return {'analysis': 'Fireball verisi boþ'}
+                return {'analysis': 'Fireball verisi boÅŸ'}
             recent_events = []
             total_energy = 0
             for event in data[:5]:
@@ -297,7 +297,7 @@ class OrbitalMechanicsEngine:
                             'energy_kilotons': energy_kt
                         })
                 except (ValueError, IndexError) as e:
-                    logger.warning(f"Fireball event parse hatasý: {e}")
+                    logger.warning(f"Fireball event parse hatasÄ±: {e}")
                     continue
             avg_energy = total_energy / len(recent_events) if recent_events else 0
             return {
@@ -305,42 +305,42 @@ class OrbitalMechanicsEngine:
                 'average_energy_kilotons': avg_energy,
                 'total_energy_kilotons': total_energy,
                 'recent_events': recent_events[:3],  # Show last 3
-                'analysis': f'Son {len(recent_events)} fireball olayý analiz edildi. Ortalama enerji: {avg_energy:.1f} kt'
+                'analysis': f'Son {len(recent_events)} fireball olayÄ± analiz edildi. Ortalama enerji: {avg_energy:.1f} kt'
             }
         except Exception as e:
-            logger.error(f"Fireball analysis hatasý: {e}")
-            return {'analysis': f'Fireball analiz hatasý: {str(e)}'}
+            logger.error(f"Fireball analysis hatasÄ±: {e}")
+            return {'analysis': f'Fireball analiz hatasÄ±: {str(e)}'}
     def generate_recommendations(self, risk: RiskAssessment, orbital: OrbitalElements) -> List[str]:
-        """Öneriler üret"""
+        
         recommendations = []
         if risk.threat_level == ThreatLevel.CRITICAL:
             recommendations.extend([
-                "ACÝL: Sürekli izleme gerekli",
-                "Uluslararasý uzay ajanslarý bilgilendirilmeli",
-                "Deflection mission planlarý deðerlendirilmeli"
+                "ACÄ°L: SÃ¼rekli izleme gerekli",
+                "UluslararasÄ± uzay ajanslarÄ± bilgilendirilmeli",
+                "Deflection mission planlarÄ± deÄŸerlendirilmeli"
             ])
         elif risk.threat_level == ThreatLevel.HIGH:
             recommendations.extend([
-                "Yoðun gözlem programý baþlatýlmalý",
-                "Yörünge parametreleri düzenli güncellenilmeli",
-                "Acil durum planlarý gözden geçirilmeli"
+                "YoÄŸun gÃ¶zlem programÄ± baÅŸlatÄ±lmalÄ±",
+                "YÃ¶rÃ¼nge parametreleri dÃ¼zenli gÃ¼ncellenilmeli",
+                "Acil durum planlarÄ± gÃ¶zden geÃ§irilmeli"
             ])
         elif risk.threat_level == ThreatLevel.MODERATE:
             recommendations.extend([
-                "Düzenli teleskop gözlemi yapýlmalý",
-                "Yörünge tahminleri geliþtirilmeli"
+                "DÃ¼zenli teleskop gÃ¶zlemi yapÄ±lmalÄ±",
+                "YÃ¶rÃ¼nge tahminleri geliÅŸtirilmeli"
             ])
         else:
             recommendations.extend([
-                "Normal gözlem rutini sürdürülmeli",
-                "Periyodik kontroller yapýlmalý"
+                "Normal gÃ¶zlem rutini sÃ¼rdÃ¼rÃ¼lmeli",
+                "Periyodik kontroller yapÄ±lmalÄ±"
             ])
         if orbital.eccentricity and orbital.eccentricity > 0.7:
-            recommendations.append("Yüksek eksantriklik: Yörünge belirsizliði artýrýlmýþ izleme gerektirir")
+            recommendations.append("YÃ¼ksek eksantriklik: YÃ¶rÃ¼nge belirsizliÄŸi artÄ±rÄ±lmÄ±ÅŸ izleme gerektirir")
         if orbital.inclination and orbital.inclination > 20:
-            recommendations.append("Yüksek eðim açýsý: Ek gözlem noktalarý gerekli")
+            recommendations.append("YÃ¼ksek eÄŸim aÃ§Ä±sÄ±: Ek gÃ¶zlem noktalarÄ± gerekli")
         return recommendations[:5]  # Max 5 recommendation
 orbital_engine = OrbitalMechanicsEngine()
 def get_orbital_mechanics_engine() -> OrbitalMechanicsEngine:
-    """Orbital mechanics engine instance"""
+    
     return orbital_engine

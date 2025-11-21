@@ -1,4 +1,4 @@
-import asyncio
+﻿import asyncio
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 import httpx
@@ -30,10 +30,7 @@ class _TTLCache:
 
 
 class NASAHorizonsService:
-	"""
-	Lightweight client for NASA/JPL Horizons API.
-	Reference: https://ssd.jpl.nasa.gov/horizons/manual.html
-	"""
+	
 
 	_base_url: str = "https://ssd.jpl.nasa.gov/api/horizons.api"
 	_cache: _TTLCache
@@ -51,22 +48,10 @@ class NASAHorizonsService:
 		command: str,
 		start_time: str,
 		stop_time: str,
-		step_size: str = "1d",  # Boşluksuz format (URL encoding sorunu yok)
+		step_size: str = "1d",  # BoÅŸluksuz format (URL encoding sorunu yok)
 		quantities: str = "1",  # Sadece RA/DEC (en basit)
 	) -> Dict[str, str]:
-		"""
-		Build default parameters for an observer-table query (geocentric).
-		Using CSV output for easier parsing.
 		
-		For NEO asteroids:
-		- Use IAU number with semicolon: '99942;' for Apophis
-		- Use DES keyword: 'DES=99942;' 
-		- Use name: 'Apophis;' (not guaranteed unique)
-		
-		QUANTITIES=1 only (RA/DEC):
-		- Avoiding "Too many constants" error from Horizons
-		- For range data, use NeoWs instead
-		"""
 		return {
 			"format": "json",  # JSON format for reliable parsing
 			"COMMAND": f"'{command}'",  # NEO asteroid: '99942;' for Apophis
@@ -119,10 +104,7 @@ class NASAHorizonsService:
 
 	@staticmethod
 	def _extract_table_lines(raw_text: str) -> List[str]:
-		"""
-		Extract table lines between $$SOE and $$EOE.
-		When CSV_FORMAT=YES is set, lines will be comma-separated values.
-		"""
+		
 		lines = raw_text.splitlines()
 		start_idx = None
 		end_idx = None
@@ -146,15 +128,7 @@ class NASAHorizonsService:
 
 	@staticmethod
 	def _parse_csv_line(csv_line: str) -> Dict[str, Any]:
-		"""
-		Parser for Horizons line with QUANTITIES='1':
-		  Date__(UT)__HR:MN, RA(ICRF), DEC
 		
-		Columns for QUANTITIES='1':
-		0: Date/Time (UTC)
-		1: RA (ICRF) - Right Ascension
-		2: DEC (ICRF) - Declination
-		"""
 		parts = csv_line.split()
 		data: Dict[str, Any] = {}
 		
@@ -205,10 +179,7 @@ class NASAHorizonsService:
 		step_size: str = "1 d",
 		quantities: str = "1",  # FIXED: Sadece RA/DEC
 	) -> str:
-		"""
-		Fetch raw Horizons ephemeris table from JSON response.
-		QUANTITIES='1,20' = RA/DEC + Range/Range-rate
-		"""
+		
 		if not start_date or not stop_date:
 			s, e = self._default_range(days=30)
 			start_date = start_date or s
@@ -230,10 +201,7 @@ class NASAHorizonsService:
 		step_size: str = "1 d",
 		quantities: str = "1",  # Sadece RA/DEC
 	) -> Dict[str, Any]:
-		"""
-		Return parsed ephemeris entries with useful fields.
-		Now using JSON format for reliable parsing.
-		"""
+		
 		import json
 		import structlog
 		logger = structlog.get_logger(__name__)
@@ -307,11 +275,9 @@ class NASAHorizonsService:
 		self,
 		object_command: str,
 		days_ahead: int = 30,
-		step_size: str = "1d",  # FIXED: Boşluksuz format
+		step_size: str = "1d",  # FIXED: BoÅŸluksuz format
 	) -> Dict[str, Any]:
-		"""
-		Convenience wrapper to fetch next N days of ephemeris.
-		"""
+		
 		start, stop = self._default_range(days=days_ahead)
 		return await self.get_ephemeris(
 			object_command=object_command,
@@ -325,11 +291,7 @@ class NASAHorizonsService:
 		object_command: str,
 		days_ahead: int = 30,
 	) -> Dict[str, Any]:
-		"""
-		Horizons observer table typically doesn't include covariance.
-		This method returns a basic placeholder that downstream Monte Carlo
-		can use as a seed (e.g., small percentage of range).
-		"""
+		
 		ephem = await self.get_future_positions(object_command=object_command, days_ahead=days_ahead)
 		data = ephem.get("data") or []
 		if not data:

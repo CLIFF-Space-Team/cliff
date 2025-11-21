@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import os
 import pickle
@@ -23,9 +23,7 @@ class RiskPrediction:
 
 
 class MLRiskClassifier:
-    """Basit ama güçlü ML risk sınıflandırıcı (scikit-learn).
-    Not: Model dosyası yoksa kural tabanlı yedek kullanılır.
-    """
+    
 
     def __init__(self, model_path: Optional[str] = None) -> None:
         self.model_path = model_path or os.path.join(
@@ -63,13 +61,13 @@ class MLRiskClassifier:
     def train(
         self, X: np.ndarray, y: np.ndarray, class_labels: Optional[List[str]] = None
     ) -> None:
-        """Verilen veri ile modeli eğit."""
+        
         self._model = self._build_pipeline()
         self._model.fit(X, y)
         self.save()
 
     def _rule_based_fallback(self, feats: Dict[str, float]) -> RiskPrediction:
-        """Model yoksa makul bir kural tabanlı sınıflandırma yap."""
+        
         distance_au = feats.get("distance_au", 1.0)
         velocity_kms = feats.get("velocity_kms", 20.0)
         diameter_km = feats.get("diameter_km", 0.05)
@@ -103,16 +101,7 @@ class MLRiskClassifier:
         )
 
     def predict(self, features: Dict[str, float]) -> RiskPrediction:
-        """Özniteliklerden risk sınıfını tahmin et.
-        Features:
-            - distance_au
-            - velocity_kms
-            - diameter_km
-            - time_to_approach_days
-            - observation_count
-            - h_magnitude
-            - uncertainty_km
-        """
+        
         if self._model is None and not self.load():
             return self._rule_based_fallback(features)
 

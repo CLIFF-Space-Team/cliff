@@ -1,4 +1,4 @@
-from beanie import Document
+﻿from beanie import Document
 class User(Document):
     class Settings:
         name = "users"

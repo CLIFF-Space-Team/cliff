@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import math
 import random
@@ -20,10 +20,7 @@ class UncertaintySummary:
 
 
 class MonteCarloUncertaintyEngine:
-    """Monte Carlo belirsizlik motoru.
-    Not: Nominal seriler için 1D mesafe belirsizliği simülasyonu yapar.
-    Gelişmiş kullanımda 3B konum vektörleri ile genişletilebilir.
-    """
+    
 
     def __init__(self, seed: int = 42) -> None:
         self._rng = random.Random(seed)
@@ -39,7 +36,7 @@ class MonteCarloUncertaintyEngine:
         sigma_km: float,
         samples: int = 10000,
     ) -> UncertaintySummary:
-        """Nominal mesafeler ve 1-sigma ile dağılım simülasyonu."""
+        
         if sigma_km <= 0 or not nominal_distances_km:
             base = nominal_distances_km[-1] if nominal_distances_km else 0.0
             return UncertaintySummary(

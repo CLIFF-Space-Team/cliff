@@ -1,4 +1,4 @@
-from __future__ import annotations
+ï»¿from __future__ import annotations
 import asyncio
 from typing import Optional
 import structlog
@@ -13,7 +13,7 @@ _task: Optional[asyncio.Task] = None
 _stop_event: Optional[asyncio.Event] = None
 async def _run_loop():
     interval = max(300, int(settings.THREAT_REFRESH_SECONDS))
-    logger.info("Threat scheduler baþlatýldý", interval_seconds=interval)
+    logger.info("Threat scheduler baÅŸlatÄ±ldÄ±", interval_seconds=interval)
     while _stop_event and not _stop_event.is_set():
         try:
             await ingest_neows_feed(7)
@@ -27,7 +27,7 @@ async def _run_loop():
                     'timestamp': asyncio.get_event_loop().time()
                 })
         except Exception as e:
-            logger.error("Threat scheduler döngü hatasý", error=str(e))
+            logger.error("Threat scheduler dÃ¶ngÃ¼ hatasÄ±", error=str(e))
         try:
             await asyncio.wait_for(_stop_event.wait(), timeout=interval)
         except asyncio.TimeoutError:
@@ -36,7 +36,7 @@ async def _run_loop():
 async def start():
     global _task, _stop_event
     if not settings.ENABLE_SCHEDULER:
-        logger.info("Threat scheduler devre dýþý")
+        logger.info("Threat scheduler devre dÄ±ÅŸÄ±")
         return
     if _task and not _task.done():
         return

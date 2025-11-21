@@ -1,4 +1,4 @@
-from __future__ import annotations
+ï»¿from __future__ import annotations
 from typing import Dict
 import re
 import structlog
@@ -13,11 +13,7 @@ def _norm_name(name: str) -> str:
     s = re.sub(r"\s+", " ", s)
     return s
 async def normalize_neos() -> Dict[str, int]:
-    """Sentry risk kayýtlarýný mevcut NeoWs kimlikleriyle eþler.
-    Strateji:
-      - asteroids koleksiyonunda neows_id atanmýþ kayýtlarýn isim haritasýný kur
-      - risk_assessments('sentry') kayýtlarýnda neo_id'yi bu haritaya göre neows_id'ye çevir
-    """
+    
     asteroids: AsyncIOMotorCollection = get_collection("asteroids")
     risks: AsyncIOMotorCollection = get_collection("risk_assessments")
     name_to_neows: Dict[str, str] = {}
@@ -35,5 +31,5 @@ async def normalize_neos() -> Dict[str, int]:
         if target_neows and neo_id != target_neows:
             await risks.update_one({"_id": r["_id"]}, {"$set": {"neo_id": target_neows}})
             updated += 1
-    logger.info("NEO normalize tamamlandý", updated=updated, known=len(name_to_neows))
+    logger.info("NEO normalize tamamlandÄ±", updated=updated, known=len(name_to_neows))
     return {"updated": updated, "known": len(name_to_neows)}

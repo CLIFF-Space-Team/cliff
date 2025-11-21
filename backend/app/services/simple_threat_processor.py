@@ -1,4 +1,4 @@
-from datetime import datetime
+ï»¿from datetime import datetime
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from enum import Enum
@@ -62,9 +62,9 @@ class SimpleRiskAssessment:
     risk_score: float
     assessment_timestamp: datetime
 class SimpleThreatProcessor:
-    """Basit tehdit analiz motoru"""
+    
     async def analyze_threat(self, threat_data: Dict) -> SimpleThreatResult:
-        """Basit tehdit analizi"""
+        
         threat_id = threat_data.get('threat_id', 'unknown')
         severity_raw = threat_data.get('severity', 'MEDIUM')
         severity_score = self._calculate_severity_score(severity_raw)
@@ -82,7 +82,7 @@ class SimpleThreatProcessor:
             recommendations=recommendations
         )
     async def calculate_priority(self, threat_data: Dict) -> SimplePriorityScore:
-        """Basit öncelik hesaplama"""
+        
         threat_id = threat_data.get('threat_id', 'unknown')
         severity = self._calculate_severity_score(threat_data.get('severity', 'MEDIUM'))
         impact_prob = threat_data.get('impact_probability', 0.1)
@@ -96,7 +96,7 @@ class SimpleThreatProcessor:
             calculation_timestamp=datetime.now()
         )
     async def assess_risk(self, threat_data: Dict) -> SimpleRiskAssessment:
-        """Basit risk deðerlendirmesi"""
+        
         threat_id = threat_data.get('threat_id', 'unknown')
         severity = self._calculate_severity_score(threat_data.get('severity', 'MEDIUM'))
         impact_prob = threat_data.get('impact_probability', 0.1)
@@ -109,7 +109,7 @@ class SimpleThreatProcessor:
             assessment_timestamp=datetime.now()
         )
     def _calculate_severity_score(self, severity: str) -> float:
-        """Severity skoruna çevir"""
+        
         severity_map = {
             'CRITICAL': 1.0,
             'HIGH': 0.8,
@@ -119,7 +119,7 @@ class SimpleThreatProcessor:
         }
         return severity_map.get(str(severity).upper(), 0.5)
     def _calculate_confidence(self, threat_data: Dict) -> ConfidenceLevel:
-        """Confidence hesapla"""
+        
         data_quality = len([v for v in threat_data.values() if v is not None]) / max(len(threat_data), 1)
         if data_quality >= 0.8:
             return ConfidenceLevel.HIGH
@@ -128,8 +128,8 @@ class SimpleThreatProcessor:
         else:
             return ConfidenceLevel.LOW
     def _calculate_time_factor(self, threat_data: Dict) -> float:
-        """Zaman faktörü hesapla"""
-        time_hours = threat_data.get('time_to_impact_hours', 720)  # 30 gün default
+        
+        time_hours = threat_data.get('time_to_impact_hours', 720)  # 30 gÃ¼n default
         if time_hours < 24:
             return 1.0
         elif time_hours < 72:
@@ -139,7 +139,7 @@ class SimpleThreatProcessor:
         else:
             return 0.4
     def _score_to_priority(self, score: float) -> PriorityLevel:
-        """Score'u priority'ye çevir"""
+        
         if score >= 0.9:
             return PriorityLevel.CRITICAL
         elif score >= 0.7:
@@ -151,7 +151,7 @@ class SimpleThreatProcessor:
         else:
             return PriorityLevel.MINIMAL
     def _score_to_risk(self, score: float) -> RiskLevel:
-        """Score'u risk'e çevir"""
+        
         if score >= 0.8:
             return RiskLevel.CRITICAL
         elif score >= 0.6:
@@ -161,29 +161,29 @@ class SimpleThreatProcessor:
         else:
             return RiskLevel.LOW
     def _generate_insights(self, threat_data: Dict) -> List[str]:
-        """Basit insights üret"""
+        
         insights = []
         severity = threat_data.get('severity', 'MEDIUM')
         if severity in ['CRITICAL', 'HIGH']:
-            insights.append('Yüksek seviye tehdit tespit edildi')
+            insights.append('YÃ¼ksek seviye tehdit tespit edildi')
         impact_prob = threat_data.get('impact_probability', 0.1)
         if impact_prob > 0.5:
-            insights.append('Çarpma olasýlýðý yüksek')
+            insights.append('Ã‡arpma olasÄ±lÄ±ÄŸÄ± yÃ¼ksek')
         time_hours = threat_data.get('time_to_impact_hours')
         if time_hours and time_hours < 48:
-            insights.append('Kýsa vadeli etki riski')
+            insights.append('KÄ±sa vadeli etki riski')
         return insights or ['Rutin izleme gerekli']
     def _generate_recommendations(self, threat_data: Dict) -> List[str]:
-        """Basit öneriler üret"""
+        
         recommendations = []
         severity = threat_data.get('severity', 'MEDIUM')
         if severity in ['CRITICAL', 'HIGH']:
-            recommendations.append('Sürekli izleme aktive edin')
-            recommendations.append('Ýlgili otoriteleri bilgilendirin')
+            recommendations.append('SÃ¼rekli izleme aktive edin')
+            recommendations.append('Ä°lgili otoriteleri bilgilendirin')
         time_hours = threat_data.get('time_to_impact_hours')
         if time_hours and time_hours < 72:
-            recommendations.append('Acil durum protokollerini gözden geçirin')
-        return recommendations or ['Düzenli veri güncellemesi yapýn']
+            recommendations.append('Acil durum protokollerini gÃ¶zden geÃ§irin')
+        return recommendations or ['DÃ¼zenli veri gÃ¼ncellemesi yapÄ±n']
 simple_threat_processor = SimpleThreatProcessor()
 def get_simple_threat_processor():
     return simple_threat_processor
@@ -227,7 +227,7 @@ async def get_master_threat_orchestrator():
                 "ai_insights_generated": 0,
                 "started_at": datetime.now().isoformat(),
                 "completed_at": None,
-                "current_activity": "NASA veri kaynaklarýndan tehdit verileri toplanýyor..."
+                "current_activity": "NASA veri kaynaklarÄ±ndan tehdit verileri toplanÄ±yor..."
             }
             asyncio.create_task(self._simulate_progress(session_id))
             class MockResult:
@@ -238,18 +238,18 @@ async def get_master_threat_orchestrator():
                     return {'status': 'started', 'session_id': self.session_id}
             return MockResult(session_id)
         async def _simulate_progress(self, session_id: str):
-            """Gerçekçi analiz progress simülasyonu"""
+            
             import asyncio
             phases = [
                 ("data_collection", "NASA API'lerinden veri toplama", 15),
                 ("threat_analysis", "AI destekli tehdit analizi", 30),
-                ("priority_calculation", "Öncelik hesaplamasý", 50),
-                ("risk_assessment", "Risk deðerlendirmesi", 70),
+                ("priority_calculation", "Ã–ncelik hesaplamasÄ±", 50),
+                ("risk_assessment", "Risk deÄŸerlendirmesi", 70),
                 ("correlation_analysis", "Korelasyon analizi", 90),
                 ("final_processing", "Final raporlama", 100)
             ]
             for phase, activity, progress in phases:
-                await asyncio.sleep(4)  # 4 saniye aralýk
+                await asyncio.sleep(4)  # 4 saniye aralÄ±k
                 if session_id in self.sessions:
                     self.sessions[session_id].update({
                         "progress_percentage": progress,
@@ -263,7 +263,7 @@ async def get_master_threat_orchestrator():
                 self.sessions[session_id].update({
                     "status": "completed",
                     "completed_at": datetime.now().isoformat(),
-                    "current_activity": "Analiz tamamlandý - sonuçlar hazýr",
+                    "current_activity": "Analiz tamamlandÄ± - sonuÃ§lar hazÄ±r",
                     "results": {
                         "summary": {
                             "total_threats_analyzed": 25,
@@ -274,13 +274,13 @@ async def get_master_threat_orchestrator():
                             "confidence_score": 0.87
                         },
                         "key_insights": [
-                            "2 yüksek riskli asteroit yakýn geçiþte",
-                            "Güneþ aktivitesi normalin üzerinde",
-                            "Jeomanyetik fýrtýna riski düþük"
+                            "2 yÃ¼ksek riskli asteroit yakÄ±n geÃ§iÅŸte",
+                            "GÃ¼neÅŸ aktivitesi normalin Ã¼zerinde",
+                            "Jeomanyetik fÄ±rtÄ±na riski dÃ¼ÅŸÃ¼k"
                         ],
                         "immediate_actions": [
-                            "Asteroit NEO-2023-X1 takibini artýr",
-                            "Uydu operasyonlarýný izlemeye al"
+                            "Asteroit NEO-2023-X1 takibini artÄ±r",
+                            "Uydu operasyonlarÄ±nÄ± izlemeye al"
                         ]
                     }
                 })

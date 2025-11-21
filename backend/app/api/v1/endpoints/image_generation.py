@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+ï»¿from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from typing import Dict, Any, List
 import structlog
 from datetime import datetime
@@ -16,9 +16,7 @@ async def generate_image(
     image_service: EnhancedImageService = Depends(get_enhanced_image_service),
     background_tasks: BackgroundTasks = BackgroundTasks()
 ) -> ImageGenerationResponse:
-    """
-    ?? Generate image from text prompt with intelligent enhancement
-    """
+    
     try:
         logger.info(f"?? Enhanced image generation request: {request.prompt[:50]}...")
         if not request.prompt or not request.prompt.strip():
@@ -63,9 +61,7 @@ async def detect_image_intent(
     request: Dict[str, str],
     image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> Dict[str, Any]:
-    """
-    ?? Detect if message contains image generation request with enhanced analysis
-    """
+    
     try:
         text = request.get("text", "").strip()
         if not text:
@@ -112,9 +108,7 @@ async def detect_image_intent(
 async def get_image_service_status(
     image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> Dict[str, Any]:
-    """
-    ?? Get enhanced image generation service status
-    """
+    
     try:
         logger.info("?? Checking enhanced image generation service status...")
         test_result = await image_service.test_api_connection()
@@ -166,9 +160,7 @@ async def enhance_prompt_only(
     request: Dict[str, Any],
     image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> Dict[str, Any]:
-    """
-    ?? Enhance prompt using Grok-4-fast-reasoning without generating image
-    """
+    
     try:
         user_input = request.get("prompt", "").strip()
         style = request.get("style")
@@ -216,9 +208,7 @@ async def enhance_prompt_only(
 async def get_available_styles(
     image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> Dict[str, Any]:
-    """
-    ?? Get available prompt styles
-    """
+    
     try:
         styles = image_service.get_available_styles()
         categories = image_service.get_available_categories()
@@ -240,9 +230,7 @@ async def get_available_styles(
 async def get_service_metrics(
     image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> Dict[str, Any]:
-    """
-    ?? Get detailed service performance metrics
-    """
+    
     try:
         metrics = image_service.get_metrics()
         return {
@@ -261,14 +249,12 @@ async def test_image_generation(
     request: Dict[str, Any] = None,
     image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> Dict[str, Any]:
-    """
-    ?? Test enhanced image generation with sample prompts
-    """
+    
     try:
         test_prompts = [
-            "uzayda süzülen robot",
-            "mars yüzeyinde keþif",
-            "galaksi manzarasý",
+            "uzayda sÃ¼zÃ¼len robot",
+            "mars yÃ¼zeyinde keÅŸif",
+            "galaksi manzarasÄ±",
             "fantastik ejder"
         ]
         test_prompt = request.get("prompt") if request else test_prompts[0]
@@ -324,9 +310,7 @@ async def test_image_generation(
         }
 @router.get("/health")
 async def health_check() -> Dict[str, Any]:
-    """
-    ?? Enhanced image generation service health check
-    """
+    
     return {
         "status": "healthy",
         "service": "Enhanced Image Generation API",

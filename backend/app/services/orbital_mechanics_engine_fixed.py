@@ -1,4 +1,4 @@
-import math
+ï»¿import math
 import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
@@ -42,12 +42,12 @@ class AsteroidData:
     orbital_elements: OrbitalElements
     estimated_diameter_km: Optional[float] = None
 class FixedOrbitalMechanicsEngine:
-    """Fixed version with proper CAD API parsing"""
+    
     def __init__(self):
         self.au_to_km = 149597870.7  # 1 AU in kilometers
         self.earth_radius_km = 6371.0
     def date_string_to_julian(self, date_str: str) -> float:
-        """Convert date string to Julian Date - FIXED VERSION"""
+        
         try:
             if not date_str or date_str == 'N/A':
                 return 0.0
@@ -87,13 +87,13 @@ class FixedOrbitalMechanicsEngine:
             print(f"[ERROR] Julian date conversion error: {e}")
             return 2460000.0  # Fallback Julian Date
     def parse_cad_data(self, cad_response_data: Dict[str, Any]) -> List[AsteroidData]:
-        """Parse CAD API response data - FIXED VERSION"""
+        
         asteroids = []
         try:
             fields = cad_response_data.get('fields', [])
             data_rows = cad_response_data.get('data', [])
             if not fields or not data_rows:
-                print("[WARN] CAD response boþ veya geçersiz")
+                print("[WARN] CAD response boÅŸ veya geÃ§ersiz")
                 return asteroids
             field_map = {field: idx for idx, field in enumerate(fields)}
             print(f"[INFO] CAD field mapping: {field_map}")
@@ -138,20 +138,20 @@ class FixedOrbitalMechanicsEngine:
                     asteroids.append(asteroid)
                     print(f"[SUCCESS] Row {row_idx}: {designation} parsed successfully")
                 except Exception as e:
-                    print(f"[ERROR] CAD row {row_idx} parse hatasý: {e}")
+                    print(f"[ERROR] CAD row {row_idx} parse hatasÄ±: {e}")
                     continue
-            print(f"[INFO] CAD parsing tamamlandý: {len(asteroids)}/{len(data_rows)} asteroid")
+            print(f"[INFO] CAD parsing tamamlandÄ±: {len(asteroids)}/{len(data_rows)} asteroid")
             return asteroids
         except Exception as e:
-            print(f"[ERROR] CAD data parse genel hatasý: {e}")
+            print(f"[ERROR] CAD data parse genel hatasÄ±: {e}")
             return []
     def calculate_orbital_elements(self, asteroid: AsteroidData) -> OrbitalElements:
-        """Calculate orbital elements from close approach data"""
+        
         try:
             if not asteroid.close_approach_data:
                 return OrbitalElements()
             approach = asteroid.close_approach_data[0]
-            mu_sun = 1.327e20  # m³/s² - Standard gravitational parameter of Sun
+            mu_sun = 1.327e20  # mÂ³/sÂ² - Standard gravitational parameter of Sun
             r = approach.distance_km * 1000  # meters
             v = approach.velocity_kms * 1000  # m/s
             semi_major_axis_m = (mu_sun * r) / (2 * mu_sun - r * v * v)
@@ -174,7 +174,7 @@ class FixedOrbitalMechanicsEngine:
             print(f"[ERROR] Orbital elements calculation error: {e}")
             return OrbitalElements()
     def assess_threat_level(self, asteroid: AsteroidData, diameter_km: Optional[float] = None) -> RiskAssessment:
-        """Assess asteroid threat level"""
+        
         try:
             if not asteroid.close_approach_data:
                 return RiskAssessment(
@@ -247,7 +247,7 @@ class FixedOrbitalMechanicsEngine:
                                        cad_data: Dict[str, Any], 
                                        fireball_data: Dict[str, Any],
                                        asteroid_diameter_km: Optional[float] = None) -> Dict[str, Any]:
-        """Comprehensive asteroid analysis - FIXED VERSION"""
+        
         start_time = time.time()
         try:
             asteroids = self.parse_cad_data(cad_data)
@@ -325,7 +325,7 @@ class FixedOrbitalMechanicsEngine:
                 'calculation_time_seconds': time.time() - start_time
             }
     def analyze_fireball_context(self, fireball_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Analyze fireball data for context"""
+        
         try:
             if not fireball_data.get('success'):
                 return {'analysis': 'Fireball data not available'}
@@ -359,7 +359,7 @@ class FixedOrbitalMechanicsEngine:
             return {'analysis': 'Fireball analysis failed'}
 _fixed_engine_instance = None
 def get_fixed_orbital_mechanics_engine() -> FixedOrbitalMechanicsEngine:
-    """Get fixed orbital mechanics engine singleton"""
+    
     global _fixed_engine_instance
     if _fixed_engine_instance is None:
         _fixed_engine_instance = FixedOrbitalMechanicsEngine()
