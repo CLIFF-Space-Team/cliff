@@ -1,4 +1,4 @@
-ï»¿import asyncio
+import asyncio
 import math
 import logging
 from datetime import datetime, timedelta
@@ -39,28 +39,28 @@ except ImportError:
     nx = None
     networkx_available = False
 class CorrelationType(str, Enum):
-    """Korelasyon tÃ¼rleri"""
+    """Korelasyon türleri"""
     SPATIAL = "spatial"              # Uzaysal korelasyon
     TEMPORAL = "temporal"            # Zamansal korelasyon
-    CAUSAL = "causal"               # Nedensel iliÅŸki
+    CAUSAL = "causal"               # Nedensel ilişki
     SIMILARITY = "similarity"       # Benzerlik korelasyonu
-    COMPOUND = "compound"           # BileÅŸik risk
-    PATTERN = "pattern"             # AI tespit ettiÄŸi pattern
+    COMPOUND = "compound"           # Bileşik risk
+    PATTERN = "pattern"             # AI tespit ettiği pattern
 class CorrelationStrength(str, Enum):
-    """Korelasyon gÃ¼cÃ¼"""
+    """Korelasyon gücü"""
     VERY_WEAK = "very_weak"         # 0.0-0.2
     WEAK = "weak"                   # 0.2-0.4
     MODERATE = "moderate"           # 0.4-0.6
     STRONG = "strong"               # 0.6-0.8
     VERY_STRONG = "very_strong"     # 0.8-1.0
 class CausalDirection(str, Enum):
-    """Nedensel yÃ¶n"""
+    """Nedensel yön"""
     UNIDIRECTIONAL = "unidirectional"  # A -> B
     BIDIRECTIONAL = "bidirectional"    # A <-> B
-    UNKNOWN = "unknown"                 # Ä°liÅŸki var ama yÃ¶n belirsiz
+    UNKNOWN = "unknown"                 # İlişki var ama yön belirsiz
 @dataclass
 class ThreatCorrelation:
-    """Ä°ki tehdit arasÄ±ndaki korelasyon"""
+    """İki tehdit arasındaki korelasyon"""
     threat_1_id: str
     threat_2_id: str
     correlation_type: CorrelationType
@@ -78,35 +78,35 @@ class ThreatCorrelation:
     expires_at: datetime = field(default_factory=lambda: datetime.now() + timedelta(hours=6))
     confidence_score: float = 0.5
     def is_expired(self) -> bool:
-        """Korelasyon sÃ¼resi dolmuÅŸ mu?"""
+        """Korelasyon süresi dolmuş mu?"""
         return datetime.now() > self.expires_at
     def is_significant(self, threshold: float = 0.4) -> bool:
-        """AnlamlÄ± korelasyon mu?"""
+        """Anlamlı korelasyon mu?"""
         return self.correlation_score >= threshold
 @dataclass
 class ThreatCluster:
-    """Ä°liÅŸkili tehditler kÃ¼mesi"""
+    """İlişkili tehditler kümesi"""
     cluster_id: str
     threat_ids: Set[str]
-    cluster_center: Dict[str, float]  # KÃ¼me merkezi Ã¶zellikleri
+    cluster_center: Dict[str, float]  # Küme merkezi özellikleri
     dominant_threat_type: ThreatType
     geographic_region: Optional[str] = None
     time_window: Optional[Tuple[datetime, datetime]] = None
     compound_risk_score: float = 0.0
-    amplification_factor: float = 1.0  # Risk artÄ±rÄ±m faktÃ¶rÃ¼
+    amplification_factor: float = 1.0  # Risk artırım faktörü
     created_at: datetime = field(default_factory=datetime.now)
     last_updated: datetime = field(default_factory=datetime.now)
-    stability_score: float = 0.5  # KÃ¼menin kararlÄ±lÄ±ÄŸÄ±
+    stability_score: float = 0.5  # Kümenin kararlılığı
     def size(self) -> int:
-        """KÃ¼me boyutu"""
+        """Küme boyutu"""
         return len(self.threat_ids)
     def add_threat(self, threat_id: str):
-        """KÃ¼meye tehdit ekle"""
+        """Kümeye tehdit ekle"""
         self.threat_ids.add(threat_id)
         self.last_updated = datetime.now()
 @dataclass
 class CorrelationAnalysis:
-    """KapsamlÄ± korelasyon analizi sonucu"""
+    """Kapsamlı korelasyon analizi sonucu"""
     analysis_timestamp: datetime
     total_threats_analyzed: int
     significant_correlations: List[ThreatCorrelation]
@@ -123,7 +123,7 @@ class CorrelationAnalysis:
     overall_confidence: float = 0.5
     analysis_quality: str = "medium"  # poor, fair, good, excellent
     def get_summary(self) -> Dict[str, Any]:
-        """Analiz Ã¶zeti"""
+        """Analiz özeti"""
         return {
             'total_threats': self.total_threats_analyzed,
             'significant_correlations': len(self.significant_correlations),
@@ -139,7 +139,7 @@ class SpatialAnalyzer:
     def __init__(self):
         self.earth_radius_km = 6371.0
     def analyze_spatial_correlations(self, threats: List[Dict]) -> List[ThreatCorrelation]:
-        """Uzaysal korelasyonlarÄ± analiz et"""
+        """Uzaysal korelasyonları analiz et"""
         correlations = []
         try:
             spatial_threats = []
@@ -160,7 +160,7 @@ class SpatialAnalyzer:
             logger.error(f"Spatial analysis error: {str(e)}")
             return []
     def _calculate_spatial_correlation(self, threat1: Dict, threat2: Dict) -> Optional[ThreatCorrelation]:
-        """Ä°ki tehdit arasÄ±ndaki uzaysal korelasyon"""
+        """İki tehdit arasındaki uzaysal korelasyon"""
         try:
             coords1 = threat1.get('coordinates', {})
             coords2 = threat2.get('coordinates', {})
@@ -208,7 +208,7 @@ class SpatialAnalyzer:
         c = 2 * math.asin(math.sqrt(a))
         return self.earth_radius_km * c
     def _calculate_geographic_overlap(self, threat1: Dict, threat2: Dict) -> Optional[float]:
-        """CoÄŸrafi Ã¶rtÃ¼ÅŸme hesaplama"""
+        """Coğrafi örtüşme hesaplama"""
         radius1 = threat1.get('affected_radius_km', 0)
         radius2 = threat2.get('affected_radius_km', 0)
         if radius1 == 0 or radius2 == 0:
@@ -229,7 +229,7 @@ class SpatialAnalyzer:
             overlap_ratio = 1.0 - (distance / (radius1 + radius2))
             return max(0.0, min(1.0, overlap_ratio))
     def identify_spatial_hotspots(self, threats: List[Dict]) -> List[Dict[str, Any]]:
-        """Uzaysal hotspot'larÄ± tespit et"""
+        """Uzaysal hotspot'ları tespit et"""
         hotspots = []
         try:
             spatial_threats = [
@@ -280,16 +280,16 @@ class SpatialAnalyzer:
             logger.error(f"Spatial hotspot detection error: {str(e)}")
             return []
     def _get_numeric_severity(self, severity: str) -> float:
-        """Severity'yi sayÄ±ya Ã§evir"""
+        """Severity'yi sayıya çevir"""
         severity_map = {
-            'LOW': 0.25, 'DÃœÅÃœK': 0.25,
+            'LOW': 0.25, 'DÜŞÜK': 0.25,
             'MEDIUM': 0.5, 'ORTA': 0.5,
-            'HIGH': 0.75, 'YÃœKSEK': 0.75,
-            'CRITICAL': 1.0, 'KRÄ°TÄ°K': 1.0
+            'HIGH': 0.75, 'YÜKSEK': 0.75,
+            'CRITICAL': 1.0, 'KRİTİK': 1.0
         }
         return severity_map.get(severity.upper(), 0.5)
     def _calculate_cluster_radius(self, cluster_threats: List[Dict]) -> float:
-        """KÃ¼me yarÄ±Ã§apÄ± hesapla"""
+        """Küme yarıçapı hesapla"""
         if len(cluster_threats) < 2:
             return 0.0
         lats = [t['coordinates']['lat'] for t in cluster_threats]
@@ -309,7 +309,7 @@ class SpatialAnalyzer:
             max_distance = max(max_distance, distance)
         return max_distance
     def _get_dominant_types(self, threats: List[Dict]) -> List[str]:
-        """Dominant tehdit tÃ¼rlerini bul"""
+        """Dominant tehdit türlerini bul"""
         type_counts = {}
         for threat in threats:
             threat_type = threat.get('threat_type', 'unknown')
@@ -343,7 +343,7 @@ class TemporalAnalyzer:
     def __init__(self):
         self.time_window_hours = 168  # 1 week default
     def analyze_temporal_correlations(self, threats: List[Dict]) -> List[ThreatCorrelation]:
-        """Zamansal korelasyonlarÄ± analiz et"""
+        """Zamansal korelasyonları analiz et"""
         correlations = []
         try:
             temporal_threats = []
@@ -368,7 +368,7 @@ class TemporalAnalyzer:
             logger.error(f"Temporal analysis error: {str(e)}")
             return []
     def _calculate_temporal_correlation(self, threat1: Dict, threat2: Dict) -> Optional[ThreatCorrelation]:
-        """Ä°ki tehdit arasÄ±ndaki zamansal korelasyon"""
+        """İki tehdit arasındaki zamansal korelasyon"""
         try:
             time1 = threat1['parsed_timestamp']
             time2 = threat2['parsed_timestamp']
@@ -413,7 +413,7 @@ class TemporalAnalyzer:
         except Exception:
             return None
     def _calculate_temporal_overlap(self, threat1: Dict, threat2: Dict) -> Optional[float]:
-        """Zamansal Ã¶rtÃ¼ÅŸme hesapla"""
+        """Zamansal örtüşme hesapla"""
         try:
             start1 = threat1['parsed_timestamp']
             start2 = threat2['parsed_timestamp']
@@ -431,7 +431,7 @@ class TemporalAnalyzer:
         except Exception:
             return None
     def identify_cascade_sequences(self, threats: List[Dict]) -> List[List[str]]:
-        """Cascade sekanslarÄ±nÄ± tespit et"""
+        """Cascade sekanslarını tespit et"""
         sequences = []
         try:
             temporal_threats = []
@@ -474,17 +474,17 @@ class TemporalAnalyzer:
             logger.error(f"Cascade sequence detection error: {str(e)}")
             return []
     def _get_numeric_severity(self, severity: str) -> float:
-        """Severity'yi sayÄ±ya Ã§evir"""
+        """Severity'yi sayıya çevir"""
         severity_map = {
-            'LOW': 0.25, 'DÃœÅÃœK': 0.25,
+            'LOW': 0.25, 'DÜŞÜK': 0.25,
             'MEDIUM': 0.5, 'ORTA': 0.5,
-            'HIGH': 0.75, 'YÃœKSEK': 0.75,
-            'CRITICAL': 1.0, 'KRÄ°TÄ°K': 1.0
+            'HIGH': 0.75, 'YÜKSEK': 0.75,
+            'CRITICAL': 1.0, 'KRİTİK': 1.0
         }
         return severity_map.get(severity.upper(), 0.5)
 class ThreatCorrelationEngine:
     """
-    ğŸ”— Ana tehdit korelasyon motoru
+    ?? Ana tehdit korelasyon motoru
     """
     def __init__(self):
         self.ai_service = unified_ai_service
@@ -498,7 +498,7 @@ class ThreatCorrelationEngine:
         logger.info("Threat Correlation Engine initialized")
     async def analyze_threat_correlations(self, threats: List[Dict]) -> CorrelationAnalysis:
         """
-        ğŸ¯ KapsamlÄ± tehdit korelasyon analizi
+        ?? Kapsamlı tehdit korelasyon analizi
         """
         analysis_start = datetime.now()
         logger.info(f"Starting correlation analysis for {len(threats)} threats")
@@ -565,7 +565,7 @@ class ThreatCorrelationEngine:
         """Zamansal korelasyon analizi"""
         return self.temporal_analyzer.analyze_temporal_correlations(threats)
     async def _identify_causal_relationships(self, threats: List[Dict]) -> List[ThreatCorrelation]:
-        """Nedensel iliÅŸkileri tespit et"""
+        """Nedensel ilişkileri tespit et"""
         causal_correlations = []
         try:
             threat_pairs = [(threats[i], threats[j]) for i in range(len(threats)) for j in range(i+1, len(threats))]
@@ -579,7 +579,7 @@ class ThreatCorrelationEngine:
             logger.error(f"Causal relationship analysis error: {str(e)}")
             return []
     def _assess_causality(self, threat1: Dict, threat2: Dict) -> Optional[ThreatCorrelation]:
-        """Ä°ki tehdit arasÄ±ndaki nedensellik deÄŸerlendirmesi"""
+        """İki tehdit arasındaki nedensellik değerlendirmesi"""
         try:
             type1 = threat1.get('threat_type', 'unknown')
             type2 = threat2.get('threat_type', 'unknown')
@@ -668,7 +668,7 @@ class ThreatCorrelationEngine:
             logger.error(f"Similarity analysis error: {str(e)}")
             return []
     def _extract_feature_vector(self, threat: Dict) -> Optional[list]:
-        """Tehdit iÃ§in Ã¶zellik vektÃ¶rÃ¼ Ã§Ä±kar"""
+        """Tehdit için özellik vektörü çıkar"""
         try:
             features = []
             threat_types = ['asteroid', 'earth_event', 'space_weather', 'orbital_debris', 'unknown']
@@ -689,7 +689,7 @@ class ThreatCorrelationEngine:
             logger.error(f"Feature extraction error: {str(e)}")
             return None
     def _identify_shared_characteristics(self, threat1: Dict, threat2: Dict) -> List[str]:
-        """Ortak Ã¶zellikleri tespit et"""
+        """Ortak özellikleri tespit et"""
         shared = []
         if threat1.get('threat_type') == threat2.get('threat_type'):
             shared.append('same_threat_type')
@@ -705,7 +705,7 @@ class ThreatCorrelationEngine:
             shared.append('similar_impact_probability')
         return shared
     async def _perform_threat_clustering(self, threats: List[Dict], correlations: List[ThreatCorrelation]) -> List[ThreatCluster]:
-        """Tehdit kÃ¼meleme analizi"""
+        """Tehdit kümeleme analizi"""
         clusters = []
         try:
             if len(threats) < 3:
@@ -756,18 +756,18 @@ class ThreatCorrelationEngine:
             threat_summary = self._prepare_threat_summary_for_ai(threats)
             correlation_summary = self._prepare_correlation_summary_for_ai(correlations)
             prompt = f"""
-CLIFF Tehdit Pattern Analisti olarak, bu tehdit setindeki gizli baÄŸlantÄ±larÄ± ve pattern'leri analiz et:
+CLIFF Tehdit Pattern Analisti olarak, bu tehdit setindeki gizli bağlantıları ve pattern'leri analiz et:
 TEHDITLER ({len(threats)} adet):
 {threat_summary}
-TESPIT EDÄ°LEN KORELASYONLAR ({len(correlations)} adet):
+TESPIT EDİLEN KORELASYONLAR ({len(correlations)} adet):
 {correlation_summary}
-LÃ¼tfen ÅŸunlarÄ± analiz et:
-1. GÃ¶rÃ¼nmeyen baÄŸlantÄ±lar ve pattern'ler
+Lütfen şunları analiz et:
+1. Görünmeyen bağlantılar ve pattern'ler
 2. Domino etkisi potansiyeli 
-3. Sinerjik risk faktÃ¶rleri
-4. Ã–ncelik sÄ±ralamasÄ± Ã¶nerileri
-5. Erken uyarÄ± gÃ¶stergeleri
-JSON formatÄ±nda yanÄ±t ver:
+3. Sinerjik risk faktörleri
+4. Öncelik sıralaması önerileri
+5. Erken uyarı göstergeleri
+JSON formatında yanıt ver:
 {{
     "hidden_patterns": [
         {{"pattern_type": "...", "description": "...", "confidence": 0.0-1.0}}
@@ -817,7 +817,7 @@ JSON formatÄ±nda yanÄ±t ver:
             logger.warning(f"Unexpected {correlation_type} correlation result type: {type(result)}")
             return []
     def _score_to_strength(self, score: float) -> CorrelationStrength:
-        """Skoru gÃ¼Ã§ seviyesine Ã§evir"""
+        """Skoru güç seviyesine çevir"""
         if score >= 0.8:
             return CorrelationStrength.VERY_STRONG
         elif score >= 0.6:
@@ -829,16 +829,16 @@ JSON formatÄ±nda yanÄ±t ver:
         else:
             return CorrelationStrength.VERY_WEAK
     def _get_numeric_severity(self, severity: str) -> float:
-        """Severity'yi sayÄ±ya Ã§evir"""
+        """Severity'yi sayıya çevir"""
         severity_map = {
-            'LOW': 0.25, 'DÃœÅÃœK': 0.25,
+            'LOW': 0.25, 'DÜŞÜK': 0.25,
             'MEDIUM': 0.5, 'ORTA': 0.5,
-            'HIGH': 0.75, 'YÃœKSEK': 0.75,
-            'CRITICAL': 1.0, 'KRÄ°TÄ°K': 1.0
+            'HIGH': 0.75, 'YÜKSEK': 0.75,
+            'CRITICAL': 1.0, 'KRİTİK': 1.0
         }
         return severity_map.get(severity.upper(), 0.5)
     def _build_correlation_network(self, correlations: List[ThreatCorrelation]) -> Dict[str, Any]:
-        """Korelasyon network'Ã¼nÃ¼ oluÅŸtur"""
+        """Korelasyon network'ünü oluştur"""
         try:
             G = nx.Graph()
             for corr in correlations:
@@ -864,14 +864,14 @@ JSON formatÄ±nda yanÄ±t ver:
             logger.error(f"Network building error: {str(e)}")
             return {'nodes': 0, 'edges': 0}
     def _find_dominant_threat_type(self, threats: List[Dict]) -> str:
-        """Dominant tehdit tÃ¼rÃ¼nÃ¼ bul"""
+        """Dominant tehdit türünü bul"""
         type_counts = {}
         for threat in threats:
             threat_type = threat.get('threat_type', 'unknown')
             type_counts[threat_type] = type_counts.get(threat_type, 0) + 1
         return max(type_counts.items(), key=lambda x: x[1])[0]
     def _calculate_cluster_center(self, threats: List[Dict]) -> Dict[str, float]:
-        """KÃ¼me merkezi hesapla"""
+        """Küme merkezi hesapla"""
         center = {}
         severities = [self._get_numeric_severity(t.get('severity', 'MEDIUM')) for t in threats]
         center['severity'] = np.mean(severities)
@@ -881,7 +881,7 @@ JSON formatÄ±nda yanÄ±t ver:
         center['confidence'] = np.mean(confidences)
         return center
     def _calculate_compound_risk(self, threats: List[Dict]) -> float:
-        """BileÅŸik risk hesapla"""
+        """Bileşik risk hesapla"""
         individual_risks = [self._get_numeric_severity(t.get('severity', 'MEDIUM')) for t in threats]
         if not individual_risks:
             return 0.0
@@ -889,12 +889,12 @@ JSON formatÄ±nda yanÄ±t ver:
         synergy_factor = 1.0 + (len(threats) - 1) * 0.1  # Each additional threat adds 10%
         return min(1.0, compound * synergy_factor)
     def _calculate_amplification_factor(self, cluster_size: int) -> float:
-        """Risk artÄ±rÄ±m faktÃ¶rÃ¼ hesapla"""
+        """Risk artırım faktörü hesapla"""
         if cluster_size <= 1:
             return 1.0
         return 1.0 + (math.log(cluster_size) * 0.2)
     async def _assess_risk_implications(self, threats: List[Dict], correlations: List[ThreatCorrelation], clusters: List[ThreatCluster]) -> Tuple[List[Dict], List[Dict]]:
-        """Risk etkilerini deÄŸerlendir"""
+        """Risk etkilerini değerlendir"""
         compound_risks = []
         amplification_zones = []
         try:
@@ -923,7 +923,7 @@ JSON formatÄ±nda yanÄ±t ver:
             logger.error(f"Risk implications assessment error: {str(e)}")
             return [], []
     def _group_correlations_spatially(self, correlations: List[ThreatCorrelation], threats: List[Dict]) -> List[List[ThreatCorrelation]]:
-        """KorelasyonlarÄ± uzaysal olarak grupla"""
+        """Korelasyonları uzaysal olarak grupla"""
         spatial_groups = []
         spatial_correlations = [c for c in correlations if c.correlation_type == CorrelationType.SPATIAL and c.spatial_distance_km is not None]
         if spatial_correlations:
@@ -942,7 +942,7 @@ JSON formatÄ±nda yanÄ±t ver:
                         spatial_groups.append(group)
         return spatial_groups
     def _prepare_threat_summary_for_ai(self, threats: List[Dict]) -> str:
-        """AI iÃ§in tehdit Ã¶zetini hazÄ±rla"""
+        """AI için tehdit özetini hazırla"""
         summaries = []
         for i, threat in enumerate(threats[:10]):  # Limit to 10 for prompt size
             summary = f"{i+1}. {threat.get('threat_type', 'unknown')} - {threat.get('severity', 'MEDIUM')} - {threat.get('title', 'No title')}"
@@ -951,7 +951,7 @@ JSON formatÄ±nda yanÄ±t ver:
             summaries.append(f"... ve {len(threats) - 10} tehdit daha")
         return "\n".join(summaries)
     def _prepare_correlation_summary_for_ai(self, correlations: List[ThreatCorrelation]) -> str:
-        """AI iÃ§in korelasyon Ã¶zetini hazÄ±rla"""
+        """AI için korelasyon özetini hazırla"""
         summaries = []
         for i, corr in enumerate(correlations[:10]):  # Limit to 10
             summary = f"{i+1}. {corr.correlation_type.value} - {corr.correlation_strength.value} ({corr.correlation_score:.2f})"
@@ -983,14 +983,14 @@ JSON formatÄ±nda yanÄ±t ver:
             'early_warnings': []
         }
     def _calculate_overall_confidence(self, threat_count: int, correlation_count: int, ai_patterns: Dict) -> float:
-        """Genel gÃ¼venilirlik hesapla"""
+        """Genel güvenilirlik hesapla"""
         base_confidence = 0.5
         threat_factor = min(threat_count / 20.0, 1.0) * 0.2
         correlation_factor = min(correlation_count / 10.0, 1.0) * 0.2
         ai_factor = 0.1 if ai_patterns.get('patterns') else 0.0
         return base_confidence + threat_factor + correlation_factor + ai_factor
     def _assess_analysis_quality(self, confidence: float, correlation_count: int) -> str:
-        """Analiz kalitesi deÄŸerlendirmesi"""
+        """Analiz kalitesi değerlendirmesi"""
         if confidence > 0.8 and correlation_count > 10:
             return "excellent"
         elif confidence > 0.6 and correlation_count > 5:
@@ -1011,7 +1011,7 @@ JSON formatÄ±nda yanÄ±t ver:
         )
 threat_correlation_engine = ThreatCorrelationEngine()
 def get_threat_correlation_engine() -> ThreatCorrelationEngine:
-    """Dependency injection iÃ§in"""
+    """Dependency injection için"""
     return threat_correlation_engine
 __all__ = [
     'ThreatCorrelationEngine',

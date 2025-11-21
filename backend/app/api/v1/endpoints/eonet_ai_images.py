@@ -1,4 +1,4 @@
-﻿from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Depends, Query, Path, BackgroundTasks
 from fastapi.responses import JSONResponse
 from datetime import datetime
@@ -19,7 +19,7 @@ async def generate_eonet_event_images(
     eonet_generator: EONETAIImageGenerator = Depends(get_eonet_ai_generator)
 ) -> JSONResponse:
     """
-    🎨 Generate AI Images for EONET Event
+    ?? Generate AI Images for EONET Event
     Create contextual AI images for natural disaster events
     """
     try:
@@ -51,7 +51,7 @@ async def get_event_images(
     eonet_generator: EONETAIImageGenerator = Depends(get_eonet_ai_generator)
 ) -> JSONResponse:
     """
-    🖼️ Get Generated Images for EONET Event
+    ??? Get Generated Images for EONET Event
     Retrieve cached AI-generated images for specific event
     """
     try:
@@ -96,7 +96,7 @@ async def generate_images_for_existing_event(
     eonet_generator: EONETAIImageGenerator = Depends(get_eonet_ai_generator)
 ) -> JSONResponse:
     """
-    🚨 Generate Images for Existing EONET Event
+    ?? Generate Images for Existing EONET Event
     Fetch event data and generate AI images
     """
     try:
@@ -148,7 +148,7 @@ async def batch_generate_for_recent_events(
     eonet_generator: EONETAIImageGenerator = Depends(get_eonet_ai_generator)
 ) -> JSONResponse:
     """
-    📦 Batch Generate Images for Recent Events
+    ?? Batch Generate Images for Recent Events
     Generate AI images for multiple recent EONET events
     """
     try:
@@ -199,7 +199,7 @@ async def get_eonet_ai_stats(
     eonet_generator: EONETAIImageGenerator = Depends(get_eonet_ai_generator)
 ) -> JSONResponse:
     """
-    📊 EONET AI Image Generator Statistics
+    ?? EONET AI Image Generator Statistics
     Get service statistics and supported features
     """
     try:
@@ -218,7 +218,7 @@ async def clear_event_cache(
     eonet_generator: EONETAIImageGenerator = Depends(get_eonet_ai_generator)
 ) -> JSONResponse:
     """
-    🗑️ Clear Cache for Event
+    ??? Clear Cache for Event
     Remove cached images for specific event
     """
     try:

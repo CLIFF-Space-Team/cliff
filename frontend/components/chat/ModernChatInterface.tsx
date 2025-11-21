@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Bot, X, Sparkles, Zap, RefreshCw, Image as ImageIcon, Download } from 'lucide-react'
+import { Send, Bot, X, Sparkles, Zap, RefreshCw, Image as ImageIcon, Download, Brain, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -17,6 +17,7 @@ interface Message {
   image_url?: string
   isImageGeneration?: boolean
   thread_id?: string
+  thought_process?: string
 }
 
 interface ModernChatInterfaceProps {
@@ -259,7 +260,8 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
             }
           ],
           temperature: 0.7,
-          max_tokens: 2048
+          max_tokens: 2048,
+          stream: true
         })
       })
 
@@ -267,23 +269,88 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
         throw new Error('API yanıtı başarısız')
       }
 
-      const data = await response.json()
       setIsTyping(false)
       
-      if (useAzureAgent && data.thread_id) {
-        setAzureThreadId(data.thread_id)
-      }
-
+      // Create a placeholder AI message
+      const aiMessageId = (Date.now() + 1).toString()
       const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: data.content || 'Üzgünüm, bir hata oluştu.',
+        id: aiMessageId,
+        content: '',
         sender: 'ai',
         timestamp: new Date(),
-        isError: !data.content,
-        thread_id: data.thread_id
+        isError: false,
+        thought_process: ''
       }
-
+      
       setMessages(prev => [...prev, aiMessage])
+
+      if (!response.body) throw new Error('Response body is empty');
+      
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let thoughtBuffer = '';
+      let contentBuffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n');
+        
+        for (const line of lines) {
+          if (line.trim().startsWith('data: ')) {
+            const dataStr = line.trim().slice(6);
+            if (!dataStr || dataStr === '[DONE]') continue;
+            
+            try {
+              const data = JSON.parse(dataStr);
+              
+              // Handle different message types
+              if (data.type === 'done') {
+                // Stream completed
+                continue;
+              }
+              
+              if (data.type === 'error') {
+                throw new Error(data.content || 'Stream error');
+              }
+              
+              if (data.content) {
+                // Accumulate content based on type
+                if (data.type === 'thought') {
+                  thoughtBuffer += data.content;
+                } else if (data.type === 'content') {
+                  contentBuffer += data.content;
+                }
+
+                // Update message in real-time
+                setMessages(prev => prev.map(msg => 
+                  msg.id === aiMessageId 
+                    ? { 
+                        ...msg, 
+                        content: contentBuffer, 
+                        thought_process: thoughtBuffer,
+                        thread_id: data.thread_id || msg.thread_id 
+                      }
+                    : msg
+                ));
+              }
+              
+              if (useAzureAgent && data.thread_id) {
+                setAzureThreadId(data.thread_id)
+              }
+            } catch (e) {
+              console.error('Parse error:', e, 'Line:', dataStr);
+            }
+          }
+        }
+      }
+      
+      // If no content was received at all, show error
+      if (!contentBuffer && !thoughtBuffer) {
+        throw new Error('Yanıt alınamadı');
+      }
 
     } catch (error) {
       console.error('Mesaj gönderme hatası:', error)
@@ -308,7 +375,49 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
     }
   }, [sendMessage])
 
-  const MessageBubble = useMemo(() => React.memo(({ message }: { message: Message }) => (
+  const ThoughtProcess = ({ content }: { content: string }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    
+    if (!content || content.trim().length === 0) return null;
+
+    return (
+      <div className="mb-3 max-w-full">
+        <button 
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-2 text-xs font-medium text-purple-400 hover:text-purple-300 transition-colors bg-purple-500/5 px-3 py-1.5 rounded-lg border border-purple-500/20 hover:border-purple-500/30 hover:bg-purple-500/10"
+        >
+          <Brain className={cn("w-3.5 h-3.5", isOpen && "animate-pulse")} />
+          <span className="font-semibold">Düşünme Süreci</span>
+          <div className="ml-auto flex items-center gap-1">
+            <span className="text-[9px] px-1.5 py-0.5 bg-purple-500/20 rounded">AI İçgörü</span>
+            {isOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </div>
+        </button>
+        
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0, y: -10 }}
+              animate={{ height: "auto", opacity: 1, y: 0 }}
+              exit={{ height: 0, opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="overflow-hidden"
+            >
+              <div className="mt-2 p-4 bg-gradient-to-br from-purple-950/30 to-black/20 rounded-lg border-l-4 border-purple-500/50 text-xs text-purple-100/80 font-mono leading-relaxed whitespace-pre-wrap shadow-inner backdrop-blur-sm">
+                <div className="flex items-start gap-2 mb-2 pb-2 border-b border-purple-500/10">
+                  <Sparkles className="w-3 h-3 text-purple-400 flex-shrink-0 mt-0.5" />
+                  <span className="text-purple-300 font-semibold text-[10px] uppercase tracking-wide">AI'nın Düşünce Akışı</span>
+                </div>
+                {content}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  };
+
+  const MessageBubble = ({ message }: { message: Message }) => (
     <div
       className={cn(
         'flex gap-3 mb-6',
@@ -325,6 +434,9 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
         </div>
       )}
       <div className="flex flex-col max-w-[75%]">
+        {message.thought_process && message.sender === 'ai' && message.thought_process.trim().length > 0 && (
+          <ThoughtProcess content={message.thought_process} />
+        )}
         <div
           className={cn(
             'px-5 py-3.5 rounded-2xl backdrop-blur-sm shadow-sm transition-all duration-200',
@@ -399,7 +511,7 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
         </div>
       )}
     </div>
-  )), [retryLastMessage, isLoading])
+  );
 
   if (!isOpen) return null
 
@@ -554,13 +666,30 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
                   <div className="bg-white/5 px-5 py-3 rounded-2xl rounded-tl-sm border border-white/5 backdrop-blur-sm">
                     <div className="flex items-center gap-3">
                       <div className="flex gap-1.5">
-                        <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
-                        <div className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
-                        <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+                        <motion.div 
+                          className="w-2 h-2 bg-purple-400 rounded-full"
+                          animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
+                          transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0 }}
+                        />
+                        <motion.div 
+                          className="w-2 h-2 bg-blue-400 rounded-full"
+                          animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
+                          transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0, delay: 0.3 }}
+                        />
+                        <motion.div 
+                          className="w-2 h-2 bg-cyan-400 rounded-full"
+                          animate={{ scale: [1, 1.3, 1], opacity: [1, 0.5, 1] }}
+                          transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0, delay: 0.6 }}
+                        />
                       </div>
-                      <span className="text-gray-400 text-xs font-medium">
-                        {isGeneratingImage ? 'Görsel oluşturuluyor...' : 'CLIFF düşünüyor...'}
-                      </span>
+                      <div className="flex flex-col">
+                        <span className="text-white/80 text-xs font-medium">
+                          {isGeneratingImage ? 'Görsel oluşturuluyor' : 'CLIFF düşünüyor'}
+                        </span>
+                        <span className="text-white/40 text-[10px]">
+                          {isGeneratingImage ? 'Imagen 4.0 çalışıyor...' : 'Yanıt hazırlanıyor...'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </motion.div>

@@ -1,4 +1,4 @@
-ï»¿import asyncio
+import asyncio
 import logging
 import math
 import random
@@ -20,7 +20,7 @@ from .unified_ai_service import unified_ai_service, UnifiedChatRequest
 from ..core.config import settings
 logger = structlog.get_logger(__name__)
 class PriorityLevel(str, Enum):
-    """Ã–ncelik seviyeleri"""
+    """Öncelik seviyeleri"""
     CRITICAL = "critical"      # 0.8-1.0
     HIGH = "high"             # 0.6-0.8
     MEDIUM = "medium"         # 0.4-0.6
@@ -34,7 +34,7 @@ class ImpactCategory(str, Enum):
     MINIMAL = "minimal"
 @dataclass
 class PriorityScore:
-    """Ã–ncelik skoru detaylarÄ±"""
+    """Öncelik skoru detayları"""
     threat_id: str
     overall_score: float  # 0.0 - 1.0
     priority_level: PriorityLevel
@@ -52,13 +52,13 @@ class PriorityScore:
     last_updated: datetime = field(default_factory=datetime.now)
     version: int = 1
 class PriorityQueue:
-    """Dinamik Ã¶ncelik kuyruÄŸu"""
+    """Dinamik öncelik kuyruğu"""
     def __init__(self, max_size: int = 1000):
         self.queue: List[PriorityScore] = []
         self.max_size = max_size
         self.threat_index: Dict[str, int] = {}  # threat_id -> queue_index
     def add_or_update(self, priority_score: PriorityScore):
-        """Ã–ncelik skoru ekle veya gÃ¼ncelle"""
+        """Öncelik skoru ekle veya güncelle"""
         threat_id = priority_score.threat_id
         if threat_id in self.threat_index:
             idx = self.threat_index[threat_id]
@@ -70,13 +70,13 @@ class PriorityQueue:
         if len(self.queue) > self.max_size:
             self._trim_queue()
     def get_top_priorities(self, limit: int = 10) -> List[PriorityScore]:
-        """En yÃ¼ksek Ã¶ncelikleri getir"""
+        """En yüksek öncelikleri getir"""
         return self.queue[:limit]
     def get_by_level(self, level: PriorityLevel) -> List[PriorityScore]:
-        """Belirli seviyedeki Ã¶ncelikleri getir"""
+        """Belirli seviyedeki öncelikleri getir"""
         return [ps for ps in self.queue if ps.priority_level == level]
     def remove_threat(self, threat_id: str) -> bool:
-        """Tehdit kaldÄ±r"""
+        """Tehdit kaldır"""
         if threat_id in self.threat_index:
             idx = self.threat_index[threat_id]
             del self.queue[idx]
@@ -85,25 +85,25 @@ class PriorityQueue:
             return True
         return False
     def _resort_queue(self):
-        """KuyruÄŸu Ã¶nceliÄŸe gÃ¶re sÄ±rala"""
+        """Kuyruğu önceliğe göre sırala"""
         self.queue.sort(key=lambda x: x.overall_score, reverse=True)
         self._rebuild_index()
     def _rebuild_index(self):
-        """Index'i yeniden oluÅŸtur"""
+        """Index'i yeniden oluştur"""
         self.threat_index = {
             score.threat_id: idx for idx, score in enumerate(self.queue)
         }
     def _trim_queue(self):
-        """Kuyruk boyutunu sÄ±nÄ±rla"""
+        """Kuyruk boyutunu sınırla"""
         if len(self.queue) > self.max_size:
             self.queue = self.queue[:self.max_size]
             self._rebuild_index()
 class MonteCarloSimulator:
-    """Monte Carlo SimÃ¼lasyon Motoru"""
+    """Monte Carlo Simülasyon Motoru"""
     def __init__(self, num_simulations: int = 10000):
         self.num_simulations = num_simulations
     async def simulate_asteroid_impact(self, threat_data: Dict) -> Dict[str, Any]:
-        """Asteroit Ã§arpma simÃ¼lasyonu"""
+        """Asteroit çarpma simülasyonu"""
         try:
             nominal_distance = threat_data.get('miss_distance_km', 7500000)  # 7.5M km default
             distance_uncertainty = threat_data.get('distance_uncertainty', 0.1)
@@ -160,7 +160,7 @@ class MonteCarloSimulator:
             logger.error(f"Monte Carlo asteroid simulation error: {str(e)}")
             return self._fallback_simulation_result('asteroid_impact')
     async def simulate_space_weather_impact(self, threat_data: Dict) -> Dict[str, Any]:
-        """Uzay hava durumu etki simÃ¼lasyonu"""
+        """Uzay hava durumu etki simülasyonu"""
         try:
             solar_flux = threat_data.get('solar_flux', 100)
             geomagnetic_index = threat_data.get('kp_index', 3)
@@ -206,7 +206,7 @@ class MonteCarloSimulator:
             logger.error(f"Monte Carlo space weather simulation error: {str(e)}")
             return self._fallback_simulation_result('space_weather')
     def _calculate_simulation_confidence(self, probabilities: List[float]) -> float:
-        """SimÃ¼lasyon gÃ¼venilirliÄŸi"""
+        """Simülasyon güvenilirliği"""
         if not probabilities:
             return 0.0
         if np is not None:
@@ -217,7 +217,7 @@ class MonteCarloSimulator:
         confidence = max(0.0, 1.0 - (std_error * 4))  # Empirical formula
         return float(confidence)
     def _fallback_simulation_result(self, sim_type: str) -> Dict[str, Any]:
-        """Fallback simÃ¼lasyon sonucu"""
+        """Fallback simülasyon sonucu"""
         return {
             'simulation_type': sim_type,
             'mean_impact_probability': 0.1,
@@ -227,13 +227,13 @@ class MonteCarloSimulator:
         }
 class RealtimePriorityEngine:
     """
-    âš¡ Ana gerÃ§ek zamanlÄ± Ã¶ncelik belirleme sistemi
+    ? Ana gerçek zamanlı öncelik belirleme sistemi
     """
     PRIORITY_WEIGHTS = {
-        "impact_probability": 0.35,    # Ã‡arpma/Etki olasÄ±lÄ±ÄŸÄ±
+        "impact_probability": 0.35,    # Çarpma/Etki olasılığı
         "damage_potential": 0.25,     # Hasar potansiyeli
-        "time_criticality": 0.20,     # Zaman kritiÄŸi
-        "data_reliability": 0.20      # Veri gÃ¼venilirliÄŸi
+        "time_criticality": 0.20,     # Zaman kritiği
+        "data_reliability": 0.20      # Veri güvenilirliği
     }
     def __init__(self):
         self.priority_queue = PriorityQueue(max_size=1000)
@@ -245,7 +245,7 @@ class RealtimePriorityEngine:
         logger.info("Realtime Priority Engine initialized")
     async def calculate_dynamic_priority(self, threat_data: Dict) -> PriorityScore:
         """
-        ğŸ¯ Dinamik Ã¶ncelik skoru hesaplama
+        ?? Dinamik öncelik skoru hesaplama
         """
         threat_id = threat_data.get('threat_id', f"threat_{int(datetime.now().timestamp())}")
         logger.info(f"Calculating dynamic priority for threat {threat_id}")
@@ -304,7 +304,7 @@ class RealtimePriorityEngine:
             logger.error(f"Priority calculation error for {threat_id}: {str(e)}")
             return self._create_fallback_priority(threat_data, threat_id)
     async def _assess_impact_probability(self, threat_data: Dict) -> float:
-        """Etki olasÄ±lÄ±ÄŸÄ± deÄŸerlendirmesi"""
+        """Etki olasılığı değerlendirmesi"""
         try:
             threat_type = threat_data.get('threat_type', 'unknown')
             if threat_type == 'asteroid':
@@ -321,7 +321,7 @@ class RealtimePriorityEngine:
             logger.error(f"Impact probability assessment error: {str(e)}")
             return 0.1
     async def _asteroid_impact_probability(self, threat_data: Dict) -> float:
-        """Asteroit Ã§arpma olasÄ±lÄ±ÄŸÄ±"""
+        """Asteroit çarpma olasılığı"""
         miss_distance = threat_data.get('miss_distance_km', 7500000)
         earth_radius = 6371  # km
         if miss_distance < earth_radius * 10:  # Very close
@@ -336,7 +336,7 @@ class RealtimePriorityEngine:
         adjusted_prob = base_prob * (1 + uncertainty)
         return min(1.0, adjusted_prob)
     async def _space_weather_impact_probability(self, threat_data: Dict) -> float:
-        """Uzay hava durumu etki olasÄ±lÄ±ÄŸÄ±"""
+        """Uzay hava durumu etki olasılığı"""
         kp_index = threat_data.get('kp_index', 3)
         solar_flux = threat_data.get('solar_flux', 100)
         kp_factor = min(kp_index / 9.0, 1.0)
@@ -344,7 +344,7 @@ class RealtimePriorityEngine:
         combined_prob = (kp_factor * 0.6 + flux_factor * 0.4)
         return combined_prob
     async def _earth_event_impact_probability(self, threat_data: Dict) -> float:
-        """DoÄŸal olay etki olasÄ±lÄ±ÄŸÄ±"""
+        """Doğal olay etki olasılığı"""
         event_type = threat_data.get('category', 'unknown')
         magnitude = threat_data.get('magnitude', 5.0)
         type_factors = {
@@ -382,7 +382,7 @@ class RealtimePriorityEngine:
             logger.error(f"Damage potential calculation error: {str(e)}")
             return 0.3
     async def _assess_time_criticality(self, threat_data: Dict) -> float:
-        """Zaman kritiÄŸi deÄŸerlendirmesi"""
+        """Zaman kritiği değerlendirmesi"""
         try:
             time_to_impact = threat_data.get('time_to_impact')
             if not time_to_impact:
@@ -408,7 +408,7 @@ class RealtimePriorityEngine:
             logger.error(f"Time criticality assessment error: {str(e)}")
             return 0.5
     async def _validate_data_reliability(self, threat_data: Dict) -> float:
-        """Veri gÃ¼venilirliÄŸi doÄŸrulamasÄ±"""
+        """Veri güvenilirliği doğrulaması"""
         try:
             reliability_score = 0.0
             data_source = threat_data.get('data_source', 'unknown').lower()
@@ -446,17 +446,17 @@ class RealtimePriorityEngine:
             logger.error(f"Data reliability validation error: {str(e)}")
             return 0.5
     async def _ai_priority_enhancement(self, threat_data: Dict, current_score: float) -> float:
-        """AI ile Ã¶ncelik skoru geliÅŸtirme"""
+        """AI ile öncelik skoru geliştirme"""
         try:
             prompt = f"""
-Uzay Tehdit Ã–ncelik Analisti olarak, bu tehditin Ã¶ncelik skorunu deÄŸerlendir:
+Uzay Tehdit Öncelik Analisti olarak, bu tehditin öncelik skorunu değerlendir:
 Mevcut Skor: {current_score:.3f}
 Tehdit Verisi: {json.dumps(threat_data, indent=2, default=str)}
-Skor ayarlamasÄ± gerekli mi?
-- ArtÄ±rÄ±lmalÄ± mÄ±? (kritik faktÃ¶rler gÃ¶zden kaÃ§mÄ±ÅŸ)
-- AzaltÄ±lmalÄ± mÄ±? (abartÄ±lmÄ±ÅŸ risk)
-- KorunmalÄ± mÄ±? (uygun deÄŸerlendirme)
-KÄ±sa yanÄ±t ver - sadece sayÄ±sal Ã§arpan (0.8-1.2 arasÄ±):
+Skor ayarlaması gerekli mi?
+- Artırılmalı mı? (kritik faktörler gözden kaçmış)
+- Azaltılmalı mı? (abartılmış risk)
+- Korunmalı mı? (uygun değerlendirme)
+Kısa yanıt ver - sadece sayısal çarpan (0.8-1.2 arası):
 """
             request = UnifiedChatRequest(
                 messages=[{"role": "user", "content": prompt}],
@@ -477,7 +477,7 @@ KÄ±sa yanÄ±t ver - sadece sayÄ±sal Ã§arpan (0.8-1.2 arasÄ±):
             logger.error(f"AI priority enhancement error: {str(e)}")
             return 1.0
     async def _run_monte_carlo_simulation(self, threat_data: Dict) -> Optional[Dict[str, Any]]:
-        """Monte Carlo simÃ¼lasyonu Ã§alÄ±ÅŸtÄ±r"""
+        """Monte Carlo simülasyonu çalıştır"""
         try:
             threat_type = threat_data.get('threat_type', 'unknown')
             if threat_type == 'asteroid':
@@ -500,20 +500,20 @@ KÄ±sa yanÄ±t ver - sadece sayÄ±sal Ã§arpan (0.8-1.2 arasÄ±):
             logger.warning(f"Unexpected {score_type} result type: {type(result)}")
             return default_value
     def _get_severity_factor(self, severity: str) -> float:
-        """Severity string'ini faktÃ¶re Ã§evir"""
+        """Severity string'ini faktöre çevir"""
         severity_map = {
             'LOW': 0.25,
             'MEDIUM': 0.5, 
             'HIGH': 0.75,
             'CRITICAL': 1.0,
-            'DÃœÅÃœK': 0.25,
+            'DÜŞÜK': 0.25,
             'ORTA': 0.5,
-            'YÃœKSEK': 0.75,
-            'KRÄ°TÄ°K': 1.0
+            'YÜKSEK': 0.75,
+            'KRİTİK': 1.0
         }
         return severity_map.get(severity.upper(), 0.5)
     def _calculate_urgency_multiplier(self, threat_data: Dict) -> float:
-        """Aciliyet Ã§arpanÄ± hesapla"""
+        """Aciliyet çarpanı hesapla"""
         base_multiplier = 1.0
         time_to_impact = self._extract_time_to_impact(threat_data)
         if time_to_impact and time_to_impact < 24:  # < 1 day
@@ -528,7 +528,7 @@ KÄ±sa yanÄ±t ver - sadece sayÄ±sal Ã§arpan (0.8-1.2 arasÄ±):
             base_multiplier *= 1.1
         return min(1.5, base_multiplier)  # Cap at 1.5x
     def _categorize_priority_level(self, score: float) -> PriorityLevel:
-        """Skor'u Ã¶ncelik seviyesine Ã§evir"""
+        """Skor'u öncelik seviyesine çevir"""
         if score >= 0.8:
             return PriorityLevel.CRITICAL
         elif score >= 0.6:
@@ -540,7 +540,7 @@ KÄ±sa yanÄ±t ver - sadece sayÄ±sal Ã§arpan (0.8-1.2 arasÄ±):
         else:
             return PriorityLevel.MINIMAL
     def _calculate_overall_confidence(self, scores: List[float]) -> float:
-        """Genel gÃ¼venilirlik hesapla"""
+        """Genel güvenilirlik hesapla"""
         if not scores:
             return 0.5
         mean_score = sum(scores) / len(scores)
@@ -559,7 +559,7 @@ KÄ±sa yanÄ±t ver - sadece sayÄ±sal Ã§arpan (0.8-1.2 arasÄ±):
         else:
             return ImpactCategory.MINIMAL
     def _extract_time_to_impact(self, threat_data: Dict) -> Optional[float]:
-        """Ã‡arpÄ±ÅŸma zamanÄ±nÄ± saat olarak Ã§Ä±kar"""
+        """Çarpışma zamanını saat olarak çıkar"""
         try:
             time_str = threat_data.get('time_to_impact')
             if not time_str:
@@ -590,7 +590,7 @@ KÄ±sa yanÄ±t ver - sadece sayÄ±sal Ã§arpan (0.8-1.2 arasÄ±):
         else:
             return 'stable'
     def _create_fallback_priority(self, threat_data: Dict, threat_id: str) -> PriorityScore:
-        """Fallback Ã¶ncelik skoru"""
+        """Fallback öncelik skoru"""
         return PriorityScore(
             threat_id=threat_id,
             overall_score=0.5,
@@ -606,10 +606,10 @@ KÄ±sa yanÄ±t ver - sadece sayÄ±sal Ã§arpan (0.8-1.2 arasÄ±):
             score_evolution_trend='unknown'
         )
     def get_priority_queue(self) -> PriorityQueue:
-        """Ã–ncelik kuyruÄŸunu getir"""
+        """Öncelik kuyruğunu getir"""
         return self.priority_queue
     async def refresh_all_priorities(self) -> int:
-        """TÃ¼m Ã¶ncelikleri yenile"""
+        """Tüm öncelikleri yenile"""
         refreshed_count = 0
         for priority_score in self.priority_queue.queue.copy():
             try:
@@ -626,7 +626,7 @@ KÄ±sa yanÄ±t ver - sadece sayÄ±sal Ã§arpan (0.8-1.2 arasÄ±):
         return refreshed_count
 realtime_priority_engine = RealtimePriorityEngine()
 def get_realtime_priority_engine() -> RealtimePriorityEngine:
-    """Dependency injection iÃ§in"""
+    """Dependency injection için"""
     return realtime_priority_engine
 __all__ = [
     'RealtimePriorityEngine',

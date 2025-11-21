@@ -1,4 +1,4 @@
-ï»¿from __future__ import annotations
+from __future__ import annotations
 from typing import Any, Dict, List
 from datetime import datetime
 import structlog
@@ -21,12 +21,12 @@ def _parse_float(value: Any) -> float | None:
     except Exception:
         return None
 async def ingest_sentry_once() -> Dict[str, Any]:
-    """Sentry listesini bir kez Ã§ekip kaydeder; eksik verileri Sentry'den doldurur."""
+    """Sentry listesini bir kez çekip kaydeder; eksik verileri Sentry'den doldurur."""
     service = NASAServices()
     try:
         response = await service.get_sentry_data()
         if response.get("status") != "success":
-            logger.error("Sentry verisi alÄ±namadÄ±", error=response.get("error"))
+            logger.error("Sentry verisi alýnamadý", error=response.get("error"))
             return {"success": False, "error": response.get("error")}
         data = response.get("data", {})
         items: List[Dict[str, Any]] = data.get("data", [])
@@ -41,7 +41,7 @@ async def ingest_sentry_once() -> Dict[str, Any]:
                 neo_id=str(des),
                 name=str(des),
                 absolute_magnitude_h=abs_h,
-                diameter_min_km=diameter_km * 0.8 if diameter_km else None,  # Â±20% belirsizlik
+                diameter_min_km=diameter_km * 0.8 if diameter_km else None,  # ±20% belirsizlik
                 diameter_max_km=diameter_km * 1.2 if diameter_km else None,
                 is_potentially_hazardous=True,
                 sentry_id=str(des),
@@ -52,8 +52,8 @@ async def ingest_sentry_once() -> Dict[str, Any]:
             impact_probability = _parse_float(_get_any(item, "ip", "impactProbability"))
             energy_mt = None
             if diameter_km and impact_probability:
-                volume = (4/3) * 3.14159 * ((diameter_km / 2) ** 3)  # kmÂ³
-                mass_kg = volume * 2.6e12  # 2.6 g/cmÂ³ = 2.6e12 kg/kmÂ³
+                volume = (4/3) * 3.14159 * ((diameter_km / 2) ** 3)  # km³
+                mass_kg = volume * 2.6e12  # 2.6 g/cm³ = 2.6e12 kg/km³
                 energy_joules = 0.5 * mass_kg * (20000 ** 2)  # 20 km/s
                 energy_mt = energy_joules / 4.184e15  # 1 MT = 4.184e15 J
             risk = RiskAssessment(
@@ -68,7 +68,7 @@ async def ingest_sentry_once() -> Dict[str, Any]:
             )
             await upsert_risk(risk)
             saved += 1
-        logger.info("Sentry ingest tamamlandÄ±", count=saved)
+        logger.info("Sentry ingest tamamlandý", count=saved)
         return {"success": True, "saved": saved}
     finally:
         await service.close_session()

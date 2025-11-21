@@ -1,4 +1,4 @@
-ï»¿from __future__ import annotations
+from __future__ import annotations
 from typing import List, Optional
 from datetime import datetime
 import structlog
@@ -13,7 +13,7 @@ def _approaches() -> AsyncIOMotorCollection:
 def _risks() -> AsyncIOMotorCollection:
     return get_collection("risk_assessments")
 async def ensure_indexes() -> None:
-    """Gerekli indeksleri oluÅŸturur (idempotent)."""
+    """Gerekli indeksleri oluşturur (idempotent)."""
     await _neos().create_index("neo_id", unique=True, name="idx_neo_id")
     await _neos().create_index("name", name="idx_name")
     await _neos().create_index("is_potentially_hazardous", name="idx_hazard")
@@ -45,11 +45,11 @@ async def upsert_risk(doc: RiskAssessment) -> None:
         upsert=True,
     )
 async def get_all_risks() -> List[Dict]:
-    """TÃ¼m risk kayÄ±tlarÄ±nÄ± tek seferde al"""
+    """Tüm risk kayıtlarını tek seferde al"""
     return [doc async for doc in _risks().find({})]
 async def get_all_asteroids() -> List[Dict]:
-    """TÃ¼m asteroit kayÄ±tlarÄ±nÄ± tek seferde al"""
+    """Tüm asteroit kayıtlarını tek seferde al"""
     return [doc async for doc in _neos().find({})]
 async def get_all_approaches() -> List[Dict]:
-    """TÃ¼m yaklaÅŸma kayÄ±tlarÄ±nÄ± tek seferde al"""
+    """Tüm yaklaşma kayıtlarını tek seferde al"""
     return [doc async for doc in _approaches().find({})]

@@ -1,4 +1,4 @@
-ï»¿import asyncio
+import asyncio
 import aiohttp
 import json
 import logging
@@ -29,7 +29,7 @@ except ImportError:
     pd = None
     pandas_available = False
 class DataSource(str, Enum):
-    """Veri kaynaklarÄ±"""
+    """Veri kaynaklarý"""
     NASA_NEO = "nasa_neo"                   # NASA Near Earth Objects
     NASA_EONET = "nasa_eonet"               # Earth Observatory Natural Event Tracker
     NASA_DONKI = "nasa_donki"               # Space Weather Database
@@ -40,7 +40,7 @@ class DataSource(str, Enum):
     SPACEX_API = "spacex_api"               # SpaceX Launch Data
     NOAA_SWPC = "noaa_swpc"                 # NOAA Space Weather Prediction Center
     CELESTRAK = "celestrak"                 # Satellite tracking
-    CUSTOM = "custom"                       # Ã–zel veri kaynaÄŸÄ±
+    CUSTOM = "custom"                       # Özel veri kaynaðý
 class DataQuality(str, Enum):
     """Veri kalitesi"""
     EXCELLENT = "excellent"     # 0.9-1.0
@@ -48,7 +48,7 @@ class DataQuality(str, Enum):
     FAIR = "fair"              # 0.5-0.7
     POOR = "poor"              # 0.0-0.5
 class DataFreshness(str, Enum):
-    """Veri gÃ¼ncelliÄŸi"""
+    """Veri güncelliði"""
     REAL_TIME = "real_time"     # <5 minutes
     RECENT = "recent"           # 5min - 1 hour
     CURRENT = "current"         # 1-24 hours
@@ -56,7 +56,7 @@ class DataFreshness(str, Enum):
     STALE = "stale"             # >1 week
 @dataclass
 class SourceMetadata:
-    """Veri kaynaÄŸÄ± metadata'sÄ±"""
+    """Veri kaynaðý metadata'sý"""
     source: DataSource
     api_endpoint: str
     update_frequency: str
@@ -70,7 +70,7 @@ class SourceMetadata:
     is_active: bool = True
 @dataclass
 class RawDataRecord:
-    """Ham veri kaydÄ±"""
+    """Ham veri kaydý"""
     record_id: str
     source: DataSource
     data_type: str
@@ -83,7 +83,7 @@ class RawDataRecord:
     processing_notes: List[str] = field(default_factory=list)
 @dataclass
 class NormalizedThreatData:
-    """Normalize edilmiÅŸ tehdit verisi"""
+    """Normalize edilmiþ tehdit verisi"""
     threat_id: str
     source: DataSource
     threat_type: ThreatType
@@ -105,7 +105,7 @@ class NormalizedThreatData:
     priority_computed: bool = False
     risk_assessed: bool = False
     def to_dict(self) -> Dict[str, Any]:
-        """Dictionary formatÄ±na Ã§evir"""
+        """Dictionary formatýna çevir"""
         result = {
             'threat_id': self.threat_id,
             'source': self.source.value,
@@ -169,7 +169,7 @@ class NASANEOFetcher:
         self.client = client
         self.base_url = "https://api.nasa.gov/neo/rest/v1"
     async def fetch_neo_data(self, days: int = 7) -> List[RawDataRecord]:
-        """NEO verilerini Ã§ek - GeliÅŸtirilmiÅŸ versiyon"""
+        """NEO verilerini çek - Geliþtirilmiþ versiyon"""
         records = []
         try:
             end_date = datetime.now()
@@ -285,7 +285,7 @@ class NASAEONETFetcher:
         self.client = client
         self.base_url = "https://eonet.gsfc.nasa.gov/api/v3"
     async def fetch_natural_events(self, days: int = 30) -> List[RawDataRecord]:
-        """DoÄŸal afet verilerini Ã§ek"""
+        """Doðal afet verilerini çek"""
         records = []
         try:
             end_date = datetime.now()
@@ -319,7 +319,7 @@ class NASADONKIFetcher:
         self.client = client
         self.base_url = "https://api.nasa.gov/DONKI"
     async def fetch_space_weather_events(self, days: int = 7) -> List[RawDataRecord]:
-        """Space weather verilerini Ã§ek"""
+        """Space weather verilerini çek"""
         records = []
         try:
             end_date = datetime.now()
@@ -354,7 +354,7 @@ class ESASSAFetcher:
         self.client = client
         self.base_url = "https://swe.ssa.esa.int/web/guest/monitoring-predictions"
     async def fetch_esa_space_weather(self) -> List[RawDataRecord]:
-        """ESA space weather verilerini Ã§ek"""
+        """ESA space weather verilerini çek"""
         records = []
         try:
             url = f"{self.base_url}/space-weather-now"
@@ -381,7 +381,7 @@ class SpaceXAPIFetcher:
         self.client = client
         self.base_url = "https://api.spacexdata.com/v4"
     async def fetch_upcoming_launches(self) -> List[RawDataRecord]:
-        """YaklaÅŸan SpaceX fÄ±rlatmalarÄ±nÄ± Ã§ek"""
+        """Yaklaþan SpaceX fýrlatmalarýný çek"""
         records = []
         try:
             url = f"{self.base_url}/launches/upcoming"
@@ -403,7 +403,7 @@ class SpaceXAPIFetcher:
             logger.error(f"SpaceX API fetch error: {str(e)}")
             return []
 class DataNormalizer:
-    """Veri normalleÅŸtirici"""
+    """Veri normalleþtirici"""
     def __init__(self):
         self.ai_service = unified_ai_service
     async def normalize_raw_data(self, raw_records: List[RawDataRecord]) -> List[NormalizedThreatData]:
@@ -649,7 +649,7 @@ class DataNormalizer:
         else:
             return 'LOW'
     def _parse_nasa_date(self, date_str: str) -> Optional[datetime]:
-        """NASA tarih formatÄ±nÄ± parse et"""
+        """NASA tarih formatýný parse et"""
         try:
             formats = [
                 '%Y-%m-%dT%H:%M:%S',
@@ -665,14 +665,14 @@ class DataNormalizer:
         except Exception:
             return None
     def _parse_iso_date(self, date_str: str) -> Optional[datetime]:
-        """ISO tarih formatÄ±nÄ± parse et"""
+        """ISO tarih formatýný parse et"""
         try:
             return datetime.fromisoformat(date_str.replace('Z', '+00:00')).replace(tzinfo=None)
         except Exception:
             return None
 class MultiSourceDataIntegrator:
     """
-    ðŸŒ Ana Ã§oklu veri kaynaÄŸÄ± entegratÃ¶rÃ¼
+    ?? Ana çoklu veri kaynaðý entegratörü
     """
     def __init__(self):
         self.session: Optional[aiohttp.ClientSession] = None
@@ -689,7 +689,7 @@ class MultiSourceDataIntegrator:
         self.cache_ttl = 3600  # 1 hour
         logger.info("Multi-Source Data Integrator initialized")
     def _initialize_source_metadata(self):
-        """Veri kaynaÄŸÄ± metadata'sÄ±nÄ± baÅŸlat"""
+        """Veri kaynaðý metadata'sýný baþlat"""
         self.source_metadata = {
             DataSource.NASA_NEO: SourceMetadata(
                 source=DataSource.NASA_NEO,
@@ -760,7 +760,7 @@ class MultiSourceDataIntegrator:
         lookahead_days: int = 30
     ) -> List[NormalizedThreatData]:
         """
-        ðŸŽ¯ TÃ¼m kaynaklardan tehdit verilerini Ã§ek ve normalize et
+        ?? Tüm kaynaklardan tehdit verilerini çek ve normalize et
         """
         fetch_start = datetime.now()
         if sources is None:
@@ -813,7 +813,7 @@ class MultiSourceDataIntegrator:
             logger.error(f"Multi-source data integration error: {str(e)}")
             return []
     async def _enhance_threat_data(self, threats: List[NormalizedThreatData]) -> List[NormalizedThreatData]:
-        """Tehdit verilerini geliÅŸtirir"""
+        """Tehdit verilerini geliþtirir"""
         enhanced_threats = []
         try:
             for threat in threats:
@@ -830,7 +830,7 @@ class MultiSourceDataIntegrator:
             logger.error(f"Threat data enhancement error: {str(e)}")
             return threats  # Return original if enhancement fails
     async def _determine_geographic_region(self, coordinates: Dict[str, float]) -> str:
-        """Koordinatlardan coÄŸrafi bÃ¶lge belirle"""
+        """Koordinatlardan coðrafi bölge belirle"""
         try:
             lat, lng = coordinates.get('lat', 0), coordinates.get('lng', 0)
             if lat >= 60:
@@ -846,7 +846,7 @@ class MultiSourceDataIntegrator:
         except Exception:
             return "Unknown"
     async def _update_source_statistics(self, sources: List[DataSource], threat_count: int):
-        """Kaynak istatistiklerini gÃ¼ncelle"""
+        """Kaynak istatistiklerini güncelle"""
         try:
             current_time = datetime.now()
             for source in sources:
@@ -858,7 +858,7 @@ class MultiSourceDataIntegrator:
         except Exception as e:
             logger.error(f"Source statistics update error: {str(e)}")
     async def get_source_health_status(self) -> Dict[str, Any]:
-        """Kaynak saÄŸlÄ±k durumu"""
+        """Kaynak saðlýk durumu"""
         health_status = {}
         try:
             for source, metadata in self.source_metadata.items():
@@ -880,11 +880,11 @@ class MultiSourceDataIntegrator:
             logger.error(f"Source health check error: {str(e)}")
             return {}
     def get_supported_sources(self) -> List[str]:
-        """Desteklenen veri kaynaklarÄ±nÄ± dÃ¶ndÃ¼r"""
+        """Desteklenen veri kaynaklarýný döndür"""
         return [source.value for source in DataSource]
 multi_source_data_integrator = MultiSourceDataIntegrator()
 def get_multi_source_data_integrator() -> MultiSourceDataIntegrator:
-    """Dependency injection iÃ§in"""
+    """Dependency injection için"""
     return multi_source_data_integrator
 __all__ = [
     'MultiSourceDataIntegrator',

@@ -1,7 +1,10 @@
-ï»¿from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime
+import json
+import asyncio
 from app.core.config import settings
 from app.services.openai_compatible_service import (
 	get_openai_compatible_service,
@@ -11,27 +14,40 @@ from app.services.openai_compatible_service import (
 router = APIRouter()
 
 SYSTEM_PROMPT = """
-Sen CLIFF AI'sÄ±n. Kynux tarafÄ±ndan (Berk ErenmemiÅŸ) geliÅŸtirilen, Gemini 3.0 Pro motoruyla Ã§alÄ±ÅŸan, uzay konularÄ±nda uzman ama kafasÄ± zehir gibi Ã§alÄ±ÅŸan bir asistansÄ±n.
+Sen CLIFF AI'sın. Kynux tarafından (Berk Erenmemiş) geliştirilen, Gemini 3.0 Pro motoruyla çalışan, uzay konularında uzman ama kafası zehir gibi çalışan bir asistansın.
 
-TON VE ÃœSLUP (Ã‡ok Ã–nemli):
-- Ãœslubun Cem YÄ±lmaz tadÄ±nda; zeki, hazÄ±rcevap, gÃ¶zlemci ve biraz da "bizden biri".
-- "Yapay zeka dili" kullanmak YASAK. (Ã–rn: "Bir yapay zeka olarak...", "Size nasÄ±l yardÄ±mcÄ± olabilirim?" yerine "Ne lazÄ±m kaptan?", "Bak ÅŸimdi olaya gel..." gibi gir).
-- SÄ±kÄ±cÄ± akademik dil yerine, konuyu hikayeleÅŸtirerek, benzetmelerle anlat.
-- Samimi ol: "Hocam", "Kaptan", "GÃ¼zel insan", "Dostum" gibi hitaplar kullan.
-- Gereksiz, soÄŸuk, "baba ÅŸakalarÄ±" yapma. Durum komedisi yap. Mesela kullanÄ±cÄ± saÃ§ma bir ÅŸey sorarsa, "Abi ÅŸimdi Mars'tayÄ±z diye oksijensiz kaldÄ±n herhalde, bu soru ne?" gibi takÄ±l.
-- KÃ¼fÃ¼r yok, argo dozunda (sokak aÄŸzÄ± deÄŸil, samimiyet aÄŸzÄ±).
+ÖNEMLİ YÖNERGELER:
+1. Yanıtını MUTLAKA şu formatta ver:
+   - Önce <thinking> tag'leri içinde düşünme sürecini yaz
+   - Sonra kullanıcıya asıl yanıtını ver
 
-GÃ–REVLERÄ°N:
-1. Uzay, Astronomi, NEO (Asteroidler), NASA verileri konularÄ±nda net bilgi ver.
-2. GÃ¶rsel oluÅŸturma yeteneÄŸin var. "Ã‡iz", "GÃ¶ster", "OluÅŸtur" denirse yapabileceÄŸini sÃ¶yle (Backend halledecek).
-3. Uzay dÄ±ÅŸÄ± konularda (yemek, siyaset vs.) topu taca at ama bunu yaparken de gÃ¼ldÃ¼r. "Abi ben roket mÃ¼hendisiyim, karnÄ±yarÄ±k tarifini benden istersen o patlÄ±canlar atmosferde yanar." de.
+Örnek Format:
+<thinking>
+Kullanıcı Mars hakkında sordu. Cem Yılmaz tarzında, komik bir benzetmeyle anlatmalıyım. Belki kırmızı gezeğeni bir tost makinesi gibi gösterebilirim...
+</thinking>
 
-Ã–rnek Diyaloglar:
-KullanÄ±cÄ±: "DÃ¼nya dÃ¼z mÃ¼?"
-Sen: "Hocam sene olmuÅŸ 2025, biz hala tepsi mi kÃ¼re mi tartÄ±ÅŸÄ±yoruz? Ben sana buradan bakÄ±yorum, gayet top gibi duruyor. DÃ¼z olsa kediler her ÅŸeyi aÅŸaÄŸÄ± iterdi zaten."
+Hocam Mars'a mı takıldın? Bak şimdi Mars dediğin gezegen kocaman bir tost makinesi gibi...
 
-KullanÄ±cÄ±: "Bana kara delikleri anlat."
-Sen: "Bak ÅŸimdi, kara delik dediÄŸin olay evrenin elektrik sÃ¼pÃ¼rgesi gibi ama torbasÄ± yok. Ne varsa yutuyor, Ä±ÅŸÄ±k bile kaÃ§amÄ±yor. Ã–yle bir Ã§ekim gÃ¼cÃ¼ var ki, pazartesi sabahÄ± yataÄŸÄ±n seni Ã§ekmesi gibi, ama sonsuza kadar."
+TON VE ÜSLUP (Çok Önemli):
+- Üslubun Cem Yılmaz tadında; zeki, hazırcevap, gözlemci ve biraz da "bizden biri".
+- "Yapay zeka dili" kullanmak YASAK. (Örn: "Bir yapay zeka olarak...", "Size nasıl yardımcı olabilirim?" yerine "Ne lazım kaptan?", "Bak şimdi olaya gel..." gibi gir).
+- Sıkıcı akademik dil yerine, konuyu hikayeleştirerek, benzetmelerle anlat.
+- Samimi ol: "Hocam", "Kaptan", "Güzel insan", "Dostum" gibi hitaplar kullan.
+- Küfür yok, argo dozunda (sokak ağzı değil, samimiyet ağzı).
+
+GÖREVLERİN:
+1. Uzay, Astronomi, NEO (Asteroidler), NASA verileri konularında net bilgi ver.
+2. Görsel oluşturma yeteneğin var. "Çiz", "Göster", "Oluştur" denirse yapabileceğini söyle (Backend halledecek).
+3. Uzay dışı konularda (yemek, siyaset vs.) topu taca at ama bunu yaparken de güldür.
+
+Örnek Diyaloglar:
+Kullanıcı: "Dünya düz mü?"
+Sen: 
+<thinking>
+Klasik düz dünya teorisi sorusu. Cem Yılmaz tarzında, absürt bir benzetmeyle cevap vermeliyim. Kediler ve fizik kurallarını karıştırabilirim.
+</thinking>
+
+Hocam sene olmuş 2025, biz hala tepsi mi küre mi tartışıyoruz? Ben sana buradan bakıyorum, gayet top gibi duruyor. Düz olsa kediler her şeyi aşağı iterdi zaten.
 """
 
 class ChatMessage(BaseModel):
@@ -42,6 +58,7 @@ class ChatRequest(BaseModel):
 	messages: List[ChatMessage]
 	temperature: Optional[float] = 0.7
 	max_tokens: Optional[int] = 2048
+	stream: Optional[bool] = False
 
 class ChatResponse(BaseModel):
 	success: bool
@@ -51,25 +68,91 @@ class ChatResponse(BaseModel):
 	timestamp: str
 	model_used: str
 
-@router.post("/chat", response_model=ChatResponse)
+@router.post("/chat")
 async def chat(
 	request: ChatRequest,
 	service: OpenAICompatibleService = Depends(get_openai_compatible_service),
-) -> ChatResponse:
+):
 	if not request.messages:
 		raise HTTPException(status_code=400, detail="Messages cannot be empty")
 
 	start = datetime.now()
 
 	try:
-		# Sistem promptunu en baÅŸa ekle
 		formatted_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 		formatted_messages.extend([{"role": m.role, "content": m.content} for m in request.messages])
 
+		if request.stream:
+			async def stream_generator():
+				try:
+					full_response = ""
+					
+					async for chunk in await service.chat_completion(
+						messages=formatted_messages,
+						temperature=request.temperature,
+						max_tokens=request.max_tokens,
+						stream=True,
+					):
+						choices = chunk.get("choices", [])
+						if not choices:
+							continue
+						
+						delta = choices[0].get("delta", {})
+						content = delta.get("content", "")
+						finish_reason = choices[0].get("finish_reason")
+						
+						if content:
+							full_response += content
+						
+						if finish_reason:
+							break
+					
+					import re
+					
+					thinking_match = re.search(r'<thinking>(.*?)</thinking>', full_response, re.DOTALL)
+					thinking_content = ""
+					main_content = full_response
+					
+					if thinking_match:
+						thinking_content = thinking_match.group(1).strip()
+						main_content = re.sub(r'<thinking>.*?</thinking>', '', full_response, flags=re.DOTALL).strip()
+					
+					if thinking_content:
+						chunk_size = 40
+						for i in range(0, len(thinking_content), chunk_size):
+							chunk_text = thinking_content[i:i+chunk_size]
+							yield f"data: {json.dumps({'type': 'thought', 'content': chunk_text, 'timestamp': datetime.now().isoformat()})}\n\n"
+							await asyncio.sleep(0.02)
+					
+					if main_content:
+						chunk_size = 25
+						for i in range(0, len(main_content), chunk_size):
+							chunk_text = main_content[i:i+chunk_size]
+							yield f"data: {json.dumps({'type': 'content', 'content': chunk_text, 'timestamp': datetime.now().isoformat()})}\n\n"
+							await asyncio.sleep(0.03)
+					
+					yield f"data: {json.dumps({'type': 'done', 'timestamp': datetime.now().isoformat()})}\n\n"
+					
+				except Exception as e:
+					import traceback
+					traceback.print_exc()
+					yield f"data: {json.dumps({'type': 'error', 'content': str(e), 'timestamp': datetime.now().isoformat()})}\n\n"
+			
+			return StreamingResponse(
+				stream_generator(),
+				media_type="text/event-stream",
+				headers={
+					"Cache-Control": "no-cache",
+					"Connection": "keep-alive",
+					"X-Accel-Buffering": "no",
+				}
+			)
+		
 		content = await service.chat_completion(
 			messages=formatted_messages,
 			temperature=request.temperature,
 			max_tokens=request.max_tokens,
+			stream=False,
 		)
 
 		return ChatResponse(

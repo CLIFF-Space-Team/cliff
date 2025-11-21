@@ -1,4 +1,4 @@
-﻿from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Depends, Query, Path
 from fastapi.responses import JSONResponse
 from datetime import datetime, timedelta
@@ -17,7 +17,7 @@ async def get_asteroids_simplified(
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
     """
-    🪨 Simplified Asteroids List
+    ?? Simplified Asteroids List
     Get list of NEO asteroids for the next N days
     """
     try:
@@ -42,7 +42,7 @@ async def get_neo_feed(
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
     """
-    🌑 Near-Earth Object Feed
+    ?? Near-Earth Object Feed
     Get NEO data for date range (max 7 days)
     """
     try:
@@ -71,7 +71,7 @@ async def lookup_neo_by_id(
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
     """
-    🔍 NEO Lookup by ID
+    ?? NEO Lookup by ID
     Get detailed information about specific NEO
     """
     try:
@@ -99,7 +99,7 @@ async def get_close_approach_data(
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
     """
-    🛰️ Close Approach Data (CAD)
+    ??? Close Approach Data (CAD)
     Get asteroid/comet close approach data to Earth
     """
     try:
@@ -140,7 +140,7 @@ async def get_fireball_data(
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
     """
-    🔥 Fireball Data
+    ?? Fireball Data
     Get fireball and bolide events detected by government sensors
     """
     try:
@@ -174,7 +174,7 @@ async def get_scout_data(
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
     """
-    🎯 Scout Data
+    ?? Scout Data
     Get Scout system data for newly discovered asteroids
     """
     try:
@@ -203,7 +203,7 @@ async def get_nhats_data(
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
     """
-    🚀 NHATS - Near-Earth Object Human Space Flight Accessible Targets Study
+    ?? NHATS - Near-Earth Object Human Space Flight Accessible Targets Study
     Get data on asteroids accessible for human space missions
     """
     try:
@@ -242,7 +242,7 @@ async def get_exoplanets(
     exoplanet_services: ExoplanetArchiveService = Depends(get_exoplanet_service)
 ) -> JSONResponse:
     """
-    🪐 Exoplanet Data
+    ?? Exoplanet Data
     Get exoplanet discoveries and data from NASA Exoplanet Archive
     """
     try:
@@ -270,7 +270,7 @@ async def get_habitable_exoplanets(
     exoplanet_services: ExoplanetArchiveService = Depends(get_exoplanet_service)
 ) -> JSONResponse:
     """
-    🌍 Potentially Habitable Exoplanets
+    ?? Potentially Habitable Exoplanets
     Get potentially habitable exoplanets in the habitable zone
     """
     try:
@@ -294,7 +294,7 @@ async def search_nasa_images(
     nasa_image_services: NASAImageLibraryService = Depends(get_nasa_image_service)
 ) -> JSONResponse:
     """
-    📸 NASA Image Search
+    ?? NASA Image Search
     Search NASA image and video library
     """
     try:
@@ -323,7 +323,7 @@ async def get_astronomy_picture_of_day(
     nasa_image_services: NASAImageLibraryService = Depends(get_nasa_image_service)
 ) -> JSONResponse:
     """
-    🖼️ Astronomy Picture of the Day (APOD)
+    ??? Astronomy Picture of the Day (APOD)
     Get NASA's Astronomy Picture of the Day
     """
     try:
@@ -346,7 +346,7 @@ async def get_satellite_tle(
     tle_service: TLEService = Depends(get_tle_service)
 ) -> JSONResponse:
     """
-    🛰️ Satellite TLE Data
+    ??? Satellite TLE Data
     Get Two-Line Element data for specific satellite
     """
     try:
@@ -368,7 +368,7 @@ async def get_tle_by_category(
     tle_service: TLEService = Depends(get_tle_service)
 ) -> JSONResponse:
     """
-    📡 TLE by Category
+    ?? TLE by Category
     Get TLE data for satellite category
     """
     try:
@@ -389,7 +389,7 @@ async def get_space_weather(
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
     """
-    ☀️ Space Weather Data
+    ?? Space Weather Data
     Get current space weather conditions and forecasts
     """
     try:
@@ -411,7 +411,7 @@ async def get_earth_events(
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
     """
-    🌍 Earth Natural Events
+    ?? Earth Natural Events
     Get natural events on Earth from EONET (Earth Observatory Natural Event Tracker)
     """
     try:
@@ -435,7 +435,7 @@ async def nasa_services_status(
     nasa_services: NASAServices = Depends(get_nasa_services)
 ) -> JSONResponse:
     """
-    🔧 NASA Services Status
+    ?? NASA Services Status
     Check status of all NASA API endpoints and services
     """
     try:

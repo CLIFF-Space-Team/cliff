@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 import aiohttp
 import ssl
 import re

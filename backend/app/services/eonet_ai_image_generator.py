@@ -1,4 +1,4 @@
-ï»¿import asyncio
+import asyncio
 import hashlib
 import json
 from typing import Dict, List, Optional, Any, Tuple
@@ -23,10 +23,10 @@ from app.models.earth_event import (
 logger = structlog.get_logger(__name__)
 class EventImagePurpose(str, Enum):
     """EONET event image purposes"""
-    DISASTER_OVERVIEW = "disaster_overview"  # Genel felaket gÃ¶rÃ¼nÃ¼mÃ¼
-    ENVIRONMENTAL_IMPACT = "environmental_impact"  # Ã‡evresel etki
+    DISASTER_OVERVIEW = "disaster_overview"  # Genel felaket görünümü
+    ENVIRONMENTAL_IMPACT = "environmental_impact"  # Çevresel etki
     SCIENTIFIC_ANALYSIS = "scientific_analysis"  # Bilimsel analiz
-    NEWS_COVERAGE = "news_coverage"  # Haber kapsamÄ±
+    NEWS_COVERAGE = "news_coverage"  # Haber kapsamý
 class EventSeverityLevel(str, Enum):
     """Event severity levels for image styling"""
     LOW = "low"
@@ -87,7 +87,7 @@ class EONETImageResponse(BaseModel):
 class EONETAIImageGenerator:
     """
     EONET AI Image Generator
-    DoÄŸal olaylar iÃ§in baÄŸlamsal AI gÃ¶rsel Ã¼retimi
+    Doðal olaylar için baðlamsal AI görsel üretimi
     """
     def __init__(self):
         self.multi_image_generator: Optional[MultiImageGenerator] = None

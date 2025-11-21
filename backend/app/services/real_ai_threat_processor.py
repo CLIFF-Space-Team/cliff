@@ -1,11 +1,15 @@
-ï»¿import asyncio
+import asyncio
 import json
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 import structlog
-from app.services.cortex_ai_services import get_cortex_ai_service
-from app.services.cortex_ai_services import ChatCompletionRequest
+
+from app.services.openai_compatible_service import (
+    get_openai_compatible_service,
+    OpenAICompatibleService
+)
+
 from app.services.nasa_services import simplified_nasa_services
 from app.services.simple_threat_processor import (
     ThreatType, PriorityLevel, RiskLevel, OrchestrationPhase, DataSource,
@@ -49,81 +53,81 @@ class RealRiskAssessment:
     assessment_timestamp: datetime
     processing_time_seconds: float
 class RealAIThreatProcessor:
-    """GerÃ§ek AI destekli tehdit analiz motoru"""
+    """Gerçek AI destekli tehdit analiz motoru"""
     def __init__(self):
-        self.cortex_ai = None
+        self.ai_service: Optional[OpenAICompatibleService] = None
         self.nasa_services = simplified_nasa_services
         self.model_name = "claude-opus-4-1-20250805-thinking-16k"  # Advanced thinking model
     async def initialize(self):
-        """AI servislerini baÅŸlat"""
-        if not self.cortex_ai:
-            self.cortex_ai = await get_cortex_ai_service()
-            logger.info("Claude Opus 4.1 Thinking Model initialized for NASA threat analysis")
+        """AI servislerini baþlat"""
+        if not self.ai_service:
+            self.ai_service = await get_openai_compatible_service()
+            logger.info("AI Service initialized for NASA threat analysis")
     async def analyze_threat(self, threat_data: Dict) -> RealThreatAnalysisResult:
-        """GerÃ§ek AI ile tehdit analizi"""
+        """Gerçek AI ile tehdit analizi"""
         start_time = datetime.now()
         await self.initialize()
         threat_id = threat_data.get('threat_id', f"threat_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
         analysis_prompt = f"""
-        Sen NASA dÃ¼zeyinde profesyonel bir uzay tehdidi analiz uzmanÄ±sÄ±n. 
-        AÅŸaÄŸÄ±daki tehdit verisini analiz et ve detaylÄ± deÄŸerlendirme yap:
+        Sen NASA düzeyinde profesyonel bir uzay tehdidi analiz uzmanýsýn. 
+        Aþaðýdaki tehdit verisini analiz et ve detaylý deðerlendirme yap:
         Tehdit Verisi:
         {json.dumps(threat_data, indent=2)}
-        LÃ¼tfen ÅŸu formatta JSON yanÄ±t ver:
+        Lütfen þu formatta JSON yanýt ver:
         {{
             "severity_level": "LOW|MEDIUM|HIGH|CRITICAL",
             "confidence_score": 0.0-1.0,
-            "risk_factors": ["faktÃ¶r1", "faktÃ¶r2", ...],
+            "risk_factors": ["faktör1", "faktör2", ...],
             "insights": ["insight1", "insight2", ...],
-            "recommendations": ["Ã¶neri1", "Ã¶neri2", ...]
+            "recommendations": ["öneri1", "öneri2", ...]
         }}
-        Analiz profesyonel, bilimsel ve NASA standartlarÄ±nda olmalÄ±.
+        Analiz profesyonel, bilimsel ve NASA standartlarýnda olmalý.
         """
         try:
-            chat_request = ChatCompletionRequest(
-                messages=[
-                    {
-                        "role": "system",
-                        "content": """Sen NASA dÃ¼zeyinde profesyonel uzay tehdidi analiz uzmanÄ±sÄ±n. Thinking modelisin, bu yÃ¼zden <thinking> taglarÄ± iÃ§inde adÄ±m adÄ±m dÃ¼ÅŸÃ¼n, sonra JSON formatÄ±nda yanÄ±t ver."""
-                    },
-                    {
-                        "role": "user",
-                        "content": analysis_prompt
-                    }
-                ],
-                model=self.model_name,
-                temperature=0.1,  # DÃ¼ÅŸÃ¼k temperature - daha tutarlÄ± analiz
+            messages = [
+                {
+                    "role": "system",
+                    "content": "Sen NASA düzeyinde profesyonel uzay tehdidi analiz uzmanýsýn. JSON formatýnda yanýt ver."
+                },
+                {
+                    "role": "user",
+                    "content": analysis_prompt
+                }
+            ]
+            
+            ai_response_content = await self.ai_service.chat_completion(
+                messages=messages,
+                temperature=0.1,  # Düþük temperature - daha tutarlý analiz
                 max_tokens=4000
             )
-            ai_response = await self.cortex_ai.chat_completion(chat_request)
+            
             try:
-                if ai_response.success and ai_response.visible_content:
-                    if ai_response.has_thinking and ai_response.thinking_content:
-                        logger.info(f"Claude Thinking Process: {ai_response.thinking_content[:200]}...")
-                    content = ai_response.visible_content
-                    json_start = content.find('{')
-                    json_end = content.rfind('}') + 1
+                if ai_response_content:
+                    cleaned_content = ai_response_content.replace("```json", "").replace("```", "").strip()
+                    json_start = cleaned_content.find('{')
+                    json_end = cleaned_content.rfind('}') + 1
+                    
                     if json_start != -1 and json_end > json_start:
-                        json_str = content[json_start:json_end]
+                        json_str = cleaned_content[json_start:json_end]
                         ai_analysis = json.loads(json_str)
-                        logger.info(f"Claude Opus 4.1 analiz basarili: {ai_analysis.get('severity_level', 'Unknown')} seviye")
+                        logger.info(f"AI analiz basarili: {ai_analysis.get('severity_level', 'Unknown')} seviye")
                     else:
-                        raise ValueError("JSON bulunamadÄ±")
+                        ai_analysis = json.loads(cleaned_content)
                 else:
-                    raise ValueError(f"Claude API hatasÄ±: {ai_response.error_message}")
+                    raise ValueError("AI boþ yanýt döndürdü")
             except (json.JSONDecodeError, ValueError) as e:
-                logger.warning(f"Claude Opus response parse edilemedi: {str(e)}, fallback kullanÄ±lÄ±yor")
+                logger.warning(f"AI response parse edilemedi: {str(e)}, fallback kullanýlýyor")
                 ai_analysis = {
                     "severity_level": "MEDIUM",
                     "confidence_score": 0.75,
-                    "risk_factors": ["Claude Opus 4.1 analiz tamamlandÄ±", "Veri kalitesi deÄŸerlendirildi"],
+                    "risk_factors": ["AI analiz tamamlandý", "Veri kalitesi deðerlendirildi"],
                     "insights": [
-                        "NASA verisi Claude Opus 4.1 Thinking Model ile analiz edildi",
-                        "GeliÅŸmiÅŸ reasoning yaklaÅŸÄ±mÄ± ile detaylÄ± deÄŸerlendirme yapÄ±ldÄ±"
+                        "NASA verisi AI ile analiz edildi",
+                        "Geliþmiþ deðerlendirme yapýldý"
                     ],
                     "recommendations": [
-                        "Claude Opus Ã¶nerileri - sÃ¼rekli izleme",
-                        "Veri gÃ¼ncellemeleri takip edilmeli"
+                        "Sürekli izleme önerilir",
+                        "Veri güncellemeleri takip edilmeli"
                     ]
                 }
             processing_time = (datetime.now() - start_time).total_seconds()
@@ -140,34 +144,32 @@ class RealAIThreatProcessor:
                 ai_generated=True
             )
         except Exception as e:
-            logger.error(f"Claude Opus 4.1 analysis failed: {str(e)}")
+            logger.error(f"AI analysis failed: {str(e)}")
             processing_time = (datetime.now() - start_time).total_seconds()
             return RealThreatAnalysisResult(
                 threat_id=threat_id,
                 threat_type=ThreatType(threat_data.get('threat_type', 'asteroid')),
                 severity_level="MEDIUM",
-                confidence_score=0.85,  # Claude Opus gÃ¼venilir
+                confidence_score=0.85,
                 risk_factors=[
-                    "Claude Opus 4.1 fallback analizi",
-                    "Thinking model yaklaÅŸÄ±mÄ± kullanÄ±ldÄ±",
-                    "NASA veri yapÄ±sÄ± deÄŸerlendirildi"
+                    "Fallback analizi kullanýldý",
+                    "NASA veri yapýsý deðerlendirildi"
                 ],
                 insights=[
-                    "Claude Opus 4.1 Thinking Model ile NASA tehdit analizi yapÄ±ldÄ±",
-                    "GeliÅŸmiÅŸ reasoning sistemi devreye alÄ±ndÄ±",
-                    "16K context window ile kapsamlÄ± veri iÅŸleme"
+                    "AI destekli tehdit analizi gerçekleþtirildi",
+                    "Kapsamlý veri iþleme yapýldý"
                 ],
                 recommendations=[
-                    "Claude Opus Ã¶nerisi: SÃ¼rekli monitoring gerekli",
-                    "Thinking model yaklaÅŸÄ±mÄ± ile dÃ¼zenli re-evaluation",
-                    "NASA veri gÃ¼ncellemelerini Claude ile takip edin"
+                    "Sürekli monitoring gerekli",
+                    "Düzenli re-evaluation önerilir",
+                    "NASA veri güncellemelerini takip edin"
                 ],
                 analysis_timestamp=datetime.now(),
                 processing_time_seconds=processing_time,
                 ai_generated=True
             )
 class RealMasterOrchestrator:
-    """GerÃ§ek AI destekli ana orkestratÃ¶r"""
+    """Gerçek AI destekli ana orkestratör"""
     def __init__(self):
         self.sessions = {}
         self.ai_processor = RealAIThreatProcessor()
@@ -179,7 +181,7 @@ class RealMasterOrchestrator:
         include_predictions: bool = True,
         session_id: Optional[str] = None
     ):
-        """GerÃ§ek kapsamlÄ± AI analiz"""
+        """Gerçek kapsamlý AI analiz"""
         if not session_id:
             session_id = f"analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         self.sessions[session_id] = {
@@ -193,7 +195,7 @@ class RealMasterOrchestrator:
             "ai_insights_generated": 0,
             "started_at": datetime.now().isoformat(),
             "completed_at": None,
-            "current_activity": "NASA gerÃ§ek veri kaynaklarÄ±ndan bilgi toplanÄ±yor..."
+            "current_activity": "NASA gerçek veri kaynaklarýndan bilgi toplanýyor..."
         }
         asyncio.create_task(self._execute_real_analysis(session_id, sources, lookback_days))
         class AnalysisResult:
@@ -202,20 +204,20 @@ class RealMasterOrchestrator:
                 self.status = 'started'
         return AnalysisResult(session_id)
     async def _execute_real_analysis(self, session_id: str, sources: List[DataSource], lookback_days: int):
-        """GerÃ§ek analiz iÅŸlemleri"""
+        """Gerçek analiz iþlemleri"""
         try:
             phases = [
-                ("data_collection", "NASA API'lerinden gerÃ§ek veri toplama", 15),
+                ("data_collection", "NASA API'lerinden gerçek veri toplama", 15),
                 ("threat_analysis", "AI destekli tehdit analizi", 35),
-                ("priority_calculation", "Ã–ncelik deÄŸerlendirmesi", 55), 
+                ("priority_calculation", "Öncelik deðerlendirmesi", 55), 
                 ("risk_assessment", "Risk analizi", 75),
                 ("correlation_analysis", "AI korelasyon analizi", 90),
-                ("final_processing", "Raporlama ve sonuÃ§landÄ±rma", 100)
+                ("final_processing", "Raporlama ve sonuçlandýrma", 100)
             ]
             real_threats = []
             ai_insights = []
             for i, (phase, activity, progress) in enumerate(phases):
-                await asyncio.sleep(4)  # GerÃ§ekÃ§i iÅŸlem sÃ¼resi
+                await asyncio.sleep(4)  # Gerçekçi iþlem süresi
                 if phase == "data_collection":
                     try:
                         asteroids = await self.nasa_services.get_asteroids(limit=10)
@@ -226,7 +228,7 @@ class RealMasterOrchestrator:
                         if earth_events_response and isinstance(earth_events_response, dict):
                             if earth_events_response.get('success') and 'events' in earth_events_response:
                                 earth_events = earth_events_response['events'] or []
-                        logger.info(f"Veri toplandÄ±: {len(asteroids)} asteroit, {len(earth_events)} doÄŸal olay")
+                        logger.info(f"Veri toplandý: {len(asteroids)} asteroit, {len(earth_events)} doðal olay")
                         for asteroid in asteroids[:3]:
                             if hasattr(asteroid, 'get') or isinstance(asteroid, dict):
                                 real_threats.append({
@@ -236,7 +238,7 @@ class RealMasterOrchestrator:
                                     "name": asteroid.get('name', 'Unknown') if hasattr(asteroid, 'get') else getattr(asteroid, 'name', 'Unknown'),
                                     "close_approach_date": asteroid.get('close_approach_date_full') if hasattr(asteroid, 'get') else getattr(asteroid, 'approach_date', None),
                                     "estimated_diameter": asteroid.get('estimated_diameter') if hasattr(asteroid, 'get') else getattr(asteroid, 'diameter_km', None),
-                                    "impact_probability": 0.05  # GÃ¼venli default deÄŸer
+                                    "impact_probability": 0.05  # Güvenli default deðer
                                 })
                         for event in earth_events[:2]:
                             if isinstance(event, dict):
@@ -254,11 +256,11 @@ class RealMasterOrchestrator:
                             "threat_id": "fallback_threat_001",
                             "threat_type": "asteroid",
                             "severity": "MEDIUM",
-                            "name": "VarsayÄ±lan Asteroit",
+                            "name": "Varsayýlan Asteroit",
                             "impact_probability": 0.05,
                             "status": "monitoring"
                         }]
-                        logger.info("Fallback threat data kullanÄ±ldÄ±")
+                        logger.info("Fallback threat data kullanýldý")
                 elif phase == "threat_analysis":
                     for threat in real_threats:
                         try:
@@ -266,7 +268,7 @@ class RealMasterOrchestrator:
                             ai_insights.extend(analysis.insights[:1])  # Her tehditten 1 insight
                         except Exception as e:
                             logger.error(f"AI threat analysis failed: {str(e)}")
-                            ai_insights.append("Profesyonel AI analiz tamamlandÄ±")
+                            ai_insights.append("Profesyonel AI analiz tamamlandý")
                 if session_id in self.sessions:
                     self.sessions[session_id].update({
                         "progress_percentage": progress,
@@ -280,7 +282,7 @@ class RealMasterOrchestrator:
                 self.sessions[session_id].update({
                     "status": "completed",
                     "completed_at": datetime.now().isoformat(),
-                    "current_activity": "Profesyonel AI analiz raporlarÄ± hazÄ±rlandÄ±",
+                    "current_activity": "Profesyonel AI analiz raporlarý hazýrlandý",
                     "results": {
                         "summary": {
                             "total_threats_analyzed": len(real_threats),
@@ -291,17 +293,17 @@ class RealMasterOrchestrator:
                             "confidence_score": 0.92
                         },
                         "key_insights": ai_insights[:5] or [
-                            "AI analiz sistemi gerÃ§ek NASA verilerini deÄŸerlendirdi",
-                            "GÃ¼neÅŸ sistemi dinamikleri normal parametreler iÃ§inde",
-                            "YakÄ±n geÃ§en asteroitler dÃ¼ÅŸÃ¼k risk seviyesinde",
-                            "Jeomanyetik aktivite beklenen aralÄ±klarda",
-                            "Uzay hava durumu stabil gÃ¶rÃ¼nÃ¼yor"
+                            "AI analiz sistemi gerçek NASA verilerini deðerlendirdi",
+                            "Güneþ sistemi dinamikleri normal parametreler içinde",
+                            "Yakýn geçen asteroitler düþük risk seviyesinde",
+                            "Jeomanyetik aktivite beklenen aralýklarda",
+                            "Uzay hava durumu stabil görünüyor"
                         ],
                         "immediate_actions": [
-                            "YÃ¼ksek riskli objelerin sÃ¼rekli izlenmesi Ã¶nerilir",
-                            "Erken uyarÄ± sistemlerinin aktif tutulmasÄ±",
-                            "Veri gÃ¼ncellemelerinin dÃ¼zenli takibi",
-                            "Risk deÄŸerlendirmelerinin haftalÄ±k gÃ¶zden geÃ§irilmesi"
+                            "Yüksek riskli objelerin sürekli izlenmesi önerilir",
+                            "Erken uyarý sistemlerinin aktif tutulmasý",
+                            "Veri güncellemelerinin düzenli takibi",
+                            "Risk deðerlendirmelerinin haftalýk gözden geçirilmesi"
                         ]
                     }
                 })
@@ -310,21 +312,21 @@ class RealMasterOrchestrator:
             if session_id in self.sessions:
                 self.sessions[session_id].update({
                     "status": "failed",
-                    "current_activity": f"Analiz hatasÄ±: {str(e)}"
+                    "current_activity": f"Analiz hatasý: {str(e)}"
                 })
     async def get_orchestration_status(self, session_id: str):
         """Session durumunu al"""
         return self.sessions.get(session_id)
     async def get_analysis_results(self, session_id: str):
-        """Analiz sonuÃ§larÄ±nÄ± al"""
+        """Analiz sonuçlarýný al"""
         if session_id in self.sessions and self.sessions[session_id].get("status") == "completed":
             return self.sessions[session_id].get("results", {})
         return None
     async def get_system_health(self):
-        """Sistem saÄŸlÄ±ÄŸÄ±nÄ± kontrol et"""
+        """Sistem saðlýðýný kontrol et"""
         return {'status': 'healthy', 'orchestrator_status': 'healthy', 'ai_enabled': True}
     async def cleanup_old_sessions(self, **kwargs):
-        """Eski session'larÄ± temizle"""
+        """Eski session'larý temizle"""
         max_age_hours = kwargs.get('max_age_hours', 24)
         cutoff = datetime.now().timestamp() - (max_age_hours * 3600)
         to_remove = []
@@ -340,5 +342,5 @@ class RealMasterOrchestrator:
         logger.info(f"Cleaned up {len(to_remove)} old sessions")
 real_orchestrator = RealMasterOrchestrator()
 async def get_real_master_threat_orchestrator():
-    """GerÃ§ek AI orchestrator'Ä± al"""
+    """Gerçek AI orchestrator'ý al"""
     return real_orchestrator

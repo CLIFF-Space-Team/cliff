@@ -193,7 +193,8 @@ export const ProceduralAsteroidSystem = React.memo(({
       const y = orbitRadius * Math.sin(orbitInclination) * Math.sin(orbitAngle)
       const z = orbitRadius * Math.sin(orbitAngle)
       const estimatedRadius = nasaAsteroid?.info?.radius_km || (0.1 + Math.random() * 2.0)
-      const scale = Math.min(estimatedRadius / 10, 0.3) // Scale down for visibility
+      // Daha görünür olması için ölçeği artırdık ve minimum bir boyut belirledik
+      const scale = Math.max(Math.min(estimatedRadius / 5, 0.8), 0.25)
       const isNEO = nasaAsteroid?.is_hazardous || Math.random() < 0.05
       const threatLevel = isNEO ? 0.8 + Math.random() * 0.2 : Math.random() * 0.3
       const baseColor = [0.55, 0.45, 0.33] // Rocky asteroid color
@@ -212,7 +213,8 @@ export const ProceduralAsteroidSystem = React.memo(({
         ],
         scale: [scale, scale * (0.8 + Math.random() * 0.4), scale],
         color,
-        speed: 0.0002 + Math.random() * 0.0005,
+        // Hızları ciddi şekilde düşürdük
+        speed: (0.00002 + Math.random() * 0.00005) * 0.1,
         orbitRadius,
         orbitAngle,
         threatLevel,

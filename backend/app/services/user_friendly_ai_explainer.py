@@ -1,31 +1,31 @@
-ï»¿import re
+import re
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 import structlog
 logger = structlog.get_logger(__name__)
 class UserFriendlyAIExplainer:
     """
-    AI analiz sonuÃ§larÄ±nÄ± herkesin anlayabileceÄŸi sade dilde aÃ§Ä±klayan servis
+    AI analiz sonuçlarını herkesin anlayabileceği sade dilde açıklayan servis
     """
     def __init__(self):
         self.threat_level_explanations = {
-            "LOW": "DÃ¼ÅŸÃ¼k risk - GÃ¼venli",
-            "MEDIUM": "Orta risk - Ä°zleme gerekli", 
-            "HIGH": "YÃ¼ksek risk - Dikkatli takip",
+            "LOW": "Düşük risk - Güvenli",
+            "MEDIUM": "Orta risk - İzleme gerekli", 
+            "HIGH": "Yüksek risk - Dikkatli takip",
             "CRITICAL": "Kritik risk - Acil izleme"
         }
         self.distance_contexts = {
-            (0, 100000): "Ã‡ok yakÄ±n - Ay mesafesi",
-            (100000, 1000000): "YakÄ±n - Ay'dan uzak",
-            (1000000, 10000000): "GÃ¼venli mesafe - Normal uzaklÄ±k",
-            (10000000, float('inf')): "Ã‡ok uzak - Mars arasÄ± mesafe"
+            (0, 100000): "Çok yakın - Ay mesafesi",
+            (100000, 1000000): "Yakın - Ay'dan uzak",
+            (1000000, 10000000): "Güvenli mesafe - Normal uzaklık",
+            (10000000, float('inf')): "Çok uzak - Mars arası mesafe"
         }
     def explain_threat_analysis(self, analysis_results: Dict[str, Any]) -> Dict[str, Any]:
         """
-        AI analiz sonuÃ§larÄ±nÄ± kullanÄ±cÄ± dostu aÃ§Ä±klamalara Ã§evir
+        AI analiz sonuçlarını kullanıcı dostu açıklamalara çevir
         """
         try:
-            logger.info("KullanÄ±cÄ± dostu aÃ§Ä±klama oluÅŸturuluyor...")
+            logger.info("Kullanıcı dostu açıklama oluşturuluyor...")
             summary = analysis_results.get("summary", {})
             insights = analysis_results.get("key_insights", [])
             actions = analysis_results.get("immediate_actions", [])
@@ -48,190 +48,190 @@ class UserFriendlyAIExplainer:
                 }
             }
         except Exception as e:
-            logger.error(f"KullanÄ±cÄ± dostu aÃ§Ä±klama hatasÄ±: {str(e)}")
+            logger.error(f"Kullanıcı dostu açıklama hatası: {str(e)}")
             return self._create_fallback_explanation()
     def _generate_main_explanation(self, summary: Dict) -> str:
-        """Ana durumu basit dilde aÃ§Ä±kla"""
+        """Ana durumu basit dilde açıkla"""
         total_threats = summary.get("total_threats_analyzed", 0)
         high_priority = summary.get("high_priority_threats", 0)
         risk_level = summary.get("overall_risk_assessment", "ORTA")
-        if risk_level.upper() in ["DÃœÅÃœK", "LOW"]:
+        if risk_level.upper() in ["DÜŞÜK", "LOW"]:
             if total_threats == 0:
-                return "Åu anda herhangi bir tehdit tespit edilmedi. Sistem normal ÅŸekilde Ã§alÄ±ÅŸmaya devam ediyor."
+                return "Şu anda herhangi bir tehdit tespit edilmedi. Sistem normal şekilde çalışmaya devam ediyor."
             else:
-                return f"Toplam {total_threats} asteroit analiz edildi. Herhangi bir tehlike gÃ¶rÃ¼nmÃ¼yor, durum gÃ¼venli."
+                return f"Toplam {total_threats} asteroit analiz edildi. Herhangi bir tehlike görünmüyor, durum güvenli."
         elif risk_level.upper() in ["ORTA", "MEDIUM"]:
-            return f"Toplam {total_threats} asteroit analiz edildi. {high_priority} tanesi yakÄ±ndan izlenmeli ama acil bir tehlike yok."
-        elif risk_level.upper() in ["YÃœKSEK", "HIGH"]:
-            return f"Dikkat: {total_threats} asteroit arasÄ±ndan {high_priority} tanesi yakÄ±ndan takip edilmeli. Sistem sÃ¼rekli izliyor."
+            return f"Toplam {total_threats} asteroit analiz edildi. {high_priority} tanesi yakından izlenmeli ama acil bir tehlike yok."
+        elif risk_level.upper() in ["YÜKSEK", "HIGH"]:
+            return f"Dikkat: {total_threats} asteroit arasından {high_priority} tanesi yakından takip edilmeli. Sistem sürekli izliyor."
         else:
-            return f"{total_threats} asteroit analiz edildi. Genel durum kontrol altÄ±nda, izleme devam ediyor."
+            return f"{total_threats} asteroit analiz edildi. Genel durum kontrol altında, izleme devam ediyor."
     def _generate_automatic_qa(self, summary: Dict, insights: List, actions: List) -> Dict[str, str]:
-        """KullanÄ±cÄ±larÄ±n muhtemelen soracaÄŸÄ± sorularÄ± otomatik yanÄ±tla"""
+        """Kullanıcıların muhtemelen soracağı soruları otomatik yanıtla"""
         total_threats = summary.get("total_threats_analyzed", 0)
         high_priority = summary.get("high_priority_threats", 0)
         risk_level = summary.get("overall_risk_assessment", "ORTA")
         confidence = summary.get("confidence_score", 0.5)
         qa = {}
-        qa["Åu anda herhangi bir tehlike var mÄ±?"] = self._answer_current_danger(risk_level, high_priority)
-        qa["KaÃ§ tane asteroit tespit edildi?"] = f"Toplam {total_threats} asteroit analiz edildi."
-        qa["Bu sonuÃ§lara ne kadar gÃ¼venebilirim?"] = f"Analiz gÃ¼venilirliÄŸi %{int(confidence * 100)}. Profesyonel NASA verileri kullanÄ±lÄ±yor."
-        qa["Ne yapmalÄ±yÄ±m?"] = self._answer_what_to_do(risk_level, actions)
-        qa["Nerede bu asteroitler?"] = "Ã‡oÄŸu Mars-DÃ¼nya arasÄ± bÃ¶lgede bulunuyor. 3D gÃ¶rÃ¼nÃ¼mde konumlarÄ±nÄ± inceleyebilirsiniz."
-        qa["Ne zaman yaklaÅŸacaklar?"] = self._answer_when_approach(insights)
-        qa["GÃ¼venli miyim?"] = self._answer_safety(risk_level)
+        qa["Şu anda herhangi bir tehlike var mı?"] = self._answer_current_danger(risk_level, high_priority)
+        qa["Kaç tane asteroit tespit edildi?"] = f"Toplam {total_threats} asteroit analiz edildi."
+        qa["Bu sonuçlara ne kadar güvenebilirim?"] = f"Analiz güvenilirliği %{int(confidence * 100)}. Profesyonel NASA verileri kullanılıyor."
+        qa["Ne yapmalıyım?"] = self._answer_what_to_do(risk_level, actions)
+        qa["Nerede bu asteroitler?"] = "Çoğu Mars-Dünya arası bölgede bulunuyor. 3D görünümde konumlarını inceleyebilirsiniz."
+        qa["Ne zaman yaklaşacaklar?"] = self._answer_when_approach(insights)
+        qa["Güvenli miyim?"] = self._answer_safety(risk_level)
         return qa
     def _answer_current_danger(self, risk_level: str, high_priority: int) -> str:
-        """Åu anda tehlike var mÄ± sorusunu yanÄ±tla"""
+        """Şu anda tehlike var mı sorusunu yanıtla"""
         risk_upper = risk_level.upper()
-        if risk_upper in ["DÃœÅÃœK", "LOW"]:
-            return "HayÄ±r, ÅŸu anda herhangi bir acil tehlike bulunmuyor. Durum gÃ¼venli."
+        if risk_upper in ["DÜŞÜK", "LOW"]:
+            return "Hayır, şu anda herhangi bir acil tehlike bulunmuyor. Durum güvenli."
         elif risk_upper in ["ORTA", "MEDIUM"]:
             if high_priority > 0:
-                return f"Acil tehlike yok ama {high_priority} asteroit yakÄ±ndan izlenmeli."
+                return f"Acil tehlike yok ama {high_priority} asteroit yakından izlenmeli."
             else:
                 return "Acil tehlike yok, normal izleme devam ediyor."
         else:
-            return f"Dikkat gerekiyor: {high_priority} asteroit yakÄ±ndan takip ediliyor."
+            return f"Dikkat gerekiyor: {high_priority} asteroit yakından takip ediliyor."
     def _answer_what_to_do(self, risk_level: str, actions: List) -> str:
-        """Ne yapmalÄ±yÄ±m sorusunu yanÄ±tla"""
+        """Ne yapmalıyım sorusunu yanıtla"""
         risk_upper = risk_level.upper()
-        if risk_upper in ["DÃœÅÃœK", "LOW"]:
-            return "Åimdilik hiÃ§bir ÅŸey yapmanÄ±za gerek yok. Sistem otomatik izleme yapÄ±yor."
+        if risk_upper in ["DÜŞÜK", "LOW"]:
+            return "Şimdilik hiçbir şey yapmanıza gerek yok. Sistem otomatik izleme yapıyor."
         elif len(actions) > 0:
             first_action = actions[0]
             simplified = self._simplify_action(first_action)
-            return f"Ã–nerilen: {simplified}"
+            return f"Önerilen: {simplified}"
         else:
-            return "Sistem otomatik izleme yapÄ±yor. GÃ¼ncelleme geldiÄŸinde bildirilecek."
+            return "Sistem otomatik izleme yapıyor. Güncelleme geldiğinde bildirilecek."
     def _answer_when_approach(self, insights: List) -> str:
-        """Ne zaman yaklaÅŸacak sorusunu yanÄ±tla"""
-        for insight in insights[:3]:  # Ä°lk 3'e bak
-            if any(keyword in insight.lower() for keyword in ["kasÄ±m", "aralÄ±k", "ocak", "ÅŸubat", "mart", "2024", "2025"]):
-                return "YaklaÅŸÄ±m tarihleri insights'larda belirtildi. Detaylar iÃ§in analiz sonuÃ§larÄ±nÄ± inceleyin."
-        return "YaklaÅŸÄ±m tarihleri sÃ¼rekli hesaplanÄ±yor. Ã–nemli yaklaÅŸÄ±mlarda otomatik bildirim alacaksÄ±nÄ±z."
+        """Ne zaman yaklaşacak sorusunu yanıtla"""
+        for insight in insights[:3]:  # İlk 3'e bak
+            if any(keyword in insight.lower() for keyword in ["kasım", "aralık", "ocak", "şubat", "mart", "2024", "2025"]):
+                return "Yaklaşım tarihleri insights'larda belirtildi. Detaylar için analiz sonuçlarını inceleyin."
+        return "Yaklaşım tarihleri sürekli hesaplanıyor. Önemli yaklaşımlarda otomatik bildirim alacaksınız."
     def _answer_safety(self, risk_level: str) -> str:
-        """GÃ¼venli miyim sorusunu yanÄ±tla"""
+        """Güvenli miyim sorusunu yanıtla"""
         risk_upper = risk_level.upper()
-        if risk_upper in ["DÃœÅÃœK", "LOW"]:
-            return "Evet, tamamen gÃ¼vendesiniz. Sistem sÃ¼rekli kontrol ediyor."
+        if risk_upper in ["DÜŞÜK", "LOW"]:
+            return "Evet, tamamen güvendesiniz. Sistem sürekli kontrol ediyor."
         elif risk_upper in ["ORTA", "MEDIUM"]:
-            return "Genel olarak gÃ¼vendesiniz. Sistem dikkatli bir ÅŸekilde izliyor."
+            return "Genel olarak güvendesiniz. Sistem dikkatli bir şekilde izliyor."
         else:
-            return "Durum kontrol altÄ±nda. Profesyonel izleme sistemleri aktif Ã§alÄ±ÅŸÄ±yor."
+            return "Durum kontrol altında. Profesyonel izleme sistemleri aktif çalışıyor."
     def _create_friendly_summary(self, summary: Dict, insights: List) -> Dict[str, str]:
-        """Teknik verileri sade dilde Ã¶zetle"""
+        """Teknik verileri sade dilde özetle"""
         return {
             "durum": self._translate_risk_level(summary.get("overall_risk_assessment", "ORTA")),
             "analiz_edilen": f"{summary.get('total_threats_analyzed', 0)} asteroit",
             "dikkat_gereken": f"{summary.get('high_priority_threats', 0)} adet",
-            "gÃ¼venilirlik": f"%{int(summary.get('confidence_score', 0.5) * 100)}",
-            "son_kontrol": "Az Ã¶nce"
+            "güvenilirlik": f"%{int(summary.get('confidence_score', 0.5) * 100)}",
+            "son_kontrol": "Az önce"
         }
     def _extract_important_notes(self, actions: List) -> List[str]:
-        """Ã–nemli notlarÄ± Ã§Ä±kar ve basitleÅŸtir"""
+        """Önemli notları çıkar ve basitleştir"""
         important = []
-        for action in actions[:3]:  # Ä°lk 3 aksiyon
+        for action in actions[:3]:  # İlk 3 aksiyon
             simplified = self._simplify_action(action)
             if simplified and len(simplified) > 10:
                 important.append(simplified)
         if not important:
-            important.append("Sistem otomatik izleme yapÄ±yor")
-            important.append("Ã–nemli gÃ¼ncellemeler bildirilecek")
+            important.append("Sistem otomatik izleme yapıyor")
+            important.append("Önemli güncellemeler bildirilecek")
         return important
     def _simplify_action(self, action: str) -> str:
-        """Teknik aksiyonu basit dile Ã§evir"""
+        """Teknik aksiyonu basit dile çevir"""
         action_lower = action.lower()
         replacements = {
-            "yÃ¼ksek riskli objelerin sÃ¼rekli izlenmesi": "Riskli asteroitler takip edilmeli",
-            "erken uyarÄ± sistemlerinin aktif tutulmasÄ±": "UyarÄ± sistemi aktif olmalÄ±",
-            "veri gÃ¼ncellemelerinin dÃ¼zenli takibi": "Veriler dÃ¼zenli kontrol edilmeli",
-            "sistem performansÄ±nÄ± izleyin": "Sistem kontrolÃ¼ yapÄ±n",
+            "yüksek riskli objelerin sürekli izlenmesi": "Riskli asteroitler takip edilmeli",
+            "erken uyarı sistemlerinin aktif tutulması": "Uyarı sistemi aktif olmalı",
+            "veri güncellemelerinin düzenli takibi": "Veriler düzenli kontrol edilmeli",
+            "sistem performansını izleyin": "Sistem kontrolü yapın",
             "monitoring": "izleme",
-            "assessment": "deÄŸerlendirme",
-            "recommendation": "Ã¶neri"
+            "assessment": "değerlendirme",
+            "recommendation": "öneri"
         }
         simplified = action
         for old, new in replacements.items():
             simplified = simplified.replace(old, new)
         return simplified
     def _translate_risk_level(self, risk_level: str) -> str:
-        """Risk seviyesini TÃ¼rkÃ§e'ye Ã§evir"""
+        """Risk seviyesini Türkçe'ye çevir"""
         translations = {
-            "LOW": "GÃ¼venli",
-            "DÃœÅÃœK": "GÃ¼venli", 
+            "LOW": "Güvenli",
+            "DÜŞÜK": "Güvenli", 
             "MEDIUM": "Normal",
             "ORTA": "Normal",
             "HIGH": "Dikkat",
-            "YÃœKSEK": "Dikkat",
-            "CRITICAL": "Ã–nemli"
+            "YÜKSEK": "Dikkat",
+            "CRITICAL": "Önemli"
         }
         return translations.get(risk_level.upper(), "Normal")
     def _get_status_indicator(self, summary: Dict) -> Dict[str, str]:
-        """Durum gÃ¶stergesi oluÅŸtur"""
+        """Durum göstergesi oluştur"""
         risk_level = summary.get("overall_risk_assessment", "ORTA").upper()
         indicators = {
-            "LOW": {"color": "green", "icon": "âœ…", "text": "GÃ¼venli"},
-            "DÃœÅÃœK": {"color": "green", "icon": "âœ…", "text": "GÃ¼venli"},
-            "MEDIUM": {"color": "yellow", "icon": "âš ï¸", "text": "Normal"},
-            "ORTA": {"color": "yellow", "icon": "âš ï¸", "text": "Normal"},
-            "HIGH": {"color": "orange", "icon": "ğŸ”¶", "text": "Dikkat"},
-            "YÃœKSEK": {"color": "orange", "icon": "ğŸ”¶", "text": "Dikkat"},
-            "CRITICAL": {"color": "red", "icon": "ğŸ”´", "text": "Ã–nemli"}
+            "LOW": {"color": "green", "icon": "?", "text": "Güvenli"},
+            "DÜŞÜK": {"color": "green", "icon": "?", "text": "Güvenli"},
+            "MEDIUM": {"color": "yellow", "icon": "??", "text": "Normal"},
+            "ORTA": {"color": "yellow", "icon": "??", "text": "Normal"},
+            "HIGH": {"color": "orange", "icon": "??", "text": "Dikkat"},
+            "YÜKSEK": {"color": "orange", "icon": "??", "text": "Dikkat"},
+            "CRITICAL": {"color": "red", "icon": "??", "text": "Önemli"}
         }
         return indicators.get(risk_level, indicators["ORTA"])
     def _suggest_next_steps(self, summary: Dict) -> List[str]:
-        """Sonraki adÄ±mlarÄ± Ã¶ner"""
+        """Sonraki adımları öner"""
         risk_level = summary.get("overall_risk_assessment", "ORTA").upper()
         high_priority = summary.get("high_priority_threats", 0)
-        if risk_level in ["LOW", "DÃœÅÃœK"]:
+        if risk_level in ["LOW", "DÜŞÜK"]:
             return [
-                "Sistemi otomatik izleme modunda bÄ±rakÄ±n",
-                "Ã–nemli gÃ¼ncellemeleri bekleyin"
+                "Sistemi otomatik izleme modunda bırakın",
+                "Önemli güncellemeleri bekleyin"
             ]
         elif risk_level in ["MEDIUM", "ORTA"]:
-            steps = ["DÃ¼zenli kontrol edin"]
+            steps = ["Düzenli kontrol edin"]
             if high_priority > 0:
-                steps.append(f"{high_priority} asteroiti yakÄ±ndan takip edin")
+                steps.append(f"{high_priority} asteroiti yakından takip edin")
             return steps
         else:
             return [
-                "Sistem gÃ¼ncellemelerini dÃ¼zenli kontrol edin",
-                "Kritik bildirimler iÃ§in hazÄ±r olun"
+                "Sistem güncellemelerini düzenli kontrol edin",
+                "Kritik bildirimler için hazır olun"
             ]
     def _format_friendly_time(self, dt: datetime) -> str:
-        """ZamanÄ± kullanÄ±cÄ± dostu formatta gÃ¶ster"""
+        """Zamanı kullanıcı dostu formatta göster"""
         now = datetime.now()
         diff = now - dt
         if diff.seconds < 60:
-            return "Az Ã¶nce"
+            return "Az önce"
         elif diff.seconds < 3600:
             mins = diff.seconds // 60
-            return f"{mins} dakika Ã¶nce"
+            return f"{mins} dakika önce"
         else:
             return dt.strftime("%d.%m.%Y %H:%M")
     def _create_fallback_explanation(self) -> Dict[str, Any]:
-        """Hata durumunda basit aÃ§Ä±klama"""
+        """Hata durumunda basit açıklama"""
         return {
-            "main_explanation": "Sistem analiz yapÄ±yor. SonuÃ§lar hazÄ±r olduÄŸunda gÃ¶sterilecek.",
+            "main_explanation": "Sistem analiz yapıyor. Sonuçlar hazır olduğunda gösterilecek.",
             "simple_summary": {
                 "durum": "Analiz devam ediyor",
-                "analiz_edilen": "HesaplanÄ±yor",
-                "gÃ¼venilirlik": "HazÄ±rlanÄ±yor",
-                "son_kontrol": "Åimdi"
+                "analiz_edilen": "Hesaplanıyor",
+                "güvenilirlik": "Hazırlanıyor",
+                "son_kontrol": "Şimdi"
             },
             "automatic_qa": {
-                "Sistem Ã§alÄ±ÅŸÄ±yor mu?": "Evet, analiz devam ediyor.",
-                "Ne kadar sÃ¼rer?": "BirkaÃ§ dakika iÃ§inde tamamlanacak."
+                "Sistem çalışıyor mu?": "Evet, analiz devam ediyor.",
+                "Ne kadar sürer?": "Birkaç dakika içinde tamamlanacak."
             },
             "important_notes": [
                 "Analiz devam ediyor",
-                "SonuÃ§lar otomatik gÃ¼ncellenecek"
+                "Sonuçlar otomatik güncellenecek"
             ],
-            "status_indicator": {"color": "blue", "icon": "ğŸ”„", "text": "Analiz yapÄ±lÄ±yor"},
-            "next_steps": ["Analiz tamamlanmasÄ±nÄ± bekleyin"]
+            "status_indicator": {"color": "blue", "icon": "??", "text": "Analiz yapılıyor"},
+            "next_steps": ["Analiz tamamlanmasını bekleyin"]
         }
 user_friendly_explainer = UserFriendlyAIExplainer()
 def get_user_friendly_explainer() -> UserFriendlyAIExplainer:
-    """UserFriendlyAIExplainer instance'Ä±nÄ± al"""
+    """UserFriendlyAIExplainer instance'ını al"""
     return user_friendly_explainer

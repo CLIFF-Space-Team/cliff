@@ -1,9 +1,9 @@
-﻿from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from typing import Dict, Any, List
 import structlog
 from datetime import datetime
 from app.services.image_generation_service import (
-    EnhancedCortexImageService,
+    EnhancedImageService,
     ImageGenerationRequest,
     ImageGenerationResponse,
     get_enhanced_image_service
@@ -13,14 +13,14 @@ router = APIRouter()
 @router.post("/generate", response_model=ImageGenerationResponse)
 async def generate_image(
     request: ImageGenerationRequest,
-    image_service: EnhancedCortexImageService = Depends(get_enhanced_image_service),
+    image_service: EnhancedImageService = Depends(get_enhanced_image_service),
     background_tasks: BackgroundTasks = BackgroundTasks()
 ) -> ImageGenerationResponse:
     """
-    🎨 Generate image from text prompt with intelligent enhancement
+    ?? Generate image from text prompt with intelligent enhancement
     """
     try:
-        logger.info(f"🎨 Enhanced image generation request: {request.prompt[:50]}...")
+        logger.info(f"?? Enhanced image generation request: {request.prompt[:50]}...")
         if not request.prompt or not request.prompt.strip():
             raise HTTPException(status_code=400, detail="Prompt cannot be empty")
         if len(request.prompt) > 1000:  # Increased limit for enhanced prompts
@@ -30,7 +30,7 @@ async def generate_image(
         total_time = int((datetime.now() - start_time).total_seconds() * 1000)
         if response.success:
             logger.info(
-                f"✅ Enhanced image generated successfully",
+                f"? Enhanced image generated successfully",
                 prompt_length=len(request.prompt),
                 enhanced_prompt_length=len(response.enhanced_prompt) if response.enhanced_prompt else 0,
                 generation_time_ms=response.generation_time_ms,
@@ -41,7 +41,7 @@ async def generate_image(
             )
         else:
             logger.error(
-                f"❌ Enhanced image generation failed: {response.error_message}",
+                f"? Enhanced image generation failed: {response.error_message}",
                 prompt=request.prompt[:100]
             )
         return response
@@ -61,10 +61,10 @@ async def generate_image(
 @router.post("/detect-intent")
 async def detect_image_intent(
     request: Dict[str, str],
-    image_service: EnhancedCortexImageService = Depends(get_enhanced_image_service)
+    image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> Dict[str, Any]:
     """
-    🔍 Detect if message contains image generation request with enhanced analysis
+    ?? Detect if message contains image generation request with enhanced analysis
     """
     try:
         text = request.get("text", "").strip()
@@ -72,7 +72,7 @@ async def detect_image_intent(
             raise HTTPException(status_code=400, detail="Text cannot be empty")
         detection_result = await image_service.detect_image_request(text)
         logger.info(
-            f"🔍 Enhanced image intent detection",
+            f"?? Enhanced image intent detection",
             text_length=len(text),
             has_intent=detection_result["has_image_intent"],
             confidence=detection_result.get("confidence", 0.0),
@@ -110,13 +110,13 @@ async def detect_image_intent(
         }
 @router.get("/status")
 async def get_image_service_status(
-    image_service: EnhancedCortexImageService = Depends(get_enhanced_image_service)
+    image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> Dict[str, Any]:
     """
-    📊 Get enhanced image generation service status
+    ?? Get enhanced image generation service status
     """
     try:
-        logger.info("📊 Checking enhanced image generation service status...")
+        logger.info("?? Checking enhanced image generation service status...")
         test_result = await image_service.test_api_connection()
         metrics = image_service.get_metrics()
         status_info = {
@@ -146,7 +146,7 @@ async def get_image_service_status(
             "timestamp": datetime.now().isoformat()
         }
         overall_status = "healthy" if test_result.get("success") else "unhealthy"
-        logger.info(f"📊 Enhanced image service status: {overall_status}")
+        logger.info(f"?? Enhanced image service status: {overall_status}")
         return {
             "success": True,
             "status": overall_status,
@@ -164,10 +164,10 @@ async def get_image_service_status(
 @router.post("/enhance-prompt")
 async def enhance_prompt_only(
     request: Dict[str, Any],
-    image_service: EnhancedCortexImageService = Depends(get_enhanced_image_service)
+    image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> Dict[str, Any]:
     """
-    🧠 Enhance prompt using Grok-4-fast-reasoning without generating image
+    ?? Enhance prompt using Grok-4-fast-reasoning without generating image
     """
     try:
         user_input = request.get("prompt", "").strip()
@@ -176,7 +176,7 @@ async def enhance_prompt_only(
         detail_level = request.get("detail_level", "high")
         if not user_input:
             raise HTTPException(status_code=400, detail="Prompt cannot be empty")
-        logger.info(f"🧠 Prompt enhancement request: {user_input[:50]}...")
+        logger.info(f"?? Prompt enhancement request: {user_input[:50]}...")
         enhancement_result = await image_service.enhance_prompt_with_ai(
             prompt=user_input,
             style=style,
@@ -184,7 +184,7 @@ async def enhance_prompt_only(
             detail_level=detail_level
         )
         logger.info(
-            f"🧠 Prompt enhancement completed",
+            f"?? Prompt enhancement completed",
             original_length=len(user_input),
             enhanced_length=len(enhancement_result.get("enhanced_prompt", "")),
             confidence=enhancement_result.get("confidence_score", 0.0),
@@ -214,10 +214,10 @@ async def enhance_prompt_only(
         }
 @router.get("/styles")
 async def get_available_styles(
-    image_service: EnhancedCortexImageService = Depends(get_enhanced_image_service)
+    image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> Dict[str, Any]:
     """
-    🎨 Get available prompt styles
+    ?? Get available prompt styles
     """
     try:
         styles = image_service.get_available_styles()
@@ -238,10 +238,10 @@ async def get_available_styles(
         }
 @router.get("/metrics")
 async def get_service_metrics(
-    image_service: EnhancedCortexImageService = Depends(get_enhanced_image_service)
+    image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> Dict[str, Any]:
     """
-    📊 Get detailed service performance metrics
+    ?? Get detailed service performance metrics
     """
     try:
         metrics = image_service.get_metrics()
@@ -259,21 +259,21 @@ async def get_service_metrics(
 @router.post("/test-generation")
 async def test_image_generation(
     request: Dict[str, Any] = None,
-    image_service: EnhancedCortexImageService = Depends(get_enhanced_image_service)
+    image_service: EnhancedImageService = Depends(get_enhanced_image_service)
 ) -> Dict[str, Any]:
     """
-    🧪 Test enhanced image generation with sample prompts
+    ?? Test enhanced image generation with sample prompts
     """
     try:
         test_prompts = [
-            "uzayda süzülen robot",
-            "mars yüzeyinde keşif",
-            "galaksi manzarası",
+            "uzayda s�z�len robot",
+            "mars y�zeyinde ke�if",
+            "galaksi manzaras�",
             "fantastik ejder"
         ]
         test_prompt = request.get("prompt") if request else test_prompts[0]
         enhance = request.get("enhance", True) if request else True
-        logger.info(f"🧪 Testing enhanced image generation with prompt: {test_prompt}")
+        logger.info(f"?? Testing enhanced image generation with prompt: {test_prompt}")
         test_request = ImageGenerationRequest(
             prompt=test_prompt,
             model="imagen-4.0-ultra-generate-preview-06-06",
@@ -306,9 +306,9 @@ async def test_image_generation(
             "timestamp": datetime.now().isoformat()
         }
         if response.success:
-            logger.info(f"✅ Enhanced test image generation successful in {test_duration}ms")
+            logger.info(f"? Enhanced test image generation successful in {test_duration}ms")
         else:
-            logger.error(f"❌ Enhanced test image generation failed: {response.error_message}")
+            logger.error(f"? Enhanced test image generation failed: {response.error_message}")
         return result
     except Exception as e:
         error_msg = f"Enhanced test generation error: {str(e)}"
@@ -325,7 +325,7 @@ async def test_image_generation(
 @router.get("/health")
 async def health_check() -> Dict[str, Any]:
     """
-    💚 Enhanced image generation service health check
+    ?? Enhanced image generation service health check
     """
     return {
         "status": "healthy",

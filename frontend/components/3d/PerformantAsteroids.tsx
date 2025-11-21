@@ -1,254 +1,118 @@
 ﻿'use client'
-import React, { useMemo, useRef, useEffect, useCallback } from 'react'
+
+import React, { useMemo, useRef, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { SimpleCelestialBody } from '@/types/astronomical-data'
+
 interface PerformantAsteroidsProps {
   count?: number
-  enableAnimation?: boolean
   quality?: 'low' | 'medium' | 'high'
-  distributionRadius?: [number, number]
   nasaAsteroidsData?: SimpleCelestialBody[]
-  useRealData?: boolean
 }
-const geometryCache = new Map<string, THREE.BufferGeometry>()
-const materialCache = new Map<string, THREE.Material>()
-interface AsteroidInstance {
-  position: THREE.Vector3
-  rotation: THREE.Euler
-  scale: number
-  rotationSpeed: THREE.Vector3
-  orbitSpeed: number
-  orbitAngle: number
-  orbitRadius: number
-  isHazardous: boolean
-  matrix: THREE.Matrix4
-}
-export const PerformantAsteroids = React.memo<PerformantAsteroidsProps>(({
-  count = 300,
-  enableAnimation = false,
+
+export const PerformantAsteroids: React.FC<PerformantAsteroidsProps> = ({
+  count = 150,
   quality = 'high',
-  distributionRadius = [10, 45],
-  nasaAsteroidsData = [],
-  useRealData = false
+  nasaAsteroidsData = []
 }) => {
-  const meshRef = useRef<THREE.InstancedMesh>(null!)
-  const dummyObject = useMemo(() => new THREE.Object3D(), [])
-  const lastUpdateTime = useRef(0)
-  const updateInterval = useRef(16) // ~60fps
-  const calculateScaleFromEarth = (asteroidRadiusKm: number): number => {
-    const earthRadiusKm = 6371
-    const earthScaleInScene = 1.5 // Sahnedeki dünya boyutu
-    const realRatio = asteroidRadiusKm / earthRadiusKm
-    const minScale = 0.05
-    const maxScale = 2.0
-    const scaledSize = realRatio * earthScaleInScene * 100 // 100x büyütme faktörü
-    return Math.max(minScale, Math.min(maxScale, scaledSize))
-  }
-  const calculatePositionFromDistance = (distanceKm: number, index: number): THREE.Vector3 => {
-    const earthDistanceKm = 149597870.7 // 1 AU
-    const sceneScale = 0.0001 // Sahne ölçek faktörü
-    const distanceAU = distanceKm / earthDistanceKm
-    const sceneDistance = Math.max(8, Math.min(35, distanceAU * 15))
-    const angle = (index * 137.5 * Math.PI / 180) + Math.random() * 0.5 // Golden angle distribution
-    const heightVariation = THREE.MathUtils.randFloat(-2, 2)
-    return new THREE.Vector3(
-      Math.cos(angle) * sceneDistance,
-      heightVariation,
-      Math.sin(angle) * sceneDistance
-    )
-  }
-  const asteroidInstances = useMemo((): AsteroidInstance[] => {
-    const instances: AsteroidInstance[] = []
-    let actualCount = count
-    if (useRealData && nasaAsteroidsData.length > 0) {
-      actualCount = Math.min(count, nasaAsteroidsData.length)
-      for (let i = 0; i < actualCount; i++) {
-        const nasaAsteroid = nasaAsteroidsData[i]
-        if (!nasaAsteroid) continue
-        const asteroidRadiusKm = nasaAsteroid.info.radius_km || 0.5
-        const scale = calculateScaleFromEarth(asteroidRadiusKm)
-        let position = new THREE.Vector3()
-        if (nasaAsteroid.orbital_data?.miss_distance?.kilometers) {
-          const distanceKm = parseFloat(nasaAsteroid.orbital_data.miss_distance.kilometers)
-          if (!isNaN(distanceKm)) {
-            position = calculatePositionFromDistance(distanceKm, i)
-          }
-        }
-        if (position.length() === 0) {
-          const distance = distributionRadius[0] + Math.random() * (distributionRadius[1] - distributionRadius[0])
-          const angle = (i * 137.5 * Math.PI / 180)
-          const height = THREE.MathUtils.randFloat(-2, 2)
-          position = new THREE.Vector3(
-            Math.cos(angle) * distance,
-            height,
-            Math.sin(angle) * distance
-          )
-        }
-        const baseRotSpeed = 0.00001
-        let rotSpeedMultiplier = 1.0
-        if (nasaAsteroid.orbital_data?.relative_velocity?.kilometers_per_second) {
-          const velocityKms = parseFloat(nasaAsteroid.orbital_data.relative_velocity.kilometers_per_second)
-          if (!isNaN(velocityKms)) {
-            rotSpeedMultiplier = Math.max(0.2, Math.min(1.5, velocityKms / 30))
-          }
-        }
-        const rotation = new THREE.Euler(
-          Math.random() * Math.PI * 2,
-          Math.random() * Math.PI * 2,
-          Math.random() * Math.PI * 2
-        )
-        const rotationSpeed = new THREE.Vector3(
-          (Math.random() - 0.5) * baseRotSpeed * rotSpeedMultiplier,
-          (Math.random() - 0.5) * baseRotSpeed * rotSpeedMultiplier,
-          (Math.random() - 0.5) * baseRotSpeed * rotSpeedMultiplier * 0.3
-        )
-        const matrix = new THREE.Matrix4()
-        matrix.compose(position, new THREE.Quaternion().setFromEuler(rotation), new THREE.Vector3(scale, scale, scale))
-        instances.push({
-          position,
-          rotation,
-          scale,
-          rotationSpeed,
-          orbitSpeed: THREE.MathUtils.randFloat(0.00001, 0.00005),
-          orbitAngle: Math.atan2(position.z, position.x),
-          orbitRadius: position.length(),
-          isHazardous: nasaAsteroid.is_hazardous || false,
-          matrix
-        })
+  const meshRef = useRef<THREE.InstancedMesh>(null)
+  
+  // Asteroid verilerini ve başlangıç durumlarını oluştur
+  const asteroidData = useMemo(() => {
+    const data = []
+    const actualCount = Math.max(count, nasaAsteroidsData.length > 0 ? nasaAsteroidsData.length : 50)
+
+    for (let i = 0; i < actualCount; i++) {
+      // Yörünge parametreleri
+      const radius = 15 + Math.random() * 25 // 15-40 birim arası mesafe
+      const angle = (i / actualCount) * Math.PI * 2 + (Math.random() * 0.5)
+      
+      // Rastgele yükseklik (y ekseni) - Disk şeklinde dağılım için
+      const heightDev = (Math.random() - 0.5) * 2.0
+
+      // Boyutlandırma
+      let scale = 0.4 + Math.random() * 0.6 // Temel boyut
+      
+      // Eğer gerçek veri varsa onu kullan
+      if (nasaAsteroidsData[i]) {
+        const radiusKm = nasaAsteroidsData[i].info.radius_km || 1
+        // Gerçek boyutu sahneye ölçekle (daha görünür olması için logaritmik veya çarpanlı)
+        scale = Math.max(0.3, Math.min(2.0, radiusKm * 0.5))
       }
-    } else {
-      for (let i = 0; i < actualCount; i++) {
-        const distance = THREE.MathUtils.randFloat(distributionRadius[0], distributionRadius[1])
-        const angle = Math.random() * Math.PI * 2
-        const height = THREE.MathUtils.randFloat(-3, 3)
-        const position = new THREE.Vector3(
-          Math.cos(angle) * distance,
-          height,
-          Math.sin(angle) * distance
-        )
-        const rotation = new THREE.Euler(
-          Math.random() * Math.PI * 2,
-          Math.random() * Math.PI * 2,
-          Math.random() * Math.PI * 2
-        )
-        const scale = THREE.MathUtils.randFloat(0.3, 1.2)
-        const matrix = new THREE.Matrix4()
-        matrix.compose(position, new THREE.Quaternion().setFromEuler(rotation), new THREE.Vector3(scale, scale, scale))
-        instances.push({
-          position,
-          rotation,
-          scale,
-          rotationSpeed: new THREE.Vector3(
-            (Math.random() - 0.5) * 0.00002,
-            (Math.random() - 0.5) * 0.00002,
-            (Math.random() - 0.5) * 0.00001
-          ),
-          orbitSpeed: THREE.MathUtils.randFloat(0.00001, 0.00005),
-          orbitAngle: angle,
-          orbitRadius: distance,
-          isHazardous: Math.random() > 0.8,
-          matrix
-        })
-      }
+
+      data.push({
+        initialRadius: radius,
+        initialAngle: angle,
+        height: heightDev,
+        scale: scale,
+        // Yörünge hızı (uzaktakiler daha yavaş)
+        orbitSpeed: (0.05 / radius) * (0.5 + Math.random() * 0.5) * 0.2, // Çok yavaş
+        // Kendi ekseni etrafında dönüş
+        rotationAxis: new THREE.Vector3(Math.random(), Math.random(), Math.random()).normalize(),
+        rotationSpeed: (Math.random() - 0.5) * 0.02
+      })
     }
-    return instances
-  }, [count, distributionRadius, nasaAsteroidsData, useRealData])
-  const geometry = useMemo(() => {
-    const cacheKey = `asteroid_${quality}`
-    if (geometryCache.has(cacheKey)) {
-      return geometryCache.get(cacheKey)!
-    }
-    const baseGeometry = new THREE.IcosahedronGeometry(1, quality === 'low' ? 2 : quality === 'medium' ? 3 : 4)
-    const positionAttribute = baseGeometry.getAttribute('position')
-    const vertex = new THREE.Vector3()
-    for (let i = 0; i < positionAttribute.count; i++) {
-      vertex.fromBufferAttribute(positionAttribute, i)
-      const noise = Math.sin(vertex.x * 6) * Math.cos(vertex.y * 5) * Math.sin(vertex.z * 7) * 0.1
-      vertex.normalize()
-      vertex.multiplyScalar(1.0 + noise)
-      positionAttribute.setXYZ(i, vertex.x, vertex.y, vertex.z)
-    }
-    baseGeometry.computeVertexNormals()
-    baseGeometry.normalizeNormals()
-    geometryCache.set(cacheKey, baseGeometry)
-    return baseGeometry
-  }, [quality])
-  const material = useMemo(() => {
-    const cacheKey = `asteroid_material_${quality}`
-    if (materialCache.has(cacheKey)) {
-      return materialCache.get(cacheKey)!
-    }
-    const material = new THREE.MeshStandardMaterial({
+    return data
+  }, [count, nasaAsteroidsData])
+
+  // Geometri ve Materyal (Memoized)
+  const { geometry, material } = useMemo(() => {
+    // Geometri: Düşük poligonlu icosahedron (performans için)
+    const geo = new THREE.IcosahedronGeometry(1, 1)
+    
+    // Materyal: Basit, ışıksız veya standart materyal
+    const mat = new THREE.MeshStandardMaterial({
       color: '#8B7355',
-      roughness: 0.95,
-      metalness: 0.05
+      roughness: 0.8,
+      metalness: 0.2,
+      flatShading: true // Low-poly görünüm için
     })
-    materialCache.set(cacheKey, material)
-    return material
-  }, [quality])
-  const hazardousMaterial = useMemo(() => {
-    const cacheKey = `hazardous_material_${quality}`
-    if (materialCache.has(cacheKey)) {
-      return materialCache.get(cacheKey)!
-    }
-    const material = new THREE.MeshStandardMaterial({
-      color: '#D2691E',
-      roughness: 0.85,
-      metalness: 0.15
-    })
-    materialCache.set(cacheKey, material)
-    return material
-  }, [quality])
-  useEffect(() => {
-    if (!meshRef.current) return
-    asteroidInstances.forEach((asteroid, i) => {
-      meshRef.current.setMatrixAt(i, asteroid.matrix)
-    })
-    meshRef.current.instanceMatrix.needsUpdate = true
-  }, [asteroidInstances])
-  const updateAsteroids = useCallback((delta: number) => {
-    if (!meshRef.current || !enableAnimation) return
-    const now = performance.now()
-    if (now - lastUpdateTime.current < updateInterval.current) return
-    lastUpdateTime.current = now
-    asteroidInstances.forEach((asteroid, i) => {
-      asteroid.orbitAngle += asteroid.orbitSpeed * delta * 0.02
-      asteroid.position.x = Math.cos(asteroid.orbitAngle) * asteroid.orbitRadius
-      asteroid.position.z = Math.sin(asteroid.orbitAngle) * asteroid.orbitRadius
-      asteroid.matrix.compose(
-        asteroid.position,
-        new THREE.Quaternion().setFromEuler(asteroid.rotation),
-        new THREE.Vector3(asteroid.scale, asteroid.scale, asteroid.scale)
-      )
-      meshRef.current.setMatrixAt(i, asteroid.matrix)
-    })
-    meshRef.current.instanceMatrix.needsUpdate = true
-  }, [asteroidInstances, enableAnimation])
+
+    return { geometry: geo, material: mat }
+  }, [])
+
+  // Animasyon Döngüsü
   useFrame((state, delta) => {
-    if (!enableAnimation) return
-    updateAsteroids(delta)
+    if (!meshRef.current) return
+
+    const time = state.clock.getElapsedTime()
+    const dummy = new THREE.Object3D()
+
+    asteroidData.forEach((data, i) => {
+      // Yörünge hareketi
+      // Her asteroidin kendi hızına göre açısal ilerlemesi
+      const currentAngle = data.initialAngle + (time * data.orbitSpeed)
+
+      const x = Math.cos(currentAngle) * data.initialRadius
+      const z = Math.sin(currentAngle) * data.initialRadius
+      
+      dummy.position.set(x, data.height, z)
+      
+      // Kendi ekseni etrafında dönüş
+      dummy.rotation.set(
+        time * data.rotationSpeed * data.rotationAxis.x,
+        time * data.rotationSpeed * data.rotationAxis.y,
+        time * data.rotationSpeed * data.rotationAxis.z
+      )
+
+      dummy.scale.setScalar(data.scale)
+      dummy.updateMatrix()
+
+      meshRef.current!.setMatrixAt(i, dummy.matrix)
+    })
+
+    meshRef.current.instanceMatrix.needsUpdate = true
   })
-  const hazardousAsteroids = asteroidInstances.filter(a => a.isHazardous)
-  const normalAsteroids = asteroidInstances.filter(a => !a.isHazardous)
+
   return (
-    <group>
-      {}
-      <instancedMesh
-        ref={meshRef}
-        args={[geometry, material, normalAsteroids.length]}
-        castShadow={quality !== 'low'}
-        receiveShadow={quality !== 'low'}
-      />
-      {}
-      {hazardousAsteroids.length > 0 && (
-        <instancedMesh
-          args={[geometry, hazardousMaterial, hazardousAsteroids.length]}
-          castShadow={quality !== 'low'}
-          receiveShadow={quality !== 'low'}
-        />
-      )}
-    </group>
+    <instancedMesh
+      ref={meshRef}
+      args={[geometry, material, asteroidData.length]}
+      castShadow
+      receiveShadow
+    />
   )
-})
-PerformantAsteroids.displayName = 'PerformantAsteroids'
+}
+
+export default PerformantAsteroids

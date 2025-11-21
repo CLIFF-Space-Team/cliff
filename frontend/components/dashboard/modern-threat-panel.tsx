@@ -1,11 +1,13 @@
 ﻿"use client"
-import React, { useState, useEffect, useRef } from "react"
+
+import React, { useState, useEffect, useRef, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   AlertTriangle, TrendingUp, TrendingDown, Activity, 
   Shield, Target, Zap, Clock, MapPin, Globe,
   ChevronRight, Info, AlertCircle, CheckCircle,
-  Loader2, BarChart3, PieChart, LineChart
+  Loader2, BarChart3, PieChart, LineChart,
+  ChevronLeft
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -24,11 +26,6 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar
 } from "recharts"
 import FilterBar from "@/components/dashboard/filters/FilterBar"
 import { useThreatFilters } from "@/stores/threatFilters"
@@ -36,6 +33,7 @@ import { searchAsteroids } from "@/lib/api/asteroids"
 import CompareDrawer from "@/components/dashboard/compare/CompareDrawer"
 import ExportMenu from "@/components/dashboard/export/ExportMenu"
 import NotificationsBell from "@/components/dashboard/notifications/NotificationsBell"
+
 interface RealNeoThreat {
   neoId: string
   name: string
@@ -49,35 +47,33 @@ interface RealNeoThreat {
   torino?: number
   palermo?: number
 }
+
 interface NeoDetail {
   asteroid: any
   risk: any
   approaches: any[]
 }
+
 interface ThreatData {
   id: string
   name: string
   type: "asteroid" | "solar_flare" | "space_debris" | "earth_event"
   threat_level: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
   risk_score: number
-  distance?: number
-  velocity?: number
-  size?: number
-  impact_probability?: number
-  time_to_event?: string
-  location?: { lat: number, lon: number }
-  affected_regions?: string[]
 }
+
 interface ThreatPanelProps {
   className?: string
   onThreatSelect?: (threat: ThreatData) => void
 }
+
 export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
   className,
   onThreatSelect
 }) => {
   const [threats, setThreats] = useState<ThreatData[]>([])
   const [realNeos, setRealNeos] = useState<RealNeoThreat[]>([])
+  const [statsData, setStatsData] = useState({ critical: 0, high: 0, medium: 0, low: 0 })
   const [selectedNeoId, setSelectedNeoId] = useState<string | null>(null)
   const [neoDetail, setNeoDetail] = useState<NeoDetail | null>(null)
   const [timelineData, setTimelineData] = useState<any[]>([])
@@ -93,12 +89,54 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
   const listRef = useRef<HTMLDivElement | null>(null)
   const [virt, setVirt] = useState<{ start: number; end: number; item: number }>({ start: 0, end: 30, item: 72 })
   const [listTexts, setListTexts] = useState({
-    header: "En Riskli NEO'lar (NASA Verisi)",
-    noResults: "Sonuç bulunamadı. Filtreleri gevşetmeyi veya anahtar kelimeleri değiştirmeyi deneyin."
+    header: "NEO Karşılaştırma",
+    noResults: "Kriterlere uygun NEO bulunamadı."
   })
+
+  // Stats Calculation (Global - Not limited to visible page)
+  const stats = useMemo(() => {
+    // If we have stats from API response, use them (preferred for accuracy across all pages)
+    if (statsData.critical + statsData.high + statsData.medium + statsData.low > 0) {
+      return statsData
+    }
+    
+    // Fallback: calculate from visible items (less accurate if paginated)
+    const source = threats.length > 0 ? threats : realNeos.map(n => ({
+      threat_level: n.riskLevel.toUpperCase() as any
+    }))
+
+    return {
+      critical: source.filter(t => t.threat_level === "CRITICAL").length,
+      high: source.filter(t => t.threat_level === "HIGH").length,
+      medium: source.filter(t => t.threat_level === "MEDIUM").length,
+      low: source.filter(t => t.threat_level === "LOW").length,
+    }
+  }, [threats, realNeos, statsData])
+
+  const fetchOverviewStats = async () => {
+    try {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+      const res = await fetch(`${apiBase}/api/v1/asteroids/overview`)
+      if (res.ok) {
+        const data = await res.json()
+        if (data.counters) {
+          setStatsData({
+            critical: data.counters.critical || 0,
+            high: data.counters.high || 0,
+            medium: data.counters.medium || 0,
+            low: data.counters.low || 0
+          })
+        }
+      }
+    } catch (e) {
+      console.error('Stats fetch error:', e)
+    }
+  }
+
   const fetchRealThreats = async () => {
     try {
       setIsLoading(true)
+      
       const result = await searchAsteroids({
         q: filters.q,
         risk: filters.risks,
@@ -110,6 +148,9 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
         page_size: filters.pageSize,
         sort: filters.sort,
       })
+
+      // ... rest of the function
+
       const items: RealNeoThreat[] = (result.items || []).map((it: any) => ({
         neoId: it.neoId,
         name: it.name,
@@ -123,8 +164,13 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
         torino: it.torino,
         palermo: it.palermo,
       }))
-      setRealNeos(items)
-      setTotal(result.total || 0)
+
+  // Deduplicate items based on neoId AND ensure unique keys for rendering
+  const uniqueItems = Array.from(new Map(items.map(item => [item.neoId, item])).values());
+  setRealNeos(uniqueItems)
+  setTotal(result.total || 0)
+  // Reset virtualization when data changes
+  setVirt({ start: 0, end: 30, item: 140 })
     } catch (e) {
       console.error('Top NEO çekilemedi:', e)
       setRealNeos([])
@@ -133,6 +179,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       setIsLoading(false)
     }
   }
+
   const fetchNeoDetail = async (neoId: string) => {
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -145,6 +192,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       setNeoDetail(null)
     }
   }
+
   const fetchTimelineData = async (window: string) => {
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -158,70 +206,72 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       setTimelineData([])
     }
   }
-  const calculateAsteroidRisk = (asteroid: any): number => {
-    let risk = 0
-    const size = asteroid.estimated_diameter?.kilometers?.estimated_diameter_max || 0
-    if (size > 1) risk += 30
-    else if (size > 0.5) risk += 20
-    else if (size > 0.1) risk += 10
-    else risk += 5
-    const distance = parseFloat(asteroid.close_approach_data?.[0]?.miss_distance?.lunar || 100)
-    if (distance < 1) risk += 40
-    else if (distance < 5) risk += 30
-    else if (distance < 10) risk += 20
-    else if (distance < 20) risk += 10
-    const velocity = parseFloat(asteroid.close_approach_data?.[0]?.relative_velocity?.kilometers_per_second || 0)
-    if (velocity > 30) risk += 20
-    else if (velocity > 20) risk += 15
-    else if (velocity > 10) risk += 10
-    if (asteroid.is_potentially_hazardous_asteroid) risk += 10
-    return Math.min(risk, 100)
-  }
-  const calculateEventRisk = (event: any): number => {
-    let risk = 30 // Base risk for earth events
-    if (event.categories?.some((c: any) => c.id === 8)) risk += 20 // Wildfires
-    if (event.categories?.some((c: any) => c.id === 10)) risk += 25 // Storms
-    if (event.categories?.some((c: any) => c.id === 12)) risk += 30 // Volcanoes
-    const eventDate = new Date(event.geometry?.[0]?.date)
-    const daysSinceEvent = (Date.now() - eventDate.getTime()) / (1000 * 60 * 60 * 24)
-    if (daysSinceEvent < 1) risk += 20
-    else if (daysSinceEvent < 3) risk += 15
-    else if (daysSinceEvent < 7) risk += 10
-    return Math.min(risk, 100)
-  }
-  const calculateSpaceWeatherRisk = (weather: any): number => {
-    let risk = 20 // Base risk
-    if (weather.messageType?.includes("WARNING")) risk += 30
-    else if (weather.messageType?.includes("WATCH")) risk += 20
-    else if (weather.messageType?.includes("ALERT")) risk += 25
-    return Math.min(risk, 100)
-  }
+
   useEffect(() => {
-    fetchRealThreats()
-    fetchTimelineData(timelineWindow)
+    // Initial data load - parallel fetch for better performance
+    const loadInitialData = async () => {
+      setIsLoading(true)
+      try {
+        await Promise.all([
+          fetchRealThreats(),
+          fetchOverviewStats(),
+          fetchTimelineData(timelineWindow)
+        ])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadInitialData()
   }, [])
-  useEffect(() => {
-    ;(async () => {
-      const header = await getMessage('threat.list.header', listTexts.header)
-      const noResults = await getMessage('threat.list.no_results', listTexts.noResults)
-      setListTexts({ header, noResults })
-    })()
-  }, [])
+
   useEffect(() => {
     if (activeTab === 'overview') {
-      fetchRealThreats()
+      // Don't set full loading state for filter updates to keep UI responsive
+      searchAsteroids({
+        q: filters.q,
+        risk: filters.risks,
+        min_diameter_km: filters.minDiameterKm,
+        max_diameter_km: filters.maxDiameterKm,
+        max_ld: filters.maxLd,
+        window_days: filters.windowDays,
+        page: filters.page,
+        page_size: filters.pageSize,
+        sort: filters.sort,
+      }).then(result => {
+        const items: RealNeoThreat[] = (result.items || []).map((it: any) => ({
+          neoId: it.neoId,
+          name: it.name,
+          riskLevel: (it.risk_level || 'none'),
+          score: (it.impact_probability || 0) * 10 + (it.risk_level === 'critical' ? 4 : it.risk_level === 'high' ? 3 : it.risk_level === 'medium' ? 2 : it.risk_level === 'low' ? 1 : 0),
+          diameter_km: it.diameter_max_km || it.diameter_min_km,
+          distance_ld: it.next_approach?.distance_ld,
+          distance_au: it.next_approach?.distance_au,
+          velocity_kms: it.next_approach?.relative_velocity_kms,
+          impact_probability: it.impact_probability,
+          torino: it.torino,
+          palermo: it.palermo,
+        }))
+        const uniqueItems = Array.from(new Map(items.map(item => [item.neoId, item])).values());
+        setRealNeos(uniqueItems)
+        setTotal(result.total || 0)
+        setVirt({ start: 0, end: 30, item: 140 })
+      }).catch(console.error)
     }
   }, [filters, activeTab])
+
   useEffect(() => {
     if (activeTab === 'timeline') {
       fetchTimelineData(timelineWindow)
     }
   }, [timelineWindow, activeTab])
+
   useEffect(() => {
     if (selectedNeoId && activeTab === 'details') {
       fetchNeoDetail(selectedNeoId)
     }
   }, [selectedNeoId, activeTab])
+
+  // WebSocket connection (simplified for brevity)
   useEffect(() => {
     const connectWebSocket = () => {
       try {
@@ -235,81 +285,41 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
             if (data.type === "new_threat") {
               setThreats(prev => [data.threat, ...prev].slice(0, 50))
             }
-          } catch (error) {
-            console.error("WebSocket mesaj hatası:", error)
-          }
+          } catch (error) { console.error(error) }
         }
-        wsRef.current.onerror = (error) => {
-          console.error("WebSocket hatası:", error)
-        }
-        wsRef.current.onclose = () => {
-          setTimeout(connectWebSocket, 5000)
-        }
-      } catch (error) {
-        console.error("WebSocket bağlantı hatası:", error)
-      }
+        wsRef.current.onclose = () => setTimeout(connectWebSocket, 5000)
+      } catch (error) { console.error(error) }
     }
     connectWebSocket()
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close()
-      }
-    }
+    return () => wsRef.current?.close()
   }, [])
-  const getThreatIcon = (type: string) => {
-    switch (type) {
-      case "asteroid": return <Target className="w-4 h-4" />
-      case "solar_flare": return <Zap className="w-4 h-4" />
-      case "space_debris": return <Shield className="w-4 h-4" />
-      case "earth_event": return <Globe className="w-4 h-4" />
-      default: return <AlertTriangle className="w-4 h-4" />
-    }
-  }
-  const getThreatColor = (level: string) => {
-    switch (level) {
-      case "CRITICAL": return "text-red-400 bg-red-950/50 border-red-500/30"
-      case "HIGH": return "text-orange-400 bg-orange-950/50 border-orange-500/30"
-      case "MEDIUM": return "text-yellow-400 bg-yellow-950/50 border-yellow-500/30"
-      case "LOW": return "text-green-400 bg-green-950/50 border-green-500/30"
-      default: return "text-gray-400 bg-gray-950/50 border-gray-500/30"
-    }
-  }
-  const formatDistance = (km?: number): string => {
-    if (!km) return "N/A"
-    if (km < 1000) return `${km.toFixed(0)} km`
-    if (km < 1000000) return `${(km / 1000).toFixed(1)}K km`
-    return `${(km / 1000000).toFixed(2)}M km`
-  }
-  const formatVelocity = (kmh?: number): string => {
-    if (!kmh) return "N/A"
-    return `${(kmh / 1000).toFixed(1)}K km/h`
-  }
-  const formatSize = (km?: number): string => {
-    if (!km) return "N/A"
-    if (km < 0.001) return `${(km * 1000000).toFixed(0)} mm`
-    if (km < 1) return `${(km * 1000).toFixed(0)} m`
-    return `${km.toFixed(2)} km`
-  }
+
   const renderNeoListItem = (neo: RealNeoThreat, index: number) => {
     const levelColor = {
-      critical: 'bg-red-500/10 border-red-500/30 text-red-200',
-      high: 'bg-orange-500/10 border-orange-500/30 text-orange-200',
-      medium: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-200',
-      low: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200',
-      none: 'bg-slate-500/10 border-slate-500/30 text-slate-300'
+      critical: 'bg-red-500/10 border-red-500/30 text-red-200 hover:bg-red-500/20',
+      high: 'bg-orange-500/10 border-orange-500/30 text-orange-200 hover:bg-orange-500/20',
+      medium: 'bg-yellow-500/10 border-yellow-500/30 text-yellow-200 hover:bg-yellow-500/20',
+      low: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-200 hover:bg-emerald-500/20',
+      none: 'bg-slate-500/10 border-slate-500/30 text-slate-300 hover:bg-slate-500/20'
     }[neo.riskLevel] || 'bg-slate-500/10 border-slate-500/30 text-slate-300'
+
     return (
       <motion.div
         key={neo.neoId}
-        initial={{ opacity: 0, y: 14 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.04 }}
+        transition={{ delay: index * 0.03 }}
         className={cn(
-          'p-2 rounded-md border cursor-pointer transition-colors hover:bg-white/5 mb-2 last:mb-0',
+          'group relative p-3 rounded-lg border cursor-pointer transition-all duration-200 mb-2 last:mb-0',
           levelColor,
-          selectedNeoId === neo.neoId && 'ring-2 ring-cliff-white/30'
+          selectedNeoId === neo.neoId && 'ring-1 ring-white/50 shadow-lg shadow-black/50'
         )}
-        onClick={() => {
+        onClick={(e) => {
+          // Prevent triggering detail view when clicking selection checkbox
+          if ((e.target as HTMLElement).closest('input[type="checkbox"]') || (e.target as HTMLElement).closest('.selection-area')) {
+            return;
+          }
+          
           setSelectedNeoId(neo.neoId)
           setActiveTab('details')
           try {
@@ -318,74 +328,81 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
           } catch {}
         }}
       >
-        <div className="grid grid-cols-[auto,1fr,auto] items-center gap-2">
-          {}
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              className="accent-emerald-500 h-3.5 w-3.5"
-              checked={selectedIds.includes(neo.neoId)}
-              onChange={(e) => {
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div 
+              className="selection-area w-4 h-4 rounded border flex items-center justify-center transition-colors cursor-pointer z-10"
+              onClick={(e) => {
                 e.stopPropagation()
-                setSelectedIds((prev) =>
-                  prev.includes(neo.neoId)
-                    ? prev.filter((id) => id !== neo.neoId)
-                    : [...prev, neo.neoId]
-                )
+                setSelectedIds(prev => prev.includes(neo.neoId) ? prev.filter(id => id !== neo.neoId) : [...prev, neo.neoId])
               }}
-            />
-            <div>
-              <div className="font-medium text-xs leading-4 truncate max-w-[14rem] sm:max-w-[18rem]">{neo.name || neo.neoId}</div>
-              <div className="text-[10px] opacity-60 leading-4">NEO ID: {neo.neoId}</div>
+            >
+               {selectedIds.includes(neo.neoId) && <CheckCircle className="w-3 h-3" />}
+            </div>
+            <div className="min-w-0">
+              <div className="font-bold text-sm truncate text-white/90 group-hover:text-white">
+                {neo.name || neo.neoId}
+              </div>
+              <div className="text-[10px] opacity-60 font-mono">ID: {neo.neoId}</div>
             </div>
           </div>
-          {}
-          <div />
-          {}
-          <div className="text-right">
-            <Badge className={cn('text-[10px] mb-0.5 capitalize')}>{neo.riskLevel}</Badge>
-            <div className="text-[10px] opacity-70">Skor: {neo.score.toFixed(1)}</div>
+          
+          <div className="flex flex-col items-end gap-1">
+             <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-5 border-white/10 bg-black/20 uppercase tracking-wider">
+               {neo.riskLevel}
+             </Badge>
           </div>
         </div>
-        {}
-        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] opacity-80">
-          {neo.distance_ld != null && (
-            <div><span className="opacity-60">Mesafe:</span> {neo.distance_ld.toFixed(1)} LD</div>
-          )}
-          {neo.velocity_kms != null && (
-            <div><span className="opacity-60">Hız:</span> {neo.velocity_kms.toFixed(1)} km/s</div>
-          )}
-          {neo.diameter_km != null && (
-            <div><span className="opacity-60">Çap:</span> {neo.diameter_km.toFixed(2)} km</div>
-          )}
+
+        <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-white/5">
+          <div className="text-center">
+            <div className="text-[10px] opacity-50 uppercase tracking-wide">Mesafe</div>
+            <div className="text-xs font-medium text-white/80">
+              {neo.distance_ld ? `${neo.distance_ld.toFixed(1)} LD` : '-'}
+            </div>
+          </div>
+          <div className="text-center border-l border-white/5">
+            <div className="text-[10px] opacity-50 uppercase tracking-wide">Hız</div>
+            <div className="text-xs font-medium text-white/80">
+              {neo.velocity_kms ? `${neo.velocity_kms.toFixed(1)} km/s` : '-'}
+            </div>
+          </div>
+          <div className="text-center border-l border-white/5">
+            <div className="text-[10px] opacity-50 uppercase tracking-wide">Çap</div>
+            <div className="text-xs font-medium text-white/80">
+              {neo.diameter_km ? `${neo.diameter_km.toFixed(2)} km` : '-'}
+            </div>
+          </div>
         </div>
-        <Progress value={Math.min(neo.score * 10, 100)} className="mt-2 h-0.5" />
       </motion.div>
     )
   }
+
+  // Virtual scroll range calculation (simplified)
   useEffect(() => {
     const computeRange = () => {
       if (!scrollContainerRef.current || !listRef.current) return
       const sc = scrollContainerRef.current
-      const viewportH = sc.clientHeight
-      const listTop = listRef.current.offsetTop
-      const scrollTop = sc.scrollTop
-      const item = virt.item
-      const start = Math.max(0, Math.floor((scrollTop - listTop) / item) - 6)
-      const visible = Math.ceil(viewportH / item) + 12
+      // Sabit yükseklik kullanımı yerine dinamik hesaplama
+      const item = 140 // Kart yüksekliği + margin (yaklaşık)
+      const start = Math.max(0, Math.floor(sc.scrollTop / item))
+      // Görünür alan + tampon
+      const visible = Math.ceil(sc.clientHeight / item) + 2 
       const end = Math.min(realNeos.length, start + visible)
-      if (start !== virt.start || end !== virt.end) setVirt({ start, end, item })
+      
+      // Gereksiz renderları önlemek için sadece değişim varsa güncelle
+      if (start !== virt.start || end !== virt.end) {
+        setVirt({ start, end, item })
+      }
     }
     const sc = scrollContainerRef.current
-    if (!sc) return
-    computeRange()
-    sc.addEventListener('scroll', computeRange)
-    window.addEventListener('resize', computeRange)
-    return () => {
-      sc.removeEventListener('scroll', computeRange)
-      window.removeEventListener('resize', computeRange)
+    if (sc) {
+      sc.addEventListener('scroll', computeRange)
+      computeRange()
     }
+    return () => sc?.removeEventListener('scroll', computeRange)
   }, [realNeos.length, virt.item])
+
   if (isLoading) {
     return (
       <div className={cn("h-full bg-pure-black rounded-xl p-6", className)}>
@@ -393,471 +410,355 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       </div>
     )
   }
+
   return (
-    <div className={cn("h-full bg-pure-black/60 backdrop-blur-md border border-cliff-light-gray/10 rounded-xl overflow-hidden", className)}>
-      {}
-      <div className="border-b border-cyan-500/10 bg-black/40 p-4">
-        <div className="flex items-center justify-between">
+    <div className={cn("flex flex-col h-full bg-pure-black/80 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden shadow-2xl", className)}>
+      
+      {/* Modern Header */}
+      <div className="flex-none p-4 border-b border-white/5 bg-gradient-to-r from-white/5 to-transparent">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-red-500/20 rounded-lg">
-              <AlertTriangle className="w-5 h-5 text-red-400" />
+            <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+              <AlertTriangle className="w-5 h-5 text-red-500" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white">Tehdit Analizi</h2>
-              <p className="text-xs text-gray-400">NASA + AI</p>
+              <h2 className="text-lg font-bold text-white leading-none">Tehdit Analizi</h2>
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-white/10 text-white/60">NASA CNEOS</span>
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">AI ACTIVE</span>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap justify-end">
-            {}
-            <div 
-              role="tablist" 
-              className="inline-flex items-center gap-0.5 p-0.5 rounded-lg bg-gray-900/50 border border-gray-700/30"
-            >
-              {[
-                { key: "overview", label: "Overview", icon: BarChart3 },
-                { key: "details", label: "Details", icon: Info },
-                { key: "timeline", label: "Timeline", icon: LineChart }
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key as any)}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
-                    activeTab === tab.key
-                      ? "bg-cyan-500/20 text-cyan-400"
-                      : "text-gray-500 hover:text-white hover:bg-gray-800/50"
-                  )}
-                >
-                  <tab.icon className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </button>
-              ))}
-            </div>
-            {}
-            {activeTab === 'overview' && (
-              <div className="flex items-center gap-1.5">
-                <ExportMenu filename="neos" rows={realNeos} />
-                <NotificationsBell />
-              </div>
-            )}
-            {}
-            {activeTab !== 'overview' && (
-              <NotificationsBell />
-            )}
+          
+          <div className="flex gap-1 p-1 bg-black/40 rounded-lg border border-white/5">
+            {[
+              { id: 'overview', icon: BarChart3 },
+              { id: 'details', icon: Info },
+              { id: 'timeline', icon: LineChart },
+            ].map(t => (
+               <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id as any)}
+                className={cn(
+                  "p-2 rounded-md transition-all",
+                  activeTab === t.id ? "bg-white/10 text-white shadow-sm" : "text-white/40 hover:text-white/70"
+                )}
+               >
+                 <t.icon className="w-4 h-4" />
+               </button>
+            ))}
           </div>
         </div>
-        {}
-        <div className="grid grid-cols-4 gap-1.5 sm:gap-2 mt-2 sm:mt-3">
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-4 gap-2">
           {[
-            { label: "Kritik", count: threats.filter(t => t.threat_level === "CRITICAL").length, color: "text-red-400" },
-            { label: "Yüksek", count: threats.filter(t => t.threat_level === "HIGH").length, color: "text-orange-400" },
-            { label: "Orta", count: threats.filter(t => t.threat_level === "MEDIUM").length, color: "text-yellow-400" },
-            { label: "Düşük", count: threats.filter(t => t.threat_level === "LOW").length, color: "text-green-400" }
-          ].map((stat) => (
-            <div key={stat.label} className="bg-pure-black/50 rounded-lg p-1.5 sm:p-2 text-center">
-              <div className={cn("text-lg sm:text-2xl font-bold", stat.color)}>{stat.count}</div>
-              <div className="text-[10px] sm:text-xs text-cliff-light-gray truncate">{stat.label}</div>
+            { label: "KRİTİK", count: stats.critical, color: "bg-red-500", text: "text-red-500" },
+            { label: "YÜKSEK", count: stats.high, color: "bg-orange-500", text: "text-orange-500" },
+            { label: "ORTA", count: stats.medium, color: "bg-yellow-500", text: "text-yellow-500" },
+            { label: "DÜŞÜK", count: stats.low, color: "bg-emerald-500", text: "text-emerald-500" },
+          ].map(s => (
+            <div key={s.label} className="bg-black/40 rounded-lg p-2 border border-white/5 flex flex-col items-center justify-center group hover:border-white/10 transition-colors">
+              <div className={cn("text-xl font-bold mb-0.5", s.text)}>{s.count}</div>
+              <div className="flex items-center gap-1.5">
+                <div className={cn("w-1.5 h-1.5 rounded-full animate-pulse", s.color)} />
+                <span className="text-[9px] font-medium text-white/40 tracking-wider">{s.label}</span>
+              </div>
             </div>
           ))}
         </div>
       </div>
-      {}
-      <div className="p-3 sm:p-4 h-[calc(100%-140px)] overflow-y-auto" ref={scrollContainerRef}>
-        <AnimatePresence mode="wait">
-          {activeTab === "overview" && (
-            <motion.div
-              key="overview"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="space-y-4"
-            >
-              {}
-              <AsteroidThreatPanel />
-              <ApproachTimeline window="7d" />
-              {}
-              <FilterBar onApply={() => fetchRealThreats()} />
-              {}
-              <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-cliff-white mb-2">{listTexts.header}</h3>
-                {!isLoading && realNeos.length === 0 && (
-                  <div className="p-6 text-sm text-cliff-light-gray/80 border border-cliff-light-gray/20 rounded-lg bg-almost-black text-center">
-                    {listTexts.noResults}
-                  </div>
-                )}
-                <div ref={listRef} className="relative">
-                  <div style={{ height: Math.max(0, realNeos.length * virt.item) }}>
-                    <div style={{ transform: `translateY(${virt.start * virt.item}px)` }}>
-                      {realNeos.slice(virt.start, virt.end).map((neo, i) => renderNeoListItem(neo, virt.start + i))}
-                    </div>
-                  </div>
-                </div>
-                {}
-                {(total > filters.pageSize) && (
-                  <div className="flex items-center justify-between mt-3 text-xs text-cliff-light-gray">
-                    <div>
-                      Toplam: {total} • Sayfa {filters.page} / {Math.max(1, Math.ceil(total / filters.pageSize))}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={filters.page <= 1}
-                        onClick={() => {
-                          useThreatFilters.getState().setFilters({ page: Math.max(1, filters.page - 1) })
-                        }}
-                        className="text-xs"
-                      >
-                        Önceki
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        disabled={filters.page >= Math.ceil(total / filters.pageSize)}
-                        onClick={() => {
-                          useThreatFilters.getState().setFilters({ page: filters.page + 1 })
-                        }}
-                        className="text-xs"
-                      >
-                        Sonraki
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                {selectedIds.length > 0 && (
-                  <div className="sticky bottom-2 mt-3 flex items-center justify-between bg-pure-black/60 backdrop-blur px-3 py-2 rounded-md border border-cliff-light-gray/20">
-                    <div className="text-xs text-cliff-light-gray">Seçili: {selectedIds.length}</div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="ghost" className="text-xs" onClick={() => setSelectedIds([])}>Temizle</Button>
-                      <Button size="sm" className="text-xs" onClick={() => setCompareOpen(true)}>Karşılaştır</Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-          {activeTab === "details" && (
-            <motion.div
-              key="details"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="space-y-4"
-            >
-              {!selectedNeoId && (
-                <div className="p-6 text-center text-cliff-light-gray/70 border border-cliff-light-gray/20 rounded-lg bg-almost-black">
-                  Overview sekmesinden bir NEO seçin
-                </div>
-              )}
-              {selectedNeoId && !neoDetail && (
-                <div className="p-6 text-center">
-                  <Loader2 className="w-8 h-8 animate-spin text-cliff-white mx-auto mb-2" />
-                  <p className="text-cliff-light-gray">NEO detayları yükleniyor...</p>
-                </div>
-              )}
-              {neoDetail && (
-                <Card className="bg-almost-black border-cliff-light-gray/20 p-6 space-y-6">
-                  {}
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-xl font-bold text-cliff-white">{neoDetail.asteroid?.name || selectedNeoId}</h3>
-                      <p className="text-sm text-cliff-light-gray mt-1">NEO ID: {selectedNeoId}</p>
-                      {neoDetail.asteroid?.is_potentially_hazardous && (
-                        <Badge className="mt-2 bg-orange-500/20 text-orange-300 border-orange-500/30">
-                          Potansiyel Tehlikeli Asteroit (PHA)
+
+      {/* Main Content Area - Flexible Height */}
+      <div className="flex-1 min-h-0 relative">
+        <div 
+          ref={scrollContainerRef}
+          className="absolute inset-0 overflow-y-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent p-4 space-y-4"
+        >
+          <AnimatePresence mode="wait">
+            {activeTab === "overview" && (
+              <motion.div
+                key="overview"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="space-y-4 pb-16" // Added padding bottom for sticky footer
+              >
+                <div className="flex flex-col gap-3 mb-4">
+                   <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold text-white/80 flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-cyan-400" />
+                        {listTexts.header}
+                        <Badge variant="secondary" className="ml-2 h-5 px-2 bg-white/10 text-white/60 whitespace-nowrap flex items-center gap-1.5">
+                          <span className="font-mono text-[11px] text-white">{total}</span>
+                          <span className="text-[9px] uppercase tracking-wide opacity-70">Live</span>
                         </Badge>
-                      )}
+                      </h3>
+                      <div className="flex gap-2">
+                         <ExportMenu filename="neos" rows={realNeos} />
+                      </div>
+                   </div>
+                   
+                   {/* FilterBar container with overflow handling */}
+                   <div className="w-full overflow-hidden">
+                     <FilterBar onApply={() => fetchRealThreats()} />
+                   </div>
+                </div>
+
+                {realNeos.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-white/30 border border-dashed border-white/10 rounded-xl bg-black/20">
+                    <Target className="w-8 h-8 mb-3 opacity-50" />
+                    <p className="text-sm">{listTexts.noResults}</p>
+                  </div>
+                ) : (
+                  <div ref={listRef} className="relative">
+                    <div style={{ height: Math.max(0, realNeos.length * virt.item) }}>
+                       <div style={{ transform: `translateY(${virt.start * virt.item}px)` }}>
+                         {realNeos.slice(virt.start, virt.end).map((neo, i) => renderNeoListItem(neo, virt.start + i))}
+                       </div>
                     </div>
-                    <Badge className={cn("text-sm capitalize", {
-                      'bg-red-500/20 text-red-300': neoDetail.risk?.risk_level === 'critical',
-                      'bg-orange-500/20 text-orange-300': neoDetail.risk?.risk_level === 'high',
-                      'bg-yellow-500/20 text-yellow-300': neoDetail.risk?.risk_level === 'medium',
-                      'bg-emerald-500/20 text-emerald-300': neoDetail.risk?.risk_level === 'low',
-                      'bg-slate-500/20 text-slate-300': neoDetail.risk?.risk_level === 'none'
-                    })}>
-                      {neoDetail.risk?.risk_level || 'unknown'}
-                    </Badge>
-                  </div>
-                  {}
-                  <div className="p-4 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-lg border border-blue-500/20">
-                    <h4 className="text-sm font-semibold text-cliff-white mb-3 flex items-center gap-2">
-                      <Info className="w-4 h-4 text-blue-400" />
-                      Asteroit Bilgileri
-                    </h4>
-                    <div className="text-sm text-cliff-light-gray/90 space-y-2 leading-relaxed">
-                      <p>
-                        <span className="font-semibold text-cliff-white">{neoDetail.asteroid?.name || selectedNeoId}</span>, 
-                        Dünya'ya yakın yörüngede bulunan bir Near-Earth Object (NEO) olarak sınıflandırılmıştır.
-                      </p>
-                      {neoDetail.asteroid?.is_potentially_hazardous && (
-                        <p className="text-orange-300">
-                          Bu asteroit <span className="font-bold">Potentially Hazardous Asteroid (PHA)</span> kategorisindedir; 
-                          yörüngesi Dünya'ya 0.05 AU'dan (7.5 milyon km) daha yakın geçiyor ve belirli bir boyutun üzerinde.
-                        </p>
-                      )}
-                      <p>
-                        NASA ve JPL CNEOS tarafından sürekli izlenmekte ve risk değerlendirmesi yapılmaktadır.
-                      </p>
-                    </div>
-                  </div>
-                  {}
-                  <div>
-                    <h4 className="text-sm font-semibold text-cliff-white mb-3">Fiziksel Özellikler</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                      <div className="p-3 bg-pure-black/50 rounded-lg border border-cliff-light-gray/10">
-                        <div className="text-xs text-cliff-light-gray mb-1">Mutlak Magnitüd (H)</div>
-                        <div className="text-lg font-bold text-blue-400">
-                          {neoDetail.asteroid?.absolute_magnitude_h != null 
-                            ? neoDetail.asteroid.absolute_magnitude_h.toFixed(2) 
-                            : '22.0'}
-                        </div>
-                        <div className="text-xs text-cliff-light-gray/60 mt-1">
-                          {neoDetail.asteroid?.absolute_magnitude_h != null ? 'NASA ölçümü' : 'Tipik küçük NEO tahmini'}
-                        </div>
-                      </div>
-                      <div className="p-3 bg-pure-black/50 rounded-lg border border-cliff-light-gray/10">
-                        <div className="text-xs text-cliff-light-gray mb-1">Tahmini Çap</div>
-                        <div className="text-lg font-bold text-emerald-400">
-                          {neoDetail.asteroid?.diameter_min_km != null && neoDetail.asteroid?.diameter_max_km != null
-                            ? `${neoDetail.asteroid.diameter_min_km.toFixed(3)} - ${neoDetail.asteroid.diameter_max_km.toFixed(3)} km`
-                            : '0.050 - 0.150 km'}
-                        </div>
-                        <div className="text-xs text-cliff-light-gray/60 mt-1">
-                          {neoDetail.asteroid?.diameter_min_km != null 
-                            ? `~${((neoDetail.asteroid.diameter_min_km + (neoDetail.asteroid.diameter_max_km || neoDetail.asteroid.diameter_min_km)) / 2 * 1000).toFixed(0)} m ortalama`
-                            : '~100 m ortalama (H bazlı tahmin)'}
-                        </div>
-                      </div>
-                      <div className="p-3 bg-pure-black/50 rounded-lg border border-cliff-light-gray/10">
-                        <div className="text-xs text-cliff-light-gray mb-1">Kütle Tahmini</div>
-                        <div className="text-lg font-bold text-purple-400">
-                          {neoDetail.asteroid?.diameter_min_km != null 
-                            ? `~${(Math.pow(neoDetail.asteroid.diameter_min_km, 3) * 2.6e12).toExponential(1)} kg`
-                            : '~1.3e9 kg'}
-                        </div>
-                        <div className="text-xs text-cliff-light-gray/60 mt-1">
-                          {neoDetail.asteroid?.diameter_min_km != null ? 'Yoğunluk 2.6 g/cm³' : '100m çap varsayımı'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {}
-                  <div>
-                    <h4 className="text-sm font-semibold text-cliff-white mb-3">Risk Değerlendirmesi</h4>
-                    {}
-                    {neoDetail.risk?.risk_level === 'none' && (
-                      <div className="mb-4 p-3 bg-green-500/10 rounded-lg border border-green-500/20">
-                        <div className="flex items-center gap-2 text-green-400 mb-1">
-                          <CheckCircle className="w-4 h-4" />
-                          <span className="text-sm font-semibold">Düşük Risk</span>
-                        </div>
-                        <div className="text-xs text-green-300/80">
-                          Bu NEO'nun mevcut yörünge hesaplamalarına göre Dünya'ya çarpma riski ihmal edilebilir seviyededir. 
-                          Sentry sisteminde aktif izleme altında değildir.
-                        </div>
-                      </div>
-                    )}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="p-4 bg-red-500/10 rounded-lg border border-red-500/30">
-                        <div className="text-xs text-red-300 mb-1">Torino Skalası</div>
-                        <div className="text-3xl font-bold text-red-400">
-                          {neoDetail.risk?.torino != null && neoDetail.risk.torino > 0 ? neoDetail.risk.torino : '0'}
-                        </div>
-                        <div className="text-xs text-red-300/70 mt-1">
-                          {neoDetail.risk?.torino != null && neoDetail.risk.torino > 0 
-                            ? 'Dikkat gerektirir!' 
-                            : 'Tehlike yok (olasılık çok düşük)'}
-                        </div>
-                      </div>
-                      <div className="p-4 bg-orange-500/10 rounded-lg border border-orange-500/30">
-                        <div className="text-xs text-orange-300 mb-1">Palermo Teknik Skalası</div>
-                        <div className="text-3xl font-bold text-orange-400">
-                          {neoDetail.risk?.palermo != null ? neoDetail.risk.palermo.toFixed(2) : '-2.5'}
-                        </div>
-                        <div className="text-xs text-orange-300/70 mt-1">
-                          {neoDetail.risk?.palermo != null && neoDetail.risk.palermo > -2
-                            ? (neoDetail.risk.palermo > 0 ? 'Endişe verici!' : 'Normal arka plan riski')
-                            : 'Çok düşük (tipik NEO)'}
-                        </div>
-                      </div>
-                      <div className="p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/30">
-                        <div className="text-xs text-yellow-300 mb-1">Çarpma Olasılığı</div>
-                        <div className="text-2xl font-bold text-yellow-400">
-                          {neoDetail.risk?.impact_probability != null 
-                            ? (neoDetail.risk.impact_probability * 100).toExponential(2) + '%'
-                            : '<0.01%'}
-                        </div>
-                        <div className="text-xs text-yellow-300/70 mt-1">
-                          {neoDetail.risk?.impact_probability != null 
-                            ? `1/${(1 / neoDetail.risk.impact_probability).toFixed(0)} şans`
-                            : 'Çok düşük risk'}
-                        </div>
-                      </div>
-                      <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/30">
-                        <div className="text-xs text-purple-300 mb-1">Etki Enerjisi</div>
-                        <div className="text-2xl font-bold text-purple-400">
-                          {neoDetail.risk?.energy_mt != null 
-                            ? `${neoDetail.risk.energy_mt.toFixed(1)} MT` 
-                            : '~12 MT'}
-                        </div>
-                        <div className="text-xs text-purple-300/70 mt-1">
-                          {neoDetail.risk?.energy_mt != null 
-                            ? 'Megaton TNT eşdeğeri (hesaplanmış)'
-                            : '100m çap, 20 km/s hız varsayımı'}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  {}
-                  <div>
-                    <h4 className="text-sm font-semibold text-cliff-white mb-3">
-                      {neoDetail.approaches && neoDetail.approaches.length > 0 
-                        ? `Yakın Geçişler (${neoDetail.approaches.length})` 
-                        : 'Yakın Geçişler'}
-                    </h4>
-                    {(!neoDetail.approaches || neoDetail.approaches.length === 0) && (
-                      <div className="p-4 bg-slate-500/10 rounded-lg border border-slate-500/20">
-                        <div className="text-sm text-slate-300">
-                          Bu NEO için yaklaşma verisi bulunamadı. Bunun nedenleri:
-                        </div>
-                        <ul className="text-xs text-slate-400 mt-2 space-y-1 list-disc list-inside">
-                          <li>Yörünge yakın geçiş göstermiyor (&gt;1 AU mesafede)</li>
-                          <li>Son 7 günlük pencerede yaklaşma yok</li>
-                          <li>NeoWs veritabanında henüz kaydedilmedi</li>
-                        </ul>
-                      </div>
-                    )}
-                    {neoDetail.approaches && neoDetail.approaches.length > 0 && (
-                      <div className="space-y-2 max-h-72 overflow-y-auto pr-2">
-                        {neoDetail.approaches.map((ap: any, i: number) => (
-                          <div key={i} className="p-3 bg-pure-black/50 rounded-lg border border-cliff-light-gray/10 hover:border-emerald-500/30 transition-colors">
-                            <div className="grid grid-cols-2 gap-2 text-xs">
-                              <div>
-                                <span className="text-cliff-light-gray">Tarih:</span>
-                                <span className="text-cliff-white ml-2 font-semibold">
-                                  {ap.timestamp ? new Date(ap.timestamp).toLocaleDateString('tr-TR', { 
-                                    year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                                  }) : 'N/A'}
-                                </span>
-                              </div>
-                              <div>
-                                <span className="text-cliff-light-gray">Mesafe:</span>
-                                <span className="text-emerald-400 ml-2 font-bold">
-                                  {ap.distance_ld ? `${ap.distance_ld.toFixed(2)} LD` : 'N/A'}
-                                </span>
-                              </div>
-                              {ap.distance_au && (
-                                <div>
-                                  <span className="text-cliff-light-gray">AU:</span>
-                                  <span className="text-blue-400 ml-2 font-semibold">
-                                    {ap.distance_au.toFixed(4)} (~{(ap.distance_au * 149597870.7).toFixed(0)} km)
-                                  </span>
-                                </div>
-                              )}
-                              {ap.relative_velocity_kms && (
-                                <div>
-                                  <span className="text-cliff-light-gray">Hız:</span>
-                                  <span className="text-cyan-400 ml-2 font-semibold">
-                                    {ap.relative_velocity_kms.toFixed(2)} km/s (~{(ap.relative_velocity_kms * 3600).toFixed(0)} km/h)
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  {}
-                  <div className="pt-4 border-t border-cliff-light-gray/10">
-                    <h4 className="text-xs font-semibold text-cliff-light-gray mb-2">Veri Kaynakları</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {neoDetail.asteroid?.neows_id && (
-                        <a 
-                          href={`https://api.nasa.gov/neo/rest/v1/neo/${neoDetail.asteroid.neows_id}?api_key=DEMO_KEY`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs px-3 py-1.5 bg-blue-500/10 text-blue-300 border border-blue-500/30 rounded-lg hover:bg-blue-500/20 transition-colors"
-                        >
-                          NASA NeoWs ↗
-                        </a>
-                      )}
-                      {neoDetail.asteroid?.sentry_id && (
-                        <a 
-                          href={`https://ssd-api.jpl.nasa.gov/sentry.api`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs px-3 py-1.5 bg-orange-500/10 text-orange-300 border border-orange-500/30 rounded-lg hover:bg-orange-500/20 transition-colors"
-                        >
-                          CNEOS Sentry ↗
-                        </a>
-                      )}
-                      <div className="text-xs px-3 py-1.5 bg-slate-500/10 text-slate-300 border border-slate-500/20 rounded-lg">
-                        Son güncelleme: {neoDetail.risk?.updated_at ? new Date(neoDetail.risk.updated_at).toLocaleString('tr-TR') : 'N/A'}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              )}
-            </motion.div>
-          )}
-          {activeTab === "timeline" && (
-            <motion.div
-              key="timeline"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="space-y-4"
-            >
-              {}
-              <div className="flex gap-2 justify-end">
-                {(['7d', '30d', '90d'] as const).map(w => (
-                  <Button
-                    key={w}
-                    size="sm"
-                    variant={timelineWindow === w ? 'default' : 'ghost'}
-                    onClick={() => setTimelineWindow(w)}
-                    className="text-xs"
-                  >
-                    {w}
-                  </Button>
-                ))}
-              </div>
-              {}
-              <Card className="bg-almost-black border-cliff-light-gray/20 p-4">
-                <h3 className="text-sm font-semibold text-cliff-white mb-3">
-                  Yaklaşan Geçişler ({timelineWindow})
-                </h3>
-                {timelineData.length === 0 && (
-                  <div className="h-48 flex items-center justify-center text-cliff-light-gray/60">
-                    Veri yok
                   </div>
                 )}
-                {timelineData.length > 0 && (
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
+              </motion.div>
+            )}
+
+            {activeTab === "details" && (
+              <motion.div key="details" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setActiveTab("overview")}
+                  className="text-white/60 hover:text-white -ml-2"
+                >
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  Listeye Dön
+                </Button>
+                
+                {!selectedNeoId ? (
+                  <div className="text-center py-12 text-white/40">Bir NEO seçiniz</div>
+                ) : !neoDetail ? (
+                  <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-cyan-400" /></div>
+                ) : (
+                  <div className="space-y-4">
+                    <Card className="bg-black/40 border-white/10 p-5">
+                       <h3 className="text-xl font-bold text-white mb-1">{neoDetail.asteroid?.name}</h3>
+                       <div className="flex gap-2 mb-4">
+                         <Badge className="bg-white/10 hover:bg-white/20 text-white/70 border-0">ID: {selectedNeoId}</Badge>
+                         {neoDetail.asteroid?.is_potentially_hazardous && (
+                           <Badge className="bg-red-500/20 text-red-300 border border-red-500/30">TEHLİKELİ</Badge>
+                         )}
+                       </div>
+                       
+                       <div className="grid grid-cols-2 gap-3 text-xs">
+                         <div className="p-3 rounded bg-white/5 border border-white/5">
+                           <div className="opacity-50 mb-1">Mutlak Magnitüd</div>
+                           <div className="text-lg font-mono text-cyan-400">{neoDetail.asteroid?.absolute_magnitude_h || 'N/A'}</div>
+                         </div>
+                         <div className="p-3 rounded bg-white/5 border border-white/5">
+                           <div className="opacity-50 mb-1">Tahmini Çap</div>
+                           <div className="text-lg font-mono text-emerald-400">
+                             {neoDetail.asteroid?.diameter_min_km ? `~${neoDetail.asteroid.diameter_min_km.toFixed(3)} km` : 'N/A'}
+                           </div>
+                         </div>
+                         {neoDetail.asteroid?.orbital_data && (
+                           <>
+                             <div className="p-3 rounded bg-white/5 border border-white/5">
+                               <div className="opacity-50 mb-1">Yörünge Periyodu</div>
+                               <div className="text-lg font-mono text-yellow-400">
+                                 {neoDetail.asteroid.orbital_data.orbital_period ? `${parseFloat(neoDetail.asteroid.orbital_data.orbital_period).toFixed(0)} gün` : 'N/A'}
+                               </div>
+                             </div>
+                             <div className="p-3 rounded bg-white/5 border border-white/5">
+                               <div className="opacity-50 mb-1">Yörünge Sınıfı</div>
+                               <div className="text-lg font-mono text-purple-400 truncate">
+                                 {neoDetail.asteroid.orbital_data.orbit_class?.orbit_class_type || 'N/A'}
+                               </div>
+                             </div>
+                           </>
+                         )}
+                       </div>
+
+                       {neoDetail.asteroid?.orbital_data && (
+                         <div className="mt-4 pt-4 border-t border-white/10">
+                           <h4 className="text-sm font-semibold text-white/80 mb-3">Yörünge Detayları</h4>
+                           <div className="grid grid-cols-3 gap-2 text-[10px]">
+                             <div className="bg-black/20 p-2 rounded">
+                               <span className="block opacity-50">Aphelion (En Uzak)</span>
+                               <span className="font-mono">{parseFloat(neoDetail.asteroid.orbital_data.aphelion_distance || 0).toFixed(3)} AU</span>
+                             </div>
+                             <div className="bg-black/20 p-2 rounded">
+                               <span className="block opacity-50">Perihelion (En Yakın)</span>
+                               <span className="font-mono">{parseFloat(neoDetail.asteroid.orbital_data.perihelion_distance || 0).toFixed(3)} AU</span>
+                             </div>
+                             <div className="bg-black/20 p-2 rounded">
+                               <span className="block opacity-50">Eğiklik (Inclination)</span>
+                               <span className="font-mono">{parseFloat(neoDetail.asteroid.orbital_data.inclination || 0).toFixed(2)}°</span>
+                             </div>
+                             <div className="bg-black/20 p-2 rounded">
+                               <span className="block opacity-50">Dış Merkezlik</span>
+                               <span className="font-mono">{parseFloat(neoDetail.asteroid.orbital_data.eccentricity || 0).toFixed(4)}</span>
+                             </div>
+                             <div className="bg-black/20 p-2 rounded">
+                               <span className="block opacity-50">Yarı Büyük Eksen</span>
+                               <span className="font-mono">{parseFloat(neoDetail.asteroid.orbital_data.semi_major_axis || 0).toFixed(3)} AU</span>
+                             </div>
+                             <div className="bg-black/20 p-2 rounded">
+                               <span className="block opacity-50">Ortalama Hız</span>
+                               <span className="font-mono">{parseFloat(neoDetail.asteroid.orbital_data.mean_motion || 0).toFixed(3)}°/gün</span>
+                             </div>
+                           </div>
+                         </div>
+                       )}
+                    </Card>
+
+                    <Card className="bg-black/40 border-white/10 p-5">
+                      <h4 className="text-sm font-semibold text-white/80 mb-3 flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-cyan-400" />
+                        Yaklaşma Verileri (Sonraki 5 Geçiş)
+                      </h4>
+                      
+                      {neoDetail.approaches && neoDetail.approaches.length > 0 ? (
+                        <div className="space-y-2">
+                          {neoDetail.approaches.slice(0, 5).map((approach, i) => (
+                            <div key={i} className="flex items-center justify-between p-3 rounded bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                              <div>
+                                <div className="text-xs font-medium text-white">
+                                  {new Date(approach.timestamp).toLocaleDateString('tr-TR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                                </div>
+                                <div className="text-[10px] opacity-50">{new Date(approach.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</div>
+                              </div>
+                              
+                              <div className="text-right">
+                                <div className="text-xs font-mono text-cyan-400">
+                                  {approach.distance_ld ? `${approach.distance_ld.toFixed(1)} LD` : 'N/A'}
+                                </div>
+                                <div className="text-[10px] opacity-50">
+                                  {approach.relative_velocity_kms ? `${approach.relative_velocity_kms.toFixed(1)} km/s` : ''}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-6 text-white/30 text-xs">
+                          Yaklaşan geçiş verisi bulunamadı.
+                        </div>
+                      )}
+                    </Card>
+
+                    <div className="flex gap-2">
+                      <a 
+                        href={`https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=${selectedNeoId}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-200 text-xs py-2 rounded border border-blue-600/30 text-center transition-colors"
+                      >
+                        NASA JPL Detayı ↗
+                      </a>
+                      <a 
+                        href={`https://cneos.jpl.nasa.gov/sentry/details.html#?des=${selectedNeoId}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex-1 bg-orange-600/20 hover:bg-orange-600/30 text-orange-200 text-xs py-2 rounded border border-orange-600/30 text-center transition-colors"
+                      >
+                        Sentry Risk Analizi ↗
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {activeTab === "timeline" && (
+              <motion.div key="timeline" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+                 <div className="flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-white">Yaklaşan Geçişler</h3>
+                    <div className="flex bg-white/5 rounded-lg p-0.5">
+                      {(['7d', '30d', '90d'] as const).map(w => (
+                        <button
+                          key={w}
+                          onClick={() => setTimelineWindow(w)}
+                          className={cn(
+                            "px-3 py-1 text-[10px] font-medium rounded transition-all",
+                            timelineWindow === w ? "bg-white/10 text-white" : "text-white/40 hover:text-white"
+                          )}
+                        >
+                          {w}
+                        </button>
+                      ))}
+                    </div>
+                 </div>
+                 <div className="h-64 w-full bg-black/20 rounded-xl border border-white/5 p-4">
+                   <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={timelineData}>
                         <defs>
-                          <linearGradient id="timelineGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#22c55e" stopOpacity={0.6}/>
-                            <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                          <linearGradient id="grad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.5}/>
+                            <stop offset="100%" stopColor="#06b6d4" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
-                        <XAxis dataKey="date" tick={{ fill: '#94a3b8', fontSize: 11 }} tickLine={false} axisLine={false} />
-                        <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} tickLine={false} axisLine={false} width={40} />
-                        <Tooltip contentStyle={{ background: 'rgba(15,23,42,0.95)', border: '1px solid rgba(148,163,184,0.3)', borderRadius: '8px', color: 'white' }} />
-                        <Area type="monotone" dataKey="count" stroke="#22c55e" fill="url(#timelineGrad)" strokeWidth={2} />
+                        <XAxis dataKey="date" stroke="#ffffff20" fontSize={10} tickLine={false} />
+                        <YAxis stroke="#ffffff20" fontSize={10} tickLine={false} />
+                        <Tooltip contentStyle={{ backgroundColor: '#000', borderColor: '#333' }} />
+                        <Area type="monotone" dataKey="count" stroke="#06b6d4" fill="url(#grad)" />
                       </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
-              </Card>
+                   </ResponsiveContainer>
+                 </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Sticky Footer Pagination */}
+      {activeTab === "overview" && (
+        <div className="flex-none p-3 border-t border-white/5 bg-black/40 backdrop-blur-md">
+          <div className="flex items-center justify-between text-xs">
+            <div className="text-white/40">
+              Sayfa <span className="text-white font-mono">{filters.page}</span> / {Math.max(1, Math.ceil(total / filters.pageSize))}
+            </div>
+            
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={filters.page <= 1}
+                onClick={() => useThreatFilters.getState().setFilters({ page: Math.max(1, filters.page - 1) })}
+                className="h-7 px-2 text-[10px] border-white/10 bg-white/5 hover:bg-white/10 text-white"
+              >
+                Önceki
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={filters.page >= Math.ceil(total / filters.pageSize)}
+                onClick={() => useThreatFilters.getState().setFilters({ page: filters.page + 1 })}
+                className="h-7 px-2 text-[10px] border-white/10 bg-white/5 hover:bg-white/10 text-white"
+              >
+                Sonraki
+              </Button>
+            </div>
+          </div>
+          
+          {selectedIds.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-2 flex items-center justify-between bg-cyan-500/10 border border-cyan-500/20 px-3 py-2 rounded-lg"
+            >
+              <span className="text-cyan-400 font-medium">{selectedIds.length} seçili</span>
+              <div className="flex gap-2">
+                <button onClick={() => setSelectedIds([])} className="text-white/60 hover:text-white text-[10px]">İptal</button>
+                <button onClick={() => setCompareOpen(true)} className="bg-cyan-500 hover:bg-cyan-400 text-black text-[10px] font-bold px-2 py-1 rounded">Karşılaştır</button>
+              </div>
             </motion.div>
           )}
-        </AnimatePresence>
-      </div>
+        </div>
+      )}
+
       <CompareDrawer ids={selectedIds} open={compareOpen} onClose={() => setCompareOpen(false)} />
     </div>
   )
 }
+
 export default ModernThreatPanel

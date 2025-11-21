@@ -29,15 +29,12 @@ def build_dataset_from_sentry(rows: List[Dict]) -> Tuple[np.ndarray, np.ndarray]
     y: List[str] = []
     for row in rows:
         try:
-            # Sentry alanları farklı olabilir; korumalı çekim
-            # Kullanılabilir alanlar: 'moid', 'v_inf', 'h', 'ip', 'ps_cum', 'range'
             moid_au = float(row.get("moid", 0.1) or 0.1)  # min orbit intersection distance
             v_inf = float(row.get("v_inf", 20.0) or 20.0)  # km/s
             h_mag = float(row.get("h", 22.0) or 22.0)
             ip = float(row.get("ip", 1e-8) or 1e-8)  # impact probability
             ps_cum = float(row.get("ps_cum", -10.0) or -10.0)  # Palermo scale cumulative
 
-            # Özelliklerimizi bizim sınıflandırıcı beklentisine eşle
             feats = [
                 moid_au,             # distance_au yerine moid
                 v_inf,               # velocity_kms
@@ -49,7 +46,6 @@ def build_dataset_from_sentry(rows: List[Dict]) -> Tuple[np.ndarray, np.ndarray]
             ]
             X.append(feats)
 
-            # Etiket: basit eşiklere göre
             if ip >= 1e-5 or ps_cum > 0:
                 label = "critical"
             elif moid_au <= 0.002 and v_inf > 25:
@@ -88,7 +84,6 @@ def synthetic_dataset(n: int = 2000) -> Tuple[np.ndarray, np.ndarray]:
             h_mag,
             uncert_km,
         ])
-        # Etiket kuralı (yaklaşık)
         if distance_au < 0.00067:
             label = "critical"
         elif distance_au < 0.0033:
@@ -99,7 +94,6 @@ def synthetic_dataset(n: int = 2000) -> Tuple[np.ndarray, np.ndarray]:
             label = "low"
         else:
             label = "minimal"
-        # Ek etkiler
         if velocity_kms > 30 and label != "critical":
             idx = max(RISK_LABELS.index(label) - 1, 0)
             label = RISK_LABELS[idx]
@@ -127,7 +121,6 @@ def main() -> None:
     clf = MLRiskClassifier()
     clf.train(X_train, y_train)
 
-    # Evaluation
     from sklearn.metrics import accuracy_score
 
     y_pred = clf._model.predict(X_test)  # type: ignore[attr-defined]

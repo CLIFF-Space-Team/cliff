@@ -1,4 +1,4 @@
-﻿from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
 from datetime import datetime
@@ -24,7 +24,7 @@ async def cliff_ai_mentor_chat(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> MentorChatResponse:
     """
-    🤖 CLIFF-AI Mentor Chat - Intelligent Space Science Tutor
+    ?? CLIFF-AI Mentor Chat - Intelligent Space Science Tutor
     NASA Challenge signature feature for personalized learning
     """
     try:
@@ -71,7 +71,7 @@ async def generate_educational_content(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> EducationalContentResponse:
     """
-    📚 AI-Powered Educational Content Generation
+    ?? AI-Powered Educational Content Generation
     Create personalized space science learning materials
     """
     try:
@@ -89,7 +89,7 @@ async def generate_ai_quiz(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> QuizGenerationResponse:
     """
-    🧠 AI-Generated Quiz System
+    ?? AI-Generated Quiz System
     Create intelligent assessments for space science learning
     """
     try:
@@ -109,7 +109,7 @@ async def evaluate_quiz_responses(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> Dict[str, Any]:
     """
-    ✅ AI-Powered Quiz Evaluation
+    ? AI-Powered Quiz Evaluation
     Intelligent assessment with detailed feedback
     """
     try:
@@ -163,7 +163,7 @@ async def create_personalized_learning_path(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> PersonalizedLearningResponse:
     """
-    🎯 Personalized Learning Path Creation
+    ?? Personalized Learning Path Creation
     AI-adaptive curriculum for individual learning needs
     """
     try:
@@ -183,7 +183,7 @@ async def analyze_student_progress(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> Dict[str, Any]:
     """
-    📊 Student Progress Analysis
+    ?? Student Progress Analysis
     AI-powered learning analytics and insights
     """
     try:
@@ -208,7 +208,7 @@ async def generate_adaptive_content(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> Dict[str, Any]:
     """
-    🔄 Adaptive Content Generation
+    ?? Adaptive Content Generation
     Dynamic content adjustment based on student performance
     """
     try:
@@ -242,7 +242,7 @@ async def educational_ai_system_status(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> Dict[str, Any]:
     """
-    🔧 Educational AI System Status
+    ?? Educational AI System Status
     Monitor AI services and capabilities
     """
     try:
@@ -282,7 +282,7 @@ async def nasa_challenge_demo_showcase(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> Dict[str, Any]:
     """
-    🏆 NASA Challenge Demo Showcase
+    ?? NASA Challenge Demo Showcase
     Demonstrate all AI capabilities in one endpoint
     """
     try:
@@ -315,7 +315,7 @@ async def nasa_challenge_demo_showcase(
         logger.info(f"NASA Challenge demo showcase completed for topic: {demo_topic}")
         return {
             "success": True,
-            "demo_title": f"🚀 CLIFF Educational AI - {demo_topic} Learning Experience",
+            "demo_title": f"?? CLIFF Educational AI - {demo_topic} Learning Experience",
             "capabilities_demonstrated": [
                 "AI-Powered Educational Content Generation",
                 "Intelligent Quiz Creation", 
@@ -329,12 +329,12 @@ async def nasa_challenge_demo_showcase(
                 "learning_path": learning_path
             },
             "nasa_challenge_features": [
-                "✅ Gemini 2.5 Pro Integration",
-                "✅ Personalized Learning AI",
-                "✅ Real-time Content Adaptation", 
-                "✅ Intelligent Assessment System",
-                "✅ NASA Mission Integration",
-                "✅ Multi-modal Learning Support"
+                "? Gemini 2.5 Pro Integration",
+                "? Personalized Learning AI",
+                "? Real-time Content Adaptation", 
+                "? Intelligent Assessment System",
+                "? NASA Mission Integration",
+                "? Multi-modal Learning Support"
             ],
             "competition_advantage": "Most advanced AI-powered space education platform",
             "demo_timestamp": "2025-10-02T15:56:00Z"
@@ -345,7 +345,7 @@ async def nasa_challenge_demo_showcase(
 @router.get("/health")
 async def educational_ai_health_check() -> Dict[str, Any]:
     """
-    💚 Educational AI Health Check
+    ?? Educational AI Health Check
     Quick system health verification
     """
     return {
@@ -360,11 +360,11 @@ async def test_vertex_ai_connection(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> Dict[str, Any]:
     """
-    🔍 Vertex AI API Connection Diagnostics (beta.vertexapis.com)
+    ?? Vertex AI API Connection Diagnostics (beta.vertexapis.com)
     Test the Vertex AI API connection and authentication
     """
     try:
-        logger.info("🔍 Starting Vertex AI connection diagnostics...")
+        logger.info("?? Starting Vertex AI connection diagnostics...")
         connection_test = await ai_services.test_gemini_api_connection()
         diagnostic_info = {
             "test_timestamp": datetime.utcnow().isoformat() + "Z",
@@ -379,7 +379,7 @@ async def test_vertex_ai_connection(
             "connection_test_result": connection_test
         }
         if connection_test.get("valid"):
-            logger.info("✅ Vertex AI diagnostics PASSED")
+            logger.info("? Vertex AI diagnostics PASSED")
             return {
                 "success": True,
                 "status": "healthy",
@@ -387,7 +387,7 @@ async def test_vertex_ai_connection(
                 "diagnostics": diagnostic_info
             }
         else:
-            logger.error(f"❌ Vertex AI diagnostics FAILED: {connection_test.get('error')}")
+            logger.error(f"? Vertex AI diagnostics FAILED: {connection_test.get('error')}")
             return {
                 "success": False,
                 "status": "connection_failed",
@@ -412,11 +412,11 @@ async def test_vertex_ai_connection(
 @router.post("/diagnostics/database-health")
 async def test_database_connection() -> Dict[str, Any]:
     """
-    🏥 Database Health Diagnostics
+    ?? Database Health Diagnostics
     Test MongoDB connection and SSL issues
     """
     try:
-        logger.info("🏥 Starting database health diagnostics...")
+        logger.info("?? Starting database health diagnostics...")
         from app.core.database import check_database_health, get_connection_status
         health_result = await check_database_health()
         connection_status = get_connection_status()
@@ -428,7 +428,7 @@ async def test_database_connection() -> Dict[str, Any]:
             "connection_status": connection_status
         }
         if health_result.get("status") == "healthy":
-            logger.info("✅ Database diagnostics PASSED")
+            logger.info("? Database diagnostics PASSED")
             return {
                 "success": True,
                 "status": "healthy",
@@ -436,7 +436,7 @@ async def test_database_connection() -> Dict[str, Any]:
                 "diagnostics": diagnostic_info
             }
         else:
-            logger.warning(f"⚠️ Database diagnostics WARNING: {health_result.get('error')}")
+            logger.warning(f"?? Database diagnostics WARNING: {health_result.get('error')}")
             return {
                 "success": False,
                 "status": "unhealthy",
@@ -463,11 +463,11 @@ async def system_diagnostics_overview(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> Dict[str, Any]:
     """
-    📊 Complete System Diagnostics Overview
+    ?? Complete System Diagnostics Overview
     Comprehensive system health check for NASA Challenge demo
     """
     try:
-        logger.info("📊 Running complete system diagnostics...")
+        logger.info("?? Running complete system diagnostics...")
         diagnostics = {
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "system_version": "CLIFF v2.0.0",
@@ -510,9 +510,9 @@ async def system_diagnostics_overview(
             if comp.get("status") == "healthy"
         )
         if all_healthy:
-            logger.info("✅ All system diagnostics PASSED - NASA Challenge Ready!")
+            logger.info("? All system diagnostics PASSED - NASA Challenge Ready!")
         else:
-            logger.warning("⚠️ Some system components need attention")
+            logger.warning("?? Some system components need attention")
         return diagnostics
     except Exception as e:
         error_msg = f"System diagnostics failed: {str(e)}"

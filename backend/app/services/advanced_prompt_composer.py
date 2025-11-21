@@ -1,4 +1,4 @@
-ï»¿import asyncio
+import asyncio
 import json
 import re
 from typing import Dict, List, Optional, Any, Tuple, Set
@@ -8,7 +8,7 @@ from enum import Enum
 import structlog
 logger = structlog.get_logger(__name__)
 class PhotographyTechnique(str, Enum):
-    """Profesyonel fotoÄŸraf teknikleri"""
+    """Profesyonel fotoðraf teknikleri"""
     GOLDEN_HOUR = "golden_hour"
     BLUE_HOUR = "blue_hour"
     MACRO = "macro"
@@ -22,7 +22,7 @@ class PhotographyTechnique(str, Enum):
     RULE_OF_THIRDS = "rule_of_thirds"
     DEPTH_OF_FIELD = "depth_of_field"
 class ColorTheory(str, Enum):
-    """Renk teorisi yaklaÅŸÄ±mlarÄ±"""
+    """Renk teorisi yaklaþýmlarý"""
     COMPLEMENTARY = "complementary"
     ANALOGOUS = "analogous"
     TRIADIC = "triadic"
@@ -33,7 +33,7 @@ class ColorTheory(str, Enum):
     HIGH_CONTRAST = "high_contrast"
     LOW_CONTRAST = "low_contrast"
 class ArtisticMovement(str, Enum):
-    """Sanatsal akÄ±mlar"""
+    """Sanatsal akýmlar"""
     IMPRESSIONISM = "impressionism"
     SURREALISM = "surrealism"
     MINIMALISM = "minimalism"
@@ -43,7 +43,7 @@ class ArtisticMovement(str, Enum):
     CONTEMPORARY = "contemporary"
     PHOTOREALISM = "photorealism"
 class LightingSetup(str, Enum):
-    """IÅŸÄ±klandÄ±rma kurulumlarÄ±"""
+    """Iþýklandýrma kurulumlarý"""
     GOLDEN_HOUR = "golden_hour"
     NATURAL_LIGHT = "natural_light"
     STUDIO_LIGHTING = "studio_lighting"
@@ -57,22 +57,22 @@ class LightingSetup(str, Enum):
     DRAMATIC_LIGHTING = "dramatic_lighting"
 @dataclass
 class CompositionRule:
-    """Kompozisyon kuralÄ±"""
+    """Kompozisyon kuralý"""
     name: str
     description: str
     prompt_additions: List[str]
-    weight: float  # 0.0 - 1.0 arasÄ± Ã¶nem seviyesi
+    weight: float  # 0.0 - 1.0 arasý önem seviyesi
 @dataclass  
 class VisualElement:
-    """GÃ¶rsel Ã¶ÄŸe"""
+    """Görsel öðe"""
     element_type: str
     descriptors: List[str]
     enhancement_terms: List[str]
     professional_terms: List[str]
 class AdvancedPromptComposer:
     """
-    GeliÅŸmiÅŸ prompt kompozisyon sistemi
-    Profesyonel fotoÄŸraf, sanat ve tasarÄ±m teknikleri ile optimize edilmiÅŸ prompt Ã¼retimi
+    Geliþmiþ prompt kompozisyon sistemi
+    Profesyonel fotoðraf, sanat ve tasarým teknikleri ile optimize edilmiþ prompt üretimi
     """
     def __init__(self):
         self.photography_terms = {
@@ -190,7 +190,7 @@ class AdvancedPromptComposer:
         logger.info("Advanced Prompt Composer initialized with professional techniques")
     def analyze_content_complexity(self, content: str) -> Dict[str, Any]:
         """
-        Ä°Ã§erik karmaÅŸÄ±klÄ±ÄŸÄ±nÄ± analiz et
+        Ýçerik karmaþýklýðýný analiz et
         """
         words = content.split()
         word_count = len(words)
@@ -236,7 +236,7 @@ class AdvancedPromptComposer:
     def select_optimal_techniques(self, content: str, style_preference: Optional[str] = None,
                                 content_type: Optional[str] = None) -> Dict[str, Any]:
         """
-        Ä°Ã§eriÄŸe en uygun teknikleri seÃ§
+        Ýçeriðe en uygun teknikleri seç
         """
         analysis = self.analyze_content_complexity(content)
         content_lower = content.lower()
@@ -308,14 +308,14 @@ class AdvancedPromptComposer:
                 movement_terms = self.artistic_movements.get(techniques, [])
                 components.extend(movement_terms[:1])
             elif isinstance(techniques, list) and techniques:
-                components.extend(techniques[:2])  # Her kategori iÃ§in maksimum 2 terim
+                components.extend(techniques[:2])  # Her kategori için maksimum 2 terim
         if quality_level == "high":
             components.extend(self.photography_terms["equipment"][:1])
         final_prompt = ", ".join(components)
         final_prompt = self._remove_duplicates(final_prompt)
         return final_prompt
     def _remove_duplicates(self, prompt: str) -> str:
-        """Prompt'tan tekrar eden terimleri kaldÄ±r"""
+        """Prompt'tan tekrar eden terimleri kaldýr"""
         terms = [term.strip() for term in prompt.split(",")]
         seen = set()
         unique_terms = []
@@ -330,7 +330,7 @@ class AdvancedPromptComposer:
                                               creativity_level: float = 0.8,
                                               quality_level: str = "high") -> Dict[str, Any]:
         """
-        GeliÅŸmiÅŸ kompozisyon teknikleri ile prompt'u geliÅŸtir
+        Geliþmiþ kompozisyon teknikleri ile prompt'u geliþtir
         """
         try:
             start_time = datetime.now()
@@ -354,7 +354,7 @@ class AdvancedPromptComposer:
                 "content_analysis": content_analysis,
                 "selected_techniques": selected_techniques,
                 "suggestions": suggestions,
-                "confidence_score": 0.9,  # YÃ¼ksek gÃ¼ven - profesyonel teknikler kullanÄ±ldÄ±
+                "confidence_score": 0.9,  # Yüksek güven - profesyonel teknikler kullanýldý
                 "processing_time_ms": processing_time,
                 "quality_enhancements_applied": quality_level == "high"
             }
@@ -368,7 +368,7 @@ class AdvancedPromptComposer:
             }
     def _generate_composition_suggestions(self, content_analysis: Dict[str, Any],
                                         selected_techniques: Dict[str, Any]) -> List[str]:
-        """Kompozisyon Ã¶nerileri oluÅŸtur"""
+        """Kompozisyon önerileri oluþtur"""
         suggestions = []
         if content_analysis["complexity_level"] == "simple":
             suggestions.append("Consider adding more descriptive details for richer visual output")
@@ -384,9 +384,9 @@ class AdvancedPromptComposer:
             "Composition rules optimized for visual impact",
             "Technical excellence terms included for commercial quality"
         ])
-        return suggestions[:4]  # Maksimum 4 Ã¶neri
+        return suggestions[:4]  # Maksimum 4 öneri
     def get_technique_categories(self) -> Dict[str, Any]:
-        """Mevcut teknik kategorilerini dÃ¶ndÃ¼r"""
+        """Mevcut teknik kategorilerini döndür"""
         return {
             "photography_techniques": [t.value for t in PhotographyTechnique],
             "color_theories": [c.value for c in ColorTheory], 
@@ -398,12 +398,12 @@ class AdvancedPromptComposer:
         }
 advanced_prompt_composer = AdvancedPromptComposer()
 async def get_advanced_composer() -> AdvancedPromptComposer:
-    """Dependency injection iÃ§in"""
+    """Dependency injection için"""
     return advanced_prompt_composer
 async def enhance_with_professional_composition(user_input: str, 
                                               style: Optional[str] = None,
                                               quality: str = "high") -> str:
-    """HÄ±zlÄ± profesyonel geliÅŸtirme"""
+    """Hýzlý profesyonel geliþtirme"""
     result = await advanced_prompt_composer.enhance_with_advanced_composition(
         user_input, style, 0.8, quality
     )

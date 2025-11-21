@@ -1,3 +1,3 @@
-﻿from beanie import Document
+from beanie import Document
 class Asteroid(Document):
     pass

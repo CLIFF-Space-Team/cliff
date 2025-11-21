@@ -1,4 +1,4 @@
-ï»¿import asyncio
+import asyncio
 import json
 import logging
 from datetime import datetime, timedelta
@@ -14,14 +14,14 @@ from ..models.threat import ThreatDetail, SimpleThreatResponse
 from ..core.config import settings
 logger = structlog.get_logger(__name__)
 class ThreatType(str, Enum):
-    """Tehdit tÃ¼rleri"""
+    """Tehdit türleri"""
     ASTEROID = "asteroid"
     EARTH_EVENT = "earth_event" 
     SPACE_WEATHER = "space_weather"
     ORBITAL_DEBRIS = "orbital_debris"
     COMMUNICATION_DISRUPTION = "communication_disruption"
 class ConfidenceLevel(str, Enum):
-    """GÃ¼venilirlik seviyeleri"""
+    """Güvenilirlik seviyeleri"""
     VERY_LOW = "very_low"
     LOW = "low"
     MEDIUM = "medium"
@@ -50,14 +50,14 @@ class PatternRecognitionModel:
         self.feature_stds = []
         self.is_trained = False
     def extract_features(self, threat_data: Dict) -> List[float]:
-        """Tehdit verisinden Ã¶zellik Ã§Ä±karma"""
+        """Tehdit verisinden özellik çýkarma"""
         features = []
         features.append(threat_data.get('severity_numeric', 0.5))
         features.append(threat_data.get('impact_probability', 0.1))
         features.append(threat_data.get('distance_factor', 1.0))
         features.append(threat_data.get('velocity_factor', 0.5))
         features.append(threat_data.get('size_factor', 0.3))
-        time_to_impact = threat_data.get('time_to_impact_hours', 720)  # 30 gÃ¼n default
+        time_to_impact = threat_data.get('time_to_impact_hours', 720)  # 30 gün default
         features.append(min(time_to_impact / 720.0, 1.0))  # Normalize
         features.append(threat_data.get('data_source_reliability', 0.8))
         features.append(len(threat_data.get('data_sources', [])) / 5.0)  # Max 5 kaynak
@@ -92,7 +92,7 @@ class PatternRecognitionModel:
                 'predicted_evolution': 'unknown'
             }
     def _identify_risk_indicators(self, features: List[float]) -> List[str]:
-        """Risk gÃ¶stergelerini tespit et"""
+        """Risk göstergelerini tespit et"""
         indicators = []
         if features[0] > 0.7:  # severity
             indicators.append('high_severity')
@@ -126,11 +126,11 @@ class PatternRecognitionModel:
         except Exception:
             return 0.5
 class HistoricalPatternAnalyzer:
-    """GeÃ§miÅŸ tehdit pattern analizi"""
+    """Geçmiþ tehdit pattern analizi"""
     def __init__(self):
-        self.historical_data = {}  # GerÃ§ek uygulamada MongoDB'den gelecek
+        self.historical_data = {}  # Gerçek uygulamada MongoDB'den gelecek
     async def correlate_with_history(self, threat_data: Dict) -> Dict[str, Any]:
-        """GeÃ§miÅŸ verilerle korelasyon"""
+        """Geçmiþ verilerle korelasyon"""
         try:
             similar_threats = await self._find_similar_threats(threat_data)
             historical_patterns = await self._analyze_historical_patterns(similar_threats)
@@ -163,7 +163,7 @@ class HistoricalPatternAnalyzer:
             }
         ]
     async def _analyze_historical_patterns(self, threats: List[Dict]) -> List[str]:
-        """GeÃ§miÅŸ pattern analizi"""
+        """Geçmiþ pattern analizi"""
         patterns = []
         if len(threats) > 5:
             patterns.append('frequent_occurrence')
@@ -181,21 +181,21 @@ class HistoricalPatternAnalyzer:
         severities = [t.get('severity', 0.5) for t in threats]
         return sum(severities) / len(severities)
     def _extract_predictive_indicators(self, threats: List[Dict]) -> List[str]:
-        """Tahmin gÃ¶stergelerini Ã§Ä±kar"""
+        """Tahmin göstergelerini çýkar"""
         indicators = []
         resolved_count = len([t for t in threats if t.get('outcome') == 'resolved'])
         if resolved_count > len(threats) * 0.8:
             indicators.append('high_resolution_rate')
         return indicators
     def _calculate_historical_confidence(self, threats: List[Dict]) -> float:
-        """GeÃ§miÅŸ veriye dayalÄ± gÃ¼venilirlik"""
+        """Geçmiþ veriye dayalý güvenilirlik"""
         if not threats:
             return 0.3
         base_confidence = min(len(threats) / 10.0, 0.8)  # Max 0.8
         return base_confidence + 0.2  # Min 0.2
 class IntelligentThreatProcessor:
     """
-    ðŸ§  Ana AI destekli tehdit analiz motoru
+    ?? Ana AI destekli tehdit analiz motoru
     """
     def __init__(self):
         self.ai_service = unified_ai_service
@@ -206,7 +206,7 @@ class IntelligentThreatProcessor:
         logger.info("Intelligent Threat Processor initialized")
     async def analyze_threat_comprehensive(self, threat_data: Dict) -> ThreatAnalysisResult:
         """
-        ðŸŽ¯ KapsamlÄ± AI tehdit analizi
+        ?? Kapsamlý AI tehdit analizi
         """
         start_time = datetime.now()
         threat_id = threat_data.get('threat_id', f"threat_{int(start_time.timestamp())}")
@@ -242,24 +242,24 @@ class IntelligentThreatProcessor:
         try:
             threat_summary = self._prepare_threat_summary(threat_data)
             prompt = f"""
-Sen CLIFF Uzay Tehdit Analizi UzmanÄ±sÄ±n. AÅŸaÄŸÄ±daki tehdit verisini detaylÄ± analiz et:
-TEHDIT VERÄ°SÄ°:
+Sen CLIFF Uzay Tehdit Analizi Uzmanýsýn. Aþaðýdaki tehdit verisini detaylý analiz et:
+TEHDIT VERÝSÝ:
 {json.dumps(threat_summary, indent=2, ensure_ascii=False)}
-LÃ¼tfen ÅŸu kriterleri 0.0-1.0 aralÄ±ÄŸÄ±nda deÄŸerlendir ve JSON formatÄ±nda yanÄ±tla:
-1. SEVERITY_SCORE: Genel tehdit ÅŸiddeti (0.0=Ã§ok dÃ¼ÅŸÃ¼k, 1.0=kritik)
-2. IMPACT_PROBABILITY: Ã‡arpma/etki olasÄ±lÄ±ÄŸÄ±
+Lütfen þu kriterleri 0.0-1.0 aralýðýnda deðerlendir ve JSON formatýnda yanýtla:
+1. SEVERITY_SCORE: Genel tehdit þiddeti (0.0=çok düþük, 1.0=kritik)
+2. IMPACT_PROBABILITY: Çarpma/etki olasýlýðý
 3. DAMAGE_POTENTIAL: Potansiyel hasar derecesi  
-4. TIME_CRITICALITY: Zaman kritiÄŸi (1.0=acil mÃ¼dahale gerekli)
-5. CONFIDENCE_ASSESSMENT: Bu analiz iÃ§in gÃ¼venilirlik
-6. RISK_FACTORS: Ana risk faktÃ¶rlerini listele
-7. RECOMMENDED_ACTIONS: Ã–nerilen eylemler (max 5)
-8. THREAT_EVOLUTION: Tehdidin nasÄ±l geliÅŸebileceÄŸi
-YanÄ±tÄ±n sadece geÃ§erli JSON olsun:
+4. TIME_CRITICALITY: Zaman kritiði (1.0=acil müdahale gerekli)
+5. CONFIDENCE_ASSESSMENT: Bu analiz için güvenilirlik
+6. RISK_FACTORS: Ana risk faktörlerini listele
+7. RECOMMENDED_ACTIONS: Önerilen eylemler (max 5)
+8. THREAT_EVOLUTION: Tehdidin nasýl geliþebileceði
+Yanýtýn sadece geçerli JSON olsun:
 """
             request = UnifiedChatRequest(
                 messages=[{"role": "user", "content": prompt}],
                 model="gemini-2.5-pro",
-                temperature=0.2,  # TutarlÄ±lÄ±k iÃ§in dÃ¼ÅŸÃ¼k
+                temperature=0.2,  # Tutarlýlýk için düþük
                 max_tokens=1024
             )
             response = await self.ai_service.chat_completion(request)
@@ -296,7 +296,7 @@ YanÄ±tÄ±n sadece geÃ§erli JSON olsun:
                 'clustering_result': 'unknown'
             }
     async def _correlate_with_historical(self, threat_data: Dict) -> Dict[str, Any]:
-        """GeÃ§miÅŸ verilerle korelasyon"""
+        """Geçmiþ verilerle korelasyon"""
         return await self.historical_analyzer.correlate_with_history(threat_data)
     async def _cross_validate_and_combine(
         self,
@@ -305,7 +305,7 @@ YanÄ±tÄ±n sadece geÃ§erli JSON olsun:
         ml_patterns: Dict, 
         historical_correlation: Dict
     ) -> ThreatAnalysisResult:
-        """Cross-validation ve sonuÃ§ birleÅŸtirme"""
+        """Cross-validation ve sonuç birleþtirme"""
         ai_confidence = ai_insights.get('confidence_assessment', 0.5)
         ml_confidence = ml_patterns.get('confidence', 0.5)
         hist_confidence = historical_correlation.get('confidence_score', 0.3)
@@ -333,7 +333,7 @@ YanÄ±tÄ±n sadece geÃ§erli JSON olsun:
         recommendations = []
         recommendations.extend(ai_insights.get('recommended_actions', []))
         if ml_patterns.get('predicted_evolution') == 'escalating':
-            recommendations.append('SÃ¼rekli izleme artÄ±rÄ±n - tehdit yÃ¼kselebilir')
+            recommendations.append('Sürekli izleme artýrýn - tehdit yükselebilir')
         if len(recommendations) > 5:
             recommendations = recommendations[:5]
         risk_factors = {}
@@ -359,7 +359,7 @@ YanÄ±tÄ±n sadece geÃ§erli JSON olsun:
         logger.info(f"Cross-validation completed - Final severity: {severity_score:.3f}")
         return result
     def _prepare_threat_summary(self, threat_data: Dict) -> Dict:
-        """AI iÃ§in tehdit Ã¶zetini hazÄ±rla"""
+        """AI için tehdit özetini hazýrla"""
         return {
             'id': threat_data.get('threat_id', 'unknown'),
             'type': threat_data.get('threat_type', 'unknown'),
@@ -375,7 +375,7 @@ YanÄ±tÄ±n sadece geÃ§erli JSON olsun:
             ]}
         }
     def _parse_ai_json_response(self, response_text: str) -> Dict:
-        """AI JSON yanÄ±tÄ±nÄ± parse et"""
+        """AI JSON yanýtýný parse et"""
         try:
             start_idx = response_text.find('{')
             end_idx = response_text.rfind('}') + 1
@@ -388,7 +388,7 @@ YanÄ±tÄ±n sadece geÃ§erli JSON olsun:
             logger.warning(f"AI JSON parse error: {str(e)}")
             return self._create_fallback_ai_analysis()
     def _validate_ai_scores(self, analysis: Dict) -> Dict:
-        """AI skorlarÄ±nÄ± doÄŸrula ve normalize et"""
+        """AI skorlarýný doðrula ve normalize et"""
         score_fields = ['severity_score', 'impact_probability', 'damage_potential', 'time_criticality', 'confidence_assessment']
         for field in score_fields:
             if field in analysis:
@@ -402,7 +402,7 @@ YanÄ±tÄ±n sadece geÃ§erli JSON olsun:
                 analysis[field] = [] if field == 'recommended_actions' else {}
         return analysis
     def _create_fallback_ai_analysis(self) -> Dict:
-        """AI analizi baÅŸarÄ±sÄ±z olursa fallback"""
+        """AI analizi baþarýsýz olursa fallback"""
         return {
             'severity_score': 0.5,
             'impact_probability': 0.1, 
@@ -410,7 +410,7 @@ YanÄ±tÄ±n sadece geÃ§erli JSON olsun:
             'time_criticality': 0.5,
             'confidence_assessment': 0.2,
             'risk_factors': {'ai_analysis_failed': True},
-            'recommended_actions': ['Manuel inceleme yapÄ±n', 'Ek veri kaynaklarÄ± kontrol edin'],
+            'recommended_actions': ['Manuel inceleme yapýn', 'Ek veri kaynaklarý kontrol edin'],
             'threat_evolution': 'unknown'
         }
     def _handle_analysis_result(self, result: Any, analysis_type: str) -> Dict:
@@ -436,12 +436,12 @@ YanÄ±tÄ±n sadece geÃ§erli JSON olsun:
             ai_insights={'error': error_reason},
             ml_patterns={'error': error_reason},
             historical_correlation={'error': error_reason},
-            recommended_actions=['Manuel inceleme gerekli', 'Sistem yÃ¶neticisini bilgilendir'],
+            recommended_actions=['Manuel inceleme gerekli', 'Sistem yöneticisini bilgilendir'],
             risk_factors={'system_error': True, 'reason': error_reason},
             timestamp=datetime.now()
         )
     def _combine_scores(self, weighted_scores: List[Tuple[float, float]]) -> float:
-        """AÄŸÄ±rlÄ±klÄ± skorlarÄ± birleÅŸtir"""
+        """Aðýrlýklý skorlarý birleþtir"""
         if not weighted_scores:
             return 0.5
         total_weight = sum(weight for _, weight in weighted_scores)
@@ -450,7 +450,7 @@ YanÄ±tÄ±n sadece geÃ§erli JSON olsun:
         weighted_sum = sum(score * weight for score, weight in weighted_scores)
         return max(0.0, min(1.0, weighted_sum / total_weight))
     def _categorize_confidence(self, confidence: float) -> ConfidenceLevel:
-        """GÃ¼venilirlik seviyesi kategorize et"""
+        """Güvenilirlik seviyesi kategorize et"""
         if confidence >= 0.9:
             return ConfidenceLevel.VERY_HIGH
         elif confidence >= 0.7:
@@ -501,7 +501,7 @@ YanÄ±tÄ±n sadece geÃ§erli JSON olsun:
             return 'general_threat'
 intelligent_threat_processor = IntelligentThreatProcessor()
 def get_intelligent_threat_processor() -> IntelligentThreatProcessor:
-    """Dependency injection iÃ§in"""
+    """Dependency injection için"""
     return intelligent_threat_processor
 __all__ = [
     'IntelligentThreatProcessor',

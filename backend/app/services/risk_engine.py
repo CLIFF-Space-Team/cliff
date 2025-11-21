@@ -1,4 +1,4 @@
-ï»¿from __future__ import annotations
+from __future__ import annotations
 from typing import Dict, Optional
 from datetime import datetime
 import structlog
@@ -22,7 +22,7 @@ def _classify(torino: Optional[float], palermo: Optional[float], diameter_min_km
         return "medium"
     return "low"
 async def compute_risk_levels() -> Dict[str, int]:
-    """TÃ¼m risk kayÄ±tlarÄ± iÃ§in risk_level hesapla ve gÃ¼ncelle (toplu sorgu)."""
+    """Tüm risk kayýtlarý için risk_level hesapla ve güncelle (toplu sorgu)."""
     from app.services.neo_repository import get_all_risks, get_all_asteroids, get_all_approaches
     all_risks = await get_all_risks()
     all_asteroids_list = await get_all_asteroids()
@@ -49,5 +49,5 @@ async def compute_risk_levels() -> Dict[str, int]:
         if r.get("risk_level") != level:
             await risks_col.update_one({"_id": r["_id"]}, {"$set": {"risk_level": level, "updated_at": datetime.utcnow()}})
             updated += 1
-    logger.info("Risk seviyeleri gÃ¼ncellendi", updated=updated)
+    logger.info("Risk seviyeleri güncellendi", updated=updated)
     return {"updated": updated}

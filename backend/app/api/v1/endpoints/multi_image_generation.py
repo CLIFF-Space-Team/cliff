@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from typing import Dict, Any, List, Optional
 import structlog
 from datetime import datetime
@@ -20,7 +20,7 @@ async def generate_image_batch(
     background_tasks: BackgroundTasks = BackgroundTasks()
 ) -> MultiImageResponse:
     """
-    🎨 Generate multiple professional-grade images from content analysis
+    ?? Generate multiple professional-grade images from content analysis
     Automatically produces 4 high-quality, contextually appropriate images:
     - Hero Image: Main visual representation
     - Detail Image: Close-up/macro detail
@@ -28,7 +28,7 @@ async def generate_image_batch(
     - Artistic Image: Creative interpretation
     """
     try:
-        logger.info(f"🎨 Multi-image generation request: {request.content[:50]}...")
+        logger.info(f"?? Multi-image generation request: {request.content[:50]}...")
         if not request.content or not request.content.strip():
             raise HTTPException(status_code=400, detail="Content cannot be empty")
         if len(request.content) > 2000:
@@ -40,7 +40,7 @@ async def generate_image_batch(
         total_time = int((datetime.now() - start_time).total_seconds() * 1000)
         if response.success:
             logger.info(
-                f"✅ Multi-image generation successful",
+                f"? Multi-image generation successful",
                 content_length=len(request.content),
                 requested_count=request.image_count,
                 successful_count=response.successful_generations,
@@ -53,7 +53,7 @@ async def generate_image_batch(
             )
         else:
             logger.error(
-                f"❌ Multi-image generation failed",
+                f"? Multi-image generation failed",
                 error=response.error_message,
                 content=request.content[:100]
             )
@@ -74,7 +74,7 @@ async def analyze_content_for_visuals(
     multi_service: MultiImageGenerator = Depends(get_multi_image_service)
 ) -> Dict[str, Any]:
     """
-    🔍 Analyze content for visual generation potential
+    ?? Analyze content for visual generation potential
     Provides detailed analysis of content including:
     - Main theme identification
     - Visual element extraction
@@ -87,7 +87,7 @@ async def analyze_content_for_visuals(
         content_type = request.get("content_type")
         if not content:
             raise HTTPException(status_code=400, detail="Content cannot be empty")
-        logger.info(f"🔍 Analyzing content for visuals: {content[:50]}...")
+        logger.info(f"?? Analyzing content for visuals: {content[:50]}...")
         parsed_content_type = None
         if content_type:
             try:
@@ -96,7 +96,7 @@ async def analyze_content_for_visuals(
                 logger.warning(f"Invalid content type: {content_type}")
         analysis = await multi_service.analyze_content(content, parsed_content_type)
         logger.info(
-            f"🔍 Content analysis completed",
+            f"?? Content analysis completed",
             theme=analysis.main_theme,
             content_type=analysis.content_type.value,
             confidence=analysis.confidence_score,
@@ -144,7 +144,7 @@ async def analyze_content_for_visuals(
 @router.get("/supported-options")
 async def get_supported_options() -> Dict[str, Any]:
     """
-    📋 Get all supported content types, styles, and composition options
+    ?? Get all supported content types, styles, and composition options
     """
     return {
         "success": True,
@@ -222,14 +222,14 @@ async def quick_generate_images(
     multi_service: MultiImageGenerator = Depends(get_multi_image_service)
 ) -> MultiImageResponse:
     """
-    ⚡ Quick generation with smart defaults
+    ? Quick generation with smart defaults
     Simplified interface for fast multi-image generation with intelligent defaults
     """
     try:
         content = request.get("content", "").strip()
         if not content:
             raise HTTPException(status_code=400, detail="Content is required")
-        logger.info(f"⚡ Quick multi-image generation: {content[:50]}...")
+        logger.info(f"? Quick multi-image generation: {content[:50]}...")
         quick_request = MultiImageRequest(
             content=content,
             image_count=request.get("count", 4),
@@ -246,7 +246,7 @@ async def quick_generate_images(
                 logger.warning(f"Invalid style provided: {request['style']}")
         response = await multi_service.generate_multiple_images(quick_request)
         if response.success:
-            logger.info(f"⚡ Quick generation completed: {response.successful_generations} images")
+            logger.info(f"? Quick generation completed: {response.successful_generations} images")
         return response
     except HTTPException:
         raise
@@ -262,10 +262,10 @@ async def get_multi_image_service_status(
     multi_service: MultiImageGenerator = Depends(get_multi_image_service)
 ) -> Dict[str, Any]:
     """
-    📊 Get multi-image generation service status and statistics
+    ?? Get multi-image generation service status and statistics
     """
     try:
-        logger.info("📊 Checking multi-image generation service status...")
+        logger.info("?? Checking multi-image generation service status...")
         stats = multi_service.get_service_stats()
         success_rate = 0.0
         if stats["total_requests"] > 0:
@@ -275,7 +275,7 @@ async def get_multi_image_service_status(
             avg_images_per_request = stats["total_images_generated"] / stats["successful_requests"]
         status_info = {
             "service_name": "Multi-Image Generation Service",
-            "provider": "Enhanced Cortex AI + Grok-4-fast-reasoning",
+            "provider": "Enhanced AI + Intelligent Enhancement",
             "features": [
                 "Intelligent Content Analysis",
                 "Professional Composition Techniques", 
@@ -317,7 +317,7 @@ async def get_multi_image_service_status(
             overall_status = "degraded"
         elif stats["total_requests"] == 0:
             overall_status = "ready"
-        logger.info(f"📊 Multi-image service status: {overall_status}")
+        logger.info(f"?? Multi-image service status: {overall_status}")
         return {
             "success": True,
             "status": overall_status,
@@ -339,7 +339,7 @@ async def test_multi_image_generation(
     multi_service: MultiImageGenerator = Depends(get_multi_image_service)
 ) -> Dict[str, Any]:
     """
-    🧪 Test multi-image generation with sample content
+    ?? Test multi-image generation with sample content
     """
     try:
         test_contents = [
@@ -350,7 +350,7 @@ async def test_multi_image_generation(
         ]
         test_content = request.get("content") if request else test_contents[0]
         test_count = request.get("count", 2) if request else 2  # Reduced for testing
-        logger.info(f"🧪 Testing multi-image generation with: {test_content[:50]}...")
+        logger.info(f"?? Testing multi-image generation with: {test_content[:50]}...")
         test_request = MultiImageRequest(
             content=test_content,
             image_count=test_count,
@@ -398,9 +398,9 @@ async def test_multi_image_generation(
             "timestamp": datetime.now().isoformat()
         }
         if response.success:
-            logger.info(f"✅ Multi-image test successful: {response.successful_generations}/{test_count} in {test_duration}ms")
+            logger.info(f"? Multi-image test successful: {response.successful_generations}/{test_count} in {test_duration}ms")
         else:
-            logger.error(f"❌ Multi-image test failed: {response.error_message}")
+            logger.error(f"? Multi-image test failed: {response.error_message}")
         return result
     except Exception as e:
         error_msg = f"Test generation error: {str(e)}"
@@ -417,12 +417,12 @@ async def test_multi_image_generation(
 @router.get("/health")
 async def health_check() -> Dict[str, Any]:
     """
-    💚 Multi-image generation service health check
+    ?? Multi-image generation service health check
     """
     return {
         "status": "healthy",
         "service": "Multi-Image Generation API",
-        "provider": "Enhanced Cortex AI + Professional Composition System",
+        "provider": "Enhanced AI + Professional Composition System",
         "features": [
             "Intelligent Content Analysis",
             "Professional Multi-Image Generation", 

@@ -1,44 +1,44 @@
-ï»¿from beanie import Document
+from beanie import Document
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 class SimpleEarthEventModel(BaseModel):
-    """Basit doÄŸal olay modeli"""
+    """Basit doðal olay modeli"""
     id: str = Field(..., description="Olay ID")
-    title: str = Field(..., description="Olay baÅŸlÄ±ÄŸÄ±")
-    category: str = Field(..., description="Kategori (TÃ¼rkÃ§e)")
-    severity: str = Field(..., description="Ã–nem derecesi: DÃ¼ÅŸÃ¼k, Orta, YÃ¼ksek")
+    title: str = Field(..., description="Olay baþlýðý")
+    category: str = Field(..., description="Kategori (Türkçe)")
+    severity: str = Field(..., description="Önem derecesi: Düþük, Orta, Yüksek")
     date: str = Field(..., description="Olay tarihi")
     location: Optional[str] = Field(None, description="Konum")
-    description: Optional[str] = Field(None, description="KÄ±sa aÃ§Ä±klama")
-    source: Optional[str] = Field(default="NASA EONET", description="Veri kaynaÄŸÄ±")
+    description: Optional[str] = Field(None, description="Kýsa açýklama")
+    source: Optional[str] = Field(default="NASA EONET", description="Veri kaynaðý")
     coordinates: Optional[Dict[str, float]] = Field(None, description="Koordinatlar (lat, lon)")
     class Config:
         json_schema_extra = {
             "example": {
                 "id": "EONET_12345",
-                "title": "Etna YanardaÄŸÄ± Aktivitesi",
-                "category": "YanardaÄŸ",
+                "title": "Etna Yanardaðý Aktivitesi",
+                "category": "Yanardað",
                 "severity": "Orta",
                 "date": "2025-01-15",
-                "location": "Ä°talya, Sicilya",
-                "description": "Etna yanardaÄŸÄ±nda artan aktivite gÃ¶zlemleniyor",
+                "location": "Ýtalya, Sicilya",
+                "description": "Etna yanardaðýnda artan aktivite gözlemleniyor",
                 "coordinates": {"lat": 37.734, "lon": 15.004}
             }
         }
 class EarthEventStatistics(BaseModel):
-    """DoÄŸal olay istatistikleri"""
-    total_events: int = Field(default=0, description="Toplam olay sayÄ±sÄ±")
-    active_events: int = Field(default=0, description="Aktif olay sayÄ±sÄ±")
-    by_category: Dict[str, int] = Field(default_factory=dict, description="Kategoriye gÃ¶re daÄŸÄ±lÄ±m")
-    by_severity: Dict[str, int] = Field(default_factory=dict, description="Ã–nem derecesine gÃ¶re")
-    by_region: Dict[str, int] = Field(default_factory=dict, description="BÃ¶lgeye gÃ¶re")
+    """Doðal olay istatistikleri"""
+    total_events: int = Field(default=0, description="Toplam olay sayýsý")
+    active_events: int = Field(default=0, description="Aktif olay sayýsý")
+    by_category: Dict[str, int] = Field(default_factory=dict, description="Kategoriye göre daðýlým")
+    by_severity: Dict[str, int] = Field(default_factory=dict, description="Önem derecesine göre")
+    by_region: Dict[str, int] = Field(default_factory=dict, description="Bölgeye göre")
 class EarthEventDocument(Document):
-    """MongoDB iÃ§in doÄŸal olay dokÃ¼manÄ±"""
+    """MongoDB için doðal olay dokümaný"""
     event_id: str = Field(..., description="Unique event ID")
     title: str = Field(..., description="Event title")
     category: str = Field(..., description="Event category in Turkish")
-    severity: str = Field(..., description="Severity level: DÃ¼ÅŸÃ¼k, Orta, YÃ¼ksek")
+    severity: str = Field(..., description="Severity level: Düþük, Orta, Yüksek")
     event_date: datetime = Field(..., description="Event occurrence date")
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Record creation time")
     last_updated: datetime = Field(default_factory=datetime.utcnow, description="Last update time")
@@ -57,128 +57,128 @@ class EarthEventDocument(Document):
         name = "earth_events"
     @property
     def turkish_category(self) -> str:
-        """Kategoriyi TÃ¼rkÃ§e'ye Ã§evir"""
+        """Kategoriyi Türkçe'ye çevir"""
         category_mapping = {
-            "Volcanoes": "YanardaÄŸ",
-            "Wildfires": "Orman YangÄ±nÄ±", 
-            "Severe Storms": "Åžiddetli FÄ±rtÄ±na",
+            "Volcanoes": "Yanardað",
+            "Wildfires": "Orman Yangýný", 
+            "Severe Storms": "Þiddetli Fýrtýna",
             "Floods": "Sel",
-            "Drought": "KuraklÄ±k",
+            "Drought": "Kuraklýk",
             "Dust and Haze": "Toz ve Duman",
             "Earthquakes": "Deprem",
             "Landslides": "Heyelan",
-            "Manmade": "Ä°nsan KaynaklÄ±",
-            "Sea and Lake Ice": "Deniz ve GÃ¶l BuzlarÄ±",
+            "Manmade": "Ýnsan Kaynaklý",
+            "Sea and Lake Ice": "Deniz ve Göl Buzlarý",
             "Snow": "Kar",
-            "Temperature Extremes": "AÅŸÄ±rÄ± SÄ±caklÄ±klar"
+            "Temperature Extremes": "Aþýrý Sýcaklýklar"
         }
         return category_mapping.get(self.category, self.category)
     @property 
     def severity_color(self) -> str:
-        """Ã–nem derecesine gÃ¶re renk"""
+        """Önem derecesine göre renk"""
         colors = {
-            "DÃ¼ÅŸÃ¼k": "#22c55e",    # YeÅŸil
+            "Düþük": "#22c55e",    # Yeþil
             "Orta": "#f59e0b",     # Turuncu
-            "YÃ¼ksek": "#ef4444"    # KÄ±rmÄ±zÄ±
+            "Yüksek": "#ef4444"    # Kýrmýzý
         }
         return colors.get(self.severity, "#6b7280")  # Gri default
 EARTH_EVENT_CATEGORIES = {
     "volcanoes": {
-        "turkish": "YanardaÄŸ",
-        "icon": "ðŸŒ‹",
+        "turkish": "Yanardað",
+        "icon": "??",
         "description": "Volkanik aktivite ve patlamalar"
     },
     "wildfires": {
-        "turkish": "Orman YangÄ±nÄ±",
-        "icon": "ðŸ”¥", 
-        "description": "DoÄŸal ve insan kaynaklÄ± yangÄ±nlar"
+        "turkish": "Orman Yangýný",
+        "icon": "??", 
+        "description": "Doðal ve insan kaynaklý yangýnlar"
     },
     "severe_storms": {
-        "turkish": "Åžiddetli FÄ±rtÄ±na",
-        "icon": "â›ˆï¸",
-        "description": "KasÄ±rga, tornado ve ÅŸiddetli fÄ±rtÄ±nalar"
+        "turkish": "Þiddetli Fýrtýna",
+        "icon": "??",
+        "description": "Kasýrga, tornado ve þiddetli fýrtýnalar"
     },
     "floods": {
         "turkish": "Sel",
-        "icon": "ðŸŒŠ",
-        "description": "Seller ve su baskÄ±nlarÄ±"
+        "icon": "??",
+        "description": "Seller ve su baskýnlarý"
     },
     "earthquakes": {
         "turkish": "Deprem", 
-        "icon": "ðŸ”ï¸",
+        "icon": "???",
         "description": "Sismik aktivite ve depremler"
     },
     "drought": {
-        "turkish": "KuraklÄ±k",
-        "icon": "ðŸœï¸",
-        "description": "Uzun sÃ¼reli kuraklÄ±k durumlarÄ±"
+        "turkish": "Kuraklýk",
+        "icon": "???",
+        "description": "Uzun süreli kuraklýk durumlarý"
     },
     "dust_haze": {
-        "turkish": "Toz FÄ±rtÄ±nasÄ±",
-        "icon": "ðŸŒ«ï¸", 
-        "description": "Toz fÄ±rtÄ±nalarÄ± ve hava kirliliÄŸi"
+        "turkish": "Toz Fýrtýnasý",
+        "icon": "???", 
+        "description": "Toz fýrtýnalarý ve hava kirliliði"
     },
     "landslides": {
         "turkish": "Heyelan",
-        "icon": "â›°ï¸",
-        "description": "Toprak kaymalarÄ± ve heyelanlar"
+        "icon": "??",
+        "description": "Toprak kaymalarý ve heyelanlar"
     },
     "temperature_extremes": {
-        "turkish": "AÅŸÄ±rÄ± SÄ±caklÄ±k",
-        "icon": "ðŸŒ¡ï¸",
-        "description": "AÅŸÄ±rÄ± sÄ±cak ve soÄŸuk hava durumlarÄ±"
+        "turkish": "Aþýrý Sýcaklýk",
+        "icon": "???",
+        "description": "Aþýrý sýcak ve soðuk hava durumlarý"
     },
     "snow": {
-        "turkish": "Kar FÄ±rtÄ±nasÄ±", 
-        "icon": "â„ï¸",
-        "description": "Kar fÄ±rtÄ±nalarÄ± ve buzlanma"
+        "turkish": "Kar Fýrtýnasý", 
+        "icon": "??",
+        "description": "Kar fýrtýnalarý ve buzlanma"
     }
 }
 def categorize_earth_event(original_category: str, title: str = "") -> tuple[str, str]:
     """
-    NASA EONET kategorisini TÃ¼rkÃ§e kategoriye Ã§evir
+    NASA EONET kategorisini Türkçe kategoriye çevir
     Returns: (turkish_category, severity)
     """
     title_lower = title.lower()
     cat_lower = original_category.lower()
-    if "volcano" in cat_lower or "yanardaÄŸ" in title_lower:
-        category = "YanardaÄŸ"
-    elif "wildfire" in cat_lower or "fire" in cat_lower or "yangÄ±n" in title_lower:
-        category = "Orman YangÄ±nÄ±"
-    elif "storm" in cat_lower or "hurricane" in cat_lower or "fÄ±rtÄ±na" in title_lower:
-        category = "Åžiddetli FÄ±rtÄ±na"
+    if "volcano" in cat_lower or "yanardað" in title_lower:
+        category = "Yanardað"
+    elif "wildfire" in cat_lower or "fire" in cat_lower or "yangýn" in title_lower:
+        category = "Orman Yangýný"
+    elif "storm" in cat_lower or "hurricane" in cat_lower or "fýrtýna" in title_lower:
+        category = "Þiddetli Fýrtýna"
     elif "flood" in cat_lower or "sel" in title_lower:
         category = "Sel"
     elif "earthquake" in cat_lower or "deprem" in title_lower:
         category = "Deprem"
-    elif "drought" in cat_lower or "kuraklÄ±k" in title_lower:
-        category = "KuraklÄ±k"
+    elif "drought" in cat_lower or "kuraklýk" in title_lower:
+        category = "Kuraklýk"
     elif "dust" in cat_lower or "haze" in cat_lower or "toz" in title_lower:
-        category = "Toz FÄ±rtÄ±nasÄ±"
+        category = "Toz Fýrtýnasý"
     elif "landslide" in cat_lower or "heyelan" in title_lower:
         category = "Heyelan"
     elif "temperature" in cat_lower or "heat" in cat_lower or "cold" in cat_lower:
-        category = "AÅŸÄ±rÄ± SÄ±caklÄ±k"
+        category = "Aþýrý Sýcaklýk"
     elif "snow" in cat_lower or "ice" in cat_lower or "kar" in title_lower:
-        category = "Kar FÄ±rtÄ±nasÄ±"
+        category = "Kar Fýrtýnasý"
     else:
-        category = "DiÄŸer"
-    severity = "DÃ¼ÅŸÃ¼k"
-    if any(keyword in title_lower for keyword in ["major", "severe", "extreme", "critical", "ÅŸiddetli", "bÃ¼yÃ¼k", "kritik"]):
-        severity = "YÃ¼ksek"
-    elif any(keyword in title_lower for keyword in ["moderate", "significant", "orta", "Ã¶nemli"]):
+        category = "Diðer"
+    severity = "Düþük"
+    if any(keyword in title_lower for keyword in ["major", "severe", "extreme", "critical", "þiddetli", "büyük", "kritik"]):
+        severity = "Yüksek"
+    elif any(keyword in title_lower for keyword in ["moderate", "significant", "orta", "önemli"]):
         severity = "Orta"
     return category, severity
 def get_region_from_coordinates(lat: float, lon: float) -> str:
-    """Koordinatlardan bÃ¶lge belirle"""
+    """Koordinatlardan bölge belirle"""
     if lat >= 35 and lat <= 42 and lon >= 26 and lon <= 45:
-        return "TÃ¼rkiye"
+        return "Türkiye"
     elif lat >= 40 and lat <= 70 and lon >= -10 and lon <= 40:
         return "Avrupa"
     elif lat >= 25 and lat <= 50 and lon >= -130 and lon <= -60:
         return "Kuzey Amerika"
     elif lat >= -40 and lat <= 15 and lon >= -80 and lon <= -35:
-        return "GÃ¼ney Amerika"
+        return "Güney Amerika"
     elif lat >= -35 and lat <= 35 and lon >= 15 and lon <= 55:
         return "Afrika"
     elif lat >= 10 and lat <= 55 and lon >= 60 and lon <= 150:
@@ -186,12 +186,12 @@ def get_region_from_coordinates(lat: float, lon: float) -> str:
     elif lat >= -50 and lat <= -10 and lon >= 110 and lon <= 180:
         return "Okyanusya"
     else:
-        return "DiÄŸer BÃ¶lgeler"
+        return "Diðer Bölgeler"
 class EarthEventProcessor:
-    """DoÄŸal olay verilerini iÅŸleme sÄ±nÄ±fÄ±"""
+    """Doðal olay verilerini iþleme sýnýfý"""
     @staticmethod
     def process_nasa_event(raw_event: Dict[str, Any]) -> SimpleEarthEventModel:
-        """NASA EONET verisini basit modele Ã§evir"""
+        """NASA EONET verisini basit modele çevir"""
         try:
             event_id = raw_event.get("id", "unknown")
             title = raw_event.get("title", "Bilinmeyen Olay")
@@ -204,7 +204,7 @@ class EarthEventProcessor:
             geometry = raw_event.get("geometry", [])
             if geometry:
                 last_geom = geometry[-1]
-                date = last_geom.get("date", "")[:10]  # Sadece tarih kÄ±smÄ±
+                date = last_geom.get("date", "")[:10]  # Sadece tarih kýsmý
                 if last_geom.get("coordinates"):
                     coords = last_geom["coordinates"]
                     if isinstance(coords, list) and len(coords) >= 2:
@@ -226,9 +226,9 @@ class EarthEventProcessor:
         except Exception as e:
             return SimpleEarthEventModel(
                 id=raw_event.get("id", "error"),
-                title="Veri Ä°ÅŸleme HatasÄ±",
-                category="DiÄŸer",
-                severity="DÃ¼ÅŸÃ¼k",
+                title="Veri Ýþleme Hatasý",
+                category="Diðer",
+                severity="Düþük",
                 date=""
             )
     @staticmethod
@@ -237,7 +237,7 @@ class EarthEventProcessor:
         if not events:
             return EarthEventStatistics()
         by_category = {}
-        by_severity = {"DÃ¼ÅŸÃ¼k": 0, "Orta": 0, "YÃ¼ksek": 0}
+        by_severity = {"Düþük": 0, "Orta": 0, "Yüksek": 0}
         by_region = {}
         for event in events:
             by_category[event.category] = by_category.get(event.category, 0) + 1
@@ -252,5 +252,5 @@ class EarthEventProcessor:
             by_region=by_region
         )
 class EarthEvent(EarthEventDocument):
-    """Geriye dÃ¶nÃ¼k uyumluluk iÃ§in"""
+    """Geriye dönük uyumluluk için"""
     pass

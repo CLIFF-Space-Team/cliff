@@ -1,4 +1,4 @@
-ï»¿from __future__ import annotations
+from __future__ import annotations
 from typing import Any, Dict, List
 from datetime import datetime, timedelta
 import structlog
@@ -16,14 +16,14 @@ def _safe_float(x: Any) -> float | None:
     except Exception:
         return None
 async def ingest_neows_feed(days_ahead: int = 7) -> Dict[str, Any]:
-    """NEO Feed (maks 7 gÃ¼n) ingest"""
+    """NEO Feed (maks 7 gün) ingest"""
     service = NASAServices()
     try:
         now = datetime.utcnow().strftime("%Y-%m-%d")
         end = (datetime.utcnow() + timedelta(days=min(days_ahead, 7))).strftime("%Y-%m-%d")
         result = await service.get_neo_feed(start_date=now, end_date=end)
         if result.get("status") != "success":
-            logger.error("NeoWs feed alÄ±namadÄ±", error=result.get("error"))
+            logger.error("NeoWs feed alýnamadý", error=result.get("error"))
             return {"success": False, "error": result.get("error")}
         neos_by_day = result.get("data", {}).get("near_earth_objects", {})
         neo_count = 0
@@ -67,7 +67,7 @@ async def ingest_neows_feed(days_ahead: int = 7) -> Dict[str, Any]:
                     )
         if approach_docs:
             await insert_close_approaches(approach_docs)
-        logger.info("NeoWs ingest tamamlandÄ±", neos=neo_count, approaches=len(approach_docs))
+        logger.info("NeoWs ingest tamamlandý", neos=neo_count, approaches=len(approach_docs))
         return {"success": True, "neos": neo_count, "approaches": len(approach_docs)}
     finally:
         await service.close_session()

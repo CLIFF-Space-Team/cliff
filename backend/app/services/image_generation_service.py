@@ -1,4 +1,4 @@
-ï»¿import asyncio
+import asyncio
 import httpx
 from typing import Dict, List, Optional, Any
 from datetime import datetime
@@ -34,7 +34,7 @@ class ImageGenerationResponse(BaseModel):
     error_message: Optional[str] = None
     timestamp: str
     suggestions: Optional[List[str]] = None
-class EnhancedCortexImageService:
+class EnhancedImageService:
     """
     Enhanced Cortex AI Image Generation Service
     Powered by Grok-4-fast-reasoning for intelligent prompt enhancement
@@ -53,18 +53,18 @@ class EnhancedCortexImageService:
             "average_generation_time_ms": 0,
             "average_enhancement_time_ms": 0
         }
-        logger.info("Enhanced Cortex Image Generation Service initialized with intelligent prompt enhancement")
+        logger.info("Enhanced Image Generation Service initialized with intelligent prompt enhancement")
     async def detect_image_request(self, message: str) -> Dict[str, Any]:
         """
-        GeliÅŸmiÅŸ gÃ¶rsel talebi tespiti
+        Geliþmiþ görsel talebi tespiti
         """
         image_keywords = [
-            "gÃ¶rsel oluÅŸtur", "resim yap", "fotoÄŸraf Ã§ek", "gÃ¶rsel Ã§iz", "Ã§iz",
-            "gÃ¶ster", "oluÅŸtur", "yap", "tasarla", "gÃ¶rsel", "resim", "fotoÄŸraf", 
-            "Ã§izim", "illÃ¼strasyon", "ÅŸekil", "diyagram",
+            "görsel oluþtur", "resim yap", "fotoðraf çek", "görsel çiz", "çiz",
+            "göster", "oluþtur", "yap", "tasarla", "görsel", "resim", "fotoðraf", 
+            "çizim", "illüstrasyon", "þekil", "diyagram",
             "create image", "generate picture", "draw", "visualize", "show me",
             "imagine", "picture of", "illustration", "artwork", "design",
-            "uzay gemisi Ã§iz", "mars yÃ¼zeyi", "galaksi gÃ¶ster", "nebula", 
+            "uzay gemisi çiz", "mars yüzeyi", "galaksi göster", "nebula", 
             "robot", "astronot", "uzay", "space", "planet", "star",
             "solar system", "spacecraft", "galaxy", "universe",
             "paint", "sketch", "render", "artistic", "creative", "fantasy",
@@ -82,16 +82,16 @@ class EnhancedCortexImageService:
                     confidence_boost += 0.1
         has_intent = len(detected_keywords) > 0
         category_keywords = {
-            "space": ["uzay", "space", "mars", "dÃ¼nya", "earth", "gÃ¼neÅŸ", "sun", "ay", "moon", 
-                     "gezegen", "planet", "yÄ±ldÄ±z", "star", "galaksi", "galaxy", "nebula",
-                     "asteroid", "kuyruklu yÄ±ldÄ±z", "comet", "uzay gemisi", "spacecraft",
+            "space": ["uzay", "space", "mars", "dünya", "earth", "güneþ", "sun", "ay", "moon", 
+                     "gezegen", "planet", "yýldýz", "star", "galaksi", "galaxy", "nebula",
+                     "asteroid", "kuyruklu yýldýz", "comet", "uzay gemisi", "spacecraft",
                      "astronot", "astronaut", "uzay istasyonu", "space station"],
-            "nature": ["doÄŸa", "nature", "orman", "forest", "aÄŸaÃ§", "tree", "Ã§iÃ§ek", "flower",
-                      "deniz", "sea", "gÃ¶l", "lake", "daÄŸ", "mountain", "hayvan", "animal"],
-            "fantasy": ["ejder", "dragon", "bÃ¼yÃ¼cÃ¼", "wizard", "peri", "fairy", "unicorn",
+            "nature": ["doða", "nature", "orman", "forest", "aðaç", "tree", "çiçek", "flower",
+                      "deniz", "sea", "göl", "lake", "dað", "mountain", "hayvan", "animal"],
+            "fantasy": ["ejder", "dragon", "büyücü", "wizard", "peri", "fairy", "unicorn",
                        "magic", "magical", "fantasy", "mythical", "legendary"],
-            "portrait": ["portre", "portrait", "yÃ¼z", "face", "kiÅŸi", "person", "insan", "human"],
-            "object": ["nesne", "object", "araÃ§", "vehicle", "makine", "machine", "alet", "tool"]
+            "portrait": ["portre", "portrait", "yüz", "face", "kiþi", "person", "insan", "human"],
+            "object": ["nesne", "object", "araç", "vehicle", "makine", "machine", "alet", "tool"]
         }
         detected_category = "general"
         category_confidence = 0.0
@@ -103,11 +103,11 @@ class EnhancedCortexImageService:
                     detected_category = category
                     category_confidence = current_confidence
         style_keywords = {
-            "photorealistic": ["gerÃ§ekÃ§i", "realistic", "photorealistic", "photo", "real"],
+            "photorealistic": ["gerçekçi", "realistic", "photorealistic", "photo", "real"],
             "artistic": ["sanatsal", "artistic", "painting", "art", "creative"],
             "cinematic": ["sinematik", "cinematic", "movie", "film", "dramatic"],
             "fantasy": ["fantastik", "fantasy", "magical", "mystical", "dreamy"],
-            "futuristic": ["fÃ¼tÃ¼ristik", "futuristic", "sci-fi", "cyberpunk", "modern"],
+            "futuristic": ["fütüristik", "futuristic", "sci-fi", "cyberpunk", "modern"],
             "vintage": ["eski", "vintage", "retro", "classic", "antique"]
         }
         detected_style = None
@@ -139,7 +139,7 @@ class EnhancedCortexImageService:
                                    style: Optional[str] = None, creativity_level: float = 0.8,
                                    detail_level: str = "high") -> Dict[str, Any]:
         """
-        AI ile akÄ±llÄ± prompt geliÅŸtirme
+        AI ile akýllý prompt geliþtirme
         """
         try:
             start_time = datetime.now()
@@ -156,7 +156,7 @@ class EnhancedCortexImageService:
                     try:
                         enhancement_request.target_category = PromptCategory(context["detected_category"])
                     except ValueError:
-                        pass  # GeÃ§ersiz kategori, otomatik belirlenmesi iÃ§in bÄ±rak
+                        pass  # Geçersiz kategori, otomatik belirlenmesi için býrak
             logger.info(f"Enhancing prompt with AI: {prompt[:50]}...")
             enhancement_response = await self.prompt_enhancer.enhance_prompt(enhancement_request)
             enhancement_time = int((datetime.now() - start_time).total_seconds() * 1000)
@@ -197,7 +197,7 @@ class EnhancedCortexImageService:
     async def fallback_prompt_enhancement(self, prompt: str, context: Dict[str, Any] = None,
                                         style: Optional[str] = None) -> str:
         """
-        Fallback prompt geliÅŸtirme (AI baÅŸarÄ±sÄ±z olursa)
+        Fallback prompt geliþtirme (AI baþarýsýz olursa)
         """
         quality_enhancers = [
             "high quality", "detailed", "professional", "8k resolution", 
@@ -230,32 +230,32 @@ class EnhancedCortexImageService:
                     "enchanted setting"
                 ])
         translations = {
-            "uzay gemisi": "spacecraft", "mars yÃ¼zeyi": "mars surface", 
-            "ay yÃ¼zeyi": "lunar surface", "uzay istasyonu": "space station",
+            "uzay gemisi": "spacecraft", "mars yüzeyi": "mars surface", 
+            "ay yüzeyi": "lunar surface", "uzay istasyonu": "space station",
             "astronot": "astronaut", "galaksi": "galaxy", "nebula": "nebula",
-            "kara delik": "black hole", "gÃ¼neÅŸ sistemi": "solar system",
-            "gezegen": "planet", "yÄ±ldÄ±z": "star", "kuyruklu yÄ±ldÄ±z": "comet",
-            "orman": "forest", "aÄŸaÃ§": "tree", "Ã§iÃ§ek": "flower",
-            "deniz": "ocean", "gÃ¶l": "lake", "daÄŸ": "mountain",
-            "hayvan": "animal", "kedi": "cat", "kÃ¶pek": "dog",
-            "ejder": "dragon", "bÃ¼yÃ¼cÃ¼": "wizard", "peri": "fairy",
-            "unicorn": "unicorn", "bÃ¼yÃ¼lÃ¼": "magical",
-            "gÃ¼zel": "beautiful", "bÃ¼yÃ¼k": "large", "kÃ¼Ã§Ã¼k": "small",
-            "renkli": "colorful", "parlak": "bright", "karanlÄ±k": "dark"
+            "kara delik": "black hole", "güneþ sistemi": "solar system",
+            "gezegen": "planet", "yýldýz": "star", "kuyruklu yýldýz": "comet",
+            "orman": "forest", "aðaç": "tree", "çiçek": "flower",
+            "deniz": "ocean", "göl": "lake", "dað": "mountain",
+            "hayvan": "animal", "kedi": "cat", "köpek": "dog",
+            "ejder": "dragon", "büyücü": "wizard", "peri": "fairy",
+            "unicorn": "unicorn", "büyülü": "magical",
+            "güzel": "beautiful", "büyük": "large", "küçük": "small",
+            "renkli": "colorful", "parlak": "bright", "karanlýk": "dark"
         }
         enhanced_prompt = prompt.lower()
         for tr_word, en_word in translations.items():
             enhanced_prompt = enhanced_prompt.replace(tr_word, en_word)
         final_enhancements = []
-        final_enhancements.extend(quality_enhancers[:3])  # Ä°lk 3 kalite artÄ±rÄ±cÄ±
+        final_enhancements.extend(quality_enhancers[:3])  # Ýlk 3 kalite artýrýcý
         if style and style in style_enhancers:
             final_enhancements.append(style_enhancers[style])
-        final_enhancements.extend(context_enhancers[:2])  # Ä°lk 2 context artÄ±rÄ±cÄ±
+        final_enhancements.extend(context_enhancers[:2])  # Ýlk 2 context artýrýcý
         final_prompt = f"{enhanced_prompt}, {', '.join(final_enhancements)}"
         return final_prompt.strip()
     async def generate_image(self, request: ImageGenerationRequest) -> ImageGenerationResponse:
         """
-        GeliÅŸmiÅŸ gÃ¶rsel oluÅŸturma
+        Geliþmiþ görsel oluþturma
         """
         try:
             start_time = datetime.now()
@@ -376,7 +376,7 @@ class EnhancedCortexImageService:
                 timestamp=datetime.now().isoformat()
             )
     def _update_metrics(self, success: bool, generation_time_ms: int, enhancement_time_ms: int):
-        """Metrics gÃ¼ncelle"""
+        """Metrics güncelle"""
         if success:
             self.metrics["successful_generations"] += 1
         else:
@@ -394,15 +394,15 @@ class EnhancedCortexImageService:
                     self.metrics["average_enhancement_time_ms"] = int(new_enh_avg)
     async def test_api_connection(self) -> Dict[str, Any]:
         """
-        API baÄŸlantÄ±sÄ±nÄ± test et
+        API baðlantýsýný test et
         """
         try:
             test_request = ImageGenerationRequest(
                 prompt="test image of a simple star",
                 model=self.default_model,
-                enhance_prompt=False  # Test iÃ§in basit tutalaim
+                enhance_prompt=False  # Test için basit tutalaim
             )
-            logger.info("Testing Enhanced Cortex Image API connection...")
+            logger.info("Testing Enhanced Image API connection...")
             response = await self.generate_image(test_request)
             return {
                 "success": response.success,
@@ -445,25 +445,25 @@ class EnhancedCortexImageService:
         """Mevcut kategorileri al"""
         return [category.value for category in PromptCategory]
     async def cleanup(self):
-        """Temizlik iÅŸlemleri"""
+        """Temizlik iþlemleri"""
         if self.http_client:
             await self.http_client.aclose()
-enhanced_cortex_image_service = EnhancedCortexImageService()
-async def get_enhanced_image_service() -> EnhancedCortexImageService:
+enhanced_image_service = EnhancedImageService()
+async def get_enhanced_image_service() -> EnhancedImageService:
     """Get enhanced image service for dependency injection"""
-    return enhanced_cortex_image_service
+    return enhanced_image_service
 async def cleanup_enhanced_image_service():
     """Cleanup enhanced image service on app shutdown"""
-    await enhanced_cortex_image_service.cleanup()
+    await enhanced_image_service.cleanup()
 async def generate_enhanced_image(prompt: str, style: Optional[str] = None,
                                 enhance: bool = True) -> ImageGenerationResponse:
-    """HÄ±zlÄ± gÃ¶rsel oluÅŸturma fonksiyonu"""
+    """Hýzlý görsel oluþturma fonksiyonu"""
     request = ImageGenerationRequest(
         prompt=prompt,
         style=style,
         enhance_prompt=enhance
     )
-    return await enhanced_cortex_image_service.generate_image(request)
-cortex_image_service = enhanced_cortex_image_service
+    return await enhanced_image_service.generate_image(request)
+cortex_image_service = enhanced_image_service
 get_image_service = get_enhanced_image_service
 cleanup_image_service = cleanup_enhanced_image_service

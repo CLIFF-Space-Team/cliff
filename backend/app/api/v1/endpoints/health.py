@@ -1,4 +1,4 @@
-﻿import asyncio
+import asyncio
 import psutil
 import time
 from datetime import datetime
@@ -55,7 +55,7 @@ class DetailedHealthResponse(BaseModel):
 @router.get("/", response_model=HealthResponse)
 async def get_health_status(settings: Settings = Depends(get_settings)) -> HealthResponse:
     """
-    Temel sistem durumu kontrolü
+    Temel sistem durumu kontrol�
     """
     try:
         current_time = datetime.utcnow()
@@ -93,7 +93,7 @@ async def get_health_status(settings: Settings = Depends(get_settings)) -> Healt
 @router.get("/detailed", response_model=DetailedHealthResponse)
 async def get_detailed_health(settings: Settings = Depends(get_settings)) -> DetailedHealthResponse:
     """
-    Detaylı sistem sağlık raporu
+    Detayl� sistem sa�l�k raporu
     """
     try:
         current_time = datetime.utcnow()
@@ -111,7 +111,7 @@ async def get_detailed_health(settings: Settings = Depends(get_settings)) -> Det
             nasa_test = await nasa_services.health_check()
             external_services["nasa_api"] = {
                 "status": "healthy",
-                "response_time_ms": None,  # API response time ölçümü eklenebilir
+                "response_time_ms": None,  # API response time �l��m� eklenebilir
                 "last_check": current_time
             }
         except Exception as e:
@@ -153,7 +153,7 @@ async def get_detailed_health(settings: Settings = Depends(get_settings)) -> Det
 @router.get("/database")
 async def database_health_check() -> JSONResponse:
     """
-    🏥 Database Health Check
+    ?? Database Health Check
     Comprehensive MongoDB Atlas connection and performance testing
     """
     try:
@@ -172,11 +172,11 @@ async def database_health_check() -> JSONResponse:
         if health_result.get("status") == "healthy":
             db_health["overall_status"] = "healthy"
             status_code = 200
-            logger.info("✅ Database health check PASSED")
+            logger.info("? Database health check PASSED")
         else:
             db_health["overall_status"] = "unhealthy"
             status_code = 503
-            logger.warning(f"⚠️ Database health check FAILED: {health_result.get('error')}")
+            logger.warning(f"?? Database health check FAILED: {health_result.get('error')}")
         if db_health["overall_status"] != "healthy":
             db_health["troubleshooting"] = [
                 "Check MongoDB SSL certificate configuration",
@@ -206,7 +206,7 @@ async def services_health_check(
     ai_services: VertexAIServices = Depends(get_ai_services)
 ) -> JSONResponse:
     """
-    🔧 External Services Health Check
+    ?? External Services Health Check
     Test NASA APIs and AI services connectivity
     """
     try:
@@ -269,7 +269,7 @@ async def services_health_check(
 @router.get("/metrics")
 async def system_metrics() -> JSONResponse:
     """
-    📊 System Performance Metrics
+    ?? System Performance Metrics
     Real-time system performance data
     """
     try:
@@ -347,7 +347,7 @@ async def system_metrics() -> JSONResponse:
 @router.post("/test")
 async def run_health_tests(background_tasks: BackgroundTasks) -> JSONResponse:
     """
-    🧪 Run Comprehensive Health Tests
+    ?? Run Comprehensive Health Tests
     Execute thorough system testing suite
     """
     try:

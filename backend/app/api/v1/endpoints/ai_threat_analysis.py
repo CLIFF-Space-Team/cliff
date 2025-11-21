@@ -1,4 +1,4 @@
-ï»¿import asyncio
+import asyncio
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Union
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks, Path, Body
@@ -32,11 +32,11 @@ async def start_comprehensive_threat_analysis(
     orchestrator = Depends(get_master_threat_orchestrator)
 ) -> Dict[str, Any]:
     """
-    ğŸ¯ KapsamlÄ± AI destekli tehdit analizi baÅŸlat
-    TÃ¼m AI servislerini koordine ederek tam analiz gerÃ§ekleÅŸtirir
+    ?? Kapsamlı AI destekli tehdit analizi başlat
+    Tüm AI servislerini koordine ederek tam analiz gerçekleştirir
     """
     try:
-        logger.info("Comprehensive AI threat analysis baÅŸlatÄ±lÄ±yor...")
+        logger.info("Comprehensive AI threat analysis başlatılıyor...")
         valid_sources = []
         if sources:
             for source in sources:
@@ -58,7 +58,7 @@ async def start_comprehensive_threat_analysis(
         return {
             "status": "started",
             "session_id": session_id,
-            "message": "Comprehensive AI threat analysis baÅŸlatÄ±ldÄ±",
+            "message": "Comprehensive AI threat analysis başlatıldı",
             "estimated_duration": "2-5 minutes",
             "analysis_phases": [phase.value for phase in OrchestrationPhase],
             "data_sources": [source.value for source in (valid_sources or [])],
@@ -74,7 +74,7 @@ async def start_comprehensive_threat_analysis(
         logger.error(f"Comprehensive analysis start error: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"AI threat analysis baÅŸlatÄ±lamadÄ±: {str(e)}"
+            detail=f"AI threat analysis başlatılamadı: {str(e)}"
         )
 @router.get("/analysis/status/{session_id}")
 async def get_analysis_status(
@@ -82,14 +82,14 @@ async def get_analysis_status(
     orchestrator = Depends(get_master_threat_orchestrator)
 ) -> Dict[str, Any]:
     """
-    ğŸ“Š Analiz durumunu sorgula
+    ?? Analiz durumunu sorgula
     """
     try:
         status = await orchestrator.get_orchestration_status(session_id)
         if not status:
             raise HTTPException(
                 status_code=404,
-                detail=f"Session {session_id} bulunamadÄ±"
+                detail=f"Session {session_id} bulunamadı"
             )
         return {
             "session_id": session_id,
@@ -102,7 +102,7 @@ async def get_analysis_status(
         logger.error(f"Status check error: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"Status sorgulanamadÄ±: {str(e)}"
+            detail=f"Status sorgulanamadı: {str(e)}"
         )
 @router.get("/analysis/results/{session_id}")
 async def get_analysis_results(
@@ -112,21 +112,21 @@ async def get_analysis_results(
     orchestrator = Depends(get_master_threat_orchestrator)
 ) -> Dict[str, Any]:
     """
-    ğŸ“‹ Analiz sonuÃ§larÄ±nÄ± al
+    ?? Analiz sonuçlarını al
     """
     try:
         status = await orchestrator.get_orchestration_status(session_id)
         if not status:
             raise HTTPException(
                 status_code=404,
-                detail=f"Session {session_id} bulunamadÄ±"
+                detail=f"Session {session_id} bulunamadı"
             )
         if status.get('status') != 'completed':
             return {
                 "session_id": session_id,
                 "status": "not_ready",
                 "current_status": status.get('status'),
-                "message": "Analiz henÃ¼z tamamlanmadÄ±",
+                "message": "Analiz henüz tamamlanmadı",
                 "progress": status.get('progress_percentage', 0)
             }
         try:
@@ -144,8 +144,8 @@ async def get_analysis_results(
                 return {
                     "session_id": session_id,
                     "status": "completed",
-                    "message": "Analiz tamamlandÄ± - sonuÃ§lar hazÄ±rlanÄ±yor",
-                    "note": "SonuÃ§lar birkaÃ§ saniye iÃ§inde hazÄ±r olacak",
+                    "message": "Analiz tamamlandı - sonuçlar hazırlanıyor",
+                    "note": "Sonuçlar birkaç saniye içinde hazır olacak",
                     "retrieved_at": datetime.now().isoformat()
                 }
         if format == "summary":
@@ -190,7 +190,7 @@ async def get_analysis_results(
         logger.error(f"Results retrieval error: {str(e)}")
         raise HTTPException(
             status_code=500,
-            detail=f"SonuÃ§lar alÄ±namadÄ±: {str(e)}"
+            detail=f"Sonuçlar alınamadı: {str(e)}"
         )
 @router.get("/analysis/stream/{session_id}")
 async def stream_analysis_progress(
@@ -198,7 +198,7 @@ async def stream_analysis_progress(
     orchestrator = Depends(get_master_threat_orchestrator)
 ) -> StreamingResponse:
     """
-    ğŸ“¡ Analiz ilerlemesini gerÃ§ek zamanlÄ± stream et
+    ?? Analiz ilerlemesini gerçek zamanlı stream et
     """
     async def generate_progress():
         """Progress stream generator"""
@@ -229,10 +229,10 @@ async def analyze_threat_with_ai(
     processor = Depends(get_intelligent_threat_processor)
 ) -> Dict[str, Any]:
     """
-    ğŸ§  Intelligent Threat Processor ile tekil tehdit analizi
+    ?? Intelligent Threat Processor ile tekil tehdit analizi
     """
     try:
-        logger.info("Intelligent threat analysis baÅŸlatÄ±lÄ±yor...")
+        logger.info("Intelligent threat analysis başlatılıyor...")
         result = await processor.analyze_threat(threat_data)
         return {
             "status": "success",
@@ -261,10 +261,10 @@ async def calculate_threat_priority(
     priority_engine = Depends(get_realtime_priority_engine)
 ) -> Dict[str, Any]:
     """
-    âš¡ Real-time Priority Engine ile Ã¶ncelik hesaplama
+    ? Real-time Priority Engine ile öncelik hesaplama
     """
     try:
-        logger.info("Priority calculation baÅŸlatÄ±lÄ±yor...")
+        logger.info("Priority calculation başlatılıyor...")
         result = await priority_engine.calculate_priority(threat_data)
         return {
             "status": "success",
@@ -293,10 +293,10 @@ async def assess_threat_risk(
     risk_calculator = Depends(get_dynamic_risk_calculator)
 ) -> Dict[str, Any]:
     """
-    ğŸ“Š Dynamic Risk Calculator ile risk deÄŸerlendirmesi
+    ?? Dynamic Risk Calculator ile risk değerlendirmesi
     """
     try:
-        logger.info("Risk assessment baÅŸlatÄ±lÄ±yor...")
+        logger.info("Risk assessment başlatılıyor...")
         result = await risk_calculator.assess_risk(threat_data)
         return {
             "status": "success",
@@ -327,10 +327,10 @@ async def analyze_threat_correlations(
     correlation_engine = Depends(get_threat_correlation_engine)
 ) -> Dict[str, Any]:
     """
-    ğŸ”— Threat Correlation Engine ile korelasyon analizi
+    ?? Threat Correlation Engine ile korelasyon analizi
     """
     try:
-        logger.info(f"Correlation analysis baÅŸlatÄ±lÄ±yor ({len(threats_data)} threats)...")
+        logger.info(f"Correlation analysis başlatılıyor ({len(threats_data)} threats)...")
         result = await correlation_engine.analyze_threat_correlations(threats_data)
         return {
             "status": "success",
@@ -368,7 +368,7 @@ async def get_data_sources_health(
     data_integrator = Depends(get_multi_source_data_integrator)
 ) -> Dict[str, Any]:
     """
-    ğŸŒ Veri kaynaklarÄ±nÄ±n saÄŸlÄ±k durumu
+    ?? Veri kaynaklarının sağlık durumu
     """
     try:
         async with data_integrator as integrator:
@@ -389,7 +389,7 @@ async def get_supported_data_sources(
     data_integrator = Depends(get_multi_source_data_integrator)
 ) -> Dict[str, Any]:
     """
-    ğŸ“‹ Desteklenen veri kaynaklarÄ±nÄ± listele
+    ?? Desteklenen veri kaynaklarını listele
     """
     try:
         supported_sources = data_integrator.get_supported_sources()
@@ -425,10 +425,10 @@ async def fetch_raw_threat_data(
     data_integrator = Depends(get_multi_source_data_integrator)
 ) -> Dict[str, Any]:
     """
-    ğŸ“¥ Ham tehdit verilerini Ã§ek ve normalize et
+    ?? Ham tehdit verilerini çek ve normalize et
     """
     try:
-        logger.info(f"Raw data fetching baÅŸlatÄ±lÄ±yor ({sources or 'all sources'})...")
+        logger.info(f"Raw data fetching başlatılıyor ({sources or 'all sources'})...")
         data_sources = []
         if sources:
             for source in sources:
@@ -462,7 +462,7 @@ async def get_ai_system_health(
     orchestrator = Depends(get_master_threat_orchestrator)
 ) -> Dict[str, Any]:
     """
-    ğŸ”§ AI sistemi saÄŸlÄ±k durumu
+    ?? AI sistemi sağlık durumu
     """
     try:
         health_status = await orchestrator.get_system_health()
@@ -483,7 +483,7 @@ async def cleanup_old_sessions(
     orchestrator = Depends(get_master_threat_orchestrator)
 ) -> Dict[str, Any]:
     """
-    ğŸ§¹ Eski analiz session'larÄ±nÄ± temizle
+    ?? Eski analiz session'larını temizle
     """
     try:
         await orchestrator.cleanup_old_sessions(max_age_hours=max_age_hours)
@@ -505,10 +505,10 @@ async def quick_threat_analysis(
     orchestrator = Depends(get_master_threat_orchestrator)
 ) -> Dict[str, Any]:
     """
-    âš¡ HÄ±zlÄ± tekil tehdit analizi
+    ? Hızlı tekil tehdit analizi
     """
     try:
-        logger.info(f"Quick analysis baÅŸlatÄ±lÄ±yor (type: {analysis_type})...")
+        logger.info(f"Quick analysis başlatılıyor (type: {analysis_type})...")
         analysis_result = {
             "threat_id": threat_data.get("threat_id", "unknown"),
             "analysis_type": analysis_type,
@@ -547,7 +547,7 @@ async def analyze_multiple_threats(
     orchestrator = Depends(get_master_threat_orchestrator)
 ) -> Dict[str, Any]:
     """
-    ğŸ“¦ Ã‡oklu tehdit batch analizi
+    ?? Çoklu tehdit batch analizi
     """
     try:
         if len(threats_data) > 100:
@@ -556,7 +556,7 @@ async def analyze_multiple_threats(
                 detail="Maximum 100 threats can be analyzed in a batch"
             )
         session_id = f"batch_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-        logger.info(f"Batch analysis baÅŸlatÄ±lÄ±yor ({len(threats_data)} threats)...")
+        logger.info(f"Batch analysis başlatılıyor ({len(threats_data)} threats)...")
         background_tasks.add_task(
             _process_batch_analysis,
             threats_data,
@@ -596,7 +596,7 @@ async def get_analysis_results_direct(
     orchestrator = Depends(get_master_threat_orchestrator)
 ) -> Dict[str, Any]:
     """
-    ğŸ“‹ Analiz sonuÃ§larÄ±nÄ± al - Direkt path (uyumluluk iÃ§in)
+    ?? Analiz sonuçlarını al - Direkt path (uyumluluk için)
     Alternative path: /results/{session_id} instead of /analysis/results/{session_id}
     """
     return await get_analysis_results(session_id, format, top_threats, orchestrator)
@@ -606,7 +606,7 @@ async def get_analysis_status_direct(
     orchestrator = Depends(get_master_threat_orchestrator)
 ) -> Dict[str, Any]:
     """
-    ğŸ“Š Analiz durumunu sorgula - Direkt path (uyumluluk iÃ§in)
+    ?? Analiz durumunu sorgula - Direkt path (uyumluluk için)
     Alternative path: /status/{session_id} instead of /analysis/status/{session_id}
     """
     return await get_analysis_status(session_id, orchestrator)

@@ -1,4 +1,4 @@
-ï»¿import math
+import math
 import time
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
@@ -93,7 +93,7 @@ class FixedOrbitalMechanicsEngine:
             fields = cad_response_data.get('fields', [])
             data_rows = cad_response_data.get('data', [])
             if not fields or not data_rows:
-                print("[WARN] CAD response boÅŸ veya geÃ§ersiz")
+                print("[WARN] CAD response boþ veya geçersiz")
                 return asteroids
             field_map = {field: idx for idx, field in enumerate(fields)}
             print(f"[INFO] CAD field mapping: {field_map}")
@@ -138,12 +138,12 @@ class FixedOrbitalMechanicsEngine:
                     asteroids.append(asteroid)
                     print(f"[SUCCESS] Row {row_idx}: {designation} parsed successfully")
                 except Exception as e:
-                    print(f"[ERROR] CAD row {row_idx} parse hatasÄ±: {e}")
+                    print(f"[ERROR] CAD row {row_idx} parse hatasý: {e}")
                     continue
-            print(f"[INFO] CAD parsing tamamlandÄ±: {len(asteroids)}/{len(data_rows)} asteroid")
+            print(f"[INFO] CAD parsing tamamlandý: {len(asteroids)}/{len(data_rows)} asteroid")
             return asteroids
         except Exception as e:
-            print(f"[ERROR] CAD data parse genel hatasÄ±: {e}")
+            print(f"[ERROR] CAD data parse genel hatasý: {e}")
             return []
     def calculate_orbital_elements(self, asteroid: AsteroidData) -> OrbitalElements:
         """Calculate orbital elements from close approach data"""
@@ -151,7 +151,7 @@ class FixedOrbitalMechanicsEngine:
             if not asteroid.close_approach_data:
                 return OrbitalElements()
             approach = asteroid.close_approach_data[0]
-            mu_sun = 1.327e20  # mÂ³/sÂ² - Standard gravitational parameter of Sun
+            mu_sun = 1.327e20  # m³/s² - Standard gravitational parameter of Sun
             r = approach.distance_km * 1000  # meters
             v = approach.velocity_kms * 1000  # m/s
             semi_major_axis_m = (mu_sun * r) / (2 * mu_sun - r * v * v)
