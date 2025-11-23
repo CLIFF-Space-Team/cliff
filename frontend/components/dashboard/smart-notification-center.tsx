@@ -182,7 +182,7 @@ const SmartNotificationCenter: React.FC<SmartNotificationCenterProps> = ({
     const connectWebSocket = () => {
       try {
         const wsUrl = process.env.NODE_ENV === "production"
-          ? `wss:
+          ? `wss://your-domain.com/ws/notifications`
           : "ws://localhost:8000/ws/notifications"
         wsRef.current = new WebSocket(wsUrl)
         wsRef.current.onmessage = (event) => {

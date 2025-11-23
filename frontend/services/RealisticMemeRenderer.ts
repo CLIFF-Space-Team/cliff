@@ -26,7 +26,7 @@ export class RealisticMemeRenderer {
     return 13
   }
   private static async loadMapboxImage(lat: number, lng: number, zoom: number): Promise<HTMLImageElement> {
-    const url = `https:
+    const url = `https://api.mapbox.com/styles/v1/mapbox/satellite-v9/static/${lng},${lat},${zoom}/1920x1080?access_token=${this.MAPBOX_TOKEN}`
     return new Promise((resolve, reject) => {
       const img = new Image()
       img.crossOrigin = 'anonymous'

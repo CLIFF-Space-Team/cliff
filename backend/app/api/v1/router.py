@@ -14,6 +14,7 @@ from app.api.v1.endpoints import (
     multi_image_generation,
     ai_threat_analysis,
     eonet_ai_images,
+    asteroid_ai_insights,
 )
 from app.websocket.manager import websocket_manager
 from app.api.v1.endpoints.health import database_health_check
@@ -92,4 +93,9 @@ api_v1_router.include_router(
     eonet_ai_images.router,
     prefix="",
     tags=["EONET AI Images", "Natural Disasters", "Emergency Visualization"],
+)
+api_v1_router.include_router(
+    asteroid_ai_insights.router,
+    prefix="/ai-insights",
+    tags=["AI Insights", "Asteroid Analysis", "Smart Recommendations"],
 )

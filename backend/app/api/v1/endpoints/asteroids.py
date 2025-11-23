@@ -14,10 +14,92 @@ from app.services.ingestors.neows_ingestor import ingest_neows_feed
 from app.services.ingestors.sentry_ingestor import ingest_sentry_once
 from app.services.normalizer.neo_normalizer import normalize_neos
 from app.services.risk_engine import compute_risk_levels
+from app.services.nasa_services import get_nasa_services
+
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/asteroids", tags=["Asteroid Threats"])
-def _clean_mongo_doc(doc):
+
+def _calculate_nasa_risk(is_hazardous: bool, distance_ld: float, diameter_max_km: float = 0) -> str:
+    # Refined Risk Scale to avoid "Everything is NONE"
     
+    # 1. CRITICAL: Existential threats
+    # Hazardous AND extremely close (inside Moon orbit)
+    if is_hazardous and distance_ld < 1.0: return "critical"
+    
+    # 2. HIGH: Major concern
+    # Hazardous AND close (< 20 LD)
+    if is_hazardous and distance_ld < 20.0: return "high"
+    # Not hazardous but huge (> 1km) AND very close (< 5 LD)
+    if not is_hazardous and diameter_max_km > 1.0 and distance_ld < 5.0: return "high"
+    
+    # 3. MEDIUM: Worth monitoring
+    # Hazardous (any distance within reason, usually PHA means it has potential)
+    if is_hazardous: return "medium"
+    # Not hazardous but Close (< 10 LD)
+    if distance_ld < 10.0: return "medium"
+    # Not hazardous but Large (> 1km) AND somewhat close (< 50 LD)
+    if diameter_max_km > 1.0 and distance_ld < 50.0: return "medium"
+
+    # 4. LOW: Routine observation
+    # Any object within a broad "interest" range (< 100 LD)
+    if distance_ld < 100.0: return "low"
+    # Large objects (> 500m) even if further out (< 200 LD)
+    if diameter_max_km > 0.5 and distance_ld < 200.0: return "low"
+    
+    return "none"
+
+def _map_nasa_neo_to_response(neo: Dict[str, Any]) -> Dict[str, Any]:
+    # Find next approach
+    approaches = neo.get("close_approach_data", [])
+    now_ts = datetime.utcnow().timestamp() * 1000
+    
+    # Sort by date
+    sorted_approaches = sorted(approaches, key=lambda x: x.get("epoch_date_close_approach", 0))
+    
+    # Find first in future
+    next_approach = None
+    for app in sorted_approaches:
+        if app.get("epoch_date_close_approach", 0) > now_ts:
+            next_approach = app
+            break
+            
+    # Fallback to last if no future (shouldn't happen often in browse) or first
+    if not next_approach and approaches:
+        next_approach = approaches[-1]
+
+    dist_ld = float(next_approach["miss_distance"]["lunar"]) if next_approach else 999.0
+    dist_au = float(next_approach["miss_distance"]["astronomical"]) if next_approach else 999.0
+    velocity = float(next_approach["relative_velocity"]["kilometers_per_second"]) if next_approach else 0.0
+    
+    is_hazardous = neo.get("is_potentially_hazardous_asteroid", False)
+    diameter_max = neo.get("estimated_diameter", {}).get("kilometers", {}).get("estimated_diameter_max", 0)
+    
+    risk_level = _calculate_nasa_risk(is_hazardous, dist_ld, diameter_max)
+    
+    diameter_min = neo.get("estimated_diameter", {}).get("kilometers", {}).get("estimated_diameter_min", 0)
+    diameter_max = neo.get("estimated_diameter", {}).get("kilometers", {}).get("estimated_diameter_max", 0)
+    
+    # Next approach object structure matching DB format
+    next_obj = {
+        "timestamp": datetime.fromtimestamp(next_approach.get("epoch_date_close_approach", 0)/1000).isoformat() if next_approach else None,
+        "distance_ld": dist_ld,
+        "distance_au": dist_au,
+        "relative_velocity_kms": velocity
+    } if next_approach else None
+
+    return {
+        "neoId": neo.get("id"),
+        "name": neo.get("name"),
+        "risk_level": risk_level,
+        "impact_probability": 0, # NASA NeoWs doesn't provide this directly in Browse
+        "torino": 0,
+        "palermo": 0,
+        "diameter_min_km": diameter_min,
+        "diameter_max_km": diameter_max,
+        "next_approach": next_obj
+    }
+
+def _clean_mongo_doc(doc):
     if doc is None:
         return None
     if isinstance(doc, list):
@@ -40,37 +122,155 @@ def _clean_mongo_doc(doc):
 @router.get("/detail/{neo_id:path}")
 async def detail(neo_id: str) -> JSONResponse:
     try:
-        logger.info("Detail ucuna istek", neo_id=neo_id)
-        ast = await get_collection("asteroids").find_one({"neows_id": neo_id})
-        if not ast:
-            ast = await get_collection("asteroids").find_one({"neo_id": neo_id})
-        risk = await get_collection("risk_assessments").find_one({"neo_id": neo_id})
-        approaches_cursor = get_collection("close_approaches").find({"neo_id": neo_id}).sort("timestamp", -1).limit(10)
-        approaches = []
-        async for doc in approaches_cursor:
-            approaches.append(doc)
-        logger.info("Detail bulundu", has_ast=bool(ast), has_risk=bool(risk), approaches_count=len(approaches))
-        result = {
-            "asteroid": _clean_mongo_doc(ast),
-            "risk": _clean_mongo_doc(risk),
-            "approaches": _clean_mongo_doc(approaches)
+        logger.info("Direct NASA Detail Request", neo_id=neo_id)
+        
+        # 1. Fetch live data from NASA
+        nasa = get_nasa_services()
+        result = await nasa.get_neo_by_id(neo_id)
+        
+        if result.get("status") != "success":
+            return JSONResponse({"error": "Asteroid not found in NASA database"}, status_code=404)
+            
+        data = result.get("data", {})
+        
+        # 2. Map to frontend expected structure
+        # Frontend expects: { asteroid: {...}, risk: {...}, approaches: [...] }
+        
+        # Extract diameters
+        est_diameter = data.get("estimated_diameter", {}).get("kilometers", {})
+        
+        # Extract orbital data
+        orbital_data = data.get("orbital_data", {})
+        
+        # Construct Asteroid Object
+        asteroid_obj = {
+            "neo_id": data.get("id"),
+            "name": data.get("name"),
+            "designation": data.get("designation"),
+            "absolute_magnitude_h": data.get("absolute_magnitude_h"),
+            "diameter_min_km": est_diameter.get("estimated_diameter_min"),
+            "diameter_max_km": est_diameter.get("estimated_diameter_max"),
+            "is_potentially_hazardous": data.get("is_potentially_hazardous_asteroid"),
+            "orbital_data": {
+                "orbit_id": orbital_data.get("orbit_id"),
+                "orbit_determination_date": orbital_data.get("orbit_determination_date"),
+                "first_observation_date": orbital_data.get("first_observation_date"),
+                "last_observation_date": orbital_data.get("last_observation_date"),
+                "data_arc_in_days": orbital_data.get("data_arc_in_days"),
+                "observations_used": orbital_data.get("observations_used"),
+                "orbit_uncertainty": orbital_data.get("orbit_uncertainty"),
+                "minimum_orbit_intersection": orbital_data.get("minimum_orbit_intersection"),
+                "jupiter_tisserand_invariant": orbital_data.get("jupiter_tisserand_invariant"),
+                "epoch_osculation": orbital_data.get("epoch_osculation"),
+                "eccentricity": orbital_data.get("eccentricity"),
+                "semi_major_axis": orbital_data.get("semi_major_axis"),
+                "inclination": orbital_data.get("inclination"),
+                "ascending_node_longitude": orbital_data.get("ascending_node_longitude"),
+                "orbital_period": orbital_data.get("orbital_period"),
+                "perihelion_distance": orbital_data.get("perihelion_distance"),
+                "perihelion_argument": orbital_data.get("perihelion_argument"),
+                "aphelion_distance": orbital_data.get("aphelion_distance"),
+                "mean_anomaly": orbital_data.get("mean_anomaly"),
+                "mean_motion": orbital_data.get("mean_motion"),
+                "equinox": orbital_data.get("equinox"),
+                "orbit_class": {
+                    "orbit_class_type": orbital_data.get("orbit_class", {}).get("orbit_class_type"),
+                    "orbit_class_description": orbital_data.get("orbit_class", {}).get("orbit_class_description"),
+                    "orbit_class_range": orbital_data.get("orbit_class", {}).get("orbit_class_range")
+                }
+            }
         }
-        return JSONResponse(result)
+
+        # Construct Close Approaches
+        approaches = []
+        raw_approaches = data.get("close_approach_data", [])
+        base_date = datetime(1970, 1, 1)
+        for app in raw_approaches:
+            epoch_ms = app.get("epoch_date_close_approach", 0)
+            # Fix for Windows [Errno 22] Invalid argument on pre-1970 timestamps
+            # Instead of fromtimestamp, use manual calculation
+            try:
+                dt = base_date + timedelta(milliseconds=epoch_ms)
+                ts_iso = dt.isoformat()
+            except Exception:
+                # Fallback or safe default if overflow occurs
+                ts_iso = datetime.utcnow().isoformat()
+
+            approaches.append({
+                "timestamp": ts_iso,
+                "distance_ld": float(app.get("miss_distance", {}).get("lunar", 0)),
+                "distance_au": float(app.get("miss_distance", {}).get("astronomical", 0)),
+                "relative_velocity_kms": float(app.get("relative_velocity", {}).get("kilometers_per_second", 0)),
+                "orbiting_body": app.get("orbiting_body")
+            })
+            
+        # Determine Threat Level for Risk Object
+        # Since we don't have Sentry data here, we calculate a simple threat level based on PH status and distance
+        is_hazardous = data.get("is_potentially_hazardous_asteroid", False)
+        
+        # Find closest future approach for risk calculation
+        now_ts = datetime.utcnow().isoformat()
+        future_approaches = [a for a in approaches if a["timestamp"] > now_ts]
+        closest_dist = 999.0
+        if future_approaches:
+            closest_dist = min(a["distance_ld"] for a in future_approaches)
+            
+        risk_level = _calculate_nasa_risk(is_hazardous, closest_dist, est_diameter.get("estimated_diameter_max", 0))
+        
+        risk_obj = {
+            "neo_id": data.get("id"),
+            "risk_level": risk_level,
+            "impact_probability": 0, # Not available in standard NeoWs lookup
+            "torino": 0,
+            "palermo": 0
+        }
+
+        result_payload = {
+            "asteroid": asteroid_obj,
+            "risk": risk_obj,
+            "approaches": approaches
+        }
+        
+        return JSONResponse(result_payload)
+        
     except Exception as e:
         logger.error("Detail hatası", neo_id=neo_id, error=str(e), exc_info=True)
         return JSONResponse({"error": str(e)}, status_code=500)
 @router.get("/overview")
 async def overview() -> JSONResponse:
-    risks = get_collection("risk_assessments")
-    counters = {k: 0 for k in ["critical", "high", "medium", "low", "none"]}
-    last = None
-    async for r in risks.find({}):
-        lvl = r.get("risk_level", "none")
-        counters[lvl] = counters.get(lvl, 0) + 1
-        ts = r.get("updated_at")
-        if ts and (last is None or ts > last):
-            last = ts
-    return JSONResponse({"updatedAt": (last or datetime.utcnow()).isoformat() + "Z", "counters": counters})
+    try:
+        # Fetch today's feed from NASA to provide real-time stats
+        nasa = get_nasa_services()
+        today_str = datetime.utcnow().strftime('%Y-%m-%d')
+        
+        # We only fetch 1 day to be fast
+        result = await nasa.get_neo_feed(start_date=today_str, end_date=today_str)
+        
+        counters = {"critical": 0, "high": 0, "medium": 0, "low": 0, "none": 0}
+        
+        if result.get("status") == "success":
+            data = result.get("data", {})
+            element_count = data.get("element_count", 0)
+            near_earth_objects = data.get("near_earth_objects", {}).get(today_str, [])
+            
+            for neo in near_earth_objects:
+                is_hazardous = neo.get("is_potentially_hazardous_asteroid", False)
+                
+                # Find closest approach distance for today
+                approaches = neo.get("close_approach_data", [])
+                min_dist_ld = 999.0
+                if approaches:
+                    min_dist_ld = min([float(a.get("miss_distance", {}).get("lunar", 999)) for a in approaches])
+                
+                diameter_max = neo.get("estimated_diameter", {}).get("kilometers", {}).get("estimated_diameter_max", 0)
+                risk_level = _calculate_nasa_risk(is_hazardous, min_dist_ld, diameter_max)
+                counters[risk_level] = counters.get(risk_level, 0) + 1
+                
+        return JSONResponse({"updatedAt": datetime.utcnow().isoformat() + "Z", "counters": counters})
+    except Exception as e:
+        logger.error("Overview stats error", error=str(e))
+        # Fallback to zeros if NASA fails
+        return JSONResponse({"updatedAt": datetime.utcnow().isoformat() + "Z", "counters": {"critical": 0, "high": 0, "medium": 0, "low": 0, "none": 0}})
 @router.get("/approaches")
 async def approaches(window: str = Query("7d", pattern=r"^\d+[d]$")) -> JSONResponse:
     days = int(window[:-1])
@@ -256,36 +456,61 @@ async def search(
     sort: str = Query("-risk", description="risk|date|diameter|name, - prefix desc"),
 ) -> JSONResponse:
     try:
-        col = get_collection("asteroids")
-        pipeline = _build_search_pipeline(
-            q=q,
-            risks=risk,
-            min_d_km=min_diameter_km,
-            max_d_km=max_diameter_km,
-            max_ld=max_ld,
-            window_days=window_days,
-            sort=sort,
-            skip=(page - 1) * page_size,
-            limit=page_size,
-        )
-        cursor = col.aggregate(pipeline)
-        result = None
-        async for doc in cursor:
-            result = doc
-            break
-        if not result:
-            result = {"items": [], "count": []}
-        items = result.get("items", [])
+        nasa = get_nasa_services()
+        items = []
         total = 0
-        if result.get("count") and len(result["count"]) > 0:
-            total = result["count"][0].get("total", 0)
-        clean_items = _clean_mongo_doc(items)
+        stats = {"critical": 0, "high": 0, "medium": 0, "low": 0, "none": 0}
+        
+        if q:
+            # ID Search
+            logger.info(f"Direct NASA Search by ID: {q}")
+            result = await nasa.get_neo_by_id(q)
+            if result.get("status") == "success":
+                mapped = _map_nasa_neo_to_response(result["data"])
+                items = [mapped]
+                total = 1
+                # For single item stats
+                stats[mapped["risk_level"]] = 1
+        
+        elif sort == "-risk" or sort == "risk":
+            # Risk Sort -> Use Sentry Data with Filtering
+            logger.info(f"Sentry Risk Search: page={page-1}, filters active")
+            
+            filters = {
+                "risk": risk,
+                "min_diameter_km": min_diameter_km,
+                "max_diameter_km": max_diameter_km,
+                "q": q
+            }
+            
+            result = await nasa.get_sentry_paged(page=page-1, size=page_size, filters=filters)
+            
+            items = result.get("items", [])
+            total = result.get("total", 0)
+            stats = result.get("stats", stats)
+            
+        else:
+            # Default Browse (Date/Random)
+            logger.info(f"Direct NASA Browse: page={page-1}")
+            result = await nasa.get_neo_browse(page=page-1, size=page_size)
+            
+            if result.get("status") == "success":
+                data = result.get("data", {})
+                raw_items = data.get("near_earth_objects", [])
+                total = data.get("page", {}).get("total_elements", 0)
+                items = [_map_nasa_neo_to_response(item) for item in raw_items]
+                
+                # For Browse, we can only calc stats for current page roughly
+                for i in items:
+                    stats[i["risk_level"]] += 1
+
         return JSONResponse(
             {
                 "total": total,
                 "page": page,
                 "page_size": page_size,
-                "items": clean_items,
+                "items": items,
+                "stats": stats # Return global stats
             }
         )
     except Exception as e:

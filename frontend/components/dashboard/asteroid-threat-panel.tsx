@@ -36,7 +36,7 @@ export const AsteroidThreatPanel: React.FC<Props> = ({ className }) => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-cyan-400" />
-          <h3 className="text-sm font-bold text-white">NEO Karşılaştırma</h3>
+          <h3 className="text-sm font-bold text-white">Tehdit Özeti</h3>
           <Badge className="bg-cyan-500/20 text-cyan-400 border-0 text-[10px] px-1.5 py-0">
             Live
           </Badge>

@@ -429,7 +429,7 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
         }))
         
         try {
-          const response = await fetch(`http:
+          const response = await fetch(`http://localhost:8000/api/v1/eonet-ai-images/generate/${eventId}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -480,7 +480,7 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
       
       getEventImages: async (eventId: string) => {
         try {
-          const response = await fetch(`http:
+          const response = await fetch(`http://localhost:8000/api/v1/eonet-ai-images/get/${eventId}`)
           
           if (response.ok) {
             const data = await response.json()

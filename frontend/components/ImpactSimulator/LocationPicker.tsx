@@ -47,7 +47,7 @@ export function LocationPicker({
     setLoading(true)
     try {
       const response = await fetch(
-        `https:
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${MAPBOX_TOKEN}&types=place,locality,neighborhood&limit=5`
       )
       const data = await response.json()
       setSearchResults(data.features || [])
@@ -192,7 +192,7 @@ export function LocationPicker({
     if (!MAPBOX_TOKEN) return null
     try {
       const response = await fetch(
-        `https:
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_TOKEN}`
       )
       const data = await response.json()
       if (data.features && data.features.length > 0) {

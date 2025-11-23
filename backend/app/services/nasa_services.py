@@ -43,6 +43,7 @@ class NASAServices:
         self.session: Optional[aiohttp.ClientSession] = None
         self._request_count = 0
         self._last_request_time = datetime.now()
+        self.cache = InMemoryCache(ttl=300) # Add Cache Support
     async def _get_session(self) -> aiohttp.ClientSession:
         if self.session is None or self.session.closed:
             timeout = aiohttp.ClientTimeout(total=30)
@@ -173,28 +174,278 @@ class NASAServices:
         except Exception as e:
             logger.error(f"NEO Feed çekme hatası: {str(e)}")
             return {"error": str(e), "status": "failed"}
+    async def get_sentry_paged(
+        self, 
+        page: int = 0, 
+        size: int = 20,
+        filters: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
+        # Fetch ALL sentry data (it's small enough, ~1500 items)
+        # Cache it, calculate stats, and return paginated slice
+        cache_key = "sentry_full_data"
+        cached = await self.cache.get(cache_key)
+        
+        data = []
+        if cached:
+            data = cached
+        else:
+            try:
+                # Need to use CNEOS Sentry API
+                # "all=1" fetches the full list. If fails, we might try removing it or checking docs.
+                url = f"{SSD_BASE_URL}/sentry.api"
+                params = {"all": "1"} 
+                session = await self._get_session()
+                async with session.get(url, params=params) as response:
+                    if response.status == 200:
+                        json_data = await response.json()
+                        data = json_data.get("data", [])
+                        await self.cache.set(cache_key, data)
+                    else:
+                        logger.error(f"Sentry API error: {response.status}")
+                        return {"error": "NASA Sentry API unreachable", "items": [], "total": 0, "stats": {}}
+            except Exception as e:
+                logger.error(f"Sentry fetch error: {str(e)}")
+                return {"error": str(e), "items": [], "total": 0, "stats": {}}
+
+        # Process items first to apply filtering
+        mapped_items = []
+        
+        # Calculate Stats for FILTERED items
+        stats = {"critical": 0, "high": 0, "medium": 0, "low": 0, "none": 0}
+        
+        for item in data:
+            # Sentry data fields mapping (based on API docs)
+            # h: Absolute Magnitude (use to estimate diameter if missing)
+            
+            palermo_str = str(item.get("ps_cum", "-10"))
+            palermo = float(palermo_str) if palermo_str and palermo_str != "None" else -10.0
+            
+            impact_prob_str = str(item.get("ip", "0"))
+            impact_prob = float(impact_prob_str) if impact_prob_str and impact_prob_str != "None" else 0.0
+            
+            diameter_str = str(item.get("diameter", "0"))
+            diameter = 0.0
+            if diameter_str and diameter_str != "None" and float(diameter_str) > 0:
+                diameter = float(diameter_str)
+            else:
+                # Estimate diameter from Absolute Magnitude (H)
+                # D = 1329 / sqrt(p) * 10^(-0.2 * H)
+                # Assuming geometric albedo p = 0.14 (standard assumption)
+                h_str = str(item.get("h", "0"))
+                if h_str and h_str != "None":
+                    try:
+                        h_val = float(h_str)
+                        if h_val > 0:
+                            diameter = 3.552 * (10 ** (-0.2 * h_val))
+                    except:
+                        diameter = 0.0
+            
+            velocity_str = str(item.get("v_inf", "0"))
+            velocity = float(velocity_str) if velocity_str and velocity_str != "None" else 0.0
+
+            # Risk Logic
+            risk_level = "low" 
+            if palermo >= 0: risk_level = "critical"
+            elif palermo >= -2: risk_level = "high"
+            elif palermo >= -4: risk_level = "medium"
+            
+            if impact_prob > 1e-2 and risk_level == "low":
+                risk_level = "medium"
+            
+            # Calculate stats only for filtered items
+            # ... (filtering logic below)
+            if filters:
+                # Risk Filter
+                # If risk filter is provided AND not empty, apply it.
+                # If empty list [], it implies "no filter" -> show all
+                if filters.get("risk") and len(filters["risk"]) > 0 and risk_level not in filters["risk"]:
+                    continue
+                
+                # Diameter Filter
+                min_d = filters.get("min_diameter_km")
+                max_d = filters.get("max_diameter_km")
+                if min_d is not None and diameter < min_d: continue
+                if max_d is not None and diameter > max_d: continue
+                
+                # Name/ID Search (q)
+                q = filters.get("q")
+                if q:
+                    name = item.get("fullname", "").lower()
+                    des = item.get("des", "").lower()
+                    if q.lower() not in name and q.lower() not in des:
+                        continue
+
+            # Add to list only if passed filters
+            stats[risk_level] += 1
+            
+            # Use designation as neoId if available, fallback to id
+            # This is crucial because NeoWs expects designations or SPK-IDs
+            neo_id = str(item.get("des", "")).strip() or str(item.get("id", "")).replace(")", "").replace("(", "")
+            
+            mapped_items.append({
+                "neoId": neo_id,
+                "name": item.get("fullname"),
+                "risk_level": risk_level,
+                "impact_probability": impact_prob,
+                "palermo": palermo,
+                "diameter_min_km": diameter * 0.9, # Estimate range
+                "diameter_max_km": diameter * 1.1, # Estimate range
+                "next_approach": {
+                    "distance_ld": 0, # Sentry list doesn't have current distance. Set 0 or handle in frontend.
+                    "distance_au": 0,
+                    "relative_velocity_kms": velocity,
+                    "timestamp": (item.get("range", "2025-2100").split("-")[0] if "-" in str(item.get("range")) else str(item.get("range"))) + "-01-01"
+                }
+            })
+            
+        # Sort by Palermo Scale (Descending - Most Dangerous First)
+        mapped_items.sort(key=lambda x: x["palermo"], reverse=True)
+        
+        # Pagination
+        total = len(mapped_items)
+        start = page * size
+        end = start + size
+        paged_items = mapped_items[start:end]
+        
+        return {
+            "status": "success",
+            "items": paged_items,
+            "total": total,
+            "stats": stats
+        }
+
+    async def get_neo_browse(self, page: int = 0, size: int = 20) -> Dict[str, Any]:
+        try:
+            await self._rate_limit()
+            url = f"{NASA_BASE_URL}/neo/rest/v1/neo/browse"
+            params = {
+                "page": page,
+                "size": size,
+                "api_key": settings.NASA_API_KEY
+            }
+            session = await self._get_session()
+            async with session.get(url, params=params) as response:
+                if response.status != 200:
+                    error_text = await response.text()
+                    logger.error(f"NEO Browse error {response.status}: {error_text}")
+                    return {"error": f"HTTP {response.status}", "status": "failed"}
+                data = await response.json()
+                logger.info(f"NEO Browse başarılı: sayfa {page}")
+                return {
+                    "status": "success",
+                    "data": data,
+                    "element_count": data.get("page", {}).get("total_elements", 0)
+                }
+        except Exception as e:
+            logger.error(f"NEO Browse çekme hatası: {str(e)}")
+            return {"error": str(e), "status": "failed"}
+
+    async def get_neo_details_fallback(self, identifier: str) -> Dict[str, Any]:
+        """
+        Fallback method to get NEO details using JPL SBDB API.
+        Useful when NeoWs doesn't find the object by its Sentry ID or designation.
+        """
+        try:
+            # Use SBDB API which is more robust for Sentry objects
+            # sstr = identifier
+            url = f"{SSD_BASE_URL}/sbdb.api"
+            params = {
+                "sstr": identifier,
+                "phys": "1",
+                "orbit": "1",
+                "full_prec": "1"
+            }
+            
+            await self._rate_limit()
+            session = await self._get_session()
+            async with session.get(url, params=params) as response:
+                if response.status != 200:
+                    return {"error": f"SBDB API error {response.status}", "status": "failed"}
+                
+                data = await response.json()
+                
+                # Convert SBDB format to NeoWs format (as much as possible)
+                if "object" not in data:
+                    return {"error": "Object not found in SBDB", "status": "not_found"}
+
+                obj = data.get("object", {})
+                phys = {p["name"]: p for p in data.get("phys_par", [])}
+                orbit = data.get("orbit", {})
+                
+                # Extract diameter from phys params
+                diameter_km = 0.0
+                if "diameter" in phys:
+                    diameter_km = float(phys["diameter"].get("value", 0))
+                elif "H" in phys:
+                     # Estimate from H if diameter is missing
+                     h_val = float(phys["H"].get("value", 0))
+                     diameter_km = 3.552 * (10 ** (-0.2 * h_val)) if h_val > 0 else 0
+
+                # Construct result matching NeoWs structure partly
+                return {
+                    "status": "success",
+                    "data": {
+                        "id": obj.get("spkid", identifier),
+                        "neo_reference_id": obj.get("spkid"),
+                        "name": obj.get("fullname", identifier),
+                        "designation": obj.get("des", identifier),
+                        "nasa_jpl_url": f"https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr={identifier}",
+                        "absolute_magnitude_h": float(phys.get("H", {}).get("value", 0)) if "H" in phys else None,
+                        "estimated_diameter": {
+                            "kilometers": {
+                                "estimated_diameter_min": diameter_km * 0.9,
+                                "estimated_diameter_max": diameter_km * 1.1
+                            }
+                        },
+                        "is_potentially_hazardous_asteroid": data.get("object", {}).get("pha", "N") == "Y",
+                        "close_approach_data": [], # SBDB details doesn't include approaches in this call usually, requires separate CAD call
+                        "orbital_data": {
+                            "orbit_id": orbit.get("id"),
+                            "orbit_determination_date": orbit.get("first_obs"), # Approx
+                            "orbital_period": orbit.get("elements", {}).get("per", {}).get("value"), # days
+                            "perihelion_distance": orbit.get("elements", {}).get("q", {}).get("value"), # AU
+                            "aphelion_distance": orbit.get("elements", {}).get("ad", {}).get("value"), # AU
+                            "eccentricity": orbit.get("elements", {}).get("e", {}).get("value"),
+                            "inclination": orbit.get("elements", {}).get("i", {}).get("value"),
+                            "orbit_class": {
+                                "orbit_class_type": obj.get("orbit_class", {}).get("name", "Unknown"),
+                                "orbit_class_description": obj.get("orbit_class", {}).get("code", "")
+                            }
+                        }
+                    }
+                }
+        except Exception as e:
+            logger.error(f"SBDB fallback error for {identifier}: {str(e)}")
+            return {"error": str(e), "status": "failed"}
+
     async def get_neo_by_id(self, asteroid_id: str) -> Dict[str, Any]:
         try:
             await self._rate_limit()
+            # Try NeoWs first
             url = f"{NASA_BASE_URL}/neo/rest/v1/neo/{asteroid_id}"
             params = {"api_key": settings.NASA_API_KEY}
             session = await self._get_session()
             async with session.get(url, params=params) as response:
-                if response.status == 404:
-                    return {"error": "Asteroid not found", "status": "not_found"}
-                if response.status != 200:
+                if response.status == 200:
+                    data = await response.json()
+                    logger.info(f"NEO detayı başarılı: {asteroid_id}")
+                    return {
+                        "status": "success",
+                        "data": data
+                    }
+                elif response.status == 404:
+                    # Try Fallback to SBDB
+                    logger.info(f"NeoWs 404 for {asteroid_id}, trying SBDB fallback...")
+                    return await self.get_neo_details_fallback(asteroid_id)
+                else:
                     error_text = await response.text()
                     logger.error(f"NEO by ID error {response.status}: {error_text}")
                     return {"error": f"HTTP {response.status}", "status": "failed"}
-                data = await response.json()
-                logger.info(f"NEO detayı başarılı: {asteroid_id}")
-                return {
-                    "status": "success",
-                    "data": data
-                }
+
         except Exception as e:
             logger.error(f"NEO ID çekme hatası: {str(e)}")
-            return {"error": str(e), "status": "failed"}
+            # One last try with fallback if exception was client side or weird
+            return await self.get_neo_details_fallback(asteroid_id)
     async def get_sentry_data(self, all_data: bool = True) -> Dict[str, Any]:
         try:
             await self._rate_limit(1.0)

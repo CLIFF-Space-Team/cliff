@@ -34,6 +34,9 @@ class Settings(BaseSettings):
     AI_BASE_URL: str = Field(default="https://xxx.kynux.dev")
     AI_API_KEY: Optional[str] = Field(default=None)
     AI_MODEL: str = Field(default="meta/llama-4-maverick-instruct")
+
+    GOOGLE_SEARCH_AI_BASE_URL: str = Field(default="https://xxx.kynux.dev")
+    GOOGLE_SEARCH_AI_API_KEY: Optional[str] = Field(default=None, env="GOOGLE_SEARCH_AI_API_KEY")
     
     GOOGLE_API_KEY: Optional[str] = Field(default=None)
     GEMINI_API_KEY: Optional[str] = Field(default=None)

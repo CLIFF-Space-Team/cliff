@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useRef, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import {
-  AlertTriangle, TrendingUp, TrendingDown, Activity, 
+  AlertTriangle, TrendingUp, TrendingDown, Activity,
   Shield, Target, Zap, Clock, MapPin, Globe,
   ChevronRight, Info, AlertCircle, CheckCircle,
   Loader2, BarChart3, PieChart, LineChart,
-  ChevronLeft
+  ChevronLeft, Brain
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -33,6 +33,7 @@ import { searchAsteroids } from "@/lib/api/asteroids"
 import CompareDrawer from "@/components/dashboard/compare/CompareDrawer"
 import ExportMenu from "@/components/dashboard/export/ExportMenu"
 import NotificationsBell from "@/components/dashboard/notifications/NotificationsBell"
+import AIInsightsWidget from "@/components/dashboard/ai-insights-widget"
 
 interface RealNeoThreat {
   neoId: string
@@ -82,6 +83,13 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
   const [activeTab, setActiveTab] = useState<"overview" | "details" | "timeline">("overview")
   const wsRef = useRef<WebSocket | null>(null)
   const { filters } = useThreatFilters()
+  // Ensure default sort is -risk for Sentry mode
+  useEffect(() => {
+    if (!filters.sort) {
+      useThreatFilters.getState().setFilters({ sort: '-risk' })
+    }
+  }, [])
+
   const [total, setTotal] = useState<number>(0)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [compareOpen, setCompareOpen] = useState(false)
@@ -89,19 +97,19 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
   const listRef = useRef<HTMLDivElement | null>(null)
   const [virt, setVirt] = useState<{ start: number; end: number; item: number }>({ start: 0, end: 30, item: 72 })
   const [listTexts, setListTexts] = useState({
-    header: "NEO Karşılaştırma",
+    header: "NEO Listesi",
     noResults: "Kriterlere uygun NEO bulunamadı."
   })
 
   
   const stats = useMemo(() => {
-    
+    // Use backend provided global stats if available (for Sentry/Full view)
     if (statsData.critical + statsData.high + statsData.medium + statsData.low > 0) {
-      return statsData
+        return statsData
     }
-    
-    
-    const source = threats.length > 0 ? threats : realNeos.map(n => ({
+
+    // Fallback: Calculate stats based on the currently displayed list
+    const source = realNeos.map(n => ({
       threat_level: n.riskLevel.toUpperCase() as any
     }))
 
@@ -111,27 +119,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       medium: source.filter(t => t.threat_level === "MEDIUM").length,
       low: source.filter(t => t.threat_level === "LOW").length,
     }
-  }, [threats, realNeos, statsData])
-
-  const fetchOverviewStats = async () => {
-    try {
-      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-      const res = await fetch(`${apiBase}/api/v1/asteroids/overview`)
-      if (res.ok) {
-        const data = await res.json()
-        if (data.counters) {
-          setStatsData({
-            critical: data.counters.critical || 0,
-            high: data.counters.high || 0,
-            medium: data.counters.medium || 0,
-            low: data.counters.low || 0
-          })
-        }
-      }
-    } catch (e) {
-      console.error('Stats fetch error:', e)
-    }
-  }
+  }, [realNeos, statsData])
 
   const fetchRealThreats = async () => {
     try {
@@ -214,7 +202,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
       try {
         await Promise.all([
           fetchRealThreats(),
-          fetchOverviewStats(),
           fetchTimelineData(timelineWindow)
         ])
       } finally {
@@ -276,7 +263,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
     const connectWebSocket = () => {
       try {
         const wsUrl = process.env.NODE_ENV === "production"
-          ? `wss:
+          ? "wss://" + (typeof window !== "undefined" ? window.location.host : "localhost") + "/ws/threats"
           : "ws://localhost:8000/ws/threats"
         wsRef.current = new WebSocket(wsUrl)
         wsRef.current.onmessage = (event) => {
@@ -358,20 +345,34 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
           <div className="text-center">
             <div className="text-[10px] opacity-50 uppercase tracking-wide">Mesafe</div>
             <div className="text-xs font-medium text-white/80">
-              {neo.distance_ld ? `${neo.distance_ld.toFixed(1)} LD` : '-'}
+              {neo.distance_ld ? neo.distance_ld.toFixed(1) + ' LD' : '-'}
             </div>
           </div>
           <div className="text-center border-l border-white/5">
             <div className="text-[10px] opacity-50 uppercase tracking-wide">Hız</div>
             <div className="text-xs font-medium text-white/80">
-              {neo.velocity_kms ? `${neo.velocity_kms.toFixed(1)} km/s` : '-'}
+              {neo.velocity_kms ? neo.velocity_kms.toFixed(1) + ' km/s' : '-'}
             </div>
           </div>
           <div className="text-center border-l border-white/5">
             <div className="text-[10px] opacity-50 uppercase tracking-wide">Çap</div>
             <div className="text-xs font-medium text-white/80">
-              {neo.diameter_km ? `${neo.diameter_km.toFixed(2)} km` : '-'}
+              {neo.diameter_km ? neo.diameter_km.toFixed(2) + ' km' : '-'}
             </div>
+          </div>
+        </div>
+        
+        {/* AI Yorumu */}
+        <div className="mt-3 pt-3 border-t border-white/5">
+          <div className="flex items-center gap-2 text-[10px]">
+            <Brain className="w-3 h-3 text-blue-400" />
+            <span className="text-blue-300 font-medium">AI:</span>
+            <span className="text-white/60">
+              {neo.riskLevel === 'critical' ? 'Yüksek risk - Acil izleme' :
+               neo.riskLevel === 'high' ? 'Dikkat gerekli - Yakın takip' :
+               neo.riskLevel === 'medium' ? 'Orta risk - İzleme önerilir' :
+               'Güvenli - Rutin kontrol'}
+            </span>
           </div>
         </div>
       </motion.div>
@@ -469,7 +470,12 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
         </div>
       </div>
 
-      {}
+      {/* Filter Bar */}
+      <div className="flex-none px-4 py-2 border-b border-white/5 bg-black/20 backdrop-blur-sm z-10">
+        <FilterBar />
+      </div>
+
+      {/* Scrollable List Area */}
       <div className="flex-1 min-h-0 relative">
         <div 
           ref={scrollContainerRef}
@@ -484,26 +490,6 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                 exit={{ opacity: 0 }}
                 className="pb-16 min-h-full" 
               >
-                <div className="sticky top-0 z-20 bg-pure-black/95 backdrop-blur-md border-b border-white/5 px-4 py-4 shadow-lg shadow-black/20">
-                   <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-sm font-semibold text-white/80 flex items-center gap-2">
-                        <Shield className="w-4 h-4 text-cyan-400" />
-                        {listTexts.header}
-                        <Badge variant="secondary" className="ml-2 h-5 px-2 bg-white/10 text-white/60 whitespace-nowrap flex items-center gap-1.5">
-                          <span className="font-mono text-[11px] text-white">{total}</span>
-                          <span className="text-[9px] uppercase tracking-wide opacity-70">Live</span>
-                        </Badge>
-                      </h3>
-                      <div className="flex gap-2">
-                         <ExportMenu filename="neos" rows={realNeos} />
-                      </div>
-                   </div>
-                   
-                   {}
-                   <div className="w-full overflow-hidden">
-                     <FilterBar onApply={() => fetchRealThreats()} />
-                   </div>
-                </div>
 
                 <div className="p-4 space-y-4">
                 {realNeos.length === 0 ? (
@@ -514,7 +500,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                 ) : (
                   <div ref={listRef} className="relative">
                     <div style={{ height: Math.max(0, realNeos.length * virt.item) }}>
-                       <div style={{ transform: `translateY(${virt.start * virt.item}px)` }}>
+                       <div style={{ transform: "translateY(" + (virt.start * virt.item) + "px)" }}>
                          {realNeos.slice(virt.start, virt.end).map((neo, i) => renderNeoListItem(neo, virt.start + i))}
                        </div>
                     </div>
@@ -559,7 +545,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                          <div className="p-3 rounded bg-white/5 border border-white/5">
                            <div className="opacity-50 mb-1">Tahmini Çap</div>
                            <div className="text-lg font-mono text-emerald-400">
-                             {neoDetail.asteroid?.diameter_min_km ? `~${neoDetail.asteroid.diameter_min_km.toFixed(3)} km` : 'N/A'}
+                             {neoDetail.asteroid?.diameter_min_km ? '~' + neoDetail.asteroid.diameter_min_km.toFixed(3) + ' km' : 'N/A'}
                            </div>
                          </div>
                          {neoDetail.asteroid?.orbital_data && (
@@ -567,7 +553,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                              <div className="p-3 rounded bg-white/5 border border-white/5">
                                <div className="opacity-50 mb-1">Yörünge Periyodu</div>
                                <div className="text-lg font-mono text-yellow-400">
-                                 {neoDetail.asteroid.orbital_data.orbital_period ? `${parseFloat(neoDetail.asteroid.orbital_data.orbital_period).toFixed(0)} gün` : 'N/A'}
+                                 {neoDetail.asteroid.orbital_data.orbital_period ? parseFloat(neoDetail.asteroid.orbital_data.orbital_period).toFixed(0) + ' gün' : 'N/A'}
                                </div>
                              </div>
                              <div className="p-3 rounded bg-white/5 border border-white/5">
@@ -632,10 +618,10 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                               
                               <div className="text-right">
                                 <div className="text-xs font-mono text-cyan-400">
-                                  {approach.distance_ld ? `${approach.distance_ld.toFixed(1)} LD` : 'N/A'}
+                                  {approach.distance_ld ? approach.distance_ld.toFixed(1) + ' LD' : 'N/A'}
                                 </div>
                                 <div className="text-[10px] opacity-50">
-                                  {approach.relative_velocity_kms ? `${approach.relative_velocity_kms.toFixed(1)} km/s` : ''}
+                                  {approach.relative_velocity_kms ? approach.relative_velocity_kms.toFixed(1) + ' km/s' : ''}
                                 </div>
                               </div>
                             </div>
@@ -648,18 +634,27 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                       )}
                     </Card>
 
+                    {/* AI Insights Widget */}
+                    <AIInsightsWidget
+                      selectedAsteroidId={selectedNeoId}
+                      onRequestAnalysis={(asteroidId) => {
+                        console.log('AI analizi istendi:', asteroidId)
+                        // Burada AI analizi tetiklenebilir
+                      }}
+                    />
+
                     <div className="flex gap-2">
-                      <a 
-                        href={`https:
-                        target="_blank" 
+                      <a
+                        href={"https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=" + selectedNeoId}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 bg-blue-600/20 hover:bg-blue-600/30 text-blue-200 text-xs py-2 rounded border border-blue-600/30 text-center transition-colors"
                       >
                         NASA JPL Detayı ↗
                       </a>
-                      <a 
-                        href={`https:
-                        target="_blank" 
+                      <a
+                        href={"https://cneos.jpl.nasa.gov/sentry/details.html#?des=" + selectedNeoId}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 bg-orange-600/20 hover:bg-orange-600/30 text-orange-200 text-xs py-2 rounded border border-orange-600/30 text-center transition-colors"
                       >

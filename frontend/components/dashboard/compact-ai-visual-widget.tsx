@@ -68,7 +68,7 @@ const AsteroidProfileCard: React.FC<AsteroidProfileCardProps> = ({
       setError(error instanceof Error ? error.message : 'Bilinmeyen hata')
       const fallbackImage: GeneratedImage = {
         id: `ai-gen-fallback-${Date.now()}`,
-        url: `https:
+        url: `https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?w=800&h=600&fit=crop&crop=center`,
         prompt: `${asteroidData?.name || 'Asteroid'} - Artistik görünüm`,
         timestamp: new Date(),
         isLoading: false

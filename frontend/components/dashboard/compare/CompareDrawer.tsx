@@ -66,7 +66,7 @@ export default function CompareDrawer({ ids, open, onClose }: Props) {
       <div className="absolute inset-0 bg-black/60" onClick={onClose} />
       <div className="absolute right-0 top-0 h-full w-full sm:w-[560px] bg-almost-black border-l border-cliff-light-gray/20 p-4 overflow-y-auto">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-cliff-white">NEO Karşılaştırma</h3>
+          <h3 className="text-sm font-semibold text-cliff-white">NEO Karşılaştırma Analizi</h3>
           <Button size="sm" variant="ghost" onClick={onClose} className="text-xs">Kapat</Button>
         </div>
         {loading && (

@@ -61,7 +61,7 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
       const velocity_kms = asteroid.orbital_data?.relative_velocity?.kilometers_per_second
         ? parseFloat(asteroid.orbital_data.relative_velocity.kilometers_per_second)
         : 15
-      const response = await fetch(`http:
+      const response = await fetch(`http://localhost:8000/api/v1/generate-asteroid-image`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -103,7 +103,7 @@ export const AsteroidDetailPanel: React.FC<AsteroidDetailPanelProps> = ({
   const checkCachedImage = useCallback(async () => {
     if (!asteroid) return
     try {
-      const response = await fetch(`http:
+      const response = await fetch(`http://localhost:8000/api/v1/asteroid-image-cache/${asteroid.id}?style=${selectedStyle}`)
       if (response.ok) {
         const result = await response.json()
         if (result.success && result.image_url) {

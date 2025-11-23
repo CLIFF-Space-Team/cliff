@@ -78,8 +78,8 @@ export const RealTimeThreatAlerts: React.FC<RealTimeThreatAlertsProps> = ({
     const connectWebSocket = () => {
       try {
         setConnectionStatus('connecting')
-        const wsUrl = process.env.NODE_ENV === 'production' 
-          ? `wss:
+        const wsUrl = process.env.NODE_ENV === 'production'
+          ? `wss://your-domain.com/ws/threats`
           : 'ws://localhost:8000/ws/threats'
         wsRef.current = new WebSocket(wsUrl)
         wsRef.current.onopen = () => {
