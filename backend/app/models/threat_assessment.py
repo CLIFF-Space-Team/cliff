@@ -1,4 +1,4 @@
-﻿from beanie import Document
-class ThreatAssessment(Document):
-    class Settings:
-        name = "threat_assessments"
+from pydantic import BaseModel
+
+class ThreatAssessment(BaseModel):
+    pass

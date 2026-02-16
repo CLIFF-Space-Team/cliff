@@ -378,50 +378,15 @@ async def test_vertex_ai_connection(
         }
 @router.post("/diagnostics/database-health")
 async def test_database_connection() -> Dict[str, Any]:
-    
-    try:
-        logger.info("?? Starting database health diagnostics...")
-        from app.core.database import check_database_health, get_connection_status
-        health_result = await check_database_health()
-        connection_status = get_connection_status()
-        diagnostic_info = {
+    return {
+        "success": True,
+        "status": "healthy",
+        "message": "Database disabled - using direct NASA API with in-memory cache",
+        "diagnostics": {
             "test_timestamp": datetime.utcnow().isoformat() + "Z",
-            "database_type": "MongoDB Atlas",
-            "connection_string_configured": bool(settings.MONGODB_URL),
-            "health_check": health_result,
-            "connection_status": connection_status
+            "mode": "in-memory-cache"
         }
-        if health_result.get("status") == "healthy":
-            logger.info("? Database diagnostics PASSED")
-            return {
-                "success": True,
-                "status": "healthy",
-                "message": "Database connection healthy",
-                "diagnostics": diagnostic_info
-            }
-        else:
-            logger.warning(f"?? Database diagnostics WARNING: {health_result.get('error')}")
-            return {
-                "success": False,
-                "status": "unhealthy",
-                "message": f"Database issues detected: {health_result.get('error')}",
-                "diagnostics": diagnostic_info,
-                "troubleshooting": [
-                    "Check MongoDB SSL certificate configuration",
-                    "Verify network connectivity to MongoDB Atlas",
-                    "Check MongoDB connection string format",
-                    "Review SSL handshake timeout settings"
-                ]
-            }
-    except Exception as e:
-        error_msg = f"Database diagnostics failed: {str(e)}"
-        logger.error(error_msg)
-        return {
-            "success": False,
-            "status": "diagnostic_error",
-            "message": error_msg,
-            "error_details": str(e)
-        }
+    }
 @router.get("/diagnostics/system-overview")
 async def system_diagnostics_overview(
     ai_services: VertexAIServices = Depends(get_ai_services)
@@ -447,19 +412,11 @@ async def system_diagnostics_overview(
                 "status": "error",
                 "error": str(e)
             }
-        try:
-            from app.core.database import check_database_health
-            db_health = await check_database_health()
-            diagnostics["components"]["database"] = {
-                "status": db_health.get("status", "unknown"),
-                "type": "MongoDB Atlas",
-                "details": db_health
-            }
-        except Exception as e:
-            diagnostics["components"]["database"] = {
-                "status": "error",
-                "error": str(e)
-            }
+        diagnostics["components"]["database"] = {
+            "status": "healthy",
+            "type": "in-memory-cache",
+            "details": {"mode": "direct NASA API"}
+        }
         all_healthy = all(
             comp.get("status") == "healthy" 
             for comp in diagnostics["components"].values()

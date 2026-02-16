@@ -9,10 +9,22 @@ import { WebSocketProvider } from '@/providers/websocket-provider'
 import { LanguageProvider } from '@/providers/LanguageProvider'
 import { AccessibilityProvider } from '@/providers/AccessibilityProvider'
 export const metadata: Metadata = {
-  title: 'CLIFF - Cosmic Level Intelligent Forecast Framework',
-  description: 'Advanced AI-powered space threat monitoring and analysis system',
+  title: 'CLIFF - Kozmik Seviye Akıllı Tahmin Çerçevesi | VERİCİLER Takımı',
+  description: 'CLIFF, NASA verilerini ve yapay zeka teknolojilerini kullanarak Dünya\'yı tehdit eden kozmik cisimleri izleyen, analiz eden ve olası çarpışma senaryolarını simüle eden kapsamlı bir uzay tehdit izleme platformudur. VERİCİLER Takımı tarafından geliştirilmiştir.',
   icons: {
     icon: '/favicon.ico',
+  },
+  openGraph: {
+    title: 'CLIFF - Gezegen Savunma ve Erken Uyarı Sistemi',
+    description: 'NASA Space Apps Challenge 2025 Aksaray Birincisi. Yapay zeka destekli uzay tehdit izleme ve analiz platformu.',
+    siteName: 'CLIFF - VERİCİLER Takımı',
+    locale: 'tr_TR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'CLIFF - Kozmik Tehdit İzleme Platformu',
+    description: 'NASA verileri ve yapay zeka ile uzay tehditlerini izleyin, analiz edin ve simüle edin.',
   },
 }
 export default function RootLayout({

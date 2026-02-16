@@ -236,7 +236,7 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
         
         set({ loading: true, error: null, _lastFetchTime: now } as any)
         try {
-          const response = await fetch('http://localhost:8000/api/v1/nasa/earth-events?limit=100')
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/nasa/earth-events?limit=100`)
           if (response.ok) {
             const data = await response.json()
             const apiEvents = data.success && data.data?.events ? data.data.events : []
@@ -280,7 +280,7 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
         
         set({ loading: true, error: null, _lastFetchTime: now } as any)
         try {
-          const response = await fetch('http://localhost:8000/api/v1/nasa/earth-events?limit=100')
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/nasa/earth-events?limit=100`)
           if (response.ok) {
             const data = await response.json()
             const apiEvents = data.success && data.data?.events ? data.data.events : []
@@ -429,7 +429,7 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
         }))
         
         try {
-          const response = await fetch(`http://localhost:8000/api/v1/eonet-ai-images/generate/${eventId}`, {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/eonet-ai-images/generate/${eventId}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -480,7 +480,7 @@ export const useEarthEventsStore = create<EarthEventsStore>()(
       
       getEventImages: async (eventId: string) => {
         try {
-          const response = await fetch(`http://localhost:8000/api/v1/eonet-ai-images/get/${eventId}`)
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/eonet-ai-images/get/${eventId}`)
           
           if (response.ok) {
             const data = await response.json()

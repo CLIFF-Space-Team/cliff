@@ -1,5 +1,4 @@
-﻿from beanie import Document
-from pydantic import BaseModel, Field
+﻿from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 class SimpleThreatResponse(BaseModel):
@@ -25,7 +24,7 @@ class ThreatStatistics(BaseModel):
     active_earth_events: int = Field(default=0, description="Aktif doğal olay sayısı")
     space_weather_events: int = Field(default=0, description="Uzay hava olayı sayısı")
     threat_distribution: Dict[str, int] = Field(default_factory=dict, description="Tehdit dağılımı")
-class SimplifiedThreatAssessment(Document):
+class SimplifiedThreatAssessment(BaseModel):
     
     timestamp: datetime = Field(default_factory=datetime.utcnow, description="Değerlendirme zamanı")
     overall_level: str = Field(..., description="Genel seviye: Düşük, Orta, Yüksek")
@@ -34,9 +33,7 @@ class SimplifiedThreatAssessment(Document):
     recommendations: List[str] = Field(default_factory=list, description="Öneriler")
     data_sources: List[str] = Field(default_factory=list, description="Kullanılan veri kaynakları")
     next_assessment: datetime = Field(..., description="Sonraki değerlendirme")
-    class Settings:
-        name = "simplified_threat_assessments"
-class SimpleAlertDocument(Document):
+class SimpleAlertDocument(BaseModel):
     
     alert_id: str = Field(..., description="Uyarı ID")
     level: str = Field(..., description="Seviye: Düşük, Orta, Yüksek")
@@ -47,8 +44,6 @@ class SimpleAlertDocument(Document):
     expires_at: Optional[datetime] = Field(None, description="Geçerlilik")
     acknowledged: bool = Field(default=False, description="Okundu mu?")
     source_data: Optional[Dict[str, Any]] = Field(None, description="Kaynak veri")
-    class Settings:
-        name = "simple_alerts"
 class ThreatLevelResponse(BaseModel):
     
     overall_threat_level: str = Field(..., description="Genel tehdit seviyesi")
@@ -70,7 +65,7 @@ class ThreatDetail(BaseModel):
     data_source: str = Field(default="CLIFF", description="Veri kaynağı")
     coordinates: Optional[Dict[str, float]] = Field(None, description="Koordinatlar")
     ai_analysis: Optional[Dict[str, Any]] = Field(None, description="AI analizi")
-class ComprehensiveAssessment(Document):
+class ComprehensiveAssessment(BaseModel):
     
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     overall_risk: ThreatLevelResponse = Field(...)
@@ -79,9 +74,7 @@ class ComprehensiveAssessment(Document):
     geographic_hotspots: List[Dict[str, Any]] = Field(default_factory=list)
     recommendations: List[str] = Field(default_factory=list)
     next_assessment: datetime = Field(...)
-    class Settings:
-        name = "comprehensive_assessments"
-class ThreatAlert(Document):
+class ThreatAlert(BaseModel):
     
     alert_id: str = Field(...)
     alert_level: str = Field(..., description="Seviye: INFO, WARNING, CRITICAL -> Düşük, Orta, Yüksek")
@@ -89,8 +82,6 @@ class ThreatAlert(Document):
     threat_details: ThreatDetail = Field(...)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     expires_at: Optional[datetime] = Field(None)
-    class Settings:
-        name = "threat_alerts"
 class CurrentThreatResponse(BaseModel):
     
     threat_level: str = Field(..., description="Düşük, Orta, Yüksek")

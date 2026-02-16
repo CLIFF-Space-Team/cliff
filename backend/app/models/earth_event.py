@@ -1,5 +1,4 @@
-﻿from beanie import Document
-from pydantic import BaseModel, Field
+﻿from pydantic import BaseModel, Field
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 class SimpleEarthEventModel(BaseModel):
@@ -33,7 +32,7 @@ class EarthEventStatistics(BaseModel):
     by_category: Dict[str, int] = Field(default_factory=dict, description="Kategoriye göre dağılım")
     by_severity: Dict[str, int] = Field(default_factory=dict, description="Önem derecesine göre")
     by_region: Dict[str, int] = Field(default_factory=dict, description="Bölgeye göre")
-class EarthEventDocument(Document):
+class EarthEventDocument(BaseModel):
     
     event_id: str = Field(..., description="Unique event ID")
     title: str = Field(..., description="Event title")
@@ -53,8 +52,6 @@ class EarthEventDocument(Document):
     is_closed: bool = Field(default=False, description="Is event closed")
     data_source: str = Field(default="NASA EONET", description="Data source")
     raw_data: Optional[Dict[str, Any]] = Field(None, description="Original raw data")
-    class Settings:
-        name = "earth_events"
     @property
     def turkish_category(self) -> str:
         

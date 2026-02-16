@@ -1,5 +1,5 @@
 ﻿"use client"
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect, useMemo, useCallback } from "react"
 import { motion } from "framer-motion"
 import {
   TrendingUp, TrendingDown, Activity, BarChart3,
@@ -26,7 +26,8 @@ const CustomAreaChart: React.FC<{
   height?: number
 }> = ({ data, height = 200 }) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
-  useEffect(() => {
+
+  const draw = useCallback(() => {
     if (!canvasRef.current || !data.length) return
     const canvas = canvasRef.current
     const ctx = canvas.getContext("2d")
@@ -88,6 +89,14 @@ const CustomAreaChart: React.FC<{
       ctx.fillText(d.date.split("-").pop() || "", x, canvas.height - 5)
     })
   }, [data, height])
+
+  useEffect(() => {
+    draw()
+    const observer = new ResizeObserver(() => draw())
+    if (canvasRef.current) observer.observe(canvasRef.current)
+    return () => observer.disconnect()
+  }, [draw])
+
   return (
     <canvas 
       ref={canvasRef} 
@@ -278,15 +287,22 @@ export const InteractiveVisualizations: React.FC<VisualizationProps> = ({
   subtitle = "Gerçek zamanlı tehdit analizi ve istatistikler"
 }) => {
   const [activeChart, setActiveChart] = useState<"area" | "radar" | "donut">("area")
-  const areaChartData = [
-    { date: "2024-01-18", critical: 2, high: 5, medium: 8, low: 12 },
-    { date: "2024-01-19", critical: 1, high: 6, medium: 10, low: 15 },
-    { date: "2024-01-20", critical: 3, high: 4, medium: 12, low: 18 },
-    { date: "2024-01-21", critical: 2, high: 7, medium: 9, low: 14 },
-    { date: "2024-01-22", critical: 4, high: 8, medium: 11, low: 16 },
-    { date: "2024-01-23", critical: 1, high: 5, medium: 13, low: 20 },
-    { date: "2024-01-24", critical: 2, high: 6, medium: 10, low: 17 }
-  ]
+
+  const areaChartData = useMemo(() => {
+    const today = new Date()
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today)
+      d.setDate(d.getDate() - (6 - i))
+      const dateStr = d.toISOString().split('T')[0]
+      return {
+        date: dateStr,
+        critical: Math.floor(Math.random() * 4) + 1,
+        high: Math.floor(Math.random() * 5) + 3,
+        medium: Math.floor(Math.random() * 6) + 7,
+        low: Math.floor(Math.random() * 8) + 10,
+      }
+    })
+  }, [])
   const radarChartData = [
     { axis: "Asteroidler", value: 75 },
     { axis: "Solar Fırtınalar", value: 60 },

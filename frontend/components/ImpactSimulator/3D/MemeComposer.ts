@@ -248,7 +248,6 @@ export class MemeComposer {
     const width = 5;
     const actualDepthRatio = craterDepth / craterDiameter;
     const depthScale = actualDepthRatio * width;
-    console.log(`🌋 Krater render: Çap=${craterDiameter.toFixed(2)}km, Derinlik=${craterDepth.toFixed(3)}km, Oran=${actualDepthRatio.toFixed(3)}`);
     const groundGeometry = new THREE.PlaneGeometry(width * 3, width * 2);
     const groundMaterial = new THREE.MeshStandardMaterial({
       color: 0x4a3d2f,
@@ -344,7 +343,6 @@ export class MemeComposer {
     const camera = new THREE.PerspectiveCamera(60, 1.5, 0.1, 1000);
     camera.position.set(2, 1, 4);
     camera.lookAt(0, 0, 0);
-    console.log(`🌍 Atmosfer render: Hız=${velocity}km/s, Açı=${angle}°`);
     const renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: true,
@@ -476,7 +474,6 @@ export class MemeComposer {
     const normalizedRadius = Math.min(radius / 3000, 1.5);
     const tempFactor = Math.min(temperature / 10000, 1.5);
     const fireballScale = 0.8 + normalizedRadius * 0.6;
-    console.log(`🔥 Ateş topu render: Yarıçap=${radius.toFixed(0)}m, Sıcaklık=${temperature.toFixed(0)}K, Scale=${fireballScale.toFixed(2)}`);
     const fireballGeometry = new THREE.SphereGeometry(fireballScale, 64, 64);
     const fireballMaterial = new THREE.ShaderMaterial({
       uniforms: {
@@ -611,7 +608,6 @@ export class MemeComposer {
       preserveDrawingBuffer: true,
     });
     renderer.setSize(1200, 800);
-    console.log(`💨 Şok dalgası render: 20psi yarıçap=${radius.toFixed(2)}km`);
     const groundGeometry = new THREE.PlaneGeometry(20, 20, 50, 50);
     const groundMaterial = new THREE.MeshStandardMaterial({
       color: 0x1a1a2a,

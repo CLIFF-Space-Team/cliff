@@ -37,7 +37,7 @@ class ImageGenerationResponse(BaseModel):
 class EnhancedImageService:
     
     def __init__(self):
-        self.api_key = settings.CORTEX_IMAGE_API_KEY or "sk-1a67670ecba1415cb332ec77880e0caa"
+        self.api_key = settings.CORTEX_IMAGE_API_KEY or ""
         self.api_url = "https://cortexapi.net/v1/chat/completions"
         self.default_model = "imagen-4.0-ultra-generate-preview-06-06"
         self.http_client: Optional[httpx.AsyncClient] = None

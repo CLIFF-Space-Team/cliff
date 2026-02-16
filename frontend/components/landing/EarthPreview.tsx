@@ -49,7 +49,7 @@ const EarthPreview: React.FC<EarthPreviewProps> = ({ className }) => {
         scene.add(sunLight)
 
         const textureLoader = new THREE.TextureLoader()
-        const loadTexture = (path: string) => {
+        const loadTexture = (path: string): Promise<any> => {
           return new Promise((resolve, reject) => {
             textureLoader.load(
               path, 

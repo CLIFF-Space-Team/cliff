@@ -136,14 +136,14 @@ export const MobileNavigation = React.memo(function MobileNavigation() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
                       <span className="text-cliff-light-gray text-sm">Aktif Tehditler</span>
-                      <Badge variant="default" className="bg-accent-success/20 text-accent-success border-accent-success/30 text-xs">
-                        0
+                      <Badge variant="default" className="bg-accent-danger/20 text-accent-danger border-accent-danger/30 text-xs">
+                        12
                       </Badge>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-cliff-light-gray text-sm">Risk Seviyesi</span>
-                      <Badge variant="default" className="bg-accent-success/20 text-accent-success border-accent-success/30 text-xs">
-                        DÜŞÜK
+                      <Badge variant="default" className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-xs">
+                        ORTA
                       </Badge>
                     </div>
                     <div className="flex justify-between items-center">
@@ -151,6 +151,12 @@ export const MobileNavigation = React.memo(function MobileNavigation() {
                       <Badge variant="default" className="bg-accent-ai/20 text-accent-ai border-accent-ai/30 text-xs">
                         <Zap className="w-3 h-3 mr-1" />
                         Live
+                      </Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-cliff-light-gray text-sm">Sistem</span>
+                      <Badge variant="default" className="bg-accent-success/20 text-accent-success border-accent-success/30 text-xs">
+                        Online
                       </Badge>
                     </div>
                   </div>

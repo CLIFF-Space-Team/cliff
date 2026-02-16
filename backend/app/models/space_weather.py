@@ -1,4 +1,4 @@
-﻿from beanie import Document
-class SpaceWeather(Document):
-    class Settings:
-        name = "space_weather"
+from pydantic import BaseModel
+
+class SpaceWeather(BaseModel):
+    pass

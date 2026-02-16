@@ -39,11 +39,12 @@ export function UncertaintyTimeline({ targetId, days = 30 }: Props) {
     Promise.all([fetchFuturePositions(targetId, days), fetchHybridAnalysis(targetId, days)])
       .then(([positions, hybrid]) => {
         if (!mounted) return
+        const p = positions as any
         const data =
-          positions?.data?.result?.data ??
-          positions?.data?.data ??
-          positions?.result?.data ??
-          positions?.data ??
+          p?.data?.result?.data ??
+          p?.data?.data ??
+          p?.result?.data ??
+          p?.data ??
           []
         setSeries(Array.isArray(data) ? data : [])
         const ci = hybrid?.monte_carlo?.ci95_km as [number, number] | undefined

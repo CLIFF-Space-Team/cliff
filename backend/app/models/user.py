@@ -1,4 +1,4 @@
-﻿from beanie import Document
-class User(Document):
-    class Settings:
-        name = "users"
+from pydantic import BaseModel
+
+class User(BaseModel):
+    pass

@@ -1,4 +1,4 @@
-﻿from beanie import Document
-class Alert(Document):
-    class Settings:
-        name = "alerts"
+from pydantic import BaseModel
+
+class Alert(BaseModel):
+    pass

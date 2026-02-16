@@ -107,7 +107,7 @@ export function SeismicWaves({
     return new THREE.Quaternion().setFromUnitVectors(up, normal)
   }, [normal])
   if (progress < 0.28 || progress > 0.95) {
-    return null
+    return <group visible={false} />
   }
   return (
     <group>

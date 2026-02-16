@@ -1,3 +1,4 @@
-﻿from beanie import Document
-class Asteroid(Document):
+from pydantic import BaseModel
+
+class Asteroid(BaseModel):
     pass

@@ -31,7 +31,18 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
   isOpen = true,
   onClose
 }) => {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('cliff-chat-messages')
+        if (saved) {
+          const parsed = JSON.parse(saved)
+          return parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) }))
+        }
+      } catch {}
+    }
+    return []
+  })
   const [inputValue, setInputValue] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
@@ -49,6 +60,15 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
   useEffect(() => {
     scrollToBottom()
   }, [messages, scrollToBottom])
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      try {
+        const toSave = messages.filter(m => !m.isTyping).slice(-50)
+        localStorage.setItem('cliff-chat-messages', JSON.stringify(toSave))
+      } catch {}
+    }
+  }, [messages])
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -368,7 +388,7 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
     }
   }, [inputValue, messages, isLoading, detectImageRequest, generateImage, useAzureAgent, azureThreadId])
 
-  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       sendMessage()
@@ -564,7 +584,7 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
                   </div>
                   <p className="text-xs text-gray-400 flex items-center gap-1.5">
                     <Sparkles className="w-3 h-3 text-purple-400" />
-                    Gemini 3.0 Pro
+                    CLIFF Yapay Zeka
                   </p>
                 </div>
               </div>
@@ -708,7 +728,7 @@ const ModernChatInterface: React.FC<ModernChatInterfaceProps> = ({
                       type="text"
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
-                      onKeyPress={handleKeyPress}
+                      onKeyDown={handleKeyDown}
                       placeholder="Bir soru sorun veya görsel isteyin..."
                       disabled={isLoading}
                       className={cn(

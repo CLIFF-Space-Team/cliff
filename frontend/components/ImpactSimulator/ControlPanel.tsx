@@ -1,5 +1,5 @@
 ﻿'use client'
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Slider } from '@/components/ui/slider'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,11 +18,19 @@ interface ControlPanelProps {
   isSimulating: boolean
 }
 const PRESET_ASTEROIDS = [
-  { name: '2020 CD3', diameter: 6, velocity: 11 },
-  { name: 'Apophis', diameter: 340, velocity: 12.6 },
-  { name: 'Bennu', diameter: 490, velocity: 28 },
-  { name: 'Tunguska (1908)', diameter: 60, velocity: 15 },
-  { name: 'Chicxulub (Dinozor)', diameter: 10000, velocity: 20 },
+  { name: '2020 CD3', diameter: 6, velocity: 11, density: 2600 },
+  { name: 'Apophis', diameter: 340, velocity: 12.6, density: 2200 },
+  { name: 'Bennu', diameter: 490, velocity: 28, density: 1190 },
+  { name: 'Tunguska (1908)', diameter: 60, velocity: 15, density: 1800 },
+  { name: 'Chicxulub (Dinozor)', diameter: 10000, velocity: 20, density: 2700 },
+]
+
+const DENSITY_PRESETS = [
+  { name: 'Buz/Kuyruklu Yildiz', density: 600 },
+  { name: 'Karbonlu (C-type)', density: 1300 },
+  { name: 'Silikat (S-type)', density: 2600 },
+  { name: 'Metalik (M-type)', density: 5300 },
+  { name: 'Demir-Nikel', density: 7800 },
 ]
 const PRESET_LOCATIONS = [
   { name: 'İstanbul', lat: 41.0082, lng: 28.9784, population: 15000000, isOcean: false },
@@ -42,6 +50,19 @@ export function ControlPanel({
   const [showLocationPicker, setShowLocationPicker] = useState(false)
   const [selectedLocationIndex, setSelectedLocationIndex] = useState<string | undefined>(undefined)
   const [selectedAsteroidIndex, setSelectedAsteroidIndex] = useState<string | undefined>(undefined)
+
+  const diameterMax = useMemo(() => {
+    return Math.max(1000, asteroid.diameter_m * 1.5, 
+      ...PRESET_ASTEROIDS.map(p => p.diameter)
+    )
+  }, [asteroid.diameter_m])
+
+  const diameterStep = useMemo(() => {
+    if (asteroid.diameter_m > 5000) return 500
+    if (asteroid.diameter_m > 1000) return 100
+    if (asteroid.diameter_m > 100) return 10
+    return 1
+  }, [asteroid.diameter_m])
   return (
     <>
       <LocationPicker
@@ -72,7 +93,8 @@ export function ControlPanel({
               onAsteroidChange({
                 ...asteroid,
                 diameter_m: preset.diameter,
-                velocity_kms: preset.velocity
+                velocity_kms: preset.velocity,
+                density: preset.density
               })
             }}
           >
@@ -97,14 +119,14 @@ export function ControlPanel({
           <div className="space-y-2">
             <Label className="text-cliff-white flex justify-between">
               <span>Çap</span>
-              <span className="text-accent-info">{asteroid.diameter_m}m</span>
+              <span className="text-accent-info">{asteroid.diameter_m >= 1000 ? `${(asteroid.diameter_m/1000).toFixed(1)}km` : `${asteroid.diameter_m}m`}</span>
             </Label>
             <Slider
               value={[asteroid.diameter_m]}
               onValueChange={([value]) => onAsteroidChange({ ...asteroid, diameter_m: value })}
-              min={10}
-              max={1000}
-              step={10}
+              min={1}
+              max={diameterMax}
+              step={diameterStep}
               className="cursor-pointer"
             />
           </div>
@@ -136,6 +158,36 @@ export function ControlPanel({
               className="cursor-pointer"
             />
             <p className="text-xs text-cliff-light-gray">0° = yatay, 90° = dikey</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-cliff-white flex justify-between">
+              <span>Yoğunluk</span>
+              <span className="text-purple-400">{asteroid.density || 2600} kg/m³</span>
+            </Label>
+            <Slider
+              value={[asteroid.density || 2600]}
+              onValueChange={([value]) => onAsteroidChange({ ...asteroid, density: value })}
+              min={500}
+              max={8000}
+              step={100}
+              className="cursor-pointer"
+            />
+            <div className="flex flex-wrap gap-1 mt-1">
+              {DENSITY_PRESETS.map((preset) => (
+                <button
+                  key={preset.name}
+                  onClick={() => onAsteroidChange({ ...asteroid, density: preset.density })}
+                  className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${
+                    (asteroid.density || 2600) === preset.density
+                      ? 'bg-purple-500/20 border-purple-500/50 text-purple-300'
+                      : 'bg-pure-black/30 border-cliff-white/10 text-cliff-light-gray hover:border-cliff-white/30'
+                  }`}
+                >
+                  {preset.name}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
         {}

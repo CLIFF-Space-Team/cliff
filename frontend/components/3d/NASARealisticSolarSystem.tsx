@@ -200,7 +200,6 @@ function SolarSystemScene({
         enableOrbitalMechanics={false}
         distributionRadius={[14, 28]}
         enableThreatVisualization={false}
-        enableOrbitalMechanics={false}
         maxAsteroids={100}
       />
       {}

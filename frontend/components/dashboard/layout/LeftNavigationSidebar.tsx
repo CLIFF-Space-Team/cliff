@@ -38,14 +38,14 @@ const NAVIGATION_ITEMS = [
     label: 'Sistem İzleme',
     icon: Monitor,
     activeClass: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
-    badge: 'LIVE'
+    badge: 'CANLI'
   },
   {
     id: 'chat-interface' as ViewType,
     label: 'AI Asistan',
     icon: MessageSquare,
     activeClass: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
-    badge: 'NEW'
+    badge: 'YENİ'
   }
 ] as const
 
@@ -73,7 +73,7 @@ export const LeftNavigationSidebar: React.FC<{}> = () => {
               className="flex flex-col"
             >
               <span className="font-bold text-white tracking-wide">CLIFF</span>
-              <span className="text-[10px] text-gray-500 uppercase tracking-wider">Navigation</span>
+              <span className="text-[10px] text-gray-500 uppercase tracking-wider">Uzay İzleme Sistemi</span>
             </motion.div>
           )}
         </div>
@@ -119,6 +119,13 @@ export const LeftNavigationSidebar: React.FC<{}> = () => {
               
               {!isExpanded && isActive && (
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-current rounded-r-full" />
+              )}
+
+              {!isExpanded && (
+                <div className="absolute left-full ml-2 px-2.5 py-1.5 bg-[#0a0a0a] border border-white/10 rounded-lg text-xs text-white whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity z-50 shadow-xl">
+                  {item.label}
+                  {item.badge && <span className="ml-2 text-[10px] text-gray-500">{item.badge}</span>}
+                </div>
               )}
             </button>
           )

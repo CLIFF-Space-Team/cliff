@@ -104,21 +104,13 @@ export function LocationPicker({
       }
       try {
         if (!MAPBOX_TOKEN) {
-            console.error('❌ Mapbox token eksik! NEXT_PUBLIC_MAPBOX_TOKEN environment variable tanımlı değil.')
+            console.error('Mapbox token eksik! NEXT_PUBLIC_MAPBOX_TOKEN environment variable tanımlı değil.')
             setMapLoading(false) 
             return
         }
 
-        console.log('✅ Mapbox token bulundu:', MAPBOX_TOKEN.substring(0, 20) + '...')
-        console.log('📦 Container boyutu:', {
-          width: mapContainerRef.current?.offsetWidth,
-          height: mapContainerRef.current?.offsetHeight
-        })
-        
         const mapboxgl = (await import('mapbox-gl')).default
         mapboxgl.accessToken = MAPBOX_TOKEN
-
-        console.log('🗺️ Harita nesnesi oluşturuluyor...')
 
         const map = new mapboxgl.Map({
           container: mapContainerRef.current!,
@@ -129,14 +121,7 @@ export function LocationPicker({
           renderWorldCopies: false
         })
 
-        console.log('🔍 Map nesnesi oluşturuldu, event listener\'lar bekleniyor...')
-
-        map.on('styledata', () => {
-          console.log('🎨 Harita stili yüklendi')
-        })
-
         map.on('load', () => {
-          console.log('✅ Harita tamamen yüklendi!')
           setMapLoading(false)
           setTimeout(() => {
             map.resize()
@@ -168,8 +153,6 @@ export function LocationPicker({
         mapRef.current = map
         markerRef.current = marker
 
-        console.log('🎯 Harita event listener\'ları kuruldu')
-
       } catch (error) {
         console.error('❌ Mapbox başlatma hatası:', error)
         setMapLoading(false)
@@ -180,7 +163,6 @@ export function LocationPicker({
 
     return () => {
       if (mapRef.current) {
-        console.log('🧹 Harita temizleniyor...')
         mapRef.current.remove()
         mapRef.current = null
         markerRef.current = null

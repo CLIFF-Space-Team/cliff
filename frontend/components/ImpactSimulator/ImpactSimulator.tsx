@@ -1,5 +1,5 @@
 ﻿'use client'
-import React, { useState, Suspense } from 'react'
+import React, { useState, useMemo, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import * as THREE from 'three'
@@ -42,7 +42,7 @@ export function ImpactSimulator() {
     postProcessing: true,
     autoAdjust: true
   })
-  const calculator = new ImpactCalculator()
+  const calculator = useMemo(() => new ImpactCalculator(), [])
   const runSimulation = () => {
     const impact = calculator.calculate(asteroid, location)
     setResults(impact)

@@ -58,8 +58,6 @@ from prometheus_client import make_asgi_app
 import structlog
 
 from app.core.config import settings
-from app.core.database import initialize_database, disconnect_from_mongo, check_database_health
-from app.services.neo_repository import ensure_indexes as ensure_neo_indexes
 
 from app.api.v1.router import api_v1_router
 from app.websocket.manager import websocket_manager
@@ -76,10 +74,6 @@ async def lifespan(app: FastAPI):
     logger.info("CLIFF Backend starting up...")
     
     try:
-        logger.info("Initializing database...")
-        await initialize_database()
-        await ensure_neo_indexes()
-        
         logger.info("Initializing WebSocket manager...")
         await websocket_manager.initialize()
         
@@ -113,8 +107,6 @@ async def lifespan(app: FastAPI):
             logger.info("NASA services client closed successfully")
         except Exception as e:
             logger.warning(f"NASA client cleanup warning: {str(e)}")
-        
-        await disconnect_from_mongo()
         
         logger.info("CLIFF Backend shutdown complete!")
         

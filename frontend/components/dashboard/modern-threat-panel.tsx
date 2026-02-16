@@ -95,7 +95,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
   const [compareOpen, setCompareOpen] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement | null>(null)
   const listRef = useRef<HTMLDivElement | null>(null)
-  const [virt, setVirt] = useState<{ start: number; end: number; item: number }>({ start: 0, end: 30, item: 72 })
+  const [virt, setVirt] = useState<{ start: number; end: number; item: number }>({ start: 0, end: 30, item: 140 })
   const [listTexts, setListTexts] = useState({
     header: "NEO Listesi",
     noResults: "Kriterlere uygun NEO bulunamadı."
@@ -196,19 +196,7 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
   }
 
   useEffect(() => {
-    
-    const loadInitialData = async () => {
-      setIsLoading(true)
-      try {
-        await Promise.all([
-          fetchRealThreats(),
-          fetchTimelineData(timelineWindow)
-        ])
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    loadInitialData()
+    fetchTimelineData(timelineWindow)
   }, [])
 
   useEffect(() => {
@@ -496,6 +484,12 @@ export const ModernThreatPanel: React.FC<ThreatPanelProps> = ({
                   <div className="flex flex-col items-center justify-center py-12 text-white/30 border border-dashed border-white/10 rounded-xl bg-black/20">
                     <Target className="w-8 h-8 mb-3 opacity-50" />
                     <p className="text-sm">{listTexts.noResults}</p>
+                    <button
+                      onClick={() => useThreatFilters.getState().reset()}
+                      className="mt-4 px-4 py-2 text-xs font-medium text-white/70 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors"
+                    >
+                      Filtreleri Sıfırla
+                    </button>
                   </div>
                 ) : (
                   <div ref={listRef} className="relative">

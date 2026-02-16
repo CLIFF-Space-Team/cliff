@@ -7,14 +7,20 @@ import { SimpleCelestialBody } from '@/types/astronomical-data'
 
 interface PerformantAsteroidsProps {
   count?: number
+  enableAnimation?: boolean
   quality?: 'low' | 'medium' | 'high'
+  distributionRadius?: number[]
   nasaAsteroidsData?: SimpleCelestialBody[]
+  useRealData?: boolean
 }
 
 export const PerformantAsteroids: React.FC<PerformantAsteroidsProps> = ({
   count = 150,
+  enableAnimation = false,
   quality = 'high',
-  nasaAsteroidsData = []
+  distributionRadius = [15, 25],
+  nasaAsteroidsData = [],
+  useRealData = false
 }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null)
   

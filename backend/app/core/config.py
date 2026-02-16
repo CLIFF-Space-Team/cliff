@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     BACKEND_RELOAD: bool = Field(default=True)
     BACKEND_LOG_LEVEL: str = Field(default="info")
     
-    FRONTEND_URL: str = Field(default="https://nasa.kynux.dev")
+    FRONTEND_URL: str = Field(default="http://localhost:3000")
     
     NASA_API_KEY: str = Field(default="DEMO_KEY")
     NASA_BASE_URL: str = Field(default="https://api.nasa.gov")
@@ -42,17 +42,17 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: Optional[str] = Field(default=None)
     CORTEX_IMAGE_API_KEY: Optional[str] = Field(default=None)
     
-    MONGODB_URL: str = Field(default="mongodb+srv://..:..@cluster0.af5h8.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+    MONGODB_URL: str = Field(default="mongodb://localhost:27017/cliff_db")
     MONGODB_HOST: str = Field(default="localhost")
     MONGODB_PORT: int = Field(default=27017)
     MONGODB_NAME: str = Field(default="cliff_db")
-    MONGODB_USER: str = Field(default="cliff_user")
-    MONGODB_PASSWORD: str = Field(default="cliff_pass_2025")
+    MONGODB_USER: str = Field(default="")
+    MONGODB_PASSWORD: str = Field(default="")
     
     REDIS_URL: str = Field(default="redis://localhost:6379/0")
     REDIS_HOST: str = Field(default="localhost")
     REDIS_PORT: int = Field(default=6379)
-    REDIS_PASSWORD: Optional[str] = Field(default="cliff_redis_2025")
+    REDIS_PASSWORD: Optional[str] = Field(default=None)
     
     ELASTICSEARCH_URL: str = Field(default="http://localhost:9200")
     ELASTICSEARCH_HOST: str = Field(default="localhost")
@@ -71,7 +71,6 @@ class Settings(BaseSettings):
     
     CORS_ORIGINS: List[str] = Field(
         default=[
-            "https://nasa.kynux.dev",
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "http://localhost:3001",
@@ -86,7 +85,7 @@ class Settings(BaseSettings):
         return v
     
     ALLOWED_HOSTS: List[str] = Field(
-        default=["localhost", "127.0.0.1", "nasa.kynux.dev", "cliff-app.com"]
+        default=["localhost", "127.0.0.1"]
     )
     
     WORKER_PROCESSES: int = Field(default=4)
@@ -145,7 +144,7 @@ class Settings(BaseSettings):
     FAST_RELOAD: bool = Field(default=True)
     AUTO_RESTART: bool = Field(default=True)
     
-    TEST_DATABASE_URL: str = Field(default="mongodb://cliff_user:cliff_pass_2025@localhost:27017/cliff_test?authSource=admin")
+    TEST_DATABASE_URL: str = Field(default="mongodb://localhost:27017/cliff_test")
     TEST_REDIS_URL: str = Field(default="redis://localhost:6380/0")
     
     @validator("ENVIRONMENT")
@@ -196,7 +195,7 @@ class Settings(BaseSettings):
                 "DEBUG": True,
                 "BACKEND_PORT": 8000,
                 "NASA_API_KEY": "your_nasa_api_key",
-                "MONGODB_URL": "mongodb://cliff_user:cliff_pass_2025@localhost:27017/cliff_db?authSource=admin"
+                "MONGODB_URL": "mongodb://localhost:27017/cliff_db"
             }
         }
 

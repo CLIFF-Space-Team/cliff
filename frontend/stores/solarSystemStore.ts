@@ -376,8 +376,8 @@ export class PerformanceManager {
   }
 
   private getMemoryUsage(): number {
-    if (typeof window !== 'undefined' && window.performance?.memory) {
-      return Math.round(window.performance.memory.usedJSHeapSize / 1048576) 
+    if (typeof window !== 'undefined' && (window.performance as any)?.memory) {
+      return Math.round((window.performance as any).memory.usedJSHeapSize / 1048576) 
     }
     return 0
   }

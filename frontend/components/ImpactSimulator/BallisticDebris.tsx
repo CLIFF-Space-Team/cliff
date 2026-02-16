@@ -139,6 +139,11 @@ export function BallisticDebris({
   const largeDebrisRef = useRef<THREE.InstancedMesh>(null)
   const smallDebrisRef = useRef<THREE.InstancedMesh>(null)
   const dustRef = useRef<THREE.Points>(null)
+
+  const _matrix = useMemo(() => new THREE.Matrix4(), [])
+  const _euler = useMemo(() => new THREE.Euler(), [])
+  const _scaleMatrix = useMemo(() => new THREE.Matrix4(), [])
+  const _tempVec = useMemo(() => new THREE.Vector3(), [])
   const { particles, geometries } = useMemo(() => {
     const largeCount = Math.min(30, Math.floor(intensity * 15))
     const smallCount = Math.min(100, Math.floor(intensity * 50))
@@ -209,21 +214,23 @@ export function BallisticDebris({
         const targetDist = 1.8
         const currentDist = p.position.length()
         if (currentDist > targetDist) {
-          p.position.lerp(p.position.clone().normalize().multiplyScalar(targetDist), settleProgress * 0.5)
+          _tempVec.copy(p.position).normalize().multiplyScalar(targetDist)
+          p.position.lerp(_tempVec, settleProgress * 0.5)
           p.velocity.multiplyScalar(1 - settleProgress)
         }
       }
-      const matrix = new THREE.Matrix4()
       const rotationX = time_s * (0.5 + i * 0.1)
       const rotationY = time_s * (0.3 + i * 0.07)
       const rotationZ = time_s * (0.4 + i * 0.09)
-      matrix.makeRotationFromEuler(new THREE.Euler(rotationX, rotationY, rotationZ))
-      matrix.setPosition(p.position)
+      _euler.set(rotationX, rotationY, rotationZ)
+      _matrix.makeRotationFromEuler(_euler)
+      _matrix.setPosition(p.position)
       const fadeScale = isSettling ? (1 - settleProgress * 0.3) : 1
-      const scaleMatrix = new THREE.Matrix4().makeScale(p.size * fadeScale, p.size * fadeScale, p.size * fadeScale)
-      matrix.multiply(scaleMatrix)
+      const s = p.size * fadeScale
+      _scaleMatrix.makeScale(s, s, s)
+      _matrix.multiply(_scaleMatrix)
       if (largeDebrisRef.current) {
-        largeDebrisRef.current.setMatrixAt(i, matrix)
+        largeDebrisRef.current.setMatrixAt(i, _matrix)
         if (i === 0) {
           const matProps = p.getMaterialProps()
           const material = largeDebrisRef.current.material as THREE.MeshPhysicalMaterial
@@ -251,21 +258,23 @@ export function BallisticDebris({
         const targetDist = 1.8
         const currentDist = p.position.length()
         if (currentDist > targetDist) {
-          p.position.lerp(p.position.clone().normalize().multiplyScalar(targetDist), settleProgress * 0.7)
+          _tempVec.copy(p.position).normalize().multiplyScalar(targetDist)
+          p.position.lerp(_tempVec, settleProgress * 0.7)
           p.velocity.multiplyScalar(1 - settleProgress)
         }
       }
-      const matrix = new THREE.Matrix4()
       const rotX = time_s * (1.0 + i * 0.2)
       const rotY = time_s * (0.8 + i * 0.15)
       const rotZ = time_s * (0.6 + i * 0.12)
-      matrix.makeRotationFromEuler(new THREE.Euler(rotX, rotY, rotZ))
-      matrix.setPosition(p.position)
+      _euler.set(rotX, rotY, rotZ)
+      _matrix.makeRotationFromEuler(_euler)
+      _matrix.setPosition(p.position)
       const fadeScale = isSettling ? (1 - settleProgress * 0.5) : 1
-      const scaleMatrix = new THREE.Matrix4().makeScale(p.size * fadeScale, p.size * fadeScale, p.size * fadeScale)
-      matrix.multiply(scaleMatrix)
+      const s = p.size * fadeScale
+      _scaleMatrix.makeScale(s, s, s)
+      _matrix.multiply(_scaleMatrix)
       if (smallDebrisRef.current) {
-        smallDebrisRef.current.setMatrixAt(i, matrix)
+        smallDebrisRef.current.setMatrixAt(i, _matrix)
       }
     })
     particles.dust.forEach((p, i) => {
@@ -275,7 +284,8 @@ export function BallisticDebris({
         const targetDist = 1.8
         const currentDist = p.position.length()
         if (currentDist > targetDist) {
-          p.position.lerp(p.position.clone().normalize().multiplyScalar(targetDist), settleProgress * 0.9)
+          _tempVec.copy(p.position).normalize().multiplyScalar(targetDist)
+          p.position.lerp(_tempVec, settleProgress * 0.9)
           p.velocity.multiplyScalar(1 - settleProgress * 1.5)
         }
       }

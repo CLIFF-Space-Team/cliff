@@ -159,9 +159,9 @@ export function CentralVisualization() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ultra">ULTRA</SelectItem>
-                <SelectItem value="high">HIGH</SelectItem>
-                <SelectItem value="medium">MEDIUM</SelectItem>
-                <SelectItem value="low">LOW</SelectItem>
+                <SelectItem value="high">YÜKSEK</SelectItem>
+                <SelectItem value="medium">ORTA</SelectItem>
+                <SelectItem value="low">DÜŞÜK</SelectItem>
               </SelectContent>
             </Select>
           </div>

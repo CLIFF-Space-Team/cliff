@@ -14,7 +14,7 @@ export default function ImpactSimulatorPage() {
             <Link href="/dashboard">
               <Button variant="ghost" size="sm" className="text-cliff-white hover:text-white">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Dashboard'a Dön
+                Kontrol Paneline Dön
               </Button>
             </Link>
             <div>
