@@ -1,0 +1,200 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Surface tiers — three flat values, no gradients */
+    --surface-0: 0 0% 0%;
+    --surface-1: 0 0% 4%;
+    --surface-2: 0 0% 8%;
+    --surface-3: 0 0% 12%;
+
+    /* Hairline borders — never solid white */
+    --border-subtle: 0 0% 100%;
+    --border-default: 0 0% 100%;
+    --border-strong: 0 0% 100%;
+
+    /* Text — three tiers + disabled */
+    --text-primary: 0 0% 98%;
+    --text-secondary: 0 0% 64%;
+    --text-tertiary: 0 0% 40%;
+    --text-disabled: 0 0% 24%;
+
+    /* Single near-white accent for CTAs */
+    --accent: 0 0% 92%;
+    --accent-foreground: 0 0% 4%;
+
+    /* Threat semantics — the ONLY chroma in the system */
+    --threat-critical: 0 84% 60%;
+    --threat-high: 25 95% 53%;
+    --threat-moderate: 48 96% 53%;
+    --threat-low: 142 71% 45%;
+    --threat-none: 0 0% 40%;
+
+    /* Glassmorphism — frosted panels float over the 3D space scene.
+     * Cool near-white highlight + a faint cold-blue ambient for depth.
+     * (Threat colors remain the only saturated chroma.) */
+    --glass-blur: 22px;
+    --glass-saturate: 150%;
+    --glass-tint: 0 0% 100%;
+    --glow: 210 90% 62%;
+
+    /* Radix / shadcn-style aliases */
+    --background: var(--surface-0);
+    --foreground: var(--text-primary);
+    --card: var(--surface-1);
+    --card-foreground: var(--text-primary);
+    --popover: var(--surface-3);
+    --popover-foreground: var(--text-primary);
+    --primary: var(--accent);
+    --primary-foreground: var(--accent-foreground);
+    --secondary: var(--surface-2);
+    --secondary-foreground: var(--text-primary);
+    --muted: var(--surface-2);
+    --muted-foreground: var(--text-secondary);
+    --destructive: var(--threat-critical);
+    --destructive-foreground: var(--text-primary);
+    --border: var(--border-default);
+    --input: var(--border-default);
+    --ring: 0 0% 100%;
+
+    --radius: 0.5rem;
+  }
+
+  * {
+    border-color: hsl(var(--border) / 0.1);
+  }
+
+  html {
+    color-scheme: dark;
+    background: hsl(var(--surface-0));
+  }
+
+  body {
+    background: hsl(var(--surface-0));
+    color: hsl(var(--text-primary));
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    /* Mobile: prevent overscroll bounce showing default white bg under our
+     * dark theme, prevent tap highlight fading buttons orange on iOS, and
+     * keep tap targets responsive without 300ms delay. */
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Native form controls on mobile shouldn't zoom the viewport on focus —
+   * iOS auto-zooms inputs whose font-size is < 16px. Bumping baseline ≥ 16
+   * for inputs/textareas/selects keeps our compact look on desktop while
+   * stopping the unwanted zoom on iOS Safari. */
+  @media (max-width: 640px) {
+    input,
+    textarea,
+    select {
+      font-size: max(16px, 1em);
+    }
+  }
+}
+
+@layer utilities {
+  /* ── Glassmorphism system ───────────────────────────────────────────
+   * `glass` / `glass-strong` carry the real backdrop-blur (one per region —
+   * blur over a live WebGL canvas is costly, so use sparingly: the rail, the
+   * header, small chips). `glass-card` is a CHEAP tinted layer (no blur) for
+   * nested cards that sit ON a frosted region. */
+  .glass {
+    background:
+      linear-gradient(180deg, hsl(var(--glass-tint) / 0.07), hsl(var(--glass-tint) / 0.015)),
+      hsl(var(--surface-1) / 0.55);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+    border: 1px solid hsl(var(--glass-tint) / 0.1);
+    box-shadow:
+      inset 0 1px 0 hsl(var(--glass-tint) / 0.12),
+      0 16px 40px -12px rgba(0, 0, 0, 0.55);
+  }
+
+  .glass-strong {
+    background:
+      linear-gradient(180deg, hsl(var(--glass-tint) / 0.09), hsl(var(--glass-tint) / 0.02)),
+      hsl(var(--surface-0) / 0.62);
+    backdrop-filter: blur(28px) saturate(150%);
+    -webkit-backdrop-filter: blur(28px) saturate(150%);
+    border: 1px solid hsl(var(--glass-tint) / 0.1);
+    box-shadow:
+      inset 0 1px 0 hsl(var(--glass-tint) / 0.14),
+      0 28px 64px -18px rgba(0, 0, 0, 0.68);
+  }
+
+  /* Frosted bar — for the header / tickers / side rail. Translucent + blur,
+   * borderless (callers add the hairline edge they need). */
+  .glass-bar {
+    background: hsl(var(--surface-0) / 0.55);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+  }
+
+  /* Cheap tinted card — NO backdrop-filter. Sits on a frosted region and
+   * reads as a layered glass plane. Add to a `Surface` (its `background`
+   * shorthand wins over the elevation bg via later cascade; the Surface keeps
+   * its hairline border). */
+  .glass-card {
+    background: linear-gradient(180deg, hsl(var(--glass-tint) / 0.055), hsl(var(--glass-tint) / 0.012));
+    box-shadow: inset 0 1px 0 hsl(var(--glass-tint) / 0.07);
+  }
+
+  /* Soft cold-blue ambient glow — drop behind the hero scene / panels for depth. */
+  .ambient-glow::before {
+    content: '';
+    position: absolute;
+    inset: -25%;
+    background: radial-gradient(
+      55% 45% at 72% 28%,
+      hsl(var(--glow) / 0.1),
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Legacy alias kept so existing `surface-glass` usages stay glassy. */
+  .surface-glass {
+    background: hsl(var(--surface-1) / 0.72);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border: 1px solid hsl(var(--border-subtle) / 0.06);
+  }
+
+  .hairline-x {
+    height: 1px;
+    background: hsl(var(--border-subtle) / 0.1);
+  }
+
+  .hairline-y {
+    width: 1px;
+    background: hsl(var(--border-subtle) / 0.1);
+  }
+
+  .font-mono-tnum {
+    font-feature-settings: 'tnum', 'zero';
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: hsl(var(--surface-1));
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--border-strong) / 0.18);
+    border-radius: 999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(0 0% 100% / 0.3);
+  }
+}

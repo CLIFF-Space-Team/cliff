@@ -1,0 +1,60 @@
+{
+  "version": 2,
+  "models": {
+    "2101955": {
+      "neoId": "2101955",
+      "designation": "101955 Bennu",
+      "name": "Bennu",
+      "modelPath": "/asteroids/bennu/model.glb",
+      "textureSet": "/asteroids/bennu/",
+      "scale_km": 0.49,
+      "rotation_period_h": 4.296,
+      "type": "B",
+      "source": "NASA OSIRIS-REx (Public Domain)"
+    },
+    "2433": {
+      "neoId": "2433",
+      "designation": "433 Eros",
+      "name": "Eros",
+      "modelPath": "/asteroids/eros/model.glb",
+      "textureSet": "/asteroids/eros/",
+      "scale_km": 16.84,
+      "rotation_period_h": 5.27,
+      "type": "S",
+      "source": "NASA NEAR (Public Domain)"
+    },
+    "2025143": {
+      "neoId": "2025143",
+      "designation": "25143 Itokawa",
+      "name": "Itokawa",
+      "modelPath": "/asteroids/itokawa/model.glb",
+      "textureSet": "/asteroids/itokawa/",
+      "scale_km": 0.33,
+      "rotation_period_h": 12.13,
+      "type": "S",
+      "source": "JAXA Hayabusa (Public Domain)"
+    },
+    "2162173": {
+      "neoId": "2162173",
+      "designation": "162173 Ryugu",
+      "name": "Ryugu",
+      "modelPath": "/asteroids/ryugu/model.glb",
+      "textureSet": "/asteroids/ryugu/",
+      "scale_km": 0.9,
+      "rotation_period_h": 7.63,
+      "type": "C",
+      "source": "JAXA Hayabusa-2 (Public Domain)"
+    },
+    "2000004": {
+      "neoId": "2000004",
+      "designation": "4 Vesta",
+      "name": "Vesta",
+      "modelPath": "/asteroids/vesta/model.glb",
+      "textureSet": "/asteroids/vesta/",
+      "scale_km": 525.4,
+      "rotation_period_h": 5.34,
+      "type": "V",
+      "source": "NASA Dawn (Public Domain)"
+    }
+  }
+}

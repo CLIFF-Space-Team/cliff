@@ -1,0 +1,58 @@
+[
+  {
+    "id": "chelyabinsk",
+    "name": "Chelyabinsk",
+    "subtitle": "15 Şubat 2013",
+    "era": "Tarihi olay",
+    "context": "~20 m taşlı, 19 km/s. Hava patlaması, ~1500 yaralı.",
+    "input": {
+      "diameterM": 20,
+      "velocityKms": 19,
+      "angleDeg": 18,
+      "composition": "stony",
+      "targetType": "crystalline"
+    }
+  },
+  {
+    "id": "tunguska",
+    "name": "Tunguska",
+    "subtitle": "30 Haziran 1908",
+    "era": "Tarihi olay",
+    "context": "~60 m taşlı/komet, 27 km/s. ~10 Mt hava patlaması, 2000 km² orman.",
+    "input": {
+      "diameterM": 60,
+      "velocityKms": 27,
+      "angleDeg": 30,
+      "composition": "stony",
+      "targetType": "crystalline"
+    }
+  },
+  {
+    "id": "meteor-crater",
+    "name": "Meteor Crater",
+    "subtitle": "Arizona, ~50.000 yıl önce",
+    "era": "Tarihi olay",
+    "context": "50 m demir, 12 km/s. 1.2 km krater, ~10 Mt eşdeğeri.",
+    "input": {
+      "diameterM": 50,
+      "velocityKms": 12,
+      "angleDeg": 45,
+      "composition": "iron",
+      "targetType": "sedimentary"
+    }
+  },
+  {
+    "id": "chicxulub",
+    "name": "Chicxulub",
+    "subtitle": "66 milyon yıl önce",
+    "era": "Yok-oluş seviyesi",
+    "context": "10 km karbonlu/komet, 20 km/s. Dinozor yok oluşu (K-Pg).",
+    "input": {
+      "diameterM": 10000,
+      "velocityKms": 20,
+      "angleDeg": 60,
+      "composition": "carbonaceous",
+      "targetType": "sedimentary"
+    }
+  }
+]

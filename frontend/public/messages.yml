@@ -1,0 +1,50 @@
+threat:
+  title: "Gerçek Zamanlı Asteroit Tehdit Analizi"
+  counters:
+    critical: "Kritik"
+    high: "Yüksek"
+    medium: "Orta"
+    low: "Düşük"
+    none: "Yok"
+  filters:
+    search: "Arama"
+    risk: "Risk"
+    diameter: "Çap (km)"
+    max_ld: "Maks. Mesafe (LD)"
+    window_sort: "Pencere / Sıralama"
+    clear: "Temizle"
+    apply: "Uygula"
+  list:
+    header: "En Riskli NEO'lar (NASA Verisi)"
+    empty: "Backend'den NEO verisi yükleniyor veya liste boş..."
+    no_results: "Sonuç bulunamadı. Filtreleri gevşetmeyi veya anahtar kelimeleri değiştirmeyi deneyin."
+    distance: "Mesafe"
+    velocity: "Hız"
+    diameter_short: "Çap"
+    score: "Skor"
+    total: "Toplam"
+    prev: "Önceki"
+    next: "Sonraki"
+    selected: "Seçili"
+    compare: "Karşılaştır"
+  compare:
+    title: "NEO Karşılaştırma"
+    loading: "Yükleniyor..."
+    empty: "Seçili NEO bulunamadı."
+    close: "Kapat"
+    table:
+      neo: "NEO"
+      risk: "Risk"
+      torino: "Torino"
+      palermo: "Palermo"
+      diameter_km: "Çap (km)"
+      distance_ld: "Mesafe (LD)"
+      velocity_kms: "Hız (km/s)"
+  export:
+    csv: "CSV"
+    json: "JSON"
+
+visualization:
+  presets:
+    earth_focus: "3D Dünya"
+    full_system: "Güneş Sistemi"

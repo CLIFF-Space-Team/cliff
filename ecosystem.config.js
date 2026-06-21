@@ -1,0 +1,32 @@
+module.exports = {
+  apps: [
+    {
+      name: 'cliff-backend',
+      cwd: '/opt/cliff/backend',
+      script: '/opt/cliff/backend/venv/bin/python',
+      args: '-m uvicorn main:app --host 0.0.0.0 --port 8000 --no-access-log',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '900M',
+      env: { PYTHONIOENCODING: 'utf-8' },
+      out_file: '/var/log/cliff-backend.out.log',
+      error_file: '/var/log/cliff-backend.err.log',
+      merge_logs: true,
+      time: true,
+    },
+    {
+      name: 'cliff-frontend',
+      cwd: '/opt/cliff/frontend',
+      script: 'npm',
+      args: 'run start -- --hostname 0.0.0.0 --port 3000',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '1500M',
+      env: { NODE_ENV: 'production' },
+      out_file: '/var/log/cliff-frontend.out.log',
+      error_file: '/var/log/cliff-frontend.err.log',
+      merge_logs: true,
+      time: true,
+    },
+  ],
+};

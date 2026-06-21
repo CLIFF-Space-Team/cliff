@@ -1,0 +1,33 @@
+{
+  "name": "cliff",
+  "version": "2.0.0",
+  "description": "CLIFF — Cosmic Level Intelligent Forecast Framework. NASA asteroid threat monitoring with AI + autonomous risk pipeline.",
+  "private": true,
+  "workspaces": ["frontend"],
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && python main.py",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint:backend": "cd backend && black --check app/ && isort --check-only app/ && flake8 app/ --max-line-length=127 --extend-ignore=E203,W503",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd frontend && npm run test:run",
+    "test:backend": "cd backend && pytest -v",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && pip install -r requirements.txt",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  },
+  "author": {
+    "name": "kynuxdev",
+    "email": "admin@kynux.dev"
+  },
+  "license": "SEE LICENSE IN LICENSE",
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9.0.0"
+  }
+}

@@ -1,0 +1,45 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main, develop, 'feature/**']
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'frontend/**'
+
+jobs:
+  check:
+    name: ci/frontend:check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install
+        working-directory: ./frontend
+        run: npm ci --no-audit --no-fund
+      - name: Lint
+        working-directory: ./frontend
+        run: npm run lint
+      - name: TypeScript
+        working-directory: ./frontend
+        run: npm run typecheck
+      - name: Tests
+        working-directory: ./frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+          NEXT_PUBLIC_WS_URL: ws://localhost:8000
+        run: npm run test:run
+      - name: Build
+        working-directory: ./frontend
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+          NEXT_PUBLIC_WS_URL: ws://localhost:8000
+        run: npm run build

@@ -1,0 +1,36 @@
+# CLIFF Project Code Owners
+# Her değişiklik için otomatik olarak ilgili kod sahipleri review için atanır
+
+# Global owners - Tüm dosyalar için varsayılan
+* @CLIFF-Space-Team/core-team
+
+# Backend
+/backend/ @CLIFF-Space-Team/core-team
+/backend/app/ @CLIFF-Space-Team/core-team
+/backend/app/api/ @CLIFF-Space-Team/core-team
+/backend/app/services/ @CLIFF-Space-Team/core-team
+/backend/app/models/ @CLIFF-Space-Team/core-team
+
+# Frontend
+/frontend/ @CLIFF-Space-Team/core-team
+/frontend/components/ @CLIFF-Space-Team/core-team
+/frontend/app/ @CLIFF-Space-Team/core-team
+/frontend/hooks/ @CLIFF-Space-Team/core-team
+/frontend/lib/ @CLIFF-Space-Team/core-team
+
+# 3D Components - Özel dikkat gerektiren bölüm
+/frontend/components/3d/ @CLIFF-Space-Team/core-team
+
+# Configuration Files
+/.github/ @CLIFF-Space-Team/core-team
+/docker-compose.yml @CLIFF-Space-Team/core-team
+/.gitignore @CLIFF-Space-Team/core-team
+
+# Documentation
+*.md @CLIFF-Space-Team/core-team
+/README.md @CLIFF-Space-Team/core-team
+
+# CI/CD
+/.github/workflows/ @CLIFF-Space-Team/core-team
+/.github/rulesets/ @CLIFF-Space-Team/core-team
+
