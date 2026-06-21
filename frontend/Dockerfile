@@ -4,7 +4,10 @@ FROM node:18-alpine AS deps
 
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci --no-audit --no-fund
+# No committed frontend lockfile (deps are hoisted to the root workspace lock),
+# so `npm install` is used instead of `npm ci`. --legacy-peer-deps avoids
+# ERESOLVE failures from transitive peer ranges in the R3F/three stack.
+RUN npm install --no-audit --no-fund --legacy-peer-deps
 
 
 FROM node:18-alpine AS builder

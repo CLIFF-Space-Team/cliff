@@ -1,25 +1,56 @@
-name: Deploy CLIFF to Windows VDS
+name: Deploy CLIFF to VPS
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [main]
   workflow_dispatch:
 
+# Never run two deploys at once; let an in-flight deploy finish.
+concurrency:
+  group: deploy-vps
+  cancel-in-progress: false
+
 jobs:
-  notify-deployment:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger VDS Webhook
-        run: |
-          curl -X POST \
-            -H "X-Hub-Signature-256: sha256=$(echo -n '{"ref":"refs/heads/main"}' | openssl dgst -sha256 -hmac '${{ secrets.WEBHOOK_SECRET }}' | awk '{print $2}')" \
-            -H "Content-Type: application/json" \
-            -d '{"ref":"refs/heads/main","repository":{"name":"${{ github.repository }}"}}' \
-            ${{ secrets.WEBHOOK_URL }}
-      
-      - name: Deployment Status
-        run: |
-          echo "✅ Deployment webhook gönderildi!"
-          echo "🌐 Site: https://cliff.kynux.dev"
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          command_timeout: 30m
+          script: |
+            set -euo pipefail
+            cd /opt/cliff
+
+            echo "::group::Sync source"
+            git fetch --all --prune
+            git reset --hard origin/main
+            echo "::endgroup::"
+
+            echo "::group::Sync nginx site"
+            cp deploy/nginx/notcome.app.conf /etc/nginx/sites-available/notcome.app
+            ln -sf /etc/nginx/sites-available/notcome.app /etc/nginx/sites-enabled/notcome.app
+            nginx -t && systemctl reload nginx
+            echo "::endgroup::"
+
+            echo "::group::Rebuild + restart containers"
+            docker compose -f docker-compose.prod.yml up -d --build
+            docker image prune -f
+            echo "::endgroup::"
+
+            echo "::group::Health check"
+            for i in $(seq 1 30); do
+              if curl -fsS http://127.0.0.1:8000/health >/dev/null 2>&1; then
+                echo "backend healthy"; break
+              fi
+              echo "waiting for backend ($i)…"; sleep 3
+              if [ "$i" = "30" ]; then echo "backend did not become healthy"; exit 1; fi
+            done
+            curl -fsS -o /dev/null -w "frontend HTTP %{http_code}\n" http://127.0.0.1:3000/ || (echo "frontend not responding"; exit 1)
+            echo "::endgroup::"
+
+            echo "Deploy complete → https://notcome.app"

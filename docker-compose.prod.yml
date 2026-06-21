@@ -1,0 +1,79 @@
+# CLIFF — Production compose (notcome.app, behind nginx + Cloudflare)
+#
+# Self-contained (do NOT merge with docker-compose.yml). Ports are bound to
+# 127.0.0.1 only — nginx on the host is the sole public entrypoint. Redis is
+# never published; it is reachable only on the internal compose network.
+#
+#   docker compose -f docker-compose.prod.yml up -d --build
+#
+# Secrets (NASA_API_KEY, AI_*, TTS_*, FIRMS_API_KEY) come from ./.env — see
+# .env.prod.example. Anything missing falls back to a safe default
+# (NASA DEMO_KEY works; AI endpoints return 503 until AI_API_KEY is set).
+
+name: cliff
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: cliff-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks: [cliff-net]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cliff-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ENVIRONMENT: production
+      BACKEND_HOST: 0.0.0.0
+      BACKEND_PORT: 8000
+      REDIS_URL: redis://redis:6379/0
+      CORS_ORIGINS: https://notcome.app,https://www.notcome.app
+      LOG_LEVEL: info
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+    networks: [cliff-net]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cliff-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks: [cliff-net]
+
+networks:
+  cliff-net:
+    driver: bridge
+    name: cliff-net
+
+volumes:
+  redis_data:
+    name: cliff-redis-data
