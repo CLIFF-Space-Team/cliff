@@ -39,23 +39,37 @@ nginx -t && systemctl reload nginx
 ## Continuous deploy (GitHub Actions)
 
 `.github/workflows/deploy.yml` deploys on every push to `main` (and via
-**Run workflow**). It SSHes to the VPS and runs:
+**Run workflow**), in two jobs:
+
+1. **build** — builds the backend + frontend images on GitHub's runners (with
+   GHA layer cache) and pushes them to GHCR
+   (`ghcr.io/cliff-space-team/cliff-{backend,frontend}`). The VPS never builds.
+2. **deploy** — SSHes to the VPS and runs:
 
 ```
 git reset --hard origin/main
 cp deploy/nginx/notcome.app.conf → sites-available && nginx -t && reload
-docker compose -f docker-compose.prod.yml up -d --build
+docker login ghcr.io   (ephemeral GITHUB_TOKEN, logged out after)
+docker compose -f docker-compose.prod.yml pull      # seconds, no build
+docker compose -f docker-compose.prod.yml up -d
 curl /health  +  curl frontend   # fails the job if either is down
 ```
+
+Because images are built in CI and only *pulled* on the VPS, deploys are fast
+and can't OOM the 2-CPU box. GHCR packages stay private (pulled with the
+run-scoped `GITHUB_TOKEN`).
 
 Required repo **Secrets** (Settings → Secrets and variables → Actions):
 
 | Secret | Value |
 |--------|-------|
-| `VPS_HOST` | `151.243.109.155` |
-| `VPS_USER` | `root` |
-| `VPS_PORT` | `22` |
+| `VPS_HOST` | the VPS IP (kept in secrets, never committed) |
+| `VPS_USER` | deploy SSH user |
+| `VPS_PORT` | SSH port (`22`) |
 | `VPS_SSH_KEY` | the private deploy key (full contents) |
+
+> The origin IP, SSH user, and key live only in repo **Secrets** — never in the
+> tree — so this public repo doesn't reveal how to reach the box behind Cloudflare.
 
 ## Health / smoke checks
 

@@ -10,8 +10,55 @@ concurrency:
   group: deploy-vps
   cancel-in-progress: false
 
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_BACKEND: ghcr.io/cliff-space-team/cliff-backend
+  IMAGE_FRONTEND: ghcr.io/cliff-space-team/cliff-frontend
+
 jobs:
+  # ── 1. Build images on GitHub's runners (fast, won't strain the VPS) ──────
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build + push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ env.IMAGE_BACKEND }}:latest
+            ${{ env.IMAGE_BACKEND }}:${{ github.sha }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+      - name: Build + push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ env.IMAGE_FRONTEND }}:latest
+            ${{ env.IMAGE_FRONTEND }}:${{ github.sha }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+  # ── 2. Deploy on the VPS: pull the freshly-built images, recreate ─────────
   deploy:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Deploy over SSH
@@ -21,36 +68,38 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT || 22 }}
-          command_timeout: 30m
+          command_timeout: 15m
+          envs: GHCR_USER,GHCR_TOKEN
           script: |
             set -euo pipefail
             cd /opt/cliff
 
-            echo "::group::Sync source"
+            echo "::group::Sync source (compose + nginx)"
             git fetch --all --prune
             git reset --hard origin/main
-            echo "::endgroup::"
-
-            echo "::group::Sync nginx site"
             cp deploy/nginx/notcome.app.conf /etc/nginx/sites-available/notcome.app
             ln -sf /etc/nginx/sites-available/notcome.app /etc/nginx/sites-enabled/notcome.app
             nginx -t && systemctl reload nginx
             echo "::endgroup::"
 
-            echo "::group::Rebuild + restart containers"
-            docker compose -f docker-compose.prod.yml up -d --build
+            echo "::group::Pull pre-built images + recreate"
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
+            docker logout ghcr.io || true
             docker image prune -f
             echo "::endgroup::"
 
             echo "::group::Health check"
             for i in $(seq 1 30); do
-              if curl -fsS http://127.0.0.1:8000/health >/dev/null 2>&1; then
-                echo "backend healthy"; break
-              fi
+              if curl -fsS http://127.0.0.1:8000/health >/dev/null 2>&1; then echo "backend healthy"; break; fi
               echo "waiting for backend ($i)…"; sleep 3
               if [ "$i" = "30" ]; then echo "backend did not become healthy"; exit 1; fi
             done
-            curl -fsS -o /dev/null -w "frontend HTTP %{http_code}\n" http://127.0.0.1:3000/ || (echo "frontend not responding"; exit 1)
+            curl -fsS -o /dev/null -w "frontend HTTP %{http_code}\n" http://127.0.0.1:3000/ || (echo "frontend down"; exit 1)
             echo "::endgroup::"
 
             echo "Deploy complete → https://notcome.app"
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
