@@ -8,7 +8,7 @@ import * as THREE from 'three';
 import { CameraControls } from '@/components/3d/controls/CameraControls';
 import { PostFX } from '@/components/3d/postprocessing/PostFX';
 import { ProceduralAsteroid } from '@/components/3d/asteroids/ProceduralAsteroid';
-import { Earth } from '@/components/3d/primitives/Earth';
+import { Earth, AXIAL_TILT } from '@/components/3d/primitives/Earth';
 import { StarField } from '@/components/3d/primitives/StarField';
 import { useLiteMode } from '@/hooks/useLiteMode';
 import { AirShockwaveRing } from './scene/AirShockwaveRing';
@@ -96,14 +96,20 @@ export function ImpactVisualization3D({
     const lng = targetLng ?? DEFAULT_IMPACT_LON;
     const φ = (90 - lat) * (Math.PI / 180);
     const θ = lng * (Math.PI / 180);
-    // Z is negated to match Three.js SphereGeometry's default UV wrapping —
-    // without this, picking Istanbul (29°E) lands the impact ~58° east of
-    // where the texture renders Istanbul. Same convention as EarthGlobe3D.
-    return [
-      EARTH_SCALE * Math.sin(φ) * Math.cos(θ),
-      EARTH_SCALE * Math.cos(φ),
-      -EARTH_SCALE * Math.sin(φ) * Math.sin(θ),
-    ];
+    // Untilted surface position. Z is negated to match Three.js
+    // SphereGeometry's default UV wrapping — same convention as
+    // EarthGlobe3D.latLngToVec3 (picking Istanbul 29°E lands on Istanbul).
+    const x = EARTH_SCALE * Math.sin(φ) * Math.cos(θ);
+    const y = EARTH_SCALE * Math.cos(φ);
+    const z = -EARTH_SCALE * Math.sin(φ) * Math.sin(θ);
+    // The <Earth> primitive renders tilted by AXIAL_TILT around Z
+    // (rotation={[0, 0, AXIAL_TILT]}). These impact effects live in WORLD
+    // space — they are NOT children of the Earth group — so we must apply the
+    // same Z-tilt here. Without it the crater/asteroid land ~23° away from
+    // where the targeted city actually renders on the texture.
+    const cosT = Math.cos(AXIAL_TILT);
+    const sinT = Math.sin(AXIAL_TILT);
+    return [x * cosT - y * sinT, x * sinT + y * cosT, z];
   }, [targetLat, targetLng]);
 
   const narrative = useMemo(() => getNarrative(presetId ?? null), [presetId]);

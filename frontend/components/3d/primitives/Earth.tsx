@@ -15,8 +15,9 @@ interface EarthProps {
 }
 
 // Dünya'nın gerçek eksen eğikliği — 23.44°. Mevsimleri ve aydınlanma
-// asimetrisini doğru kılar.
-const AXIAL_TILT = THREE.MathUtils.degToRad(23.44);
+// asimetrisini doğru kılar. Export edilir çünkü world-uzayında bu küreye
+// hizalanan efektler (impact sahnesi) aynı eğikliği uygulamak zorunda.
+export const AXIAL_TILT = THREE.MathUtils.degToRad(23.44);
 
 /**
  * Bilimsel Dünya:
