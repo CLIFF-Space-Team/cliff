@@ -4,7 +4,6 @@ import { Pause, Play, X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { useAudioMuted } from '@/hooks/useAudioMuted';
 import { prefetchTts, useTtsAudio } from '@/hooks/useTts';
 import { dispatchDemoAction } from '@/lib/demo-event-bus';
 import {
@@ -37,7 +36,10 @@ function DemoTourInner() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const muted = useAudioMuted();
+  // Tur kendi ses durumunu yönetir — kullanıcı "sesli tanıtım turu"nu bilerek
+  // başlattığı için VARSAYILAN AÇIK. Global tehdit-sesi mute'undan bağımsız.
+  // M tuşu ile açılır/kapanır.
+  const [muted, setMuted] = useState(false);
 
   const isDemo = searchParams.get('demo') === '1';
 
@@ -162,11 +164,10 @@ function DemoTourInner() {
         const prevStep = DEMO_SCRIPT[stepIndex - 1];
         if (prevStep) router.push(prevStep.path);
       }
-      // M: mute toggle
+      // M: tur sesini aç/kapat
       if (e.key === 'm' || e.key === 'M') {
         e.preventDefault();
-        const muteEvt = new CustomEvent('cliff:demo:toggle-mute');
-        window.dispatchEvent(muteEvt);
+        setMuted((m) => !m);
       }
     };
     window.addEventListener('keydown', onKey);
@@ -287,7 +288,7 @@ function DemoTourInner() {
             </span>
             {muted && (
               <span className="ml-auto rounded-full border border-threat-moderate/40 bg-threat-moderate/10 px-2 py-0.5 font-mono-tnum text-[9px] uppercase tracking-wider text-threat-moderate">
-                🔇 sesi sol alttan aç
+                🔇 M ile sesi aç
               </span>
             )}
           </div>

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 
 import { API_BASE_URL } from '@/lib/api-client';
+import { cancelBrowser, speakBrowser } from '@/lib/speech';
 
 // Absolute URL (origin + path). A bare relative path 404s under the
 // split-origin deploy where the backend lives on a different host than the
@@ -131,6 +132,7 @@ export function useTtsAudio({
   useEffect(() => {
     audioRef.current?.pause();
     audioRef.current = null;
+    cancelBrowser();
 
     if (!enabled || !text || !text.trim()) return;
 
@@ -155,13 +157,26 @@ export function useTtsAudio({
         audioRef.current = audio;
       })
       .catch(() => {
-        if (!cancelled) onDoneRef.current?.();
+        // Sunucu TTS yok/yapılandırılmamış → tarayıcının Türkçe (tr-TR) sesine
+        // düş. Böylece anlatım gerçekten sesli olur (API key gerektirmeden).
+        if (cancelled) return;
+        void speakBrowser(text, {
+          rate: voiceSpeed,
+          volume,
+          onStart: (d) => {
+            if (!cancelled) onStartRef.current?.(d);
+          },
+          onEnd: () => {
+            if (!cancelled) onDoneRef.current?.();
+          },
+        });
       });
 
     return () => {
       cancelled = true;
       audioRef.current?.pause();
       audioRef.current = null;
+      cancelBrowser();
     };
   }, [text, enabled, voiceId, voiceSpeed, volume]);
 }
@@ -175,12 +190,23 @@ export async function speakText(
   text: string,
   options: { voiceId?: string; voiceSpeed?: number; volume?: number } = {},
 ): Promise<void> {
-  const url = await getCachedTts(text, options.voiceId, options.voiceSpeed ?? 1.0);
-  return new Promise((resolve, reject) => {
-    const audio = new Audio(url);
-    audio.volume = Math.max(0, Math.min(1, options.volume ?? 1.0));
-    audio.onended = () => resolve();
-    audio.onerror = () => reject(new Error('audio_failed'));
-    audio.play().catch(reject);
-  });
+  try {
+    const url = await getCachedTts(text, options.voiceId, options.voiceSpeed ?? 1.0);
+    await new Promise<void>((resolve, reject) => {
+      const audio = new Audio(url);
+      audio.volume = Math.max(0, Math.min(1, options.volume ?? 1.0));
+      audio.onended = () => resolve();
+      audio.onerror = () => reject(new Error('audio_failed'));
+      audio.play().catch(reject);
+    });
+  } catch {
+    // Sunucu TTS yok → tarayıcının Türkçe sesine düş.
+    await new Promise<void>((resolve) => {
+      void speakBrowser(text, {
+        rate: options.voiceSpeed ?? 1.0,
+        volume: options.volume ?? 1.0,
+        onEnd: () => resolve(),
+      });
+    });
+  }
 }
