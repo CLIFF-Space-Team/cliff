@@ -1,5 +1,6 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { subscribeDemoAction } from '@/lib/demo-event-bus';
@@ -22,6 +23,13 @@ interface SpotlightTarget {
  */
 export function DemoSpotlight() {
   const [target, setTarget] = useState<SpotlightTarget | null>(null);
+  const pathname = usePathname();
+
+  // Route değişince spotlight'ı sıfırla — bir sayfada kurulan vurgu asla
+  // sonraki sayfaya taşınmamalı (önceki bug: dashboard'da boş alan vurgulanıyordu).
+  useEffect(() => {
+    setTarget(null);
+  }, [pathname]);
 
   useEffect(() => {
     let lastSelector: string | null = null;
@@ -35,8 +43,12 @@ export function DemoSpotlight() {
         setTarget((prev) =>
           prev ? { ...prev, rect, cursor: prev.cursor } : prev,
         );
+        raf = requestAnimationFrame(updateRect);
+      } else {
+        // Hedef DOM'dan kalktı (gezinme/unmount) → spotlight'ı bırakma, temizle.
+        lastSelector = null;
+        setTarget(null);
       }
-      raf = requestAnimationFrame(updateRect);
     };
 
     const unsub = subscribeDemoAction((action) => {
