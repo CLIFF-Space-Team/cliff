@@ -212,6 +212,7 @@ function GodRaySun({ fxRef }: { fxRef: React.MutableRefObject<FxState> }) {
   texture.colorSpace = THREE.SRGBColorSpace;
   const glowTex = useMemo(getSoftGlowTexture, []);
   const photo = useRef<THREE.Mesh>(null);
+  const gran = useRef<THREE.Mesh>(null);
   const c0 = useRef<THREE.Mesh>(null);
   const c1 = useRef<THREE.Mesh>(null);
   const c2 = useRef<THREE.Mesh>(null);
@@ -222,6 +223,7 @@ function GodRaySun({ fxRef }: { fxRef: React.MutableRefObject<FxState> }) {
   useFrame(({ camera, clock }, dt) => {
     const t = clock.elapsedTime;
     if (photo.current) photo.current.rotation.y += dt * 0.035;
+    if (gran.current) gran.current.rotation.y -= dt * 0.022; // counter-roil
 
     // Corona breathing — shared slow phase, mutate scale + opacity (no alloc).
     const b = Math.sin(t * 0.35);
@@ -249,8 +251,14 @@ function GodRaySun({ fxRef }: { fxRef: React.MutableRefObject<FxState> }) {
   return (
     <group position={SUN_POSITION}>
       <mesh ref={photo} scale={SUN_SCALE}>
+        <sphereGeometry args={[1, 96, 96]} />
+        <meshBasicMaterial map={texture} toneMapped={false} color={new THREE.Color('#fff2d6')} />
+      </mesh>
+      {/* counter-rotating granulation shell — the same photosphere texture
+          drifting the other way reads as roiling plasma (real-Sun surface life). */}
+      <mesh ref={gran} scale={SUN_SCALE * 1.008}>
         <sphereGeometry args={[1, 64, 64]} />
-        <meshBasicMaterial map={texture} toneMapped={false} color={new THREE.Color('#fff0cf')} />
+        <meshBasicMaterial map={texture} toneMapped={false} color={new THREE.Color('#ff9d3c')} transparent opacity={0.4} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
       <mesh ref={c0} scale={CORONA[0]!.base}>
         <sphereGeometry args={[1, CORONA[0]!.seg, CORONA[0]!.seg]} />
@@ -406,7 +414,9 @@ function CameraRig({
     if (shot.focus === 'bennu' && grp) {
       grp.getWorldPosition(tmpFocus.current);
     } else if (shot.focus === 'earth') {
-      tmpFocus.current.set(0, 0, 0);
+      // Focus on the Earth surface facing the camera (NOT the centre behind it)
+      // so the visible globe stays sharp — only the background bokehs.
+      tmpFocus.current.copy(camera.position).normalize().multiplyScalar(EARTH_SCALE);
     } else {
       tmpFocus.current.set(0, 0, 0); // stars → bokeh is 0 so focus is irrelevant
     }
@@ -447,7 +457,9 @@ function FxModulator({
     if (highMode && dofRef.current) {
       const dof = dofRef.current;
       if (dof.target?.copy) dof.target.copy(fx.focus);
-      if ('bokehScale' in dof) dof.bokehScale = fx.bokeh;
+      // 0.45× — the raw per-shot bokeh read far too blurry; keep DoF as a gentle
+      // background softening, not a full wash.
+      if ('bokehScale' in dof) dof.bokehScale = fx.bokeh * 0.45;
     }
     if (highMode && noiseRef.current?.blendMode?.opacity) {
       noiseRef.current.blendMode.opacity.value = fx.grain;
