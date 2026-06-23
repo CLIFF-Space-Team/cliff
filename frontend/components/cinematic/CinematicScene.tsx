@@ -44,12 +44,15 @@ const SUN_SCALE = 5.5;
 const EARTH_SCALE = 3.6;
 const SUN_DIRECTION: Vec3 = [-0.958, 0.122, 0.261];
 const BENNU_SPAWN: Vec3 = [40, -6, -120];
-// Deep-space → near-Earth approach lane (shots 4→6).
+// Impact point on Earth's near surface (front-right, facing the camera).
+const IMPACT_POINT: Vec3 = [2.6, 0.7, 2.2];
+// Deep-space → Earth COLLISION lane (shots 4→7). Final point = contact.
 const BENNU_LANE: readonly Vec3[] = [
-  [40, -6, -120],
-  [22, -3, -64],
-  [8, -1, -20],
-  [6, 0, -6],
+  [40, -6, -120], // spawn (shot 4 start)
+  [20, -3, -56], // shot 4 end
+  [10, -1, -20], // shot 5 end
+  [5.5, 0.4, 5], // shot 6 end — just above Earth, front
+  [2.6, 0.7, 2.2], // shot 7 end = IMPACT (contact)
 ];
 const START_POS: Vec3 = [0, 2, 120];
 const START_LOOK: Vec3 = [0, 0, 0];
@@ -115,16 +118,22 @@ const SHOTS: readonly Shot[] = [
     focus: 'bennu', bloom: 0.6, bokeh: 3, grain: 0.08, sunInFrame: false,
   },
   {
-    id: '06_radar_lock', dur: 6, posTo: [6, 5, 22], lookAt: [6, 0, -6], fov: 46, ease: 'smoothstep',
-    caption: 'CLIFF KİLİTLENDİ · sürekli izleme altında',
-    narration: 'Ama bu kaya gözetimsiz değil. CLIFF onu kilitledi — gerçek NASA verisiyle, gece gündüz.',
-    focus: 'bennu', bloom: 0.8, bokeh: 2.5, grain: 0.05, sunInFrame: false, selectBennu: true,
+    id: '06_final_approach', dur: 4.5, posTo: [11, 3, 22], lookAt: [4, 0, -4], fov: 48, ease: 'smoothstep',
+    caption: 'ÇARPMA ROTASI · kaçınılmaz',
+    narration: 'Çok geç kalındı. Kaya atmosfere giriyor — hızı saniyede onlarca kilometre.',
+    focus: 'bennu', bloom: 0.6, bokeh: 1.6, grain: 0.08, sunInFrame: false,
   },
   {
-    id: '07_loop_bridge', dur: 3, posTo: [0, 2, 120], lookAt: [0, 0, 0], fov: 38, ease: 'easeInOut',
-    caption: 'CLIFF · Gökyüzünü izliyoruz',
-    narration: 'Binlerce kaya, tek bir nöbetçi. Tur baştan başlıyor.',
-    focus: 'stars', bloom: 0.55, bokeh: 0, grain: 0, sunInFrame: false,
+    id: '07_impact', dur: 3, posTo: [7, 2.5, 13], lookAt: [2.6, 0.7, 2.2], fov: 40, ease: 'easeOut',
+    caption: 'ÇARPMA — kinetik enerji boşalıyor',
+    narration: 'Çarpışma! Bir anda milyonlarca yıllık enerji açığa çıkıyor.',
+    focus: 'bennu', bloom: 0.9, bokeh: 1, grain: 0.1, sunInFrame: false,
+  },
+  {
+    id: '08_aftermath', dur: 5, posTo: [0, 2, 120], lookAt: [0, 0, 0], fov: 38, ease: 'easeInOut',
+    caption: 'İşte bu yüzden izliyoruz — CLIFF',
+    narration: 'Erken uyarı her şeyi değiştirir. CLIFF gökyüzünü izlemeye devam ediyor.',
+    focus: 'stars', bloom: 0.6, bokeh: 0, grain: 0.04, sunInFrame: false,
   },
 ];
 
@@ -161,8 +170,12 @@ interface FxState {
   bokeh: number;
   grain: number;
   sunInFrame: boolean;
-  /** 0..1 — how centered the Sun is in view (gates the soft glow + GodRays). */
+  /** 0..1 — how centered the Sun is in view (gates the soft glow). */
   onAxis: number;
+  /** Impact finale: white flash (sharp), shockwave-ring progress, molten glow. */
+  impact: number;
+  shock: number;
+  glow: number;
   focus: THREE.Vector3;
 }
 
@@ -320,6 +333,57 @@ function NeoSwarm() {
 }
 
 // ════════════════════════════════════════════════════════════════════════
+// ImpactFx — the collision finale: a white flash, an expanding surface
+// shockwave ring, and a molten glow, all at IMPACT_POINT, driven by fxRef.
+// ════════════════════════════════════════════════════════════════════════
+function ImpactFx({ fxRef }: { fxRef: React.MutableRefObject<FxState> }) {
+  const flash = useRef<THREE.Mesh>(null);
+  const ring = useRef<THREE.Mesh>(null);
+  const glow = useRef<THREE.Mesh>(null);
+  const orient = useMemo(() => {
+    const n = new THREE.Vector3(...IMPACT_POINT).normalize();
+    return new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), n);
+  }, []);
+
+  useFrame(() => {
+    const fx = fxRef.current;
+    if (flash.current) {
+      flash.current.visible = fx.impact > 0.01;
+      flash.current.scale.setScalar(0.4 + fx.impact * 5);
+      (flash.current.material as THREE.MeshBasicMaterial).opacity = fx.impact;
+    }
+    if (ring.current) {
+      const s = fx.shock;
+      ring.current.visible = s > 0.001 && s < 0.999;
+      ring.current.scale.setScalar(0.2 + s * 7);
+      (ring.current.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.75 * (1 - s));
+    }
+    if (glow.current) {
+      glow.current.visible = fx.glow > 0.01;
+      glow.current.scale.setScalar(1.4 + (1 - fx.glow) * 0.9); // spreads as it cools
+      (glow.current.material as THREE.MeshBasicMaterial).opacity = fx.glow * 0.85;
+    }
+  });
+
+  return (
+    <group position={IMPACT_POINT}>
+      <mesh ref={flash}>
+        <sphereGeometry args={[1, 24, 24]} />
+        <meshBasicMaterial color="#fff6e0" transparent opacity={0} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+      </mesh>
+      <mesh ref={glow} quaternion={orient}>
+        <circleGeometry args={[1, 32]} />
+        <meshBasicMaterial color="#ff5a1e" transparent opacity={0} side={THREE.DoubleSide} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+      </mesh>
+      <mesh ref={ring} quaternion={orient}>
+        <ringGeometry args={[0.82, 1, 64]} />
+        <meshBasicMaterial color="#ffd27a" transparent opacity={0} side={THREE.DoubleSide} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════
 // CameraRig — the scripted keyframe camera. One useFrame drives everything.
 // ════════════════════════════════════════════════════════════════════════
 function CameraRig({
@@ -380,24 +444,21 @@ function CameraRig({
     }
     camera.lookAt(tmpLook.current);
 
-    // Bennu approach lane (shots 4..6); on the loop bridge (shot 7) glide the
-    // locked rock smoothly back out to spawn so it never teleports; otherwise
-    // parked off-frame at spawn.
+    // Bennu collision lane: shots 4..7 ride 4 segments ending at IMPACT_POINT;
+    // shot 8 it is vaporised (scale 0); otherwise parked off-frame at spawn.
     const grp = asteroidGroupRef.current;
     if (grp) {
       if (idx >= 4 && idx <= 7) {
-        if (idx <= 6) {
-          const li = idx - 4;
-          laneFrom.current.set(...BENNU_LANE[li]!);
-          laneTo.current.set(...BENNU_LANE[li + 1]!);
-        } else {
-          // shot 7: retreat from the radar-lock pose back to deep-space spawn
-          laneFrom.current.set(...BENNU_LANE[3]!);
-          laneTo.current.set(...BENNU_SPAWN);
-        }
+        const li = idx - 4; // 0..3 → lane segment li → li+1 (last = contact)
+        laneFrom.current.set(...BENNU_LANE[li]!);
+        laneTo.current.set(...BENNU_LANE[li + 1]!);
         grp.position.lerpVectors(laneFrom.current, laneTo.current, e);
+        grp.scale.setScalar(1);
+      } else if (idx === 8) {
+        grp.scale.setScalar(0); // vaporised on impact
       } else {
         grp.position.set(...BENNU_SPAWN);
+        grp.scale.setScalar(1);
       }
     }
 
@@ -422,7 +483,21 @@ function CameraRig({
     }
     fx.focus.copy(tmpFocus.current);
 
-    // radar-lock selection (toggles once per shot crossing, not per frame)
+    // Impact finale — contact at the end of shot 7. Flash (sharp), expanding
+    // shockwave ring, and a molten glow that lingers as the camera pulls back.
+    const impactT = SHOT_STARTS[7]! + SHOTS[7]!.dur;
+    const di = elapsed - impactT;
+    fx.impact = di >= -0.08 && di < 1.4 ? (di < 0 ? 1 + di / 0.08 : Math.max(0, 1 - di / 1.4)) : 0;
+    fx.shock = di >= 0 && di < 2.6 ? di / 2.6 : 0;
+    fx.glow = di >= 0 ? Math.max(0, 1 - di / 4.8) : 0;
+    if (fx.impact > 0.01) {
+      const s = fx.impact * 0.7; // camera shake on contact
+      camera.position.x += Math.sin(elapsed * 97) * s;
+      camera.position.y += Math.cos(elapsed * 83) * s;
+      camera.position.z += Math.sin(elapsed * 71) * s * 0.5;
+    }
+
+    // selection toggle (kept for the asteroid API; no shot sets it now)
     const wantSelected = !!shot.selectBennu;
     if (wantSelected !== lastSelected.current) {
       lastSelected.current = wantSelected;
@@ -476,7 +551,7 @@ export function CinematicScene({ onCaptionChange }: CinematicSceneProps) {
   const dpr: [number, number] = lite ? [1, 1] : [1, 1.75];
   const starCount = lite ? 6000 : 18000;
 
-  const fxRef = useRef<FxState>({ bloom: 0.55, bokeh: 0, grain: 0, sunInFrame: false, onAxis: 0, focus: new THREE.Vector3() });
+  const fxRef = useRef<FxState>({ bloom: 0.55, bokeh: 0, grain: 0, sunInFrame: false, onAxis: 0, impact: 0, shock: 0, glow: 0, focus: new THREE.Vector3() });
   const asteroidGroupRef = useRef<THREE.Group | null>(null);
   const bloomRef = useRef<any>(null);
   const dofRef = useRef<any>(null);
@@ -521,6 +596,7 @@ export function CinematicScene({ onCaptionChange }: CinematicSceneProps) {
 
       <ThreatAsteroid groupRef={asteroidGroupRef} selected={selected} />
       <NeoSwarm />
+      <ImpactFx fxRef={fxRef} />
 
       <CameraRig
         onCaptionChange={onCaptionChange}
