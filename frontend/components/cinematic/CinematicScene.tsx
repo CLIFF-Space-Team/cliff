@@ -23,13 +23,12 @@ import {
   Bloom,
   DepthOfField,
   EffectComposer,
-  GodRays,
   Noise,
   SMAA,
   Vignette,
 } from '@react-three/postprocessing';
 import { BlendFunction, KernelSize } from 'postprocessing';
-import { Suspense, useCallback, useMemo, useRef, useState } from 'react';
+import { Suspense, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 import { PlanetaryBackdrop } from '@/components/3d/PlanetaryBackdrop';
@@ -208,31 +207,17 @@ const CORONA: readonly { base: number; op: number; color: string; seg: number }[
 // fades with how on-axis the Sun is. No swinging 60-unit billboard bar. Writes
 // an `onAxis` scalar to fxRef so GodRays only fires when the Sun is on screen.
 // ════════════════════════════════════════════════════════════════════════
-function GodRaySun({
-  onMesh,
-  fxRef,
-}: {
-  onMesh: (m: THREE.Mesh | null) => void;
-  fxRef: React.MutableRefObject<FxState>;
-}) {
+function GodRaySun({ fxRef }: { fxRef: React.MutableRefObject<FxState> }) {
   const texture = useTexture('/textures/nasa/sun/sun_sdo_2k.jpg');
   texture.colorSpace = THREE.SRGBColorSpace;
   const glowTex = useMemo(getSoftGlowTexture, []);
-  const photo = useRef<THREE.Mesh | null>(null);
+  const photo = useRef<THREE.Mesh>(null);
   const c0 = useRef<THREE.Mesh>(null);
   const c1 = useRef<THREE.Mesh>(null);
   const c2 = useRef<THREE.Mesh>(null);
   const glow = useRef<THREE.Mesh>(null);
   const fwd = useRef(new THREE.Vector3());
   const toSun = useRef(new THREE.Vector3());
-
-  const setPhoto = useCallback(
-    (m: THREE.Mesh | null) => {
-      photo.current = m;
-      onMesh(m);
-    },
-    [onMesh],
-  );
 
   useFrame(({ camera, clock }, dt) => {
     const t = clock.elapsedTime;
@@ -263,7 +248,7 @@ function GodRaySun({
 
   return (
     <group position={SUN_POSITION}>
-      <mesh ref={setPhoto} scale={SUN_SCALE}>
+      <mesh ref={photo} scale={SUN_SCALE}>
         <sphereGeometry args={[1, 64, 64]} />
         <meshBasicMaterial map={texture} toneMapped={false} color={new THREE.Color('#fff0cf')} />
       </mesh>
@@ -448,14 +433,12 @@ function FxModulator({
   bloomRef,
   dofRef,
   noiseRef,
-  godRaysRef,
   highMode,
 }: {
   fxRef: React.MutableRefObject<FxState>;
   bloomRef: React.MutableRefObject<any>;
   dofRef: React.MutableRefObject<any>;
   noiseRef: React.MutableRefObject<any>;
-  godRaysRef: React.MutableRefObject<any>;
   highMode: boolean;
 }) {
   useFrame(() => {
@@ -468,11 +451,6 @@ function FxModulator({
     }
     if (highMode && noiseRef.current?.blendMode?.opacity) {
       noiseRef.current.blendMode.opacity.value = fx.grain;
-    }
-    // Gate GodRays: contribute only when the Sun is on-screen AND on-axis
-    // (shot 1). Off-frame → opacity 0 → no smear, visually free in 7/8 shots.
-    if (highMode && godRaysRef.current?.blendMode?.opacity) {
-      godRaysRef.current.blendMode.opacity.value = fx.sunInFrame ? fx.onAxis : 0;
     }
   });
   return null;
@@ -491,9 +469,7 @@ export function CinematicScene({ onCaptionChange }: CinematicSceneProps) {
   const bloomRef = useRef<any>(null);
   const dofRef = useRef<any>(null);
   const noiseRef = useRef<any>(null);
-  const godRaysRef = useRef<any>(null);
 
-  const [sunMesh, setSunMesh] = useState<THREE.Mesh | null>(null);
   const [selected, setSelected] = useState(false);
 
   return (
@@ -521,7 +497,7 @@ export function CinematicScene({ onCaptionChange }: CinematicSceneProps) {
       <StarField count={starCount} radius={600} />
 
       <Suspense fallback={null}>
-        <GodRaySun onMesh={setSunMesh} fxRef={fxRef} />
+        <GodRaySun fxRef={fxRef} />
       </Suspense>
       <Suspense fallback={null}>
         <PlanetaryBackdrop quality={quality} />
@@ -540,7 +516,7 @@ export function CinematicScene({ onCaptionChange }: CinematicSceneProps) {
         asteroidGroupRef={asteroidGroupRef}
         setSelected={setSelected}
       />
-      <FxModulator fxRef={fxRef} bloomRef={bloomRef} dofRef={dofRef} noiseRef={noiseRef} godRaysRef={godRaysRef} highMode={high} />
+      <FxModulator fxRef={fxRef} bloomRef={bloomRef} dofRef={dofRef} noiseRef={noiseRef} highMode={high} />
 
       <EffectComposer multisampling={0} enableNormalPass={false}>
         <SMAA />
@@ -552,22 +528,6 @@ export function CinematicScene({ onCaptionChange }: CinematicSceneProps) {
           kernelSize={high ? KernelSize.LARGE : KernelSize.MEDIUM}
           mipmapBlur
         />
-        {high && sunMesh ? (
-          <GodRays
-            ref={godRaysRef}
-            sun={sunMesh}
-            samples={30}
-            density={0.96}
-            decay={0.9}
-            weight={0.4}
-            exposure={0.3}
-            clampMax={0.9}
-            blur
-            kernelSize={KernelSize.SMALL}
-          />
-        ) : (
-          <></>
-        )}
         {high ? (
           <DepthOfField ref={dofRef} target={[0, 0, 0]} focalLength={0.02} bokehScale={3} />
         ) : (
