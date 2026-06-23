@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 import { Button, Skeleton } from '@/components/ui';
 import { TOUR_DURATION_S } from '@/components/cinematic/CinematicScene';
+import { CinematicNeoCard } from '@/components/cinematic/CinematicNeoCard';
 import { useTtsAudio } from '@/hooks/useTts';
 
 const CinematicScene = dynamic(
@@ -100,6 +101,9 @@ export default function SinematikPage() {
           setNarration(n);
         }}
       />
+
+      {/* Canlı izlenen NEO bilgi kartı — gerçek backend verisi, dönüşümlü */}
+      <CinematicNeoCard />
 
       {/* Üst — geri linki */}
       <div className="absolute left-3 top-3 z-10 sm:left-5 sm:top-5">
