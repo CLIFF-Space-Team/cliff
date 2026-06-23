@@ -1,14 +1,13 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft, Download, Volume2, VolumeX } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button, Skeleton } from '@/components/ui';
 import { TOUR_DURATION_S } from '@/components/cinematic/CinematicScene';
-import { useAudioMuted } from '@/hooks/useAudioMuted';
 import { useTtsAudio } from '@/hooks/useTts';
 
 const CinematicScene = dynamic(
@@ -31,17 +30,20 @@ const CinematicScene = dynamic(
  */
 export default function SinematikPage() {
   const [caption, setCaption] = useState('');
+  const [narration, setNarration] = useState('');
   const [progress, setProgress] = useState(0);
   const [recording, setRecording] = useState(false);
-  const muted = useAudioMuted();
+  // Sinematik tur kendi kendine sunum yapar → anlatım VARSAYILAN AÇIK
+  // (global tehdit-sesi mute'undan bağımsız). Sağ üstteki butonla kapatılır.
+  const [muted, setMuted] = useState(false);
 
-  // Caption değiştikçe seslendir — ilk tour cache miss, sonraki turlar cache hit
-  // ile anında. Mute kapalıysa sessiz.
+  // Her çekimin anlatımı seslendirilir: caption ekrana, narration sese gider.
+  // Tarayıcı Türkçe (tr-TR) TTS fallback'i ile API key gerekmeden konuşur.
   useTtsAudio({
-    text: caption,
-    enabled: !muted && caption.length > 0,
-    voiceSpeed: 0.95,
-    volume: 0.8,
+    text: narration,
+    enabled: !muted && narration.length > 0,
+    voiceSpeed: 1.0,
+    volume: 0.85,
   });
 
   const handleRecord = async () => {
@@ -92,9 +94,10 @@ export default function SinematikPage() {
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden bg-black">
       <CinematicScene
-        onCaptionChange={(c, p) => {
+        onCaptionChange={(c, p, n) => {
           setCaption(c);
           setProgress(p);
+          setNarration(n);
         }}
       />
 
@@ -107,8 +110,19 @@ export default function SinematikPage() {
         </Button>
       </div>
 
-      {/* Sağ üst — kayıt butonu */}
-      <div className="absolute right-3 top-3 z-10 sm:right-5 sm:top-5">
+      {/* Sağ üst — ses aç/kapat + kayıt butonu */}
+      <div className="absolute right-3 top-3 z-10 flex items-center gap-2 sm:right-5 sm:top-5">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          onClick={() => setMuted((m) => !m)}
+          aria-label={muted ? 'Anlatımı aç' : 'Anlatımı kapat'}
+          title={muted ? 'Anlatımı aç' : 'Anlatımı kapat'}
+          className="bg-surface-1/70 backdrop-blur"
+        >
+          {muted ? <VolumeX className="size-4" /> : <Volume2 className="size-4" />}
+        </Button>
         <Button
           type="button"
           variant="outline"
