@@ -162,19 +162,69 @@ interface FxState {
   bokeh: number;
   grain: number;
   sunInFrame: boolean;
+  /** 0..1 — how centered the Sun is in view (gates the soft glow + GodRays). */
+  onAxis: number;
   focus: THREE.Vector3;
 }
 
+function smoothstep(e0: number, e1: number, x: number): number {
+  const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)));
+  return t * t * (3 - 2 * t);
+}
+
+// Soft radial-falloff glow sprite, generated once (module cache survives
+// StrictMode double-mount). Replaces the old hard additive bar/disc.
+let _glowTex: THREE.CanvasTexture | null = null;
+function getSoftGlowTexture(): THREE.CanvasTexture {
+  if (_glowTex) return _glowTex;
+  const size = 128;
+  const cv = document.createElement('canvas');
+  cv.width = size;
+  cv.height = size;
+  const ctx = cv.getContext('2d')!;
+  const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  g.addColorStop(0.0, 'rgba(255,247,222,1)');
+  g.addColorStop(0.25, 'rgba(255,225,168,0.5)');
+  g.addColorStop(0.6, 'rgba(255,180,90,0.12)');
+  g.addColorStop(1.0, 'rgba(255,160,80,0)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  _glowTex = tex;
+  return tex;
+}
+
+const SUN_WORLD = new THREE.Vector3(...SUN_POSITION);
+const CORONA: readonly { base: number; op: number; color: string; seg: number }[] = [
+  { base: SUN_SCALE * 1.16, op: 0.32, color: '#ffcf7a', seg: 48 },
+  { base: SUN_SCALE * 1.55, op: 0.12, color: '#ffb14d', seg: 48 },
+  { base: SUN_SCALE * 2.4, op: 0.05, color: '#ff9a3c', seg: 32 },
+];
+
 // ════════════════════════════════════════════════════════════════════════
-// GodRaySun — Sun photosphere (ref'd for GodRays) + corona shells + key light
-// + camera-facing anamorphic flare billboards. Replaces <Sun> so GodRays has
-// a concrete source mesh (the shipped <Sun> doesn't expose its ref).
+// GodRaySun — real-star Sun: textured photosphere (ref'd for GodRays) + a
+// slowly BREATHING layered corona + a single soft, screen-facing glow that
+// fades with how on-axis the Sun is. No swinging 60-unit billboard bar. Writes
+// an `onAxis` scalar to fxRef so GodRays only fires when the Sun is on screen.
 // ════════════════════════════════════════════════════════════════════════
-function GodRaySun({ onMesh }: { onMesh: (m: THREE.Mesh | null) => void }) {
+function GodRaySun({
+  onMesh,
+  fxRef,
+}: {
+  onMesh: (m: THREE.Mesh | null) => void;
+  fxRef: React.MutableRefObject<FxState>;
+}) {
   const texture = useTexture('/textures/nasa/sun/sun_sdo_2k.jpg');
   texture.colorSpace = THREE.SRGBColorSpace;
+  const glowTex = useMemo(getSoftGlowTexture, []);
   const photo = useRef<THREE.Mesh | null>(null);
-  const flare = useRef<THREE.Group>(null);
+  const c0 = useRef<THREE.Mesh>(null);
+  const c1 = useRef<THREE.Mesh>(null);
+  const c2 = useRef<THREE.Mesh>(null);
+  const glow = useRef<THREE.Mesh>(null);
+  const fwd = useRef(new THREE.Vector3());
+  const toSun = useRef(new THREE.Vector3());
 
   const setPhoto = useCallback(
     (m: THREE.Mesh | null) => {
@@ -184,9 +234,31 @@ function GodRaySun({ onMesh }: { onMesh: (m: THREE.Mesh | null) => void }) {
     [onMesh],
   );
 
-  useFrame(({ camera }, dt) => {
-    if (photo.current) photo.current.rotation.y += dt * 0.04;
-    if (flare.current) flare.current.quaternion.copy(camera.quaternion); // billboard
+  useFrame(({ camera, clock }, dt) => {
+    const t = clock.elapsedTime;
+    if (photo.current) photo.current.rotation.y += dt * 0.035;
+
+    // Corona breathing — shared slow phase, mutate scale + opacity (no alloc).
+    const b = Math.sin(t * 0.35);
+    const shells = [c0.current, c1.current, c2.current];
+    for (let i = 0; i < 3; i += 1) {
+      const m = shells[i];
+      const cfg = CORONA[i]!;
+      if (!m) continue;
+      m.scale.setScalar(cfg.base * (1 + 0.03 * b));
+      (m.material as THREE.MeshBasicMaterial).opacity = cfg.op * (1 + 0.18 * b);
+    }
+
+    // On-axis factor: how centered the Sun is → drives the soft glow + GodRays.
+    camera.getWorldDirection(fwd.current);
+    toSun.current.copy(SUN_WORLD).sub(camera.position).normalize();
+    const onAxis = smoothstep(0.4, 0.95, fwd.current.dot(toSun.current));
+    fxRef.current.onAxis = onAxis;
+
+    if (glow.current) {
+      glow.current.quaternion.copy(camera.quaternion); // face camera (radial → no swing)
+      (glow.current.material as THREE.MeshBasicMaterial).opacity = onAxis * 0.7;
+    }
   });
 
   return (
@@ -195,30 +267,23 @@ function GodRaySun({ onMesh }: { onMesh: (m: THREE.Mesh | null) => void }) {
         <sphereGeometry args={[1, 64, 64]} />
         <meshBasicMaterial map={texture} toneMapped={false} color={new THREE.Color('#fff0cf')} />
       </mesh>
-      {/* corona shells */}
-      <mesh scale={SUN_SCALE * 1.16}>
-        <sphereGeometry args={[1, 48, 48]} />
-        <meshBasicMaterial color={new THREE.Color('#ffcf7a')} transparent opacity={0.32} side={THREE.BackSide} depthWrite={false} blending={THREE.AdditiveBlending} />
+      <mesh ref={c0} scale={CORONA[0]!.base}>
+        <sphereGeometry args={[1, CORONA[0]!.seg, CORONA[0]!.seg]} />
+        <meshBasicMaterial color={new THREE.Color(CORONA[0]!.color)} transparent opacity={CORONA[0]!.op} side={THREE.BackSide} depthWrite={false} blending={THREE.AdditiveBlending} />
       </mesh>
-      <mesh scale={SUN_SCALE * 1.55}>
-        <sphereGeometry args={[1, 48, 48]} />
-        <meshBasicMaterial color={new THREE.Color('#ffb14d')} transparent opacity={0.12} side={THREE.BackSide} depthWrite={false} blending={THREE.AdditiveBlending} />
+      <mesh ref={c1} scale={CORONA[1]!.base}>
+        <sphereGeometry args={[1, CORONA[1]!.seg, CORONA[1]!.seg]} />
+        <meshBasicMaterial color={new THREE.Color(CORONA[1]!.color)} transparent opacity={CORONA[1]!.op} side={THREE.BackSide} depthWrite={false} blending={THREE.AdditiveBlending} />
       </mesh>
-      <mesh scale={SUN_SCALE * 2.4}>
-        <sphereGeometry args={[1, 32, 32]} />
-        <meshBasicMaterial color={new THREE.Color('#ff9a3c')} transparent opacity={0.05} side={THREE.BackSide} depthWrite={false} blending={THREE.AdditiveBlending} />
+      <mesh ref={c2} scale={CORONA[2]!.base}>
+        <sphereGeometry args={[1, CORONA[2]!.seg, CORONA[2]!.seg]} />
+        <meshBasicMaterial color={new THREE.Color(CORONA[2]!.color)} transparent opacity={CORONA[2]!.op} side={THREE.BackSide} depthWrite={false} blending={THREE.AdditiveBlending} />
       </mesh>
-      {/* anamorphic flare — additive billboards facing the camera */}
-      <group ref={flare}>
-        <mesh scale={[SUN_SCALE * 11, SUN_SCALE * 0.45, 1]}>
-          <planeGeometry args={[1, 1]} />
-          <meshBasicMaterial color={new THREE.Color('#ffe1a8')} transparent opacity={0.16} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
-        </mesh>
-        <mesh scale={SUN_SCALE * 1.5}>
-          <circleGeometry args={[1, 32]} />
-          <meshBasicMaterial color={new THREE.Color('#fff2cf')} transparent opacity={0.1} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
-        </mesh>
-      </group>
+      {/* single soft screen-facing glow — fades fully out as the Sun leaves frame */}
+      <mesh ref={glow} scale={SUN_SCALE * 3}>
+        <planeGeometry args={[1, 1]} />
+        <meshBasicMaterial map={glowTex} transparent opacity={0} depthWrite={false} blending={THREE.AdditiveBlending} toneMapped={false} />
+      </mesh>
       <pointLight color="#ffe4b0" intensity={2.6} distance={600} decay={1.2} />
     </group>
   );
@@ -383,12 +448,14 @@ function FxModulator({
   bloomRef,
   dofRef,
   noiseRef,
+  godRaysRef,
   highMode,
 }: {
   fxRef: React.MutableRefObject<FxState>;
   bloomRef: React.MutableRefObject<any>;
   dofRef: React.MutableRefObject<any>;
   noiseRef: React.MutableRefObject<any>;
+  godRaysRef: React.MutableRefObject<any>;
   highMode: boolean;
 }) {
   useFrame(() => {
@@ -402,6 +469,11 @@ function FxModulator({
     if (highMode && noiseRef.current?.blendMode?.opacity) {
       noiseRef.current.blendMode.opacity.value = fx.grain;
     }
+    // Gate GodRays: contribute only when the Sun is on-screen AND on-axis
+    // (shot 1). Off-frame → opacity 0 → no smear, visually free in 7/8 shots.
+    if (highMode && godRaysRef.current?.blendMode?.opacity) {
+      godRaysRef.current.blendMode.opacity.value = fx.sunInFrame ? fx.onAxis : 0;
+    }
   });
   return null;
 }
@@ -411,14 +483,15 @@ export function CinematicScene({ onCaptionChange }: CinematicSceneProps) {
   const lite = useLiteMode();
   const high = !lite;
   const quality: 'low' | 'medium' | 'high' = high ? 'high' : 'medium';
-  const dpr: [number, number] = lite ? [1, 1] : [1, 2];
+  const dpr: [number, number] = lite ? [1, 1] : [1, 1.75];
   const starCount = lite ? 6000 : 18000;
 
-  const fxRef = useRef<FxState>({ bloom: 0.55, bokeh: 0, grain: 0, sunInFrame: false, focus: new THREE.Vector3() });
+  const fxRef = useRef<FxState>({ bloom: 0.55, bokeh: 0, grain: 0, sunInFrame: false, onAxis: 0, focus: new THREE.Vector3() });
   const asteroidGroupRef = useRef<THREE.Group | null>(null);
   const bloomRef = useRef<any>(null);
   const dofRef = useRef<any>(null);
   const noiseRef = useRef<any>(null);
+  const godRaysRef = useRef<any>(null);
 
   const [sunMesh, setSunMesh] = useState<THREE.Mesh | null>(null);
   const [selected, setSelected] = useState(false);
@@ -448,7 +521,7 @@ export function CinematicScene({ onCaptionChange }: CinematicSceneProps) {
       <StarField count={starCount} radius={600} />
 
       <Suspense fallback={null}>
-        <GodRaySun onMesh={setSunMesh} />
+        <GodRaySun onMesh={setSunMesh} fxRef={fxRef} />
       </Suspense>
       <Suspense fallback={null}>
         <PlanetaryBackdrop quality={quality} />
@@ -467,7 +540,7 @@ export function CinematicScene({ onCaptionChange }: CinematicSceneProps) {
         asteroidGroupRef={asteroidGroupRef}
         setSelected={setSelected}
       />
-      <FxModulator fxRef={fxRef} bloomRef={bloomRef} dofRef={dofRef} noiseRef={noiseRef} highMode={high} />
+      <FxModulator fxRef={fxRef} bloomRef={bloomRef} dofRef={dofRef} noiseRef={noiseRef} godRaysRef={godRaysRef} highMode={high} />
 
       <EffectComposer multisampling={0} enableNormalPass={false}>
         <SMAA />
@@ -481,12 +554,14 @@ export function CinematicScene({ onCaptionChange }: CinematicSceneProps) {
         />
         {high && sunMesh ? (
           <GodRays
+            ref={godRaysRef}
             sun={sunMesh}
-            samples={60}
-            density={0.92}
-            decay={0.93}
-            weight={0.5}
-            exposure={0.34}
+            samples={30}
+            density={0.96}
+            decay={0.9}
+            weight={0.4}
+            exposure={0.3}
+            clampMax={0.9}
             blur
             kernelSize={KernelSize.SMALL}
           />

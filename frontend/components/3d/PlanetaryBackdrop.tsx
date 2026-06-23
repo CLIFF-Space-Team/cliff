@@ -75,7 +75,7 @@ export function PlanetaryBackdrop({
           çerçeveler. Düşük kalitede atlanır (mobil/zayıf cihaz). */}
       {quality !== 'low' && (
         <AsteroidBelt
-          count={quality === 'high' ? 900 : 500}
+          count={quality === 'high' ? 600 : 500}
           innerRadius={360}
           outerRadius={470}
           thickness={12}
